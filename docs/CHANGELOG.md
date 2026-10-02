@@ -4,6 +4,16 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ---
 
+## [v43] — 2026-10-02 (unreleased: `index.html` still points at v42)
+
+**Didactic scenarios scaffold — last suffixed copy**
+
+- New parallel file set `mulermoc-nom-43.html` + `js/*-43.js` + `css/jsme-nick-43.css`, copied verbatim from v42 (only path renames + one script include). `core/molview/teaching/data/css-43` are byte-identical to v42, so `43-no-params == 42`.
+- New additive module `js/mulermoc-nom-scenario-43.js` (off by default): snapshot capture (molecule, 2D/3D modes, chain/naming modes, styles, audio flag, 3D `moveto` via `show moveto`), `scenarioVersion: 1` validation with legacy/future policy, apply through the standard `fSelectMol` + name-box click path, per-step `show.*` chrome matrix, memory + JSON file export/import (decision A), `?scenario=…&present=1` + `#step=N` playback URLs. See `docs/didactic-scenario-plan.md`.
+- Museum moved to `archive/` (non-runnable reference); runnable history via tags `v41`/`v42`. v43 is the last suffixed copy; v44 introduces the canonical un-suffixed set.
+
+---
+
 ## [v41] — 2026-09-30
 
 **Esters: naming + first molecules — plus viewer and menu improvements**
