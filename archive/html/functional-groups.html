@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSME Funct 8</title>
+
+    <link rel="stylesheet" href="css/jsme-nick-2.css">
+
+    <script src="jsme/jsme.nocache.js"></script>
+    <script src="jquery/jquery-3.7.1.min.js"></script>
+    <script src="snap/snap.svg-min.js"></script>
+
+
+    <script type="text/javascript" src="JSmol.min.js"> </script>
+
+    <script>
+        var JSmol_Applet = {
+            width: "100%",
+            height: "100%",
+        }
+    </script>
+
+
+
+</head>
+
+<body>
+
+    <div class="panelContainer">
+        <div class="HFlex">
+            <div class="VFlex" style="margin-right: 10px;">
+                <div id="fGroupsContainer" class="VFlex">
+                    <div class="panelTitle"> Χαρακτηριστικές Ομάδες </div>
+                    <!-- <div class="menuLi selectedLi"> Καμία</div> -->
+                    <div class="menuLi"> Υδροξύλιο</div>
+                    <div class="menuLi"> Αιθερομάδα </div>
+                    <div class="menuLi"> Αλδεϋδομάδα</div>
+                    <div class="menuLi"> Κετονομάδα</div>
+                    <div class="menuLi"> Καρβοξύλιο</div>
+                    <div class="menuLi"> Εστερομάδα</div>
+                    <div class="menuLi"> Κυανομάδα</div>
+                    <div class="menuLi"> Αλογονομάδα</div>
+                    <div class="menuLi"> Πρωτοταγής αμίνη</div>
+                </div>
+            </div>
+
+            <div class="VFlex">
+                
+                <!-- <div class="HFlex"> -->
+                    <!-- <div class="panelTitle" style="width: 33%;"> <span class="panelTitleSpan">Χαρακτηριστική Ομάδα</span></div> -->
+                    <div id="moleculeClassInfoDiv" class="panelTitle" style="font-size: 1.25rem;"> </div>
+                    <!-- <div class="panelTitle"  style="width: 33%;"><span class="panelTitleSpan">Μόριο</span></div> -->
+                <!-- </div> -->
+                <div class="HFlex">
+
+
+                    <div class="VFlex" style="border: 1px solid #219EBC;border-right: 2px dashed #999;border-top: 0;">
+                        <div id="jsmeFunDIV">
+                            <div  class="panelTitleSpan " style="margin-top: 10px;">Χαρακτηριστική Ομάδα</div>
+                            <div id="funInfo" class="infoMolName " ></div>
+                            <div id="jsmeFunContainer" class="hide"></div>
+                            <div id="jsmeFunSVG"></div>
+                        </div>
+                       
+                        <div id="fun3D" class="JmolContainer">
+                            <script>
+                                jmolAppletFun = Jmol.getApplet("jmolAppletFun", JSmol_Applet);
+                                Jmol.script(jmolAppletFun, "load mols/funGroups-3D.sdf; display none");
+                            </script>
+                        </div>
+
+                    </div>
+                    <div class="VFlex" style="border: 1px solid #219EBC;border-left: 0; border-top: 0; position: relative;">
+                        
+                        <!-- <div  class="panelTitleSpan " style="position: absolute; top:110px; left:-70px;background: #fff; padding: 10px;">Συντακτικός Τύπος</div>
+                        <div  class="panelTitleSpan " style="position: absolute; top:240px; left:-70px;background: #fff; padding: 10px; ">Μοριακό Μοντέλο</div> -->
+                        <div  class="panelTitleSpan " style="margin-top: 10px;">Μόριο</div>
+                        <div id="molInfo" class="infoMolName"></div>
+                        <div id="jsmeMolDIV">
+                            
+                            <div id="jsmeMolContainer" class="hide"></div>
+                            <div id="jsmeMolSVG"></div>
+                        </div>
+                        
+                        <div id="mol3D" class="JmolContainer">
+                            <script>
+                                jmolAppletMol = Jmol.getApplet("jmolAppletMol", JSmol_Applet);
+                                Jmol.script(jmolAppletMol, "load mols/1st-Molecules-3D.sdf; display none");
+                            </script>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="HFlex" style="justify-content:space-around;">
+                    <div id="atomSymbolsCheck" class="checkBoxContainer selectedCheck">Σύμβολα Ατόμων (3D)<span
+                            class="checkBox"></span></div>
+                    <div id="highLightButton" class="checkBoxContainer unselectedCheck">Επισήμανση Χαρακτηριστικής
+                        Ομάδας<span class="checkBox"></span></div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/jsme-nick-fungroups-data.js"></script>
+    <script src="js/jsme-nick-functional-groups-1.js"></script>
+
+
+
+</body>
+
+</html>

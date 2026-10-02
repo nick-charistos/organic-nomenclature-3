@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ονοματολογία Οργανικών Ενώσεων 2</title>
+
+    <link rel="stylesheet" href="css/jsme-nick-30.css">
+
+    <script src="jsme/jsme.nocache.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+        crossorigin="anonymous"></script>
+    <script src="https://chemapps.stolaf.edu/jmol/jsmol/JSmol.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/snap.svg/0.5.1/snap.svg-min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <script>
+       jmol_isReady = function (applet) { };
+    var JSmol_Applet = {
+      width: "100%",
+      height: "100%",
+      debug: false,
+      color: "#FFFFFF",
+      use: "HTML5",
+      j2sPath: "https://chemapps.stolaf.edu/jmol/jsmol/j2s",
+      serverURL: "https://chemapps.stolaf.edu/jmol/jsmol/php/jsmol.php",
+      readyFunction: jmol_isReady,
+      disableJ2SLoadMonitor: true,
+      disableInitialConsole: true,
+    };
+    </script>
+
+    <style>
+        #jsmeNomeclatureSVG {
+            width: 450px;
+            height: 200px;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div id="pageContainer">
+
+    <div id="panelContainer" >
+        <h1>Ονοματολογία Οργανικών Ενώσεων 2</h1>
+        <div class="HFlex" style="justify-content: center;">
+            <!-- left column: MENU -->
+            <div class="VFlex" style="margin-right: 10px;">
+                <div id="nomeclature2Menu" style="width: 230px;"> </div>
+
+            </div>
+
+            <!-- middle column -->
+            <div id="molRepColumn" class="VFlex" style="background-color: #fff;">
+                <div class='panelTitle'> Μόριο  </div>
+                <div id="molName" class="infoMolName"
+                    style="border: 1px solid var(--baseColor); border-bottom: 0;margin:0;padding-top:10px;height: 35px;box-sizing: border-box;">
+                </div>
+
+                <!--JSME 2D -->
+                <div id="jsmeNomeclatureDIV"
+                    style="border: 1px solid var(--baseColor); border-top: 0; border-bottom: 0;">
+                    <div id="jsmeNomeclature" class="hide"></div>
+                    <div id="jsmeNomeclatureSVG"></div>
+                </div>
+                <div id="radio2DMode" style="border: 1px solid var(--baseColor); border-top: 0; border-bottom: 0;">
+                    <div class='radioGroupContainer HFlex ' style='justify-content: center;'>
+                        <div class='radioCheckContainer selectedRadio'>Συνεπτυγμένος<span class='radioCheck'></span>
+                        </div>
+                        <div class='radioCheckContainer unselectedRadio'>Ανεπτυγμένος<span class='radioCheck'></span>
+                        </div>
+                        <div class='radioCheckContainer unselectedRadio '>Σκελετικός<span class='radioCheck'></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="nomeclature3D" class="JmolContainer"
+                    style="border: 1px solid var(--baseColor); border-top:0; border-bottom:0; ">
+                    <script>
+                        jmolAppletNomeclature = Jmol.getApplet("jmolAppletNomeclature", JSmol_Applet);
+                        Jmol.script(jmolAppletNomeclature, "frank off")
+                    </script>
+                </div>
+                <div class="HFlex" style="border: 1px solid var(--baseColor); border-top:0; justify-content: center; ">
+
+                    <div id="atomSymbolsCheck" class="checkBoxContainer selectedCheck">Σύμβολα Ατόμων <span
+                            class="checkBox"></span>
+                    </div>
+                    <div id="rotateCheck" class="checkBoxContainer unselectedCheck">Περιστροφή <span
+                            class="checkBox"></span>
+                    </div>
+                    <div id="dropMenu" style=" margin-top: 2px;"></div>
+
+                </div>
+            </div>
+
+            <!-- right column -->
+            <div class="VFlex" style="margin-left:10px;justify-content: space-between;width: 350px;">
+                <div>
+                    <div id="nameAnalysisContainer">
+                        <div id="ruleTheory"></div>
+                        <div id="nameAnalysis"></div>
+                    </div>
+                    <div id="nameAnalysisExplain"></div>
+                    <div id="ruleTheoryContainer"></div>
+                </div>
+                <!-- <div>
+                    <div style="color:var(--baseColor)"> Name Guess</div>
+                    <div id="guessNameContainer" style="font-size: 1.5rem; font-weight: bold;"></div>
+                </div> -->
+                <!-- <div id="guessMolInfoContainer"></div> -->
+            </div>
+
+            <!-- debug -->
+            <!-- <div id="debug" style="max-height: 600px; overflow: auto;"></div> -->
+
+        </div>
+
+    </div>
+
+    <!-- <div id="creditsLib"></div> -->
+    <div id="creditsUs"></div>
+
+    </div>
+
+    <script src="js/jsme-nick-nomeclature-moc2-data_5.js"></script>
+    <script src="js/jsme-nick-nomeclature-moc2-30.js"></script>
+    <script src="jsme/96E40B969193BD74B8A621486920E79C.cache.js"></script>
+
+</body>
+
+</html>
+

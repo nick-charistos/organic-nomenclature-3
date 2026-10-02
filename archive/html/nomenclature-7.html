@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSME Ονοματολογία 7</title>
+
+    <link rel="stylesheet" href="css/jsme-nick-2.css">
+
+    <script src="jsme/jsme.nocache.js"></script>
+    <script src="jquery/jquery-3.7.1.min.js"></script>
+    <script src="JSmol.min.js"> </script>
+    <script src="snap/snap.svg-min.js"></script>
+
+    <script>
+        var JSmol_Applet = {
+            width: "100%",
+            height: "100%",
+        }
+    </script>
+
+    <style>
+        #jsmeNomeclatureSVG {
+            width: 400px;
+            height: 200px;
+        }
+
+        .svgAtomLabel {
+            color: #ffff00;
+        }
+    </style>
+
+
+</head>
+
+<body>
+
+    <div class="panelContainer">
+        <div class="HFlex">
+            <!-- left column: MENU -->
+            <div class="VFlex">
+                <div id="nomeclatureMenu" style="min-width: 200px;margin-right: 10px;"> </div>
+                
+            </div>
+
+            <!-- middle column -->
+            <div class="VFlex">
+                <div id="molName" class="infoMolName"
+                    style="border: 1px solid #219EBC; border-bottom: 0;margin:0;padding-top:10px;"></div>
+                  
+                <!--JSME 2D -->
+                <div id="jsmeNomeclatureDIV" style="border: 1px solid #219EBC; border-top: 0; border-bottom: 0;">
+                    <div id="jsmeNomeclature" class="hide"></div>
+                    <div id="jsmeNomeclatureSVG"></div>
+                </div>
+
+
+                <div id="nomeclature3D" class="JmolContainer" style="border: 1px solid #219EBC; border-top:0; ">
+                    <script>
+                        jmolAppletNomeclature = Jmol.getApplet("jmolAppletNomeclature", JSmol_Applet);
+                    </script>
+                </div>
+
+            </div>
+
+            <!-- right column -->
+            <div class="VFlex" style="margin-left:10px;justify-content: space-between;">
+
+                <div id="nameAnalysisContainer"></div>
+                
+                <div class="VFlex" style="">
+                    <div id="radio2DMode" class="">
+                        <div class='radioGroupContainer VFlex ' style=''>
+                            <div class='radioCheckContainer selectedRadio'>Συνεπτυγμένος Συντακτικός Τύπος <span
+                                    class='radioCheck'></span></div>
+                            <div class='radioCheckContainer unselectedRadio '>Ανεπτυγμένος Συντακτικός Τύπος<span
+                                    class='radioCheck'></span></div>
+                        </div>
+
+
+                    </div>
+
+                    <div id="atomSymbolsCheck" class="checkBoxContainer selectedCheck">Σύμβολα Ατόμων
+                        (3D)<span class="checkBox"></span>
+                    </div>
+
+                </div>
+              
+            </div>
+            
+        </div>
+        
+    </div>
+    <textarea  id="debugSVG" rows="10" cols="120"></textarea >
+
+
+
+    <script src="js/jsme-nick-nomeclature-data.js"></script>
+    <script src="js/jsme-nick-nomeclature-7.js"></script>
+    <script src="jsme/96E40B969193BD74B8A621486920E79C.cache.js"></script>
+
+</body>
+
+</html>

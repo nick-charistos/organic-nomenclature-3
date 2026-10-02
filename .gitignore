@@ -70,3 +70,13 @@ Code-Analysis/
 # Local communication files (keep out of repo)
 communication/
 
+# ... but keep the archived museum copies (see archive/README.md)
+!archive/html/nomenclature_moc2_1_debug*.html
+!archive/html/nomenclature_moc2_1_RC-*.html
+!archive/html/nomenclature-*.html
+!archive/html/dropMenu-1.html
+!archive/html/functional-groups.html
+!archive/html/homologues-seires.html
+!archive/html/nameing-tables.html
+!archive/html/table-FG-order.html
+
