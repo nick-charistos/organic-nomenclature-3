@@ -2,12 +2,24 @@
 
 A Greek-first interactive learning platform for organic nomenclature, built around molecular structure, naming logic, and multiple representations.
 
-**Current working baseline:** v41
-**Main entry point:** [mulermoc-nom-41.html](mulermoc-nom-41.html)
-**Core engine:** [js/mulermoc-nom-core-41.js](js/mulermoc-nom-core-41.js)
-**Viewer layer:** [js/mulermoc-nom-molview-41.js](js/mulermoc-nom-molview-41.js)
-**Teaching layer:** [js/mulermoc-nom-teaching-41.js](js/mulermoc-nom-teaching-41.js)
-**Data set:** [js/jsme-nick-nomeclature-moc2-data_41.js](js/jsme-nick-nomeclature-moc2-data_41.js) — 64 molecules
+**Current working baseline:** v43 (didactic-scenarios scaffold, byte-identical engine to v42)
+**Main entry point:** [mulermoc-nom-43.html](mulermoc-nom-43.html)
+**Core engine:** [js/mulermoc-nom-core-43.js](js/mulermoc-nom-core-43.js)
+**Viewer layer:** [js/mulermoc-nom-molview-43.js](js/mulermoc-nom-molview-43.js)
+**Teaching layer:** [js/mulermoc-nom-teaching-43.js](js/mulermoc-nom-teaching-43.js)
+**Scenario module (new, off by default):** [js/mulermoc-nom-scenario-43.js](js/mulermoc-nom-scenario-43.js)
+**Data set:** [js/jsme-nick-nomeclature-moc2-data_43.js](js/jsme-nick-nomeclature-moc2-data_43.js) — 64 molecules
+
+---
+
+## Two repositories (since 2026-10-02)
+
+| Site | Serves | Status |
+|---|---|---|
+| [organic-nomenclature-2](https://nick-charistos.github.io/organic-nomenclature-2/) | v42 (`index.html` → `mulermoc-nom-42.html`) | frozen — emergency hotfixes only, never push feature work there |
+| [organic-nomenclature-3](https://nick-charistos.github.io/organic-nomenclature-3/) | v43 (`index.html` → `mulermoc-nom-43.html`) | active — all new work happens here |
+
+Runnable history via tags `v41`/`v42` (pushed to repo3). The old versioned file sets live on as a non-runnable museum in [archive/](archive/README.md).
 
 ---
 
@@ -144,7 +156,7 @@ The next version should not be organized primarily around rule-by-rule teaching.
     - second example (`dimethylether`) added; stored chain data and `moveto` remain optional
     - remaining: unsaturated ether chains
 
-3. **Esters** (in progress, v41)
+3. **Esters** (detection/naming/highlight done since v41, carried into v43)
     - detection and classification (2D + 3D): done
     - two-fragment `esterInfo` analysis: done
     - two-word IUPAC naming (e.g. προπανοϊκός μεθυλεστέρας): done
@@ -185,18 +197,20 @@ These belong to a later product phase.
 - [PROJECT-PLAN.md](docs/PROJECT-PLAN.md)
 - [PROJECT-PLAN-GR.md](docs/PROJECT-PLAN-GR.md)
 - [CHANGELOG.md](docs/CHANGELOG.md)
+- [didactic-scenario-plan.md](docs/didactic-scenario-plan.md) — snapshot scenarios (v43)
 
-These plans describe the research and product ambitions, but the current implementation should be treated as the working v41 baseline rather than as a fully finished research platform.
+These plans describe the research and product ambitions, but the current implementation should be treated as the working v43 baseline rather than as a fully finished research platform.
 
 ---
 
 ## Technical notes
 
 ### Important observations
-- The workspace contains multiple historical versions, including v35-v41 snapshots.
-- The project plans still describe older intended milestones and should be reconciled with the real v41 baseline.
+- The workspace keeps one canonical versioned set per release at root (`*43*` now); older sets are frozen in [archive/](archive/README.md), runnable via tags `v41`/`v42`.
+- The project plans still describe older intended milestones and should be reconciled with the real v43 baseline.
 - The chemistry engine should be validated before expanding into more complex categories.
-- Ester detection/naming/highlight paths are implemented in v41; tertiary-amine detection still needs explicit testing.
+- Ester detection/naming/highlight paths are implemented since v41; tertiary-amine detection still needs explicit testing.
+- v43 adds the didactic-scenario layer (`docs/didactic-scenario-plan.md`, `js/mulermoc-nom-scenario-43.js`) without changing the engine: `core-43` is byte-identical to `core-42`.
 
 ---
 
@@ -216,9 +230,9 @@ This makes the platform more pedagogically coherent and more scalable than a str
 
 ## Repository status summary
 
-- Working baseline: **v41**
-- Main focus: **stable learning app + chemistry expansion**
-- Near-term goal: **esters coverage (ethers done for saturated acyclic mono-ethers)**
+- Working baseline: **v43** (repo3; v42 frozen in repo2)
+- Main focus: **didactic scenarios hardening + stable learning app**
+- Near-term goal: **scenario browser verification, then v44 canonical set**
 - Product model: **homologous series first**
 - Rules: **secondary explanatory layer**
 - Research layer: **deferred**

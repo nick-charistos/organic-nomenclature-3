@@ -166,38 +166,48 @@ Visibility rules:
   only on breaking schema changes; additive optional fields use
   defaults and need no bump.
 
-## 6. molInfo cleanup (v43)
+## 6. molInfo cleanup (deferred to v44)
 
 The v40-v42 `molInfoBtn` / `molInfoPanel` is dead code
 (`molInfoEnabled = false`, see
 `js/mulermoc-nom-molview-42.js:32-33,309-321,2746-2784` and
-`css/jsme-nick-42.css:330-358`):
+`css/jsme-nick-42.css:330-358`).
 
-* Delete the button/panel content and chem-class/series rows.
-* Keep one minimal `<div id="molInfoPanelSlot">` host plus
-  `show.infoHost` for the future PubChem `externalLinksPanel`.
+Status in v43: **not deleted**. The scenario module instead injects
+a minimal `<div id="molInfoPanelSlot">` host at runtime (hidden
+unless `show.infoHost`), reserving the slot for the future PubChem
+`externalLinksPanel`. Full deletion of the dead button/panel code
+moves to v44 (canonical set), when `molview` is touched anyway.
+
 * Legacy `#molInfo` in `functional-groups.html:80` is a
-  different page and stays untouched.
+  different page and stays untouched (now in `archive/html/`).
 
-## 7. v1 build steps (v43, no-build SPA)
+## 7. v1 build status (v43 done, v44 next)
 
-1. New `js/mulermoc-nom-scenario-43.js`:
+Done in v43 (`mulermoc-nom-43.html`, last suffixed copy):
+
+1. ✅ `js/mulermoc-nom-scenario-43.js`:
    capture / validate / apply / export / import.
-2. `mulermoc-nom-43.html`: toolbar, playback bar, import input,
-   info-host slot.
-3. `molview/teaching-43.js`: apply snapshots through
-   `fSelectMol -> fShowNameAnalysis -> fExplainNameComp ->
-   fShowRule`; hide chrome in playback.
-4. `molInfo` cleanup from section 6.
-5. Tests: ester/ether/branched highlight round-trips across
-   modes, corrupt/missing-molecule imports, hidden-chrome
-   assertions.
-6. CHANGELOG v43 entry.
+2. ✅ `mulermoc-nom-43.html`: includes the scenario module (toolbar,
+   playback bar, import input, info-host slot are injected at
+   runtime, keeping the html diff minimal).
+3. ✅ Apply path through `fSelectMol -> fShowNameAnalysis ->
+   fExplainNameComp -> fShowRule`; chrome hidden in playback.
+4. ⏭️ `molInfo` deletion deferred to v44 (see section 6).
+5. Browser tests: save/present/navigate/exit, export/import
+   round-trip, corrupt/missing-molecule imports, hidden-chrome
+   assertions (manual click-through pending).
+6. ✅ CHANGELOG v43 entry (`index.html` → 43 in repo3 only).
+
+Remaining: v44 canonical un-suffixed set, then quizzes/games on the
+same reuse contract.
 
 ## 8. Open questions for development
 
 * Where the PubChem host panel should live long-term.
 * JSmol `moveto` timing on async `load` (callback/timeout plus
   stale-step guard like `fFetchAndParse3D`).
+* v42 backport policy (repo2): emergency hotfixes only, or
+  maintained in parallel with repo3? Undecided.
 
 Many issues will surface during development; adjust there.
