@@ -380,15 +380,22 @@ function fScenarioChrome(show) {
   fScenarioHide("viewerSettingsBtnDiv", present);
   fScenarioHide("viewerSettingsPanel", present);
   // menu drawer + toggle
+  var drawer = document.getElementById("menuDrawer");
+  var tog = document.getElementById("menuToggle");
   if (present) {
-    var drawer = document.getElementById("menuDrawer");
     if (drawer) {
       drawer.classList.remove("menu-open");
       drawer.classList.add("menu-closed");
       drawer.style.display = "none";
     }
-    var tog = document.getElementById("menuToggle");
     if (tog) tog.style.display = "none";
+  } else {
+    if (drawer) {
+      drawer.style.display = "";
+      drawer.classList.remove("menu-closed");
+      drawer.classList.add("menu-open");
+    }
+    if (tog) tog.style.display = "";
   }
   // naming panel + settings + audio
   fScenarioHide("nameAnalysisContainer", present && show.naming === false);
@@ -567,8 +574,11 @@ function fScenarioBuildUi() {
         /* file:// */
       }
       var st = MuLERMoCScenario.steps[MuLERMoCScenario.index];
-      if (st) fScenarioApply(st);
-      else fScenarioChrome(null);
+      if (st) {
+        st.show = st.show || {};
+        st.show.viewers = { "2D": true, "3D": true };
+        fScenarioApply(st);
+      } else fScenarioChrome(null);
     };
   }
 }

@@ -228,13 +228,52 @@ This makes the platform more pedagogically coherent and more scalable than a str
 
 ---
 
+## Vision (twofold+1)
+
+1. **A useful tool for chemistry learning** with real impact in the community (teachers + students, Greek-first organic nomenclature).
+2. **Ongoing research** about and from this project (learning + motivation effects, EPAL vs Lyceum school types, publications).
+3. **Conditions for new developments** — technology + knowledge reusable for isomerism, chemical reactions, and beyond.
+
+### Four layers (LEARN-first order)
+
+All layers reuse the same v43 engine (analysis + 2D/3D viewers + naming panels), embedded as a static app in Drupal:
+
+| # | Layer | Contract | State |
+|---|---|---|---|
+| 1 | **LEARN** | teacher-authored didactic scenarios (linear snapshots); presentation + self-paced learning; stored team scenarios | v43 scaffold done (`js/mulermoc-nom-scenario-43.js`, off by default); exit restores full chrome (menu + both viewers); next: stored `scenarios/` library with EPAL/Lyceum two-level notes |
+| 2 | **EXPLORE** | current v42-style free browsing: left menu, all molecules of the database | working (64 mols); next: bounded EXPLORE-lite (~15 mols for LEARN scenarios incl. unsaturated ethers/esters) + menu search; full DB expansion is a standing content workstream |
+| 3 | **PRACTICE** | exercises with corrective feedback until correct (3 types v1) | not started — see `docs/LAYERS-PLAN.md` |
+| 4 | **PLAY** | gamified quizzes; responses + times logged for **research statistics** (primary) | not started — Drupal-owned auth/session/logging; app sends events; see `docs/LAYERS-PLAN.md` |
+
+Details: `docs/LAYERS-PLAN.md` (layer contracts, exercise types v1, research logging schema v1, timeline, ownership).
+
+### Team
+
+| Who | Role |
+|---|---|
+| P1 — supervisor (computational chemistry) | app code (hand-written + AI-assisted), engine ownership |
+| P2 — Drupal / educational research / statistics / eye-tracking | Drupal embedding + scenario/quiz content types, logging API + storage, dashboards/CSV, research design |
+| P3 — MSc student, chemistry teacher | scenarios, questions, exercises, quizzes design; small-class pilots (with P4) |
+| P4 — undergrad chemistry | `.mol` + `.sdf` molecule production for the database (with P3) |
+| P5 — MSc student, chemistry teacher | school research: learning + motivation effects, EPAL (vocational) vs general Lyceum |
+| P6 — MSc graduate, chemistry teacher (v35 dissertation) | co-supervision, project memory, educational research |
+
+### Architecture
+
+- **Embedded static:** the chemistry app stays dependency-free static (JSME/JSmol/Snap.svg/jQuery, no build); Drupal embeds it and owns scenarios, exercises/quizzes, users/sessions, logging, and exports.
+- **Stats primary for research:** response + time logs are designed for publication (pseudonymous participants, condition/layer flags, school-type covariate joined in Drupal — no PII in the static app).
+- **Extensible:** scenario `externalLinks{}`, exercise `itemType`, log `domain` fields reserve `nomenclature | isomerism | reactions` — future domains without schema breaks.
+
+---
+
 ## Repository status summary
 
 - Working baseline: **v43** (repo3; v42 frozen in repo2)
-- Main focus: **didactic scenarios hardening + stable learning app**
-- Near-term goal: **scenario browser verification, then v44 canonical set**
-- Product model: **homologous series first**
+- Main focus: **LEARN pilot (stored scenarios) + bounded EXPLORE-lite**
+- Near-term goal: **scenario library verification, then v44 canonical set**
+- Product model: **LEARN narrative first, homologous series as database order**
 - Rules: **secondary explanatory layer**
-- Research layer: **deferred**
+- Research layer: **active design (P2/P5/P6; schema v1 in `docs/LAYERS-PLAN.md`)**
+- Future domains (+1): **isomerism, reactions — reserved, not in v1**
 
 

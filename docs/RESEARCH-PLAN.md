@@ -1,13 +1,15 @@
 # Research Plan — MuLERMoCs-Anastasia
 ## Organic Nomenclature Interactive Learning Environment
-## Created: 2026-05-02 | Status: PLANNING
+## Created: 2026-05-02 | Status: PLANNING (re-anchored 2026-10-03 — see `docs/LAYERS-PLAN.md` §5)
 
-**Team:** Principal Investigator + 2 MSc students (current) + 1 PhD candidate (future)
+**Team:** P1 (supervisor) + P2 (Drupal/research/stats/eye-tracking) + P3/P4 (content) + P5 (EPAL-vs-Lyceum school research) + P6 (co-supervision) — roles in `README.md`
 **Institution:** Τμήμα Χημείας, ΑΠΘ
+
+> **2026-10 note:** RQs below were written for rule-group navigation; the product is now LEARN-narrative + series-first with EPAL-vs-Lyceum motivation comparison. Logging schema v1 (research-primary, pseudonymous, teacher view secondary) lives in `docs/LAYERS-PLAN.md` §5; this doc keeps the theory (CTML/DeFT) and RQ history.
 
 ---
 
-## Project Dual Purpose
+## Project Dual Purpose (+1)
 
 1. **Educational application development** — Build useful interactive tools for chemistry students learning IUPAC organic nomenclature
 2. **Educational research** — Use these applications as research instruments to investigate learning with multiple representations

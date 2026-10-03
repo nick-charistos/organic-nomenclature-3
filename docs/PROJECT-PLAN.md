@@ -3,8 +3,10 @@
 ### Organic Chemistry Interactive Learning & Research Platform
 
 **Principal Investigator:** N. Charistos, Department of Chemistry, ΑΠΘ
-**Status:** Active development | v37 stable and deployed
-**Last updated:** 2026-05-04
+**Status:** Active development | v43 baseline (64 molecules, scenario scaffold; v42 frozen in repo2)
+**Last updated:** 2026-10-03
+
+> **2026-10 update:** vision is now twofold+1 (community tool + research publications + platform for isomerism/reactions) with four layers in LEARN-first order — LEARN → EXPLORE-lite → PRACTICE → PLAY. The static chemistry app is embedded in Drupal; logging is research-primary. Source of truth for layers: `docs/LAYERS-PLAN.md`. Team P1–P6 roles and timeline are defined there and in `README.md`. What follows below is the original plan text, kept for theory and history; version/count claims predating v43 are superseded.
 
 ---
 
@@ -24,8 +26,8 @@ The platform generates Greek IUPAC names algorithmically, displays molecules in 
 | Multiple 2D representation modes | No | No | Yes |
 | Synchronized 2D + 3D highlighting | No | No | Yes |
 | Greek language | No | No | Yes |
-| Research instrumentation (logging, condition lock) | No | No | Yes |
-| Quiz interaction scenarios | No | No | Yes |
+| Research instrumentation (logging, condition lock) | No | No | Phased (schema v1 in `docs/LAYERS-PLAN.md`) |
+| Quiz interaction scenarios | No | No | Phased (PRACTICE 3 types v1 → PLAY) |
 | Quantum-accurate IRC trajectories (reactions) | No | Partial | Planned |
 
 ---
@@ -65,22 +67,23 @@ Each step removes one scaffolding layer. Familiar representations constrain inte
 
 ---
 
-## Module 1: Organic Nomenclature — Current State (v37)
+## Module 1: Organic Nomenclature — Current State (v43; v37 text below kept for history)
 
 ### What exists
-- **58 curated molecules** covering 9 IUPAC rule groups (hydrocarbons through mixed functional groups)
-- **Algorithmic IUPAC engine** — DFS main chain determination, 3-tier locant rules, Greek euphony
+- **64 curated molecules** (v43; incl. 2 ethers + 2 esters) covering homologous-series menu groups (series-first, rules secondary)
+- **Algorithmic IUPAC engine** — DFS main chain determination, 3-tier locant rules, Greek euphony; ester two-word naming + ether systematic/common toggle since v40/v41
 - **5 representation modes** — condensed, expanded, annotated skeletal (partial), skeletal, 3D
 - **Synchronized highlighting** — same atom/bond highlighted simultaneously in 2D and 3D
 - **Teaching layer** — rule-based explanations, component name boxes, TTS narration in Greek
-- **Technical validation** — algorithm verified against all 58 hand-curated molecules
+- **Didactic scenarios (v43)** — additive `scenario-43.js`: snapshot capture/validate/apply/export/import, `?scenario=&present=#step=` playback, exit restores full chrome
+- **Technical validation** — algorithm verified against the curated set; tertiary-amine detection still needs explicit testing
 
 ### Known gaps to fill (immediate work)
 - Annotated skeletal representation: `fMakeAnnotatedSkeletal()` — completes the fading sequence
-- Atom click targets: `fAddAtomClickTargets()` — enables interactive quiz scenarios
+- Atom click targets: `fAddAtomClickTargets()` — enables PRACTICE/PLAY exercises (deferred to Phase 3 per `docs/LAYERS-PLAN.md`)
 - Branched molecule naming (alkyl substituents) — extends engine to full organic curriculum
-- Ether naming (moderate complexity) — done for saturated acyclic mono-ethers in v40 (systematic + common, first molecule `ethyl_methyl_ether`); remaining: stored chain data, symmetric example, unsaturated chains
-- Ester naming (highest complexity — two-chain naming)
+- Ether naming — saturated acyclic mono-ethers done in v40 (systematic + common, `ethyl_methyl_ether` + `dimethylether`); remaining: unsaturated ether chains
+- Ester naming — detection/naming/highlight done since v41 (`ethanoic_methyl_ester`, `propanoic_methyl_ester`); remaining: wider coverage, unsaturated chains
 
 ---
 
