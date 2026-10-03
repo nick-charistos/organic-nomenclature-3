@@ -49,6 +49,9 @@ let currentMolName = ""
 let currentMolCommonName = ""
 let etherInfo = null
 let etherInfo3D = null
+// B1 owned-shared: written in fCalcMainChain/fInitNamingProps, read (typeof-guarded) in molview.
+let esterInfo = null
+let alkylSubstituentNames = {}
 let alkoxyNames = {}
 let nameMainCompList1 = []
 let nameMainCompObj3 = {}
@@ -160,6 +163,7 @@ function fInitNamingProps() {
 // ── fAnalyseStructure ─────────────────────────────────────────────────────
 
 function fAnalyseStructure() {
+    let currAtomType, currBond, bondOrder, bondAtom1, bondAtom2, atomType1, atomType2;
     carbons = 0
     atomTypeObj = {}
     atomTypes = []
@@ -268,6 +272,9 @@ function fAnalyseStructure() {
 // ── fDetectMolType ────────────────────────────────────────────────────────
 
 function fDetectMolType() {
+    let myAtomTypes, myFunctionalGroup, myXcount, myStart, myHetero, myXAtomIndex;
+    let theAtom1, theAtom2, etherO, etherNeighbors, carbonylC, carbonylNeighbors;
+    let nAtom, ketoneO, ketoneIdx, myX, theCarbon, esterFound;
     molType = ""
     molTaxonomy = ""
     functionalGroupObj = {}
@@ -1555,6 +1562,14 @@ function fGetHydrocarbonSubstituentInfo() {
 // ── fGuessName ────────────────────────────────────────────────────────────
 
 function fGuessName() {
+    // All single-function: comp0../theSuffix/guessNameObj are written+read only here
+    // (other files use "compN" DOM-id strings and the nameComponentsList vector).
+    let myXpositions, myFunctionalGroups, theXno, currXPos, currDouble, currTriple;
+    let sortedMultiDBonds, sortedMultiTBonds, theHalogens, sortedHalogens, XOPrefix;
+    let currXO, currXOhetero, currXOcount, bondPrefixDB, bondPrefixTB, bondPos, subPrefix;
+    let comp0NumberList, comp0TextList, theCountPrefix, bondAtom1, bondAtom2;
+    let comp0, comp0b, comp0Text, comp0bText, comp1, comp1No, comp2, comp2b, comp3, comp4;
+    let compAlcoholEster, compEsterNoun, theSuffix, guessNameObj, sortedFunPositions;
 
     // ελεγχει αν ειναι υδρογονανθρακας
     functionalGroupsList = Object.keys(functionalGroupObj)

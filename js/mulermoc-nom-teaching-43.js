@@ -59,6 +59,7 @@ const chemicalClassLabels = {
 // ── fInitTheory ───────────────────────────────────────────────────────────
 
 function fInitTheory() {
+  let r0, r1, r2, r3, r4, r1Table, r2Table, r3Table, r4Table;
   r0 =
     "Το όνομα μιας άκυκλης οργανικής ένωσης που έχει συνεχή ευθύγραμμη ανθρακική αλυσίδα (χωρίς διακλαδώσεις) προκύπτει από τον συνδυασμό τριών συνθετικών.";
   r1 =
@@ -256,6 +257,7 @@ function fInitTheory() {
 
 function fShowRuleTheory() {
   window.speechSynthesis.cancel();
+  let ruleTitle, ruleTheory;
   ruleTitle = `${selectedRule + 1}<sup>ος</sup> Κανόνας`;
   ruleTheory = `<div class='panelTitle ruleTheoryTitle open'><button class='ruleTheoryToggleBtn' data-tooltip='Εμφάνιση/Απόκρυψη'></button>${ruleTitle}<button id='narrateBtn' class='narrateBtn' data-tooltip='Ανάγνωση κανόνα'>${svgPlay}</button></div><div class='ruleText'>${namingRules.rulesTheory_1_8[selectedRule]}</div>`;
   $("#ruleTheory").html(ruleTheory);
@@ -454,8 +456,8 @@ function showRadio(myLi) {
 // ── fCreateDropMenu ───────────────────────────────────────────────────────
 
 function fCreateDropMenu(myItems) {
-  selectedLabel = myItems[0];
-  myHTML = `<div id='dropLabel' class=' closed' >${selectedLabel}</div>
+  let selectedLabel = myItems[0];
+  let myHTML = `<div id='dropLabel' class=' closed' >${selectedLabel}</div>
   <div id='dropLiContainer' class='molvis closed' >`;
   for (let i = 0; i < myItems.length; i++) {
     myHTML += `<div id='dropLi${i}' class='dropLi'>${myItems[i]}</div>`;
@@ -467,7 +469,7 @@ function fCreateDropMenu(myItems) {
 // ── fShowCreditLibs ───────────────────────────────────────────────────────
 
 function fShowCreditLibs() {
-  myCredits = `
+  let myCredits = `
   <div class='creditsContainer'>
     <div class=''>2D visualizations made with <strong>JSME</strong>: B. Bienfait and P. Ertl, J. Cheminform., 2013, 5, 24.</div>
     <div> | </div>
@@ -495,7 +497,7 @@ function getMolData() {
   let atomsCount = jsmeNomeclatureApplet.totalNumberOfAtoms();
   let bondsCount = jsmeNomeclatureApplet.totalNumberOfBonds();
 
-  str1 = `<div>Άτομα: ${atomsCount}, Δεσμοί: ${bondsCount}</div>`;
+  let str1 = `<div>Άτομα: ${atomsCount}, Δεσμοί: ${bondsCount}</div>`;
 
   for (let i = 1; i <= atomsCount; i++) {
     str1 += `<div class='crossMenuLi  atomNo'> Atom ${i}</div>`;
@@ -577,7 +579,7 @@ $(document).ready(function () {
   let dropState = false;
   let selectedLabel;
 
-  menuItmes = ["Σφαίρες και Ράβδοι", "Χωροπληρωτικό", "Ράβδοι"];
+  let menuItmes = ["Σφαίρες και Ράβδοι", "Χωροπληρωτικό", "Ράβδοι"];
   fCreateDropMenu(menuItmes);
 
   $("html").on("click", function () {
@@ -633,7 +635,7 @@ $(document).ready(function () {
     if ($(this).hasClass("disabledRadio")) {
       return;
     }
-    currMode2DNo = $(this)
+    let currMode2DNo = $(this)
       .parent()
       .children(".radioCheckContainer")
       .index(this);
@@ -1060,7 +1062,7 @@ $(document).ready(function () {
   $("#debug").on("mouseover", ".atomNo", function () {
     jsmeNomeclatureApplet.resetAtomColors(0);
     jsmeNomeclatureApplet.setAtomBackgroundColors(0, selectedAtom + ",9");
-    myAtom = $(this).parent().children(".atomNo").index(this) + 1;
+    let myAtom = $(this).parent().children(".atomNo").index(this) + 1;
     jsmeNomeclatureApplet.setAtomBackgroundColors(0, myAtom + ",2");
     fUpdateSVG();
   });
@@ -1068,7 +1070,7 @@ $(document).ready(function () {
   $("#debug").on("mouseover", ".bondNo", function () {
     jsmeNomeclatureApplet.resetBondColors(0);
     jsmeNomeclatureApplet.setBondBackgroundColors(0, selectedBond + ",9");
-    myBond = $(this).parent().children(".bondNo").index(this) + 1;
+    let myBond = $(this).parent().children(".bondNo").index(this) + 1;
     jsmeNomeclatureApplet.setBondBackgroundColors(0, myBond + ",2");
     fUpdateSVG();
   });

@@ -14,6 +14,9 @@ let svgAtomColors2DFlag = false;
 let atomColorMode2D = "atom";
 let mode2D = "condensed";
 let modeSuffix = "";
+// B2 owned-shared viewer state: current MOL strings (fDeselectMol/fLoadMol2D).
+let myMol2D = null;
+let myMol3D = null;
 let molSnap;
 let highAtoms;
 let nameAnalysisMode;
@@ -21,7 +24,7 @@ let myNumberingTimeout;
 let numberingFlag = false;
 let numbersSVGElements = [];
 let currNumberEl = 0;
-let namingRules;
+let namingRules; // owned-shared: assigned once by teaching fInitTheory, read by fShowRule
 let ruleFlag = false;
 let ruleTableHighlight = null;
 let ruleTableFlag = false;
@@ -536,7 +539,7 @@ function fShowMolName() {
     return;
   }
 
-  molName = currentMolName;
+  let molName = currentMolName;
   $("#molName").html(molName);
 }
 
@@ -631,6 +634,9 @@ function fLoadMol2D() {
 // ── fAddHydrogens2SVG ─────────────────────────────────────────────────────
 
 function fAddHydrogens2SVG() {
+  let tmpTexts, tmpRects, tmpBonds;
+  let currText, currElement, currID, currHydrogensCount;
+  let myLabel, myNo, rectX, textX, currString, newString, newStringElement;
   molSnap = Snap("#jsmeNomeclatureSVG svg");
 
   tmpTexts = molSnap.selectAll("text");
@@ -2293,7 +2299,7 @@ function fUpdateSVG() {
     fAddHydrogens2SVG();
   }
   molSnap = Snap("#jsmeNomeclatureSVG svg");
-  snapLogo = molSnap.select("polygon:last-of-type");
+  const snapLogo = molSnap.select("polygon:last-of-type");
   snapLogo.remove();
   if (mode2D === "expanded") {
     fMarkExpandedHydrogens();
@@ -2707,6 +2713,7 @@ window.fSaveJmolPng = function () {
 // ── fShowNameAnalysis ─────────────────────────────────────────────────────
 
 function fShowNameAnalysis() {
+  let compCount, currComp, displayComp, compBox, nameCompContainer;
   compCount = nameComponentsList.length;
 
   const toggleIcon = narrateAnalysisFlag ? svgSpeaker : svgMute;
@@ -3108,6 +3115,7 @@ function fGetBranchDisplayName() {
 // ── fExplainNameComp ──────────────────────────────────────────────────────
 
 function fExplainNameComp() {
+  let myText, myClass, nStyle, countSubs, myCountText, myFG0, myFG1, myHTML;
   switch (nameAnalysisMode) {
     case "none":
       myText =
@@ -3600,6 +3608,7 @@ function fExplainNameComp() {
 // ── fShowRule ─────────────────────────────────────────────────────────────
 
 function fShowRule(theRule) {
+  let ruleText, ruleTable, ruleTitle, myStyle, myClass, myHTML;
   switch (theRule) {
     case "compNumber1":
       if (Object.keys(functionalGroupObj).length > 1) {
@@ -3696,6 +3705,7 @@ function fShowRule(theRule) {
 // ── fAdjustRuleContainerHeight ────────────────────────────────────────────
 
 function fAdjustRuleContainerHeight() {
+  let ruleElement, myTop, myBottom, ruleContainerHeight;
   ruleElement = document.querySelector(".ruleTable");
   if (!ruleFlag) {
     ruleElement.setAttribute("style", " max-height: none ");
@@ -4908,6 +4918,7 @@ let numberingAtomOverride3D = null;
 // ── fShowNumbering ────────────────────────────────────────────────────────
 
 function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
+  let numberOffset, currAtomTextElement, x, y, r, numberString;
   if (!numberingFlag) {
     return;
   }
@@ -5063,7 +5074,7 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
 
 function fShowNumber() {
   fShowNumber3D(currNumberEl);
-  numberElement = Snap.parse(numbersSVGElements[currNumberEl]);
+  let numberElement = Snap.parse(numbersSVGElements[currNumberEl]);
   molSnap.select("g").append(numberElement);
   currNumberEl += 1;
 
@@ -5102,7 +5113,7 @@ function removeEcho3D() {
 // ── fShowNumber3D ─────────────────────────────────────────────────────────
 
 function fShowNumber3D(n) {
-  myAtom =
+  let myAtom =
     Array.isArray(numberingAtomOverride3D)
       ? numberingAtomOverride3D[n]
       : mainChainMode === "algorithmic"
@@ -5148,6 +5159,7 @@ function fShowNumber3D(n) {
 // ── fHighlightMultiBonds ──────────────────────────────────────────────────
 
 function fHighlightMultiBonds(bondCompPos) {
+  let bondType, bondID;
   if (nameAnalysisMode == "none") {
     return;
   }
@@ -5223,6 +5235,7 @@ function fHighlightMultiBonds3D(bondCompPos) {
   }
 
   let bondType;
+  let bOrder;
   if (bondCompPos === 1) {
     bondType = multiBondsObj3D.CCd.length > 0 ? 2 : 3;
   } else {
@@ -5385,6 +5398,7 @@ function fHighlightSingleBondsCC3D() {
 // ── fSetMolVis3D ──────────────────────────────────────────────────────────
 
 function fSetMolVis3D(theVisModel) {
+  let mySpt;
   if (theVisModel === undefined) {
     theVisModel = vis3D;
   }
