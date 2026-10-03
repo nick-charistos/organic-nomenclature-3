@@ -207,7 +207,7 @@ same reuse contract.
 * Where the PubChem host panel should live long-term.
 * JSmol `moveto` timing on async `load` (callback/timeout plus
   stale-step guard like `fFetchAndParse3D`).
-* v42 backport policy (repo2): emergency hotfixes only, or
-  maintained in parallel with repo3? Undecided.
+* v42 backport policy (repo2): frozen — emergency hotfixes only,
+  never push feature work there (see `README.md` two-repos table).
 
 Many issues will surface during development; adjust there.

@@ -4,7 +4,7 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ---
 
-## [v43] — 2026-10-02 (unreleased: `index.html` still points at v42)
+## [v43] — 2026-10-02
 
 **Didactic scenarios scaffold — last suffixed copy**
 
@@ -12,6 +12,18 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 - New additive module `js/mulermoc-nom-scenario-43.js` (off by default): snapshot capture (molecule, 2D/3D modes, chain/naming modes, styles, audio flag, 3D `moveto` via `show moveto`), `scenarioVersion: 1` validation with legacy/future policy, apply through the standard `fSelectMol` + name-box click path, per-step `show.*` chrome matrix, memory + JSON file export/import (decision A), `?scenario=…&present=1` + `#step=N` playback URLs. See `docs/didactic-scenario-plan.md`.
 - Museum moved to `archive/` (non-runnable reference); runnable history via tags `v41`/`v42`. v43 is the last suffixed copy; v44 introduces the canonical un-suffixed set.
 - Repositories split: `organic-nomenclature-2` frozen serving v42 (`index.html` → `mulermoc-nom-42.html`); `organic-nomenclature-3` (this repo) serves v43 (`index.html` → `mulermoc-nom-43.html`). All new work happens here.
+
+---
+
+## [v42] — 2026-10-01
+
+**v42 baseline: ester 3D + template literals + r4 row (scaffold from v41)**
+
+- Scaffold v42 file set from v41 (`mulermoc-nom-42.html` + `js/*-42.js`); `index.html` redirected to v42 at the time.
+- Ester noun click now highlights fragment bonds in 3D (ester-only).
+- Convert HTML/SVG builders to template literals (v41-parity verified).
+- Wire r4-alkoxycarbonyl row via `r4KeyForFG` ester mapping.
+- Docs: v41 CHANGELOG entry + README baseline (esters, viewer/menu updates).
 
 ---
 
