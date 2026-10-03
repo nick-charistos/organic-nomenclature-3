@@ -457,7 +457,7 @@ function fCreateDropMenu(myItems) {
   selectedLabel = myItems[0];
   myHTML = `<div id='dropLabel' class=' closed' >${selectedLabel}</div>
   <div id='dropLiContainer' class='molvis closed' >`;
-  for (i = 0; i < myItems.length; i++) {
+  for (let i = 0; i < myItems.length; i++) {
     myHTML += `<div id='dropLi${i}' class='dropLi'>${myItems[i]}</div>`;
   }
   myHTML += `</div>`;
@@ -497,11 +497,11 @@ function getMolData() {
 
   str1 = `<div>Άτομα: ${atomsCount}, Δεσμοί: ${bondsCount}</div>`;
 
-  for (i = 1; i <= atomsCount; i++) {
+  for (let i = 1; i <= atomsCount; i++) {
     str1 += `<div class='crossMenuLi  atomNo'> Atom ${i}</div>`;
   }
 
-  for (i = 1; i <= bondsCount; i++) {
+  for (let i = 1; i <= bondsCount; i++) {
     str1 += `<div class='crossMenuLi bondNo'> Bond ${i}</div>`;
   }
 

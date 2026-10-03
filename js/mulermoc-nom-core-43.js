@@ -170,7 +170,7 @@ function fAnalyseStructure() {
     atomsCount = jsmeNomeclatureApplet.totalNumberOfAtoms();
     bondsCount = jsmeNomeclatureApplet.totalNumberOfBonds();
     allAtomsTypeList = Array(atomsCount)
-    for (i = 1; i < atomsCount + 1; i++) {
+    for (let i = 1; i < atomsCount + 1; i++) {
         currAtomType = jsmeNomeclatureApplet.getAtom(0, i).label
         allAtomsTypeList[i - 1] = currAtomType
         if (!atomTypes.includes(currAtomType)) {
@@ -186,7 +186,7 @@ function fAnalyseStructure() {
     //// calculate the valencce and connectivity of each atom
     atomConnectivityList = Array(atomsCount).fill(0)
     atomValenceList = Array(atomsCount).fill(0)
-    for (i = 1; i < bondsCount + 1; i++) {
+    for (let i = 1; i < bondsCount + 1; i++) {
         currBond = jsmeNomeclatureApplet.getBond(0, i);
 
         bondOrder = currBond.order
@@ -212,7 +212,7 @@ function fAnalyseStructure() {
     }
 
     //// calculate the hydrogens of each cabon atom
-    for (i = 0; i < atomsCount; i++) {
+    for (let i = 0; i < atomsCount; i++) {
         if (allAtomsTypeList[i] == 'C') {
             carbonHydrogens[i] = 4 - atomValenceList[i]
             carbons += 1
@@ -228,7 +228,7 @@ function fAnalyseStructure() {
     multiBondsObj = { CCd: [], CCt: [], COd: [], CNt: [] }
     svgBondList = []
     let svgBondCounter = 0
-    for (i = 1; i < bondsCount + 1; i++) {
+    for (let i = 1; i < bondsCount + 1; i++) {
         let currBond = jsmeNomeclatureApplet.getBond(0, i);
         bondOrder = currBond.order
         svgBondCounter += 1
@@ -284,7 +284,7 @@ function fDetectMolType() {
     } else {
         molType = "homolog-"
 
-        for (t = 0; t < myAtomTypes.length; t++) {
+        for (let t = 0; t < myAtomTypes.length; t++) {
             if (myAtomTypes[t] == "C") {
                 continue
             } else {
@@ -303,8 +303,8 @@ function fDetectMolType() {
                 case "X":
                     myFunctionalGroup = "halogen"
                     molTaxonomy = "Υδρογονάνθρακες"
-                    for (i = 0; i < myXcount; i++) {
-                        for (j = myStart; j < allAtomsTypeList.length; j++) {
+                    for (let i = 0; i < myXcount; i++) {
+                        for (let j = myStart; j < allAtomsTypeList.length; j++) {
                             if (allAtomsTypeList[j] == myHetero) {
                                 myXAtomIndex = j
                                 if (functionalGroupObj.hasOwnProperty(myFunctionalGroup)) {
@@ -324,8 +324,8 @@ function fDetectMolType() {
                     }
                     break;
                 case "N":
-                    for (i = 0; i < myXcount; i++) {
-                        for (j = myStart; j < allAtomsTypeList.length; j++) {
+                    for (let i = 0; i < myXcount; i++) {
+                        for (let j = myStart; j < allAtomsTypeList.length; j++) {
                             if (allAtomsTypeList[j] == myHetero) {
                                 myXAtomIndex = j
                                 //check if terminal
@@ -374,8 +374,8 @@ function fDetectMolType() {
                     }
                     break;
                 case "O":
-                    for (i = 0; i < myXcount; i++) {
-                        for (j = myStart; j < allAtomsTypeList.length; j++) {
+                    for (let i = 0; i < myXcount; i++) {
+                        for (let j = myStart; j < allAtomsTypeList.length; j++) {
                             if (allAtomsTypeList[j] == myHetero) {
                                 myXAtomIndex = j
                                 //check if terminal
@@ -415,9 +415,9 @@ function fDetectMolType() {
 
                     // check if acid 
                     if (functionalGroupObj.hasOwnProperty("alcohol") && functionalGroupObj.hasOwnProperty("ketone")) {
-                        for (a = functionalGroupObj.alcohol.O.length - 1; a >= 0; a--) {
+                        for (let a = functionalGroupObj.alcohol.O.length - 1; a >= 0; a--) {
                             theAtom1 = atomConnectivityList[functionalGroupObj.alcohol.O[a]][0]
-                            for (k = functionalGroupObj.ketone.O.length - 1; k >= 0; k--) {
+                            for (let k = functionalGroupObj.ketone.O.length - 1; k >= 0; k--) {
                                 theAtom2 = atomConnectivityList[functionalGroupObj.ketone.O[k]][0]
                                 if (theAtom1 == theAtom2) {
                                     if (allAtomsTypeList[theAtom1] == "C") {
@@ -453,9 +453,9 @@ function fDetectMolType() {
 
                     // check if acid from alcohol+aldehyde (HCOOH: carbonyl C has valence 3, mis-detected as aldehyde)
                     if (functionalGroupObj.hasOwnProperty("alcohol") && functionalGroupObj.hasOwnProperty("aldehyde")) {
-                        for (a = functionalGroupObj.alcohol.O.length - 1; a >= 0; a--) {
+                        for (let a = functionalGroupObj.alcohol.O.length - 1; a >= 0; a--) {
                             theAtom1 = atomConnectivityList[functionalGroupObj.alcohol.O[a]][0]
-                            for (k = functionalGroupObj.aldehyde.O.length - 1; k >= 0; k--) {
+                            for (let k = functionalGroupObj.aldehyde.O.length - 1; k >= 0; k--) {
                                 theAtom2 = atomConnectivityList[functionalGroupObj.aldehyde.O[k]][0]
                                 if (theAtom1 == theAtom2 && allAtomsTypeList[theAtom1] == "C") {
                                     myFunctionalGroup = "carboxylicAcid"
@@ -483,16 +483,16 @@ function fDetectMolType() {
                     // check if ester: bridging O (ether) + double O (ketone) share same carbonyl C
                     // Scope: saturated acyclic mono-esters R-C(=O)-O-R'
                     if (functionalGroupObj.hasOwnProperty("ether") && functionalGroupObj.hasOwnProperty("ketone")) {
-                        for (e = functionalGroupObj.ether.O.length - 1; e >= 0; e--) {
+                        for (let e = functionalGroupObj.ether.O.length - 1; e >= 0; e--) {
                             etherO = functionalGroupObj.ether.O[e]
                             etherNeighbors = atomConnectivityList[etherO] || []
                             esterFound = false
-                            for (ni = 0; ni < etherNeighbors.length && !esterFound; ni++) {
+                            for (let ni = 0; ni < etherNeighbors.length && !esterFound; ni++) {
                                 carbonylC = etherNeighbors[ni]
                                 if (allAtomsTypeList[carbonylC] != "C") continue
                                 if (atomValenceList[carbonylC] < 3) continue
                                 carbonylNeighbors = atomConnectivityList[carbonylC] || []
-                                for (k = 0; k < carbonylNeighbors.length && !esterFound; k++) {
+                                for (let k = 0; k < carbonylNeighbors.length && !esterFound; k++) {
                                     nAtom = carbonylNeighbors[k]
                                     if (allAtomsTypeList[nAtom] == "O" && atomValenceList[nAtom] == 2 && functionalGroupObj.ketone.O.indexOf(nAtom) >= 0) {
                                         ketoneO = nAtom
@@ -1604,7 +1604,7 @@ function fGuessName() {
     if (multiBondListCC.length > 0) {
         // διπλοι δεσμοι
         sortedMultiDBonds = []
-        for (i = 0; i < multiBondsObj.CCd.length; i++) {
+        for (let i = 0; i < multiBondsObj.CCd.length; i++) {
             currDouble = multiBondsObj.CCd[i]
             bondAtom1 = bondList[currDouble - 1][0]
             bondAtom2 = bondList[currDouble - 1][1]
@@ -1614,7 +1614,7 @@ function fGuessName() {
         if (sortedMultiDBonds.length > 0) {
             sortedMultiDBonds.sort()
         }
-        for (i = 0; i < sortedMultiDBonds.length; i++) {
+        for (let i = 0; i < sortedMultiDBonds.length; i++) {
             bondPrefixDB += sortedMultiDBonds[i]
             if (i < sortedMultiDBonds.length - 1) {
                 bondPrefixDB += ","
@@ -1625,7 +1625,7 @@ function fGuessName() {
         }
         //Τριπλοι Δεσμοί
         sortedMultiTBonds = []
-        for (i = 0; i < multiBondsObj.CCt.length; i++) {
+        for (let i = 0; i < multiBondsObj.CCt.length; i++) {
             currTriple = multiBondsObj.CCt[i]
             bondAtom1 = bondList[currTriple - 1][0]
             bondAtom2 = bondList[currTriple - 1][1]
@@ -1635,7 +1635,7 @@ function fGuessName() {
         if (sortedMultiTBonds.length > 0) {
             sortedMultiTBonds.sort()
         }
-        for (i = 0; i < sortedMultiTBonds.length; i++) {
+        for (let i = 0; i < sortedMultiTBonds.length; i++) {
             bondPrefixTB += sortedMultiTBonds[i]
             if (i < sortedMultiTBonds.length - 1) {
                 bondPrefixTB += ","
@@ -1701,7 +1701,7 @@ function fGuessName() {
                     let currX = sortedHalogens[i]
                     myXpositions = ""
                     theCountPrefix = nameMultiPrefix[functionalGroupObj.halogen[currX].length - 1] // Δι, τρι, τετρα....
-                    for (j = 0; j < functionalGroupObj.halogen[currX].length; j++) { // τρέχει για όλα τα άτομα του συγκεκριμένου αλογονου
+                    for (let j = 0; j < functionalGroupObj.halogen[currX].length; j++) { // τρέχει για όλα τα άτομα του συγκεκριμένου αλογονου
                         theXno = functionalGroupObj.halogen[currX][j]
                         currXPos = mainChainAtomsList.indexOf(atomConnectivityList[theXno][0] + 1) + 1
                         myXpositions += currXPos
@@ -1727,13 +1727,13 @@ function fGuessName() {
                 myXpositions = ""
                 sortedFunPositions = []
                 theCountPrefix = nameMultiPrefix[myFunctionalGroups.length - 1] // Δι, τρι, τετρα....
-                for (i = 0; i < myFunctionalGroups.length; i++) { // τρέχει για όλες τις εμφανίσεις της ΧΟ
+                for (let i = 0; i < myFunctionalGroups.length; i++) { // τρέχει για όλες τις εμφανίσεις της ΧΟ
                     theXno = myFunctionalGroups[i]
                     currXPos = mainChainAtomsList.indexOf(atomConnectivityList[theXno][0] + 1) + 1
                     sortedFunPositions.push(currXPos)
                 }
                 sortedFunPositions.sort()
-                for (j = 0; j < sortedFunPositions.length; j++) {
+                for (let j = 0; j < sortedFunPositions.length; j++) {
                     myXpositions += sortedFunPositions[j]
                     if (j < sortedFunPositions.length - 1) {
                         myXpositions += ","
@@ -1756,13 +1756,13 @@ function fGuessName() {
                 myXpositions = ""
                 sortedFunPositions = []
                 theCountPrefix = nameMultiPrefix[myFunctionalGroups.length - 1] // Δι, τρι, τετρα....
-                for (i = 0; i < myFunctionalGroups.length; i++) { // τρέχει για όλες τις εμφανίσεις της ΧΟ
+                for (let i = 0; i < myFunctionalGroups.length; i++) { // τρέχει για όλες τις εμφανίσεις της ΧΟ
                     theXno = myFunctionalGroups[i]
                     currXPos = mainChainAtomsList.indexOf(atomConnectivityList[theXno][0] + 1) + 1
                     sortedFunPositions.push(currXPos)
                 }
                 sortedFunPositions.sort()
-                for (j = 0; j < sortedFunPositions.length; j++) {
+                for (let j = 0; j < sortedFunPositions.length; j++) {
                     myXpositions += sortedFunPositions[j]
                     if (j < sortedFunPositions.length - 1) {
                         myXpositions += ","
@@ -1858,7 +1858,7 @@ function fGuessName() {
         /////////////////////////////////////////
 
         // functionalGroupsOrder
-        for (i = functionalGroupsOrder.length - 1; i >= 0; i--) {
+        for (let i = functionalGroupsOrder.length - 1; i >= 0; i--) {
             if (functionalGroupsList.indexOf(functionalGroupsOrder[i]) < 0) {
                 functionalGroupsOrder.splice(i, 1)
             }
@@ -1879,19 +1879,19 @@ function fGuessName() {
         XOPrefix = ""
         myXpositions = ""
         sortedFunPositions = []
-        for (i = 1; i < functionalGroupsOrder.length; i++) {
+        for (let i = 1; i < functionalGroupsOrder.length; i++) {
             currXO = functionalGroupsOrder[i] // η τρεχουσα ΧΟ υποκαταστατη
             currXOhetero = Object.keys(functionalGroupObj[functionalGroupsOrder[i]])[0] // το ετεροάτομο της ΧΟ
             currXOcount = functionalGroupObj[functionalGroupsOrder[i]][currXOhetero].length // ποσες φορες υπάρχει η ΧΟ
             theCountPrefix = nameMultiPrefix[currXOcount - 1] // τιποτα,Δι,τρι....
 
-            for (j = 0; j < currXOcount; j++) {
+            for (let j = 0; j < currXOcount; j++) {
                 theXno = functionalGroupObj[functionalGroupsOrder[i]][currXOhetero][j] // ο αριθμός του ετερορατομου της τρεχουσας ΧΟ
                 currXPos = mainChainAtomsList.indexOf(atomConnectivityList[theXno][0] + 1) + 1
                 sortedFunPositions.push(currXPos)
             }
             sortedFunPositions.sort()
-            for (j = 0; j < sortedFunPositions.length; j++) {
+            for (let j = 0; j < sortedFunPositions.length; j++) {
                 myXpositions += sortedFunPositions[j]
                 if (j < sortedFunPositions.length - 1) {
                     myXpositions += ","

@@ -36,9 +36,26 @@ var fScenarioModeToCompId = {
 };
 
 function fScenarioG(name, fallback) {
+  // Eval-free live-state reader (T3 hardening). Explicit whitelist over the
+  // cross-file globals declared in mulermoc-nom-core/molview-43.js; unknown
+  // names yield the fallback (same contract as the old eval version).
   try {
-    var v = eval(name);
-    return typeof v === "undefined" ? fallback : v;
+    switch (name) {
+      case "selectedMol": return typeof selectedMol !== "undefined" ? selectedMol : fallback;
+      case "mode2D": return typeof mode2D !== "undefined" ? mode2D : fallback;
+      case "mainChainMode": return typeof mainChainMode !== "undefined" ? mainChainMode : fallback;
+      case "etherNamingMode": return typeof etherNamingMode !== "undefined" ? etherNamingMode : fallback;
+      case "nameAnalysisMode": return typeof nameAnalysisMode !== "undefined" ? nameAnalysisMode : fallback;
+      case "svgAtomColors2DFlag": return typeof svgAtomColors2DFlag !== "undefined" ? svgAtomColors2DFlag : fallback;
+      case "atomColorMode2D": return typeof atomColorMode2D !== "undefined" ? atomColorMode2D : fallback;
+      case "nameSettingsFlag": return typeof nameSettingsFlag !== "undefined" ? nameSettingsFlag : fallback;
+      case "narrateAnalysisFlag": return typeof narrateAnalysisFlag !== "undefined" ? narrateAnalysisFlag : fallback;
+      case "vis3D": return typeof vis3D !== "undefined" ? vis3D : fallback;
+      case "rotateFlag": return typeof rotateFlag !== "undefined" ? rotateFlag : fallback;
+      case "hydrogens3DFlag": return typeof hydrogens3DFlag !== "undefined" ? hydrogens3DFlag : fallback;
+      case "atomSymbols3DFlag": return typeof atomSymbols3DFlag !== "undefined" ? atomSymbols3DFlag : fallback;
+      default: return fallback;
+    }
   } catch (e) {
     return fallback;
   }

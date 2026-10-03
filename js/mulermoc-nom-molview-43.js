@@ -334,30 +334,16 @@ function fToggleMolInfo() {
 
 function fInitData() {
   for (let prop in nameExamples) {
-    try {
-      my2D = eval(prop + "_2D");
-    } catch (e) {
-      my2D = null;
-    }
-    try {
-      my2D_E = eval(prop + "_2D_E");
-    } catch (e) {
-      my2D_E = null;
-    }
-    try {
-      my2D_D = eval(prop + "_diagr2D");
-    } catch (e) {
-      my2D_D = null;
-    }
-    if (typeof my2D === "undefined") my2D = null;
-    if (typeof my2D_E === "undefined") my2D_E = null;
-    if (typeof my2D_D === "undefined") my2D_D = null;
+    const _m = (window.MOL2D && window.MOL2D[prop]) || {};
+    const my2D = _m.std !== undefined ? _m.std : null;
+    const my2D_E = _m.exp !== undefined ? _m.exp : null;
+    const my2D_D = _m.diagr !== undefined ? _m.diagr : null;
 
     nameExamples[prop].structure2D = my2D;
     nameExamples[prop].structure2D_E = my2D_E;
     nameExamples[prop].structure2D_D = my2D_D;
 
-    my3D = "mols/nomeclature-moc2/" + prop + "_3D.sdf";
+    const my3D = "mols/nomeclature-moc2/" + prop + "_3D.sdf";
     nameExamples[prop].file3D = my3D;
   }
 }
@@ -650,9 +636,9 @@ function fAddHydrogens2SVG() {
   tmpTexts = molSnap.selectAll("text");
   tmpRects = molSnap.selectAll("rect");
   tmpBonds = molSnap.selectAll("line");
-  for (i = 0; i < tmpBonds.length; i++) {}
+  for (let i = 0; i < tmpBonds.length; i++) {}
 
-  for (i = 0; i < tmpTexts.length; i++) {
+  for (let i = 0; i < tmpTexts.length; i++) {
     currText = tmpTexts[i].attr("text");
     currElement = molSnap.select("text:nth-of-type(" + (i + 1) + ")");
 
@@ -2833,7 +2819,7 @@ function fShowNameAnalysis() {
   } else {
   // Build the name component boxes with Greek euphony applied, and + signs in between
 
-  for (i = 0; i < compCount; i++) {
+  for (let i = 0; i < compCount; i++) {
     currComp = nameComponentsList[i];
     if (currComp == "" || currComp == undefined) {
       continue;
@@ -5036,7 +5022,7 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
       );
       numberOffset = [-50, -180];
       for (let i = 0; i < highAtoms.length; i++) {
-        for (b = 0; b < bondList.length; b++) {
+        for (let b = 0; b < bondList.length; b++) {
           if (highAtoms[i] == bondList[b][0]) {
             currAtomTextElement = molSnap.select(
               "line:nth-of-type(" + svgBondList[b] + ")",
@@ -5102,7 +5088,7 @@ function fShowNumbering3D() {
   }
   // algorithmic mode: mainChainAtoms3D already set by fCalcMainChain3D()
 
-  for (i = 0; i < mainChainAtoms3D.length; i++) {
+  for (let i = 0; i < mainChainAtoms3D.length; i++) {
     fShowNumber3D(i);
   }
 }
