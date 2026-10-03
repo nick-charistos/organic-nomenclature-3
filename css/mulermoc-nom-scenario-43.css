@@ -1,0 +1,16 @@
+/* mulermoc-nom-scenario-43.css — didactic-scenario chrome (author bar, drawer, playback bar, step text).
+   Moved out of fScenarioInjectCss so formats are designed here, not in JS. */
+#scenarioAuthorBar{position:fixed;top:8px;right:8px;z-index:500;background:#fff;border:1px solid #ccc;border-radius:8px;padding:6px 8px;display:flex;gap:6px;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.15);font-size:.8rem}
+#scenarioAuthorBar input[type=text]{width:140px}
+#scenarioAuthorBar button,#scenarioPlayBar button{cursor:pointer}
+#scenarioDrawer{position:fixed;top:52px;right:8px;z-index:500;background:#fff;border:1px solid #ccc;border-radius:8px;padding:8px;max-height:60vh;overflow:auto;width:300px;font-size:.8rem}
+#scenarioDrawer .srow{display:flex;gap:4px;align-items:center;margin:4px 0;flex-wrap:wrap}
+#scenarioDrawer .srow input[type=text]{flex:1;min-width:0}
+#scenarioDrawer .snote{flex-basis:100%;width:100%;min-height:3em;font-size:.8rem}
+#scenarioDrawer .sshow{font-size:.75rem;white-space:nowrap}
+#scenarioPlayBar{position:fixed;top:0;left:0;right:0;z-index:500;background:#263238;color:#fff;display:flex;gap:10px;align-items:center;padding:6px 12px;font-size:.9rem}
+#scenarioPlayBar .snote{opacity:.75;font-size:.8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:40vw}
+#scenarioToast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:600;background:#323232;color:#fff;padding:8px 14px;border-radius:6px;opacity:0;transition:opacity .2s;max-width:80vw}
+#scenarioToast.show{opacity:1}
+#scStepText{font-size:1rem;margin:0 0 10px 0;white-space:pre-wrap;text-align:center;max-width:900px;margin-left:auto;margin-right:auto}
+#molInfoPanelSlot{border:1px dashed #bbb;border-radius:6px;padding:6px;margin:6px 0;font-size:.8rem;color:#555}

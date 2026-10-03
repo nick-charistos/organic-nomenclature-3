@@ -193,6 +193,7 @@ function fScenarioCapture() {
       nameSettings: false,
       audio: false,
       rule: false,
+      text: true,
       infoHost: false,
     },
   };
@@ -221,7 +222,7 @@ function fScenarioDefaults(step, i) {
       viewers: { "2D": true, "3D": true },
       controls: { "2D": false, "3D": false },
       save: { "2D": false, "3D": false },
-      naming: true, nameSettings: false, audio: false, rule: false, infoHost: false,
+      naming: true, nameSettings: false, audio: false, rule: false, text: true, infoHost: false,
     },
   };
   var out = Object.assign({}, d, step);
@@ -368,6 +369,25 @@ function fScenarioHide(id, hide) {
   if (el) el.style.display = hide ? "none" : "";
 }
 
+function showTextOn(step) {
+  return !step || !step.show || step.show.text !== false;
+}
+
+function fScenarioFillStepPanel(step) {
+  var h1 = document.getElementById("pageTitle");
+  var p = document.getElementById("scStepText");
+  if (!h1 || !p) return;
+  var appTitle = MuLERMoCScenario.appTitle || h1.textContent || "";
+  // plain text only (textContent escapes markup); rich noteFormat reserved for later
+  if (MuLERMoCScenario.present && step && step.n && showTextOn(step)) {
+    h1.textContent = step.title ? step.n + ". " + step.title : appTitle;
+    p.textContent = step.note || "";
+  } else {
+    h1.textContent = appTitle;
+    p.textContent = "";
+  }
+}
+
 function fScenarioChrome(show) {
   show = show || {};
   var present = MuLERMoCScenario.present;
@@ -396,26 +416,13 @@ function fScenarioChrome(show) {
   fScenarioHide("viewerVisBtns", present);
   fScenarioHide("viewerSettingsBtnDiv", present);
   fScenarioHide("viewerSettingsPanel", present);
-  // menu drawer + toggle
-  var drawer = document.getElementById("menuDrawer");
-  var tog = document.getElementById("menuToggle");
-  if (present) {
-    if (drawer) {
-      drawer.classList.remove("menu-open");
-      drawer.classList.add("menu-closed");
-      drawer.style.display = "none";
-    }
-    if (tog) tog.style.display = "none";
-  } else {
-    if (drawer) {
-      drawer.style.display = "";
-      drawer.classList.remove("menu-closed");
-      drawer.classList.add("menu-open");
-    }
-    if (tog) tog.style.display = "";
-  }
+  // menu column hidden wholesale in presentation (flex row recenters the rest)
+  fScenarioHide("menuCol", present);
   // naming panel + settings + audio
   fScenarioHide("nameAnalysisContainer", present && show.naming === false);
+  // per-step heading (page h1) + text div below it (title/note, plain text)
+  fScenarioFillStepPanel(MuLERMoCScenario.steps[MuLERMoCScenario.index]);
+  fScenarioHide("scStepText", !present || show.text === false);
   var ns = !(present && show.nameSettings !== true);
   fScenarioHide("nameSettingsBtnDiv", present && !ns);
   var panel = document.getElementById("nameSettingsPanel");
@@ -476,28 +483,8 @@ function fScenarioImportFile(file) {
   r.readAsText(file);
 }
 
-// ── UI (injected; 43.html diff stays at the script include) ─────────────
-function fScenarioInjectCss() {
-  if (document.getElementById("scenarioCss")) return;
-  var s = document.createElement("style");
-  s.id = "scenarioCss";
-  s.textContent =
-    "#scenarioAuthorBar{position:fixed;top:8px;right:8px;z-index:500;background:#fff;border:1px solid #ccc;border-radius:8px;padding:6px 8px;display:flex;gap:6px;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.15);font-size:.8rem}" +
-    "#scenarioAuthorBar input[type=text]{width:140px}" +
-    "#scenarioAuthorBar button,#scenarioPlayBar button{cursor:pointer}" +
-    "#scenarioDrawer{position:fixed;top:52px;right:8px;z-index:500;background:#fff;border:1px solid #ccc;border-radius:8px;padding:8px;max-height:60vh;overflow:auto;width:300px;font-size:.8rem}" +
-    "#scenarioDrawer .srow{display:flex;gap:4px;align-items:center;margin:4px 0}" +
-    "#scenarioDrawer .srow input[type=text]{flex:1;min-width:0}" +
-    "#scenarioPlayBar{position:fixed;top:0;left:0;right:0;z-index:500;background:#263238;color:#fff;display:flex;gap:10px;align-items:center;padding:6px 12px;font-size:.9rem}" +
-    "#scenarioPlayBar .snote{opacity:.75;font-size:.8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:40vw}" +
-    "#scenarioToast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:600;background:#323232;color:#fff;padding:8px 14px;border-radius:6px;opacity:0;transition:opacity .2s;max-width:80vw}" +
-    "#scenarioToast.show{opacity:1}" +
-    "#molInfoPanelSlot{border:1px dashed #bbb;border-radius:6px;padding:6px;margin:6px 0;font-size:.8rem;color:#555}";
-  document.head.appendChild(s);
-}
-
+// ── UI (scenario chrome lives in css/mulermoc-nom-scenario-43.css) ─────────
 function fScenarioBuildUi() {
-  fScenarioInjectCss();
   if (!document.getElementById("scenarioToast")) {
     var t = document.createElement("div");
     t.id = "scenarioToast";
@@ -512,6 +499,15 @@ function fScenarioBuildUi() {
     var anchor = document.getElementById("nameAnalysis") || document.getElementById("nameAnalysisContainer");
     if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(host, anchor.nextSibling);
     else document.body.appendChild(host);
+  }
+  // per-step educational text below the page title (heading = #pageTitle itself)
+  if (!document.getElementById("scStepText")) {
+    var textDiv = document.createElement("div");
+    textDiv.id = "scStepText";
+    textDiv.style.display = "none";
+    var h1 = document.getElementById("pageTitle");
+    if (h1 && h1.parentNode) h1.parentNode.insertBefore(textDiv, h1.nextSibling);
+    else document.body.appendChild(textDiv);
   }
   if (!document.getElementById("scenarioAuthorBar")) {
     var bar = document.createElement("div");
@@ -619,6 +615,26 @@ function fScenarioRenderList() {
     titleInput.onchange = function () {
       st.title = titleInput.value;
     };
+    var noteInput = document.createElement("textarea");
+    noteInput.className = "snote";
+    noteInput.placeholder = "Educational text (plain text)";
+    noteInput.value = st.note || "";
+    noteInput.onchange = function () {
+      st.note = noteInput.value;
+    };
+    row.appendChild(noteInput);
+    var textLabel = document.createElement("label");
+    textLabel.className = "sshow";
+    var textCheck = document.createElement("input");
+    textCheck.type = "checkbox";
+    textCheck.checked = !st.show || st.show.text !== false;
+    textCheck.onchange = function () {
+      st.show = st.show || {};
+      st.show.text = textCheck.checked;
+    };
+    textLabel.appendChild(textCheck);
+    textLabel.appendChild(document.createTextNode(" Text"));
+    row.appendChild(textLabel);
     var btns = row.querySelectorAll("button");
     btns[0].onclick = function () {
       fScenarioGo(i);
@@ -704,6 +720,13 @@ function fScenarioParseUrl() {
 
 function fScenarioBoot() {
   fScenarioBuildUi();
+  // stash the app title; present mode replaces #pageTitle per step, exit restores it
+  try {
+    var _h = document.getElementById("pageTitle");
+    if (_h) MuLERMoCScenario.appTitle = _h.textContent;
+  } catch (e) {
+    /* no DOM */
+  }
   var url = fScenarioParseUrl();
   MuLERMoCScenario.present = url.present;
   fScenarioWhenReady(function () {

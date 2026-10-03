@@ -323,9 +323,7 @@ font-size: 1rem;
   max-height: 260px; /* tweak if your content needs more space */
   padding: 6px 8px;
   overflow: visible;
-  /* border-bottom: 1px solid var(--darkEarth); */
-  border-left: 1px solid var(--baseColor);
-  border-right: 1px solid var(--baseColor);
+  border: 1px solid var(--baseColor);
 }
 
 /* ── Molecule info button + panel (mirrors name settings) ─────────────── */
@@ -364,9 +362,9 @@ font-size: 1rem;
 
 .nameContainer {
   justify-content: center;
-  background-color: var(--bgColor);
+  /* background-color: var(--bgColor); */
   padding: 10px 0;
-  border: 1px solid var(--darkEarth);
+  /* border: 1px solid var(--darkEarth); */
 }
 
 .narrateBtn,

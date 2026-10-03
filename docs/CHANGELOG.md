@@ -10,6 +10,8 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 - Scenario exit now restores full chrome (menu `menu-open` + both viewers + all bars) in `js/mulermoc-nom-scenario-43.js`.
 - LEARN v1.1: stored `scenarios/` library plan + two-level EPAL/Lyceum `note` convention (`docs/didactic-scenario-plan.md` §9).
 - EN upgrade recorded as conditional Phase 5 (`docs/LAYERS-PLAN.md` §8); `lang` reserved in schema/events, not implemented.
+- Scenario steps gain heading + text: per-step `title` replaces the page `#pageTitle` in presentation (restored on exit) and `note` renders as an educational paragraph in `#scStepText` below it (plain text, `show.text` default `true`; drawer textarea + visibility checkbox; `noteFormat` reserved). `#menuCol` hidden wholesale in presentation so content centers.
+- Scenario chrome formats moved from `fScenarioInjectCss` to `css/mulermoc-nom-scenario-43.css` (injector deleted; linked in `43.html`).
 
 ---
 

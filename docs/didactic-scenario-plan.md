@@ -56,6 +56,7 @@ progress tracking, PubChem live lookup, server storage.
         "nameSettings": false,
         "audio": false,
         "rule": false,
+        "text": true,
         "infoHost": false
       }
     }
@@ -108,11 +109,22 @@ Visibility rules:
   panels. `show.nameSettings` toggles the naming gear + panel;
   `show.audio` toggles narration buttons. Playback never
   auto-plays TTS.
+* `title` is the step heading: in presentation it replaces the
+  page `#pageTitle` (`N. title`); on exit the app title is
+  restored. `note` is the educational paragraph in `#scStepText`
+  directly below the title (plain text, `textContent`-escaped;
+  `noteFormat: "text"` reserved for future rich text such as
+  bold/sub/sup). `show.text` (default `true`) toggles the text
+  div; when off, the app title is kept (pure-visual step). Author
+  mode always shows the app title and hides the text div (text is
+  written in the drawer textarea).
 
 ## 3. Authoring UX
 
 * Toolbar: `[Save step]` + `[Scenarios...]`.
-* Step-list drawer: title/rename, reorder up/down, delete,
+* Step-list drawer: title/rename, per-step educational text
+  (`note` textarea, plain text), per-step `Text` visibility
+  checkbox (`show.text`), reorder up/down, delete,
   jump-to; step numbers auto-renumber.
 * Step editor: `[Use current 3D view]` re-captures `moveto`
   without re-saving the whole step; per-step badge shows
@@ -135,6 +147,12 @@ Visibility rules:
   `history.replaceState` without a full reload (JSME/JSmol init
   is expensive). Missing/invalid/clamped to 1/last with notice.
 * `Prev [3/8] Next` bar with step title + note.
+* Each step sets the page heading (`#pageTitle` ← `N. title`)
+  and the educational text div below it (`#scStepText` ← `note`),
+  following `show.text`. The PlayBar pill keeps only the one-line title/note
+  as a progress indicator.
+* `#menuCol` is hidden wholesale in presentation so the remaining
+  columns center on the page; exit restores it.
 * Menu forced shut in playback; panels and control bars follow
   `show.*`.
 * Student self-learning uses the same playback without a teacher.
@@ -188,9 +206,9 @@ Done in v43 (`mulermoc-nom-43.html`, last suffixed copy):
 
 1. ✅ `js/mulermoc-nom-scenario-43.js`:
    capture / validate / apply / export / import.
-2. ✅ `mulermoc-nom-43.html`: includes the scenario module (toolbar,
-   playback bar, import input, info-host slot are injected at
-   runtime, keeping the html diff minimal).
+2. ✅ `mulermoc-nom-43.html`: includes the scenario module + `css/mulermoc-nom-scenario-43.css`
+   (toolbar, playback bar, import input, info-host slot are injected at
+   runtime; all scenario chrome formats live in the stylesheet, not in JS).
 3. ✅ Apply path through `fSelectMol -> fShowNameAnalysis ->
    fExplainNameComp -> fShowRule`; chrome hidden in playback.
 4. ⏭️ `molInfo` deletion deferred to v44 (see section 6).
