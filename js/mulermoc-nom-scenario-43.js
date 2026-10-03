@@ -104,7 +104,7 @@ function fScenarioGetMoveto() {
   try {
     if (typeof Jmol === "undefined" || typeof jmolAppletNomeclature === "undefined") return null;
     if (Jmol.getPropertyAsString) {
-      var s = Jmol.getPropertyAsString(jmolAppletNomeclature, "moveto");
+      var s = Jmol.getPropertyAsString(jmolAppletNomeclature, "show moveto");
       if (s && /^moveto\b/i.test(String(s).trim())) return String(s).trim().split("\n")[0];
     }
     if (Jmol.scriptWait) {

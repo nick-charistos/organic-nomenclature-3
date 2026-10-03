@@ -275,5 +275,6 @@ Details: `docs/LAYERS-PLAN.md` (layer contracts, exercise types v1, research log
 - Rules: **secondary explanatory layer**
 - Research layer: **active design (P2/P5/P6; schema v1 in `docs/LAYERS-PLAN.md`)**
 - Future domains (+1): **isomerism, reactions — reserved, not in v1**
+- English upgrade: **conditional Phase 5 after the Greek pilot** (see `docs/LAYERS-PLAN.md` §8); `lang` reserved in schema/events, not implemented
 
 

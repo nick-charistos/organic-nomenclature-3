@@ -18,6 +18,7 @@ Hosting: **embedded static** — the chemistry app stays dependency-free static;
 
 `show.*`, `scenarioVersion: 1`, and validation policy are defined in `docs/didactic-scenario-plan.md`.
 `externalLinks{}`, exercise `itemType`, and log `domain` reserve `nomenclature | isomerism | reactions`.
+Scenario schema and log events reserve an optional `lang` field (`gr` default; no implementation until Phase 5).
 
 ---
 
@@ -69,3 +70,13 @@ Total to 4-layer pilot: ~6–9 months with this team. LEARN-pilot usable this se
 * PRACTICE normalization tolerance (accents, euphony variants) — P3 spec + P1.
 * First `scenarios/` titles — P3 proposal (recommend starting from ethers/esters).
 * Engine de-dup (`*-42`/`*-43` copies, `state.js`, `eval` removal) before PRACTICE to avoid building on fragile globals.
+
+## 8. Phase 5 — English upgrade (conditional, after the Greek pilot)
+
+Greek first this year (Phases 1–4 above). If accomplished, upgrade to a full English version for teachers and learners — same otterbein-style play: the best-in-class answer to one hard topic (multirepresentational nomenclature), spread via the submitted paper as launch vehicle.
+
+* **E1 — `?lang=` infrastructure (~1 wk):** central `STRINGS` table (`gr` default, per-key fallback to GR so partial EN never blanks the UI); `?lang=en` flag persisted in scenario URLs (`?scenario=…&lang=en&present=1#step=N`); TTS voice pick per lang. One codebase — no `*-en.html` copy. No chemistry changes.
+* **E2 — English name assembly (2–4 wk, the real work):** parallel `fGuessNameEN` path (no Greek euphony connector, English substituent conventions, common-name handling); validated molecule-by-molecule against the same 64-set; Greek output byte-identical after (regression gate). P1 + P4.
+* **E3 — EN scenario library (parallel, P3):** 3–5 EN-authored scenarios (English classroom narratives, not translations), same schema + two-level notes.
+* **E4 — Release as companion:** stable EN entry link + short teacher guide + citation to the submitted paper.
+* **Entry criteria:** Greek LEARN pilot done + paper submitted + engine frozen. **Estimate:** ~6–10 weeks. **Owner:** P1 + P3 + P4; P2 aligns the paper to cite the EN link.
