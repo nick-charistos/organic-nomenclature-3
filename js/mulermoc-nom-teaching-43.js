@@ -17,7 +17,7 @@ let ruleExamples = {
   rule8: [48, 49, 50, 51, 52, 53, 54],
 };
 
-let moleculeGroupingMode = "chemclass";
+let moleculeGroupingMode = "all"; // "chemclass", "series", "rule", or "all"
 
 const homologousSeriesLabels = {
   alkanes: "Αλκάνια",
@@ -374,10 +374,10 @@ function fInitNomeclatureMenu() {
 
   let myHTML = `<div class='panelTitle'> Παραδείγματα </div>
     <div class='groupingMode' role='group' aria-label='Ομαδοποίηση μορίων'>
+    <div class='radioCheckContainer ${moleculeGroupingMode === "all" ? "selectedRadio" : "unselectedRadio"}' data-grouping-mode='all'>Όλα τα μόρια<span class='radioCheck'></span></div>
     <div class='radioCheckContainer ${moleculeGroupingMode === "chemclass" ? "selectedRadio" : "unselectedRadio"}' data-grouping-mode='chemclass'>Χημικές Τάξεις<span class='radioCheck'></span></div>
     <div class='radioCheckContainer ${moleculeGroupingMode === "series" ? "selectedRadio" : "unselectedRadio"}' data-grouping-mode='series'>Ομόλογες Σειρές<span class='radioCheck'></span></div>
     <div class='radioCheckContainer ${moleculeGroupingMode === "rule" ? "selectedRadio" : "unselectedRadio"}' data-grouping-mode='rule'>Κανόνες Ονοματολογίας<span class='radioCheck'></span></div>
-    <div class='radioCheckContainer ${moleculeGroupingMode === "all" ? "selectedRadio" : "unselectedRadio"}' data-grouping-mode='all'>Όλα τα μόρια<span class='radioCheck'></span></div>
     </div><div class='menuNomeclature2Container'>`;
 
   if (moleculeGroupingMode === "all") {

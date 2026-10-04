@@ -2441,6 +2441,14 @@ function fFetchAndParse3D() {
       fParseSDF3D(text);
       fDetectMolType3D();
       fCalcMainChain3D();
+      // S2 scenario gate (additive, guarded): notify the scenario layer so a
+      // per-step name highlight applies after 3D analysis exists. No-op when
+      // the scenario module is absent or no step is pending.
+      try {
+        if (typeof window.fScenarioOn3DParsed === "function") window.fScenarioOn3DParsed(mol);
+      } catch (e) {
+        /* scenario absent */
+      }
     })
     .catch(function (e) {
       console.warn("[3D parse failed]", url, e);

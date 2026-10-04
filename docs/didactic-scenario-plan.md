@@ -220,11 +220,19 @@ Done in v43 (`mulermoc-nom-43.html`, last suffixed copy):
 Remaining: v44 canonical un-suffixed set, then quizzes/games on the
 same reuse contract.
 
-## 8. Open questions for development
+## 8. Open questions for development (moveto timing closed 2026-10-04)
 
-* Where the PubChem host panel should live long-term.
-* JSmol `moveto` timing on async `load` (callback/timeout plus
-  stale-step guard like `fFetchAndParse3D`).
+* ~~Where the PubChem host panel should live long-term.~~ (open — `#molInfoPanelSlot` reserves the slot)
+* ~~JSmol `moveto` timing on async `load`~~ — **closed by S1–S4 repair:**
+  S1 capture is `scriptWait("show moveto")`-only (the `getPropertyAsString`
+  branch poisoned stored steps and is deleted) with a strict numeric grammar
+  + import-time quarantine (`moveto: null` + warning); S2 gates the per-step
+  camera (+400ms, per-step token) and the name-box click (on
+  `fFetchAndParse3D` completion via `fScenarioOn3DParsed`, 2s fallback) so the
+  `fLoadMol3D` load batch wins; S3 waits for `jmol_isReady`
+  (`window.JSmolReadyFlag`, ~12s fallback) on `?scenario&present` deep links
+  and normalizes the legacy `" compSecondSub*"` mode keys. Capture and curate
+  with `rotate off`.
 * v42 backport policy (repo2): frozen — emergency hotfixes only,
   never push feature work there (see `README.md` two-repos table).
 

@@ -37,7 +37,16 @@
     ></script>
 
     <script>
-      jmol_isReady = function (applet) {};
+      // S3: JSmol readiness flag for scenario deep links (?scenario&present).
+      // fScenarioBoot waits for this before applying the first step so the
+      // per-step camera is not lost on a cold applet; author mode is unaffected.
+      jmol_isReady = function (applet) {
+        try {
+          window.JSmolReadyFlag = true;
+        } catch (e) {
+          /* no window */
+        }
+      };
       var JSmol_Applet = {
         width: "100%",
         height: "100%",

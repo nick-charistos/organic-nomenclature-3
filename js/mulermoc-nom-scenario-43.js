@@ -12,6 +12,8 @@ var MuLERMoCScenario = {
   title: "untitled-scenario",
   present: false,
   ready: false,
+  applyToken: 0, // S2: bumped per fScenarioApply; stale async follow-ups abort
+  pending3D: null, // S2: {token, mol, step, done} — name click waits for 3D parse
 };
 
 // nameAnalysisMode -> name-box id (reverse of the .nameCompBox click map
@@ -34,6 +36,27 @@ var fScenarioModeToCompId = {
   esterEster: "comp11",
   commonEther: "comp12",
 };
+
+// S3: legacy engine modes carry a leading space (" compSecondSub1/2",
+// see mulermoc-nom-teaching-43.js). Normalize before comparing or looking up
+// so capture → apply → click survives trimming on either side.
+function fScenarioNormMode(m) {
+  return String(m == null ? "none" : m).replace(/^\s+|\s+$/g, "");
+}
+
+function fScenarioCompIdFor(mode) {
+  if (Object.prototype.hasOwnProperty.call(fScenarioModeToCompId, mode)) {
+    return fScenarioModeToCompId[mode];
+  }
+  var n = fScenarioNormMode(mode);
+  for (var k in fScenarioModeToCompId) {
+    if (Object.prototype.hasOwnProperty.call(fScenarioModeToCompId, k) &&
+        fScenarioNormMode(k) === n) {
+      return fScenarioModeToCompId[k];
+    }
+  }
+  return null;
+}
 
 function fScenarioG(name, fallback) {
   // Eval-free live-state reader (T3 hardening). Explicit whitelist over the
@@ -99,31 +122,44 @@ function fScenarioWhenReady(cb) {
   })();
 }
 
-// ── 3D camera via `show moveto` ────────────────────────────────────────
+// ── 3D camera via `show moveto` (S1: scriptWait-only) ────────────────────
+// The old Jmol.getPropertyAsString(applet, "show moveto") branch is gone on
+// purpose: the property API answered with a `getProperty ERROR … Options
+// include: …` dump starting with `moveto\t"` that passed the old prefix
+// check and poisoned stored steps ("always loads the default").
+// scriptWait("show moveto") returns the real script output ("" when 3D is
+// unavailable). Capture with `rotate off` — a spinning view drifts.
 function fScenarioGetMoveto() {
   try {
-    if (typeof Jmol === "undefined" || typeof jmolAppletNomeclature === "undefined") return null;
-    if (Jmol.getPropertyAsString) {
-      var s = Jmol.getPropertyAsString(jmolAppletNomeclature, "show moveto");
-      if (s && /^moveto\b/i.test(String(s).trim())) return String(s).trim().split("\n")[0];
-    }
-    if (Jmol.scriptWait) {
-      var w = String(Jmol.scriptWait(jmolAppletNomeclature, "show moveto") || "").trim();
-      var line = w.split("\n").filter(function (l) {
-        return /^moveto\b/i.test(l.trim());
-      })[0];
-      if (line) return line.trim();
-    }
+    if (typeof Jmol === "undefined" || typeof Jmol.scriptWait === "undefined" ||
+        typeof jmolAppletNomeclature === "undefined") return null;
+    var w = String(Jmol.scriptWait(jmolAppletNomeclature, "show moveto") || "").trim();
+    var line = w.split("\n").filter(function (l) {
+      return /^moveto\b/i.test(l.trim());
+    })[0];
+    if (line) return line.trim();
   } catch (e) {
     /* 3D unavailable */
   }
   return null;
 }
 
+// Strict moveto grammar (S1). A real camera line is `moveto` followed only by
+// numbers, whitespace, braces, signs, decimal points, exponent markers and an
+// optional trailing `;` — e.g. `moveto 0.0 { 17 896 -444 35.17} 65.75 …`.
+// The poisoned `getProperty ERROR …` dump contains other letters, so any
+// letter besides e/E (scientific notation like 4.03e-17) or any character
+// outside the numeric charset rejects the line → null (default view).
 function fScenarioValidMoveto(s) {
-  return typeof s === "string" && /^moveto\b/i.test(s.trim()) && s.length < 2048
-    ? s.trim().split("\n")[0]
-    : null;
+  if (typeof s !== "string") return null;
+  var line = s.trim().split("\n")[0].trim();
+  if (!/^moveto\b/i.test(line) || line.length > 2048) return null;
+  var body = line.replace(/^moveto\b/i, "").trim().replace(/;$/, "").trim();
+  if (!body || !/^[\d\s.\-+{}eE]+$/.test(body)) return null;
+  if (/[a-df-zA-DF-Z]/.test(body)) return null; // letters other than e/E
+  var nums = body.match(/-?\d(\.\d+)?([eE][+\-]?\d+)?/g) || [];
+  if (nums.length < 5) return null; // not a real camera vector
+  return line;
 }
 
 // ── capture ────────────────────────────────────────────────────────────
@@ -255,7 +291,11 @@ function fScenarioValidate(obj) {
       return;
     }
     var st = fScenarioDefaults(s, steps.length);
+    var rawMoveto = st.view3D && st.view3D.moveto ? st.view3D.moveto : null;
     st.view3D.moveto = fScenarioValidMoveto(st.view3D.moveto);
+    if (rawMoveto && !st.view3D.moveto) {
+      warnings.push("Step " + (i + 1) + ": invalid 3D view discarded (default used) — re-capture with rotate off.");
+    }
     steps.push(st);
   });
   if (!steps.length) return { ok: false, warnings: warnings.concat(["No valid steps left."]) };
@@ -268,6 +308,36 @@ function fScenarioSetCheck(id, on, selectedCls, unselectedCls) {
   if (!el) return;
   el.classList.remove(on ? unselectedCls : selectedCls);
   el.classList.add(on ? selectedCls : unselectedCls);
+}
+
+// S2: 3D-parse gate. Called from fFetchAndParse3D completion (molview,
+// guarded) so the per-step name highlight runs after 3D analysis exists for
+// this molecule. A 2s fallback timer in fScenarioApply covers 3D-hidden steps,
+// fetch failures, or a missing hook — whichever fires first wins, stale tokens
+// abort.
+function fScenarioOn3DParsed(mol) {
+  var p = MuLERMoCScenario.pending3D;
+  if (!p || p.done || p.mol !== mol) return;
+  if (p.token !== MuLERMoCScenario.applyToken) return;
+  p.done = true;
+  fScenarioClickNameBox(p.step, p.token);
+}
+
+function fScenarioClickNameBox(step, token) {
+  if (typeof token === "number" && token !== MuLERMoCScenario.applyToken) return; // stale
+  if (!step || !step.nameAnalysisMode ||
+      fScenarioNormMode(step.nameAnalysisMode) === "none") return;
+  var compId = fScenarioCompIdFor(step.nameAnalysisMode);
+  var box = compId && document.getElementById(compId);
+  if (!box) return;
+  $(box).trigger("click");
+  if (fScenarioNormMode(nameAnalysisMode) !== fScenarioNormMode(step.nameAnalysisMode)) {
+    nameAnalysisMode = "none";
+    $(".nameCompBox").removeClass("selected");
+    fClearHighlights();
+    fUpdateSVG();
+    fExplainNameComp();
+  }
 }
 
 function fScenarioApply(step) {
@@ -301,7 +371,11 @@ function fScenarioApply(step) {
   narrateAnalysisFlag = !!step.audio.narrate;
   nameSettingsFlag = !!step.styleName.panelOpen;
   if (typeof step.selectedRule === "number") selectedRule = step.selectedRule;
-  // spin off during the jump, restored after moveto
+  // S2: per-step token — every async follow-up below aborts when a newer
+  // step takes over (rapid Prev/Next, hash jumps).
+  var token = ++MuLERMoCScenario.applyToken;
+  MuLERMoCScenario.pending3D = null;
+  // spin off during the jump, restored after the gated moveto
   var wantSpin = !!step.view3D.spin;
   rotateFlag = false;
 
@@ -317,30 +391,45 @@ function fScenarioApply(step) {
   fSelectMol();
   rotate3D();
 
-  // 4. custom 3D camera (queued after the load script)
+  // 4. custom 3D camera, gated behind the fLoadMol3D load batch (S2): the
+  // data-file `moveto + script init` queued by fLoadMol3D wins, then the
+  // per-step camera applies on top. Without a custom view, spin restores now.
   if (step.show.viewers["3D"] && step.view3D.moveto) {
-    try {
-      Jmol.script(jmolAppletNomeclature, step.view3D.moveto);
-    } catch (e) {
-      /* 3D unavailable */
-    }
+    (function (tok, mv) {
+      setTimeout(function () {
+        if (tok !== MuLERMoCScenario.applyToken) return; // stale
+        try {
+          Jmol.script(jmolAppletNomeclature, mv);
+        } catch (e) {
+          /* 3D unavailable */
+        }
+        if (tok === MuLERMoCScenario.applyToken) {
+          rotateFlag = wantSpin;
+          rotate3D();
+        }
+      }, 400);
+    })(token, step.view3D.moveto);
+  } else {
+    rotateFlag = wantSpin;
+    rotate3D();
   }
-  rotateFlag = wantSpin;
-  rotate3D();
 
-  // 5. name highlight via the standard click path
-  if (step.nameAnalysisMode && step.nameAnalysisMode !== "none") {
-    var compId = fScenarioModeToCompId[step.nameAnalysisMode];
-    var box = compId && document.getElementById(compId);
-    if (box) {
-      $(box).trigger("click");
-      if (nameAnalysisMode !== step.nameAnalysisMode) {
-        nameAnalysisMode = "none";
-        $(".nameCompBox").removeClass("selected");
-        fClearHighlights();
-        fUpdateSVG();
-        fExplainNameComp();
-      }
+  // 5. name highlight via the standard click path, gated on 3D analysis (S2):
+  // with a visible 3D viewer the click waits for fScenarioOn3DParsed (or the
+  // fallback timer); 2D-only steps click immediately.
+  if (step.nameAnalysisMode && fScenarioNormMode(step.nameAnalysisMode) !== "none") {
+    if (step.show.viewers["3D"]) {
+      MuLERMoCScenario.pending3D = { token: token, mol: step.selectedMol, step: step, done: false };
+      (function (tok) {
+        setTimeout(function () {
+          var p = MuLERMoCScenario.pending3D;
+          if (tok !== MuLERMoCScenario.applyToken || !p || p.done || p.token !== tok) return;
+          p.done = true;
+          fScenarioClickNameBox(p.step, tok);
+        }, 2000);
+      })(token);
+    } else {
+      fScenarioClickNameBox(step, token);
     }
   }
 
@@ -398,7 +487,9 @@ function fScenarioChrome(show) {
     fScenarioHide(id, !show2D);
   });
   fScenarioHide("nomeclature3D", !show3D);
-  if (!show2D && typeof Jmol !== "undefined") {
+  // A hidden 3D viewer keeps no model (mirrors fToggleViewer3D scope); hiding
+  // 2D must not clear the 3D model.
+  if (!show3D && typeof Jmol !== "undefined") {
     try {
       Jmol.script(jmolAppletNomeclature, "zap");
     } catch (e) {
@@ -579,18 +670,36 @@ function fScenarioBuildUi() {
       fScenarioGo(MuLERMoCScenario.index + 1);
     };
     document.getElementById("scExit").onclick = function () {
-      // exit in place (keeps in-memory steps): restore author chrome
+      // exit in place (keeps in-memory steps): restore full chrome (menu
+      // menu-open + both viewers + all bars) via a transient clone — the
+      // stored step keeps its authored show.* for a later Export.
       MuLERMoCScenario.present = false;
+      MuLERMoCScenario.pending3D = null;
       try {
         history.replaceState(null, "", location.pathname);
       } catch (e) {
         /* file:// */
       }
+      try {
+        var drawer = document.getElementById("menuDrawer");
+        if (drawer) {
+          drawer.classList.remove("menu-closed");
+          drawer.classList.add("menu-open");
+        }
+      } catch (e) {
+        /* no drawer */
+      }
       var st = MuLERMoCScenario.steps[MuLERMoCScenario.index];
       if (st) {
-        st.show = st.show || {};
-        st.show.viewers = { "2D": true, "3D": true };
-        fScenarioApply(st);
+        var s;
+        try {
+          s = JSON.parse(JSON.stringify(st));
+        } catch (e) {
+          s = st;
+        }
+        s.show = s.show || {};
+        s.show.viewers = { "2D": true, "3D": true };
+        fScenarioApply(s);
       } else fScenarioChrome(null);
     };
   }
@@ -697,6 +806,30 @@ function fScenarioGo(i) {
   fScenarioPlayUi();
 }
 
+// S3: JSmol readiness wait for deep links. The applet fires the page's
+// jmol_isReady (sets window.JSmolReadyFlag); cold ?scenario&present loads
+// wait for it before the first fScenarioGo so the camera survives. Falls
+// through after ~12s — the S2 gated moveto + parse fallbacks still apply.
+function fScenarioWhenJSmolReady(cb) {
+  var tries = 0;
+  (function poll() {
+    tries++;
+    try {
+      if (window.JSmolReadyFlag === true) {
+        cb();
+        return;
+      }
+    } catch (e) {
+      /* no window */
+    }
+    if (tries < 80) {
+      setTimeout(poll, 150);
+    } else {
+      cb();
+    }
+  })();
+}
+
 // ── URL: ?scenario=…&present=1 + #step=N ────────────────────────────────
 function fScenarioParseUrl() {
   var q = {};
@@ -748,7 +881,9 @@ function fScenarioBoot() {
           MuLERMoCScenario.steps = res.steps;
           MuLERMoCScenario.title = res.title;
           fScenarioRenderList();
-          fScenarioGo(Math.min(url.step, res.steps.length) - 1);
+          fScenarioWhenJSmolReady(function () {
+            fScenarioGo(Math.min(url.step, res.steps.length) - 1);
+          });
         })
         .catch(function (e) {
           fScenarioToast("Could not load scenario (needs http(s); use Import on file://).");

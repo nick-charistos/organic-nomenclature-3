@@ -6,6 +6,7 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ## [Unreleased]
 
+- S1–S4 JSmol scenario repair (`js/mulermoc-nom-scenario-43.js`, `js/mulermoc-nom-molview-43.js`, `mulermoc-nom-43.html`): `scriptWait("show moveto")`-only capture (poisoned `getPropertyAsString` branch deleted), strict numeric `moveto` grammar with import-time quarantine (`moveto: null` + warning), per-step token gating the camera (+400ms) and the name-box click (on `fFetchAndParse3D` completion via `fScenarioOn3DParsed`, 2s fallback), `jmol_isReady` handshake (`window.JSmolReadyFlag`) for `?scenario&present` deep links, `" compSecondSub*"` mode-key normalization; `zap` guard fixed (`!show3D`); Exit restores full chrome (menu `menu-open` + both viewers) via a transient clone so stored `show.*` survives for Export. Closes `didactic-scenario-plan.md` §8 `moveto`-timing question.
 - Vision twofold+1 with LEARN-first layers (LEARN → EXPLORE-lite → PRACTICE → PLAY); embedded static in Drupal; research-primary logging. See `README.md` and new `docs/LAYERS-PLAN.md` (contracts, exercise types v1, event schema v1, timeline, P1–P6 ownership).
 - Scenario exit now restores full chrome (menu `menu-open` + both viewers + all bars) in `js/mulermoc-nom-scenario-43.js`.
 - LEARN v1.1: stored `scenarios/` library plan + two-level EPAL/Lyceum `note` convention (`docs/didactic-scenario-plan.md` §9).

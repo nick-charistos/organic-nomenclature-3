@@ -75,3 +75,28 @@ batches + browser gates; novelty lives in pedagogy + classroom evidence.
 2. Ask user: JSmol API findings? (`scriptWait("show moveto")` output shape,
    replay-after-`fSelectMol` behavior, model-loaded signal.)
 3. Then build S1–S4 in order; browser-verify each.
+
+## 2026-10-04 — S1–S4 implemented (no browser runtime here; click-through pending)
+
+Built from the A1 verdict + code review, without waiting for S0 probes:
+
+* S1 (`scenario-43.js`): `getPropertyAsString` branch deleted
+  (scriptWait-only capture); strict numeric `moveto` grammar (letters other
+  than e/E or non-numeric chars → `null`); import-time quarantine warns per
+  step ("invalid 3D view discarded — re-capture with rotate off").
+* S2 (`scenario-43.js` + 3-line guarded hook in `molview-43.js`
+  `fFetchAndParse3D` → `window.fScenarioOn3DParsed`): per-step `applyToken`
+  (rapid Prev/Next safe); custom camera at +400ms so the `fLoadMol3D` load
+  batch wins; name-box click waits for 3D-parse completion (2s fallback);
+  2D-only steps click immediately.
+* S3 (`43.html` + `scenario-43.js`): `jmol_isReady` sets
+  `window.JSmolReadyFlag`; deep-link boot waits (~12s fallback);
+  `" compSecondSub*"` keys normalized on lookup/compare.
+* Fixes: `zap` guard `!show2D` → `!show3D`; Exit restores menu `menu-open` +
+  both viewers via transient clone (stored `show.*` untouched for Export).
+* Docs: `didactic-scenario-plan.md` §8 closed, `CHANGELOG.md` Unreleased entry.
+
+Verify in browser: all 3 modes, numbering, rule tables, menu grouping, one
+scenario Save → Present → Next → Exit round-trip (custom camera survives,
+highlights appear, exit restores menu-open + both viewers), Export/Import
+round-trip incl. a poisoned-`moveto` file (warning + default view).
