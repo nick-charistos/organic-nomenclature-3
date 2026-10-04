@@ -433,6 +433,13 @@ function fInitNomeclatureMenu() {
   myHTML += `</div>`;
   $("#nomeclature2Menu").html(myHTML);
   fUpdateRuleTheoryVisibility();
+  // Scenario subset hook (additive, guarded): repaints pick checkboxes after
+  // every menu rebuild (init, grouping switch). No-op without the module.
+  try {
+    if (typeof window.fScenarioPaintPickUi === "function") window.fScenarioPaintPickUi();
+  } catch (e) {
+    /* scenario absent */
+  }
 }
 
 // ── showRadio ─────────────────────────────────────────────────────────────
@@ -880,13 +887,22 @@ $(document).ready(function () {
   });
 
   /// Menu funcionality: SELECT MOLECULE
-  $(document).on("click", ".menuLi", function () {
+  $(document).on("click", ".menuLi", function (event) {
+    // Scenario pick checkboxes live inside rows — they manage themselves.
+    if (event && event.target && $(event.target).closest(".scPickBox").length) return;
     selectedMol = $(this).attr("id");
 
     $(".menuLi").removeClass("selectedLi");
     $(this).addClass("selectedLi");
 
     fSelectMol();
+    // Scenario subset hook (additive, guarded): in pick mode, selecting a
+    // molecule also picks it for the snapshot menu. No-op without the module.
+    try {
+      if (typeof window.fScenarioPickOnSelect === "function") window.fScenarioPickOnSelect(selectedMol);
+    } catch (e) {
+      /* scenario absent */
+    }
   });
 
   /////////////// MENU ///////////////
@@ -894,7 +910,9 @@ $(document).ready(function () {
   $(document).on(
     "click",
     ".menuNomeclature2Container .crossMenuLi",
-    function () {
+    function (event) {
+      // Scenario group pick checkbox lives inside the header — self-managed.
+      if (event && event.target && $(event.target).closest(".scGroupBox").length) return;
       // Toggle shut: clicking the open group closes it again.
       if (
         $(this).hasClass("selectedLi") &&

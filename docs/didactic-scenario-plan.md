@@ -42,12 +42,13 @@ progress tracking, PubChem live lookup, server storage.
       "style2D": {"atomColors": true, "colorMode": "atom", "zigzag": false},
       "styleName": {"box": true, "cross": false, "etherNaming": "iupac", "panelOpen": true},
       "styleHighlight": {"bondAtoms": false, "numberingAtoms": true},
+      "menuSubset": ["methane", "ethane"],
       "audio": {"narrate": false},
       "view3D": {"style": "ballnstick", "spin": false, "showH": true, "atomSymbols": true,
                  "moveto": "moveto 0.0 {...} ...;"},
       "externalLinks": {},
       "show": {
-        "menu": false,
+        "menu": true,
         "viewerButtons": false,
         "viewerSettings": false,
         "viewers": {"2D": true, "3D": true},
@@ -55,6 +56,7 @@ progress tracking, PubChem live lookup, server storage.
         "save": {"2D": false, "3D": false},
         "naming": true,
         "nameSettings": false,
+        "nameClick": false,
         "audio": false,
         "rule": false,
         "text": true,
@@ -110,16 +112,42 @@ Visibility rules:
 * `show.controls.2D` toggles `#radio2DMode`
   (`mulermoc-nom-42.html:194-230`: `Έγχρωμα Σύμβολα`,
   `Συνεπτυγμένος/Ανεπτυγμένος/Σκελετικός`, `Σύμβολα CHn`).
+  Per-step drawer checkbox `2D controls` (default unchecked; disabled
+  unless the step's 2D viewer is visible). On apply the bar visuals
+  (mode radios, color checkbox + atom/group radios, CHn box) mirror the
+  step's stored values via `fScenarioSyncControlUi()`, not the live states.
 * `show.controls.3D` toggles `#controls3D` (`:241-274`:
   `Σύμβολα ατόμων`, `Υδρογόνα C-H`, `#dropMenu` style,
   `Περιστροφή`). Irrelevant when that viewer is hidden.
+  Per-step drawer checkbox `3D controls` (default unchecked; disabled
+  unless the step's 3D viewer is visible). On apply the bar visuals
+  (3D checkboxes, style dropdown label) mirror the step's stored values.
 * `show.save` toggles `#save2DBtn` / `#save3DBtn`
   independently of `controls`. Default `false`.
 * `#viewerVisBtns`, `#viewerSettingsPanel` +
-  `#viewerSettingsBtnDiv`, and the left menu are always hidden
-  in playback. Their values are still captured in the snapshot.
+  `#viewerSettingsBtnDiv` are always hidden in playback; the left menu
+  is hidden unless the step carries a menu subset (`show.menu`, see
+  section 3). Captured values still land in the snapshot either way.
+* Per-step menu subsets (`menuSubset: [...]`, molecule keys): the live pick
+  at Save time (author ticks rows / whole tri-state groups in pick mode,
+  or just clicks rows — selecting a molecule in pick mode also picks it,
+  and unpicking the selected molecule deselects it);
+  validation drops unknown molecules with a warning and always keeps the
+  step's own molecule (a step outside its subset would be dead). Legacy
+  files without the field behave as `menu: false` (additive, no bump).
+* Menu-only steps (`selectedMol: null`): a picked set with no molecule
+  selected still saves (title `"menu"`); presentation deselects first
+  (empty viewers, no previous molecule lingering) and shows the flat pick
+  menu, hiding the naming hint line. Accepted iff
+  the subset is non-empty and `show.menu` is true.
 * `show.naming` / `show.rule` toggle the explanation and rule
-  panels. `show.nameSettings` toggles the naming gear + panel;
+  panels. `show.nameSettings` toggles the naming gear + panel
+  (per-step drawer checkbox `Name controls`, default unchecked; the
+  voice buttons follow it too);
+  `show.nameClick` gates name-box interaction (per-step drawer checkbox
+  `Name interact`, default unchecked: locked boxes ignore mouse clicks,
+  skip the auto-highlight, and hide the click-hint line; absent in
+  legacy files = allowed).
   `show.audio` toggles narration buttons. Playback never
   auto-plays TTS.
 * `title` is the step heading: in presentation it replaces the
@@ -134,10 +162,16 @@ Visibility rules:
 
 ## 3. Authoring UX
 
+* Authoring mode (off by default): the vertical `Σενάρια` tab on the
+  right edge reveals the toolbar below; hiding it again disengages pick
+  mode but keeps picks and steps. The Pick checkbox appears only while
+  authoring. The tab hides in presentation.
 * Toolbar: `[Save step]` + `[Scenarios...]`.
 * Step-list drawer: title/rename, per-step educational text
   (`note` textarea, plain text), per-step `Text` visibility
-  checkbox (`show.text`), reorder up/down, delete,
+  checkbox (`show.text`), per-step `Menu` visibility checkbox
+  (`show.menu`, default on iff the pick is non-empty at Save),
+  reorder up/down, delete,
   jump-to; step numbers auto-renumber.
 * Step editor: `[Use current 3D view]` re-captures `moveto`
   without re-saving the whole step; per-step badge shows
@@ -165,9 +199,13 @@ Visibility rules:
   following `show.text`. The PlayBar pill keeps only the one-line title/note
   as a progress indicator.
 * `#menuCol` is hidden wholesale in presentation so the remaining
-  columns center on the page; exit restores it.
-* Menu forced shut in playback; panels and control bars follow
-  `show.*`.
+  columns center on the page; exit restores it. Exception: a step with
+  `show.menu` shows a simple flat menu — just its `menuSubset` with local
+  1..N numbering (never the dataset-global counter), no group headers, no
+  grouping switcher, no pick checkboxes; rows stay clickable for free
+  browsing. Exit rebuilds the pristine author menu instead.
+* Menu forced shut in playback unless the step opts into its subset;
+  panels and control bars follow `show.*`.
 * Student self-learning uses the same playback without a teacher.
 * Import-button flow is the primary v1 path (works offline from
   USB); `?scenario=` links are for hosted/classroom-server use
@@ -257,6 +295,7 @@ LEARN is layer 1 of the twofold+1 vision (see `README.md`, `docs/LAYERS-PLAN.md`
 
 * **Stored scenarios** under `scenarios/*.json` (same-origin, validated v1 schema), listed by Drupal; URL shape unchanged (`?scenario=scenarios/<name>.json&present=1#step=N`); Import remains the offline/`file://` path.
 * **First library (P3):** 3–5 scenarios (alkanes → alcohols → ethers → esters); each step keeps `selectedMol + show.*`; exit forces full chrome restore (menu `menu-open` + both viewers visible).
+* **Per-step menu subsets (EXPLORE-lite enforcement):** steps may carry a browsable `menuSubset` (tri-state group pick in authoring, `show.menu` per step); a scenario can walk students through an expanding universe (3 alkanes → +alcohols → +ether) instead of the full 64-molecule menu.
 * **Two-level `note` convention:** `note` carries the teacher narrative; authoring guidance is EPAL-simple first line(s) / Lyceum-full extension (P3 authors, P5 uses for EPAL-vs-Lyceum comparison). Schema unchanged — convention only.
 * **`moveto` curation:** capture with `rotate off`; prefer curated per-step cameras for the library over ad-hoc capture.
 * **`externalLinks{}`** stays a reserved passthrough (+1: `isomerism | reactions` later, no lookup in v1).

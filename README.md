@@ -247,6 +247,10 @@ All layers reuse the same v43 engine (analysis + 2D/3D viewers + naming panels),
 
 Details: `docs/LAYERS-PLAN.md` (layer contracts, exercise types v1, research logging schema v1, timeline, ownership).
 
+### Scenario authoring flow (v43, unreleased)
+
+Authoring hides behind the vertical `Σενάρια` tab (right edge; bar, drawer, and Pick checkbox stay hidden until enabled, and the tab hides in presentation). Authors pick molecules (or whole groups) per step — selecting a row in pick mode also picks it — tune per-step chrome in the drawer (text, menu subset, 2D/3D controls, naming controls, name interaction), and Save snapshots that may also be molecule-less (`menu`-only steps with an empty viewer). Present walks the flat per-step menus from the applied step 1; Exit restores the full author chrome. Details: `docs/didactic-scenario-plan.md`.
+
 ### Team
 
 | Who | Role |

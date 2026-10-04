@@ -135,3 +135,118 @@ Browser checklist for owner: expanded-mode alkyl C+H+bonds green (2D+3D),
 bare C–O–C suffix, bonds-only αν/εν/ιν + checkbox, Save→Present→Exit with
 flipped settings (applied in present, author states back on exit), legacy
 scenario file loads with defaults.
+
+## 2026-10-04 (later) — per-step menu subsets (tagged `pre-menu-subset`)
+
+Revert: `git revert` the feature commit (safe after push), or
+`git reset --hard pre-menu-subset` (local only, never after push); legacy
+behavior is also the data default (empty subset + `menu:false`).
+
+* Authoring (`teaching-43.js` + `scenario-43.js` + CSS): Pick toggle in the
+  menu title; row checkboxes + tri-state group boxes (guarded hooks only —
+  row/group clicks ignore checkbox targets); live pick, per-step copy on
+  Save, drawer Menu checkbox (default on iff pick non-empty); pick-mode off
+  clears the pick with a toast; Export carries subsets, Import restores them.
+* Playback: `fScenarioGo`/hash/deep-link apply the step filter (hidden rows +
+  emptied groups, `menuCol` iff `show.menu`); menu stays browsable; grouping
+  switch re-filters via the render hook; pick UI stripped in present.
+* Validate: unknown molecules dropped with warnings; step molecule always
+  auto-included (never a dead step). Exit removes the filter.
+* Docs: `didactic-scenario-plan.md` §2/§4/§9, CHANGELOG entry.
+
+Browser checklist for owner: pick molecules + a group → Save 2 steps with
+different subsets → Present → per-step filtered browsable menus, tri-state
+behavior, grouping switch mid-present, Menu-off step hides menuCol,
+Exit restores full menu + pick UI state, Export/Import round-trip, legacy
+file (no `menuSubset`) presents menu-free as before.
+
+## 2026-10-04 (later) — present menu goes flat (supersedes filter above)
+
+* `fScenarioRenderPresentMenu()` replaces row-hiding: flat per-step list,
+  local 1..N counter (never the dataset-global numbering), no headers, no
+  grouping switcher, no checkboxes; row clicks browse freely.
+* Exit calls `fScenarioRestoreAuthorMenu()` (fresh `fInitNomeclatureMenu()` +
+  re-mark selection) instead of un-hiding rows. `fScenarioApplyMenuFilter` /
+  `fScenarioClearMenuFilter` deleted (no dangling refs).
+
+Browser checklist for owner: menu step shows flat 1..N list; clicks browse;
+Next keeps sequence; grouping switch unreachable in present by design;
+Exit → full author menu back with pick UI intact.
+
+## 2026-10-04 (later) — menu-only steps + pick/selection coupling (uncommitted)
+
+* Capture with a pick but no selection saves (`selectedMol: null`,
+  title `"menu"`, name mode/camera neutralized); needs pick non-empty,
+  else the old "select a molecule…" toast (now "…or pick molecules").
+* Present deselects first (`fDeselectMol`: empty viewers, no previous
+  molecule lingering), then applies chrome + flat menu. Validation: null
+  mol ok iff subset non-empty + `show.menu`; otherwise skipped with a warning.
+* Coupling (authoring, pick mode only): row click selects + picks
+  (`fScenarioPickOnSelect` guarded hook in teaching layer); unchecking
+  the selected row/group box calls `fDeselectMol` (viewers empty).
+
+Browser checklist for owner: pick mode → click row (selects + checks);
+uncheck selected row (deselects, viewers empty); group uncheck with
+selection inside (same); Save with pick + nothing selected → `"menu"`
+step; Present menu-only step (flat menu, empty viewers); mixed
+Next/Prev; Export/Import round-trip; legacy files unchanged.
+
+## 2026-10-04 (later) — drawer chrome checkboxes (uncommitted)
+
+* Per-step `Text, Menu, 2D controls, 3D controls, Name controls,
+  Name interact` (`fScenarioRenderList`). Controls boxes disabled unless
+  that step's viewer is visible (dimmed + tooltip); all four default
+  unchecked. `Name interact` = new `show.nameClick` (absent = allowed;
+  capture stores `false`): locked steps skip the auto-highlight
+  (`fScenarioClickNameBox` guard incl. S2 gate + fallback) and block
+  mouse clicks (`#nameAnalysisContainer.locked` + `pointer-events:none`).
+  Exit clears the lock via the normal apply/chrome path.
+
+Browser checklist for owner: new step → four unchecked; check 2D/3D
+controls → bars appear in Present; viewer-off step → disabled boxes;
+Name controls → gear appears; Name interact off → no box response and
+no auto-highlight, on → as today; legacy file → clicks work;
+Export/Import preserves flags.
+
+## 2026-10-04 (later) — step-1 start trust (uncommitted, bug not reproduced)
+
+* Symptom (unconfirmed): Present shows the live view instead of step 1.
+  Prime suspect: accidental menu-only step 1 via unpick→deselect coupling
+  (the menu-only branch skipped the molecule load, leaving viewers stale);
+  second suspect: silent apply failure (`!ready`) with chrome flipped anyway.
+* Fixes: drawer molecule badge per step (`selectedMol` or `menu-only`) +
+  distinct menu-only Save toast (cause visible); Present/Go/hashchange
+  honor `fScenarioApply`'s result — toast + abort instead of a stale view.
+
+## 2026-10-04 (later) — menu-only deselect fix (uncommitted, owner found it)
+
+* Menu-only apply called `fDeselectMol()` first: empty viewers, no previous
+  molecule lingering; naming hint hidden for molecule-less steps even when
+  interaction is allowed. Molecule steps unchanged (direct load, no flicker).
+
+## 2026-10-04 (later) — authoring tab (uncommitted)
+
+* `Σενάρια` right-edge tab (vertical text + ✎ + left tooltip) gates the
+  author bar, drawer, and Pick checkbox (`authoring` flag, default off;
+  scratch kept on toggle-off; tab hidden in present).
+
+Browser checklist for owner: fresh load shows clean view + tab only;
+toggle → bar/drawer; Pick only then; full Save→Present→Exit round-trip;
+toggle off mid-pick (boxes gone, scratch kept); Present hides tab, Exit
+restores it; narrow widths unaffected.
+
+## 2026-10-04 (later) — stored control selections applied (uncommitted)
+
+* New `fScenarioSyncControlUi()`: bars mirror restored globals (2D mode
+  radios, color checkbox + atom/group radios, 3D checkboxes, dropdown
+  label). Molecule path runs it post-load; menu-only assigns display
+  prefs (no viewer load) and runs it too. Storage already complete.
+
+Browser checklist for owner: set bars (e.g. expanded + sticks + no-spin
++ group colors) → Save → change everything live → Present shows step
+values on bars and viewers; toggle a bar in present works from shown
+state; menu-only step with bars on matches step values, viewers empty.
+
+Browser checklist for owner: badge per row; menu-only save toast; break
+nothing in normal Present/Prev/Next/Go/deep-link flows; if the stale-view
+symptom recurs, report the badge + play-bar title vs viewers.
