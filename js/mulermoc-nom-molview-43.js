@@ -3535,8 +3535,11 @@ function fExplainNameComp() {
       const _chain = _part && Array.isArray(_part.chain) ? _part.chain : null;
       const _chain3D = _part && Array.isArray(_part.chain3D) ? _part.chain3D : null;
       if (_chain && _chain.length > 0) {
-        fHighlightAtomChain(_chain);
+        fHighlightAtomChain(_chain, true);
         fHighlightAtomChain3D(_chain3D);
+        // 3D bonds are not covered by the halo path — color the alkyl C–C
+        // and C–H bonds explicitly (both ends in the chain), like the ester triad.
+        fColorFragmentBonds3D(_chain3D, true);
       }
       numberingFlag = true;
       fShowNumbering(
@@ -3554,8 +3557,10 @@ function fExplainNameComp() {
       const _alcChain = fGetEsterAlcoholChain();
       const _alcChain3D = fGetEsterAlcoholChain3D();
       if (_alcChain && _alcChain.length > 0) {
-        fHighlightAtomChain(_alcChain);
+        fHighlightAtomChain(_alcChain, true);
         fHighlightAtomChain3D(_alcChain3D);
+        // Alkyl rule: alcohol-part C–C and C–H bonds go green explicitly.
+        fColorFragmentBonds3D(_alcChain3D, true);
       }
       numberingFlag = true;
       fShowNumbering(0, _alcChain, _alcChain3D);
@@ -3599,6 +3604,10 @@ function fExplainNameComp() {
       ruleTableHighlight = "r3-ethers";
       fHighlightFG();
       fHighlightFG3D();
+      // 3D bonds are not covered by the halo path — color exactly the two
+      // C–O bonds explicitly (both ends in the C-O-C fragment; no C–H by
+      // design for the αιθέρας group), like the ester triad.
+      fColorFragmentBonds3D(fGetEtherGroupFragment3D());
       numberingFlag = false;
       $("#ruleTheoryContainer").show();
       break;
@@ -3977,6 +3986,23 @@ function fGetEtherAlkoxyChain3D() {
   return [att + 1].concat(rest.map(function (c) { return c + 1; }));
 }
 
+// 3D mirror: ether functional group C-O-C (1-based SDF numbers) — the bridging
+// O plus its carbon neighbors. Used to color the two C–O bonds explicitly,
+// since the halo path highlights atoms only.
+function fGetEtherGroupFragment3D() {
+  if (!functionalGroupObj3D || !functionalGroupObj3D.ether || !functionalGroupObj3D.ether.O) return null;
+  const oIdx = functionalGroupObj3D.ether.O[0];
+  if (oIdx === undefined || !Array.isArray(atomConnectivityList3D[oIdx])) return null;
+  const frag = [oIdx + 1];
+  const nbrs = atomConnectivityList3D[oIdx].filter(function (n) {
+    return allAtomsTypeList3D[n] === "C";
+  });
+  for (let i = 0; i < nbrs.length; i++) {
+    if (frag.indexOf(nbrs[i] + 1) < 0) frag.push(nbrs[i] + 1);
+  }
+  return frag.length > 1 ? frag : null;
+}
+
 // COMMON ether name parts: [{label, chain, chain3D, kind}] + suffix "αιθέρας".
 // kind: "alkyl" (chain only, no O) or "ether" (C-O-C, no numbering).
 // chain/chain3D: 1-based atom lists for highlight + numbering.
@@ -4151,20 +4177,37 @@ function fUpdateEtherNamingButton() {
     .addClass("selectedRadio");
 }
 
-// Chain-only highlight (no heteroatom): atoms + bonds with both ends in the set.
-function fHighlightAtomChain(chainAtoms) {
+// Chain-only highlight (no heteroatom): atoms + bonds with both ends in the
+// set. With includeH, attached H atoms join the atom set and C–H bonds join
+// the bond set (alkyl rule: CnH2n+1 highlights C + H + C–C + C–H). Expanded
+// mode only in practice — condensed/skeletal models carry no H atoms, so the
+// H scan is a no-op there (same pattern as fGetHydrocarbonBranchHighlight).
+function fHighlightAtomChain(chainAtoms, includeH) {
   if (!Array.isArray(chainAtoms) || chainAtoms.length === 0) return;
+  let atomSet = chainAtoms.slice();
+  if (includeH && typeof bondList !== "undefined" && typeof allAtomsTypeList !== "undefined") {
+    for (let b = 0; b < bondList.length; b++) {
+      if (!bondList[b]) continue;
+      const ba1 = bondList[b][0];
+      const ba2 = bondList[b][1];
+      if (chainAtoms.includes(ba1) && allAtomsTypeList[ba2 - 1] === "H") {
+        if (!atomSet.includes(ba2)) atomSet.push(ba2);
+      } else if (chainAtoms.includes(ba2) && allAtomsTypeList[ba1 - 1] === "H") {
+        if (!atomSet.includes(ba1)) atomSet.push(ba1);
+      }
+    }
+  }
   let atomArg = "";
-  for (let i = 0; i < chainAtoms.length; i++) {
-    atomArg += chainAtoms[i] + ",9";
-    if (i < chainAtoms.length - 1) atomArg += ",";
+  for (let i = 0; i < atomSet.length; i++) {
+    atomArg += atomSet[i] + ",9";
+    if (i < atomSet.length - 1) atomArg += ",";
   }
   jsmeNomeclatureApplet.setAtomBackgroundColors(0, atomArg);
   let bondArg = "";
   let first = true;
   for (let b = 0; b < bondList.length; b++) {
     if (!bondList[b]) continue;
-    if (chainAtoms.includes(bondList[b][0]) && chainAtoms.includes(bondList[b][1])) {
+    if (atomSet.includes(bondList[b][0]) && atomSet.includes(bondList[b][1])) {
       bondArg += (first ? "" : ",") + (b + 1) + ",9";
       first = false;
     }
@@ -4188,6 +4231,37 @@ function fHighlightAtomChain3D(chainAtoms3D, skipH) {
       ";color selectionHalos[X79dc6d]; selectionHalos on; color atoms [X79dc6d]; color bonds [X909090];",
   );
   JmolSelection = arg;
+}
+
+// Explicit 3D fragment-bond coloring (green): colors every bond with both
+// ends in fragAtoms (1-based SDF numbers). With includeH, bonds from a
+// fragment atom to a connected H are also colored (alkyl rule: CnH2n+1
+// highlights C + H + C–C + C–H). The shared halo paths highlight atoms only,
+// so COMMON ether/ester clicks and the IUPAC alkoxy prefix call this after
+// their atom highlight — same pattern as the v42 ester triad fix, batched
+// into one script to avoid Jmol queue races.
+function fColorFragmentBonds3D(fragAtoms, includeH) {
+  if (!Array.isArray(fragAtoms) || fragAtoms.length === 0) return;
+  if (typeof bondList3D === "undefined" || typeof Jmol === "undefined") return;
+  const wantH = !!includeH && typeof allAtomsTypeList3D !== "undefined";
+  let script = "";
+  for (let b = 0; b < bondList3D.length; b++) {
+    if (!bondList3D[b]) continue;
+    const in1 = fragAtoms.indexOf(bondList3D[b][0]) >= 0;
+    const in2 = fragAtoms.indexOf(bondList3D[b][1]) >= 0;
+    const hBond = wantH && ((in1 && allAtomsTypeList3D[bondList3D[b][1] - 1] === "H") ||
+      (in2 && allAtomsTypeList3D[bondList3D[b][0] - 1] === "H"));
+    if ((in1 && in2) || hBond) {
+      script += "select atomno=" + bondList3D[b][0] + ", atomno=" + bondList3D[b][1] + "; color bond [X79dc6d];";
+    }
+  }
+  if (script) {
+    try {
+      Jmol.script(jmolAppletNomeclature, script);
+    } catch (e) {
+      /* 3D unavailable */
+    }
+  }
 }
 
 // ── fHighlightFG ──────────────────────────────────────────────────────────
@@ -4535,6 +4609,27 @@ function fHighlightFG(FGno) {
               highAtomsFG.push(_ethTargets[_en] + 1);
             }
           }
+          // Alkyl rule (prefix clicks only): attached H join the highlight.
+          // The whole C-O-C group (suffix/αιθέρας click, FGno undefined)
+          // stays H-free by design. Expanded mode has explicit H;
+          // condensed/skeletal models carry none, so this is a no-op there.
+          // The both-ends bond derivation below then picks up the C–H bonds
+          // automatically.
+          if (FGno !== undefined) {
+            for (let _en = 0; _en < _ethTargets.length; _en++) {
+              const _c1 = _ethTargets[_en] + 1;
+              for (let _b = 0; _b < bondList.length; _b++) {
+                if (!bondList[_b]) continue;
+                const _ba1 = bondList[_b][0];
+                const _ba2 = bondList[_b][1];
+                if (_ba1 === _c1 && allAtomsTypeList[_ba2 - 1] === "H") {
+                  if (!highAtomsFG.includes(_ba2)) highAtomsFG.push(_ba2);
+                } else if (_ba2 === _c1 && allAtomsTypeList[_ba1 - 1] === "H") {
+                  if (!highAtomsFG.includes(_ba1)) highAtomsFG.push(_ba1);
+                }
+              }
+            }
+          }
         } else {
           // cyanide, imine, CCamine, etc.
           if (!highAtomsFG.includes(heteroIdx + 1)) {
@@ -4663,6 +4758,9 @@ function fHighlightFG3D(FGno) {
       "nitro",
       "ether",
     ];
+    // Stash for the IUPAC alkoxy-prefix bond post-pass (O + alkoxy chain,
+    // 1-based): the halo script below colors atoms only.
+    let _ethAlkoxyFrag3D = null;
     const halogenOrder3D = Object.keys(nameMainCompObj3.halogen.substitute);
     fgInstances.sort(function (a, b) {
       if (a[0] === "halogen" && b[0] === "halogen") {
@@ -4854,20 +4952,49 @@ function fHighlightFG3D(FGno) {
               }
             }
           } else if (fgKey === "ether") {
-            // Ether R-O-R': whole (FGno undefined) -> O + both Cs; prefix -> O + alkoxy C.
+            // Ether R-O-R': whole (FGno undefined) -> O + both Cs (C–O–C bonds
+            // are colored by the commonEther case); prefix -> O + full alkoxy
+            // chain, mirroring the 2D branch (fGetEtherAlkoxyChain).
             if (Array.isArray(atomConnectivityList3D[heteroIdx])) {
               let _eth3Targets = atomConnectivityList3D[heteroIdx].filter(function (n) {
                 return allAtomsTypeList3D[n] === "C";
               });
               if (FGno !== undefined) {
-                const _alk3 = fGetEtherAlkoxyC3D();
-                if (_alk3 !== null && _alk3 !== undefined) _eth3Targets = [_alk3];
-                else if (_eth3Targets.length > 1) _eth3Targets = [_eth3Targets[1]];
+                const _alkChain3D = fGetEtherAlkoxyChain3D();
+                if (_alkChain3D && _alkChain3D.length > 0) {
+                  _eth3Targets = _alkChain3D.map(function (a) { return a - 1; });
+                } else {
+                  const _alk3 = fGetEtherAlkoxyC3D();
+                  if (_alk3 !== null && _alk3 !== undefined) _eth3Targets = [_alk3];
+                  else if (_eth3Targets.length > 1) _eth3Targets = [_eth3Targets[1]];
+                }
+                // stash O + alkoxy chain (1-based) for the bond post-pass below
+                _ethAlkoxyFrag3D = [heteroIdx + 1].concat(_eth3Targets.map(function (c) { return c + 1; }));
               }
               for (let n = 0; n < _eth3Targets.length; n++) {
                 const neighbor = _eth3Targets[n] + 1;
                 if (!highAtoms3D.includes(neighbor)) {
                   highAtoms3D.push(neighbor);
+                }
+              }
+              // Alkyl rule (prefix clicks only: FGno defined): halo H attached
+              // to the highlighted carbons. The whole C-O-C group (suffix /
+              // αιθέρας click, FGno undefined) stays H-free by design. The FG
+              // halo script has no connected-H extension (unlike the chain
+              // path), so add them explicitly here.
+              if (FGno !== undefined && typeof bondList3D !== "undefined" && typeof allAtomsTypeList3D !== "undefined") {
+                for (let _h = 0; _h < _eth3Targets.length; _h++) {
+                  const _c1 = _eth3Targets[_h] + 1;
+                  for (let _b = 0; _b < bondList3D.length; _b++) {
+                    if (!bondList3D[_b]) continue;
+                    const _ba1 = bondList3D[_b][0];
+                    const _ba2 = bondList3D[_b][1];
+                    if (_ba1 === _c1 && allAtomsTypeList3D[_ba2 - 1] === "H") {
+                      if (!highAtoms3D.includes(_ba2)) highAtoms3D.push(_ba2);
+                    } else if (_ba2 === _c1 && allAtomsTypeList3D[_ba1 - 1] === "H") {
+                      if (!highAtoms3D.includes(_ba1)) highAtoms3D.push(_ba1);
+                    }
+                  }
                 }
               }
             }
@@ -4914,6 +5041,9 @@ function fHighlightFG3D(FGno) {
         ";color selectionHalos[X79dc6d]; selectionHalos on; color atoms [X79dc6d];",
     );
     JmolSelection = highAtoms3DArg;
+    // IUPAC alkoxy prefix: the halo script colors atoms only — color the
+    // O–C + C–C + C–H bonds of the stashed O + alkoxy chain explicitly (green).
+    if (_ethAlkoxyFrag3D) fColorFragmentBonds3D(_ethAlkoxyFrag3D, true);
   }
 }
 
@@ -5166,6 +5296,16 @@ function fShowNumber3D(n) {
 
 // ── fHighlightMultiBonds ──────────────────────────────────────────────────
 
+function fShowBondAtoms() {
+  // Settings-panel option (default off): bond-component clicks (αν/εν/ιν)
+  // highlight only the bonds; endpoint C atoms join only when enabled.
+  try {
+    return $("#bondAtomsCheck").hasClass("selectedCheck");
+  } catch (e) {
+    return false;
+  }
+}
+
 function fHighlightMultiBonds(bondCompPos) {
   let bondType, bondID;
   if (nameAnalysisMode == "none") {
@@ -5228,7 +5368,8 @@ function fHighlightMultiBonds(bondCompPos) {
   }
 
   jsmeNomeclatureApplet.setBondBackgroundColors(0, highBondsArg);
-  jsmeNomeclatureApplet.setAtomBackgroundColors(0, highAtomsArg);
+  // Endpoint atoms only when the bond-atoms setting is on (default: bonds only).
+  if (fShowBondAtoms()) jsmeNomeclatureApplet.setAtomBackgroundColors(0, highAtomsArg);
 
   fUpdateSVG();
 }
@@ -5287,26 +5428,33 @@ function fHighlightMultiBonds3D(bondCompPos) {
     highAtoms3DArg +
       "; color selectionHalos[X79dc6d]; selectionHalos on; color atoms [X79dc6d];",
   );
-
-  // Single bonds bridging two highlighted atoms inherit green from atom colors.
-  // Reset them to CPK.
-  const highAtomSet = new Set();
-  for (let i = 0; i < highBonds3D.length; i++) {
-    highAtomSet.add(highBonds3D[i][0]);
-    highAtomSet.add(highBonds3D[i][1]);
-  }
-  for (let b = 0; b < bondList3D.length; b++) {
-    if (!bondList3D[b]) {
-      continue;
+  if (!fShowBondAtoms()) {
+    // Bonds-only mode: undo the atom halo — keep just the green bonds above.
+    Jmol.script(
+      jmolAppletNomeclature,
+      "select all; selectionHalos off; color atoms none;",
+    );
+  } else {
+    // Single bonds bridging two highlighted atoms inherit green from atom colors.
+    // Reset them to CPK.
+    const highAtomSet = new Set();
+    for (let i = 0; i < highBonds3D.length; i++) {
+      highAtomSet.add(highBonds3D[i][0]);
+      highAtomSet.add(highBonds3D[i][1]);
     }
-    const ba1 = bondList3D[b][0],
-      ba2 = bondList3D[b][1],
-      bOrder = bondList3D[b][2];
-    if (bOrder === 1 && highAtomSet.has(ba1) && highAtomSet.has(ba2)) {
-      Jmol.script(
-        jmolAppletNomeclature,
-        "select atomno=" + ba1 + ", atomno=" + ba2 + "; color bond cpk;",
-      );
+    for (let b = 0; b < bondList3D.length; b++) {
+      if (!bondList3D[b]) {
+        continue;
+      }
+      const ba1 = bondList3D[b][0],
+        ba2 = bondList3D[b][1],
+        bOrder = bondList3D[b][2];
+      if (bOrder === 1 && highAtomSet.has(ba1) && highAtomSet.has(ba2)) {
+        Jmol.script(
+          jmolAppletNomeclature,
+          "select atomno=" + ba1 + ", atomno=" + ba2 + "; color bond cpk;",
+        );
+      }
     }
   }
 
@@ -5344,7 +5492,8 @@ function fHighlightSingleBondsCC() {
   highAtomsArg = atomArgs.join(",");
 
   jsmeNomeclatureApplet.setBondBackgroundColors(0, highBondsArg);
-  jsmeNomeclatureApplet.setAtomBackgroundColors(0, highAtomsArg);
+  // Endpoint atoms only when the bond-atoms setting is on (default: bonds only).
+  if (fShowBondAtoms()) jsmeNomeclatureApplet.setAtomBackgroundColors(0, highAtomsArg);
   fUpdateSVG();
 }
 
@@ -5399,6 +5548,13 @@ function fHighlightSingleBondsCC3D() {
     highAtoms3DArg +
       "; color selectionHalos[X79dc6d]; selectionHalos on; color atoms [X79dc6d];",
   );
+  if (!fShowBondAtoms()) {
+    // Bonds-only mode: undo the atom halo — keep just the green bonds above.
+    Jmol.script(
+      jmolAppletNomeclature,
+      "select all; selectionHalos off; color atoms none;",
+    );
+  }
 
   JmolSelection = highAtoms3DArg;
 }

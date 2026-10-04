@@ -14,6 +14,7 @@ var MuLERMoCScenario = {
   ready: false,
   applyToken: 0, // S2: bumped per fScenarioApply; stale async follow-ups abort
   pending3D: null, // S2: {token, mol, step, done} — name click waits for 3D parse
+  authorSettings: null, // pre-Present checkbox states, restored on Exit
 };
 
 // nameAnalysisMode -> name-box id (reverse of the .nameCompBox click map
@@ -209,6 +210,10 @@ function fScenarioCapture() {
       etherNaming: fScenarioG("etherNamingMode", "iupac"),
       panelOpen: !!fScenarioG("nameSettingsFlag", true),
     },
+    styleHighlight: {
+      bondAtoms: fScenarioCheck("bondAtomsCheck", false),
+      numberingAtoms: fScenarioCheck("highlightNumberingCheck", true),
+    },
     audio: { narrate: !!fScenarioG("narrateAnalysisFlag", false) },
     view3D: {
       style: fScenarioG("vis3D", "ballnstick"),
@@ -250,6 +255,7 @@ function fScenarioDefaults(step, i) {
     selectedRule: null,
     style2D: { atomColors: false, colorMode: "atom", zigzag: false },
     styleName: { box: true, cross: false, etherNaming: "iupac", panelOpen: true },
+    styleHighlight: { bondAtoms: false, numberingAtoms: true },
     audio: { narrate: false },
     view3D: { style: "ballnstick", spin: false, showH: true, atomSymbols: true, moveto: null },
     externalLinks: {},
@@ -262,7 +268,7 @@ function fScenarioDefaults(step, i) {
     },
   };
   var out = Object.assign({}, d, step);
-  ["style2D", "styleName", "audio", "view3D", "show", "externalLinks"].forEach(function (k) {
+  ["style2D", "styleName", "styleHighlight", "audio", "view3D", "show", "externalLinks"].forEach(function (k) {
     out[k] = Object.assign({}, d[k], step[k] || {});
   });
   out.show.viewers = Object.assign({}, d.show.viewers, (step.show || {}).viewers || {});
@@ -308,6 +314,35 @@ function fScenarioSetCheck(id, on, selectedCls, unselectedCls) {
   if (!el) return;
   el.classList.remove(on ? unselectedCls : selectedCls);
   el.classList.add(on ? selectedCls : unselectedCls);
+}
+
+// Checkbox settings live only as DOM classes (no JS global) — capture them
+// literally; a missing element falls back to the UI default.
+function fScenarioCheck(id, fallback) {
+  try {
+    var el = document.getElementById(id);
+    if (!el) return !!fallback;
+    return el.classList.contains("selectedCheck");
+  } catch (e) {
+    return !!fallback;
+  }
+}
+
+// Author checkbox states (highlight options) stashed on Present entry so Exit
+// can restore the author's working settings instead of the step's values.
+function fScenarioStashAuthorSettings() {
+  MuLERMoCScenario.authorSettings = {
+    bondAtoms: fScenarioCheck("bondAtomsCheck", false),
+    numberingAtoms: fScenarioCheck("highlightNumberingCheck", true),
+  };
+}
+
+function fScenarioRestoreAuthorSettings() {
+  var a = MuLERMoCScenario.authorSettings;
+  if (!a) return;
+  fScenarioSetCheck("bondAtomsCheck", !!a.bondAtoms, "selectedCheck", "unselectedCheck");
+  fScenarioSetCheck("highlightNumberingCheck", a.numberingAtoms !== false, "selectedCheck", "unselectedCheck");
+  MuLERMoCScenario.authorSettings = null;
 }
 
 // S2: 3D-parse gate. Called from fFetchAndParse3D completion (molview,
@@ -364,12 +399,31 @@ function fScenarioApply(step) {
   } catch (e) {
     /* private mode */
   }
+  // 2D color controls mirror the restored globals: the checkbox class and the
+  // atom/group radios are click-driven visuals that fScenarioApply otherwise
+  // leaves stale (the SVG class itself re-syncs from the flag in fUpdateSVG).
+  fScenarioSetCheck("svgAtomColorCheck", !!svgAtomColors2DFlag, "selectedCheck", "unselectedCheck");
+  try {
+    var _cmBtns = document.querySelectorAll("#atomColorMode .atomColorModeRadio");
+    for (var _ci = 0; _ci < _cmBtns.length; _ci++) {
+      var _on = _cmBtns[_ci].getAttribute("data-color-mode") === atomColorMode2D;
+      _cmBtns[_ci].classList.remove(_on ? "unselectedRadio" : "selectedRadio");
+      _cmBtns[_ci].classList.add(_on ? "selectedRadio" : "unselectedRadio");
+    }
+  } catch (e) {
+    /* controls unavailable */
+  }
   window.nameBoxFlag = !!step.styleName.box;
   nameBoxFlag = window.nameBoxFlag;
   window.nameCrossFlag = !!step.styleName.cross;
   nameCrossFlag = window.nameCrossFlag;
   narrateAnalysisFlag = !!step.audio.narrate;
   nameSettingsFlag = !!step.styleName.panelOpen;
+  // Highlight checkboxes (DOM-class-only settings): restore per step so the
+  // highlight readers observe snapshot values. Missing group → UI defaults.
+  var _sh = step.styleHighlight || {};
+  fScenarioSetCheck("bondAtomsCheck", !!_sh.bondAtoms, "selectedCheck", "unselectedCheck");
+  fScenarioSetCheck("highlightNumberingCheck", _sh.numberingAtoms !== false, "selectedCheck", "unselectedCheck");
   if (typeof step.selectedRule === "number") selectedRule = step.selectedRule;
   // S2: per-step token — every async follow-up below aborts when a newer
   // step takes over (rapid Prev/Next, hash jumps).
@@ -456,6 +510,39 @@ function fScenarioApply(step) {
 function fScenarioHide(id, hide) {
   var el = document.getElementById(id);
   if (el) el.style.display = hide ? "none" : "";
+}
+
+// Full-chrome restore for Exit: clears BOTH the inline display set by
+// fScenarioHide and the `hide` class set by the app's own viewer toggles
+// (fToggleViewer2D/3D add it to the control bars; `.hide` is
+// `display:none !important`, so inline restore alone cannot bring those bars
+// back). Re-activates the viewer buttons to match the forced both-visible
+// state, so the next snapshot capture reads them truthfully.
+function fScenarioRestoreChrome() {
+  var ids = [
+    "radio2DMode", "controls3D", "save2DBtn", "save3DBtn",
+    "jsmeNomeclatureDIV", "jsmeNomeclatureSVG", "nomeclature3D",
+    "menuCol", "viewerVisBtns", "viewerSettingsBtnDiv",
+    "nameAnalysisContainer",
+  ];
+  ids.forEach(function (id) {
+    try {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.style.display = "";
+      if (el.classList) el.classList.remove("hide");
+    } catch (e) {
+      /* no DOM */
+    }
+  });
+  ["view2DBtn", "view3DBtn"].forEach(function (id) {
+    try {
+      var btn = document.getElementById(id);
+      if (btn && btn.classList) btn.classList.add("active");
+    } catch (e) {
+      /* no DOM */
+    }
+  });
 }
 
 function showTextOn(step) {
@@ -643,6 +730,7 @@ function fScenarioBuildUi() {
         /* file:// */
       }
       // in-place present (no reload: memory + file keeps steps in this page)
+      fScenarioStashAuthorSettings();
       MuLERMoCScenario.present = true;
       MuLERMoCScenario.index = 0;
       fScenarioApply(MuLERMoCScenario.steps[0]);
@@ -700,7 +788,15 @@ function fScenarioBuildUi() {
         s.show = s.show || {};
         s.show.viewers = { "2D": true, "3D": true };
         fScenarioApply(s);
-      } else fScenarioChrome(null);
+        // exit restores full chrome (bars beaten by `hide` class or inline
+        // display all come back; viewer buttons re-activated) ...
+        fScenarioRestoreChrome();
+        // ... and the author's own checkbox settings, not the step's
+        fScenarioRestoreAuthorSettings();
+      } else {
+        fScenarioChrome(null);
+        fScenarioRestoreChrome();
+      }
     };
   }
 }
@@ -882,6 +978,7 @@ function fScenarioBoot() {
           MuLERMoCScenario.title = res.title;
           fScenarioRenderList();
           fScenarioWhenJSmolReady(function () {
+            fScenarioStashAuthorSettings();
             fScenarioGo(Math.min(url.step, res.steps.length) - 1);
           });
         })

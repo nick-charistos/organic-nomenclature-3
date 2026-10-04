@@ -1026,6 +1026,19 @@ $(document).ready(function () {
     }
   });
 
+  // Bond-atoms setting: re-apply live when flipped with a bond component
+  // selected (αν/εν/ιν). Deferred one tick so the generic handler above has
+  // toggled the class before the highlight readers query it.
+  $("#bondAtomsSetting").on("click", ".checkBoxContainer", function () {
+    setTimeout(function () {
+      if (!/compBondPos|compBondType|compBondType2|compEndNumber/.test(nameAnalysisMode || "")) return;
+      var $sel = $(".nameCompBox.selected");
+      if (!$sel.length) return;
+      $sel.removeClass("selected");
+      $sel.trigger("click");
+    }, 0);
+  });
+
   $(".radioCheckContainer").on("click", function () {
     if ($(this).hasClass("unselectedRadio")) {
       let group = $(this).parent().children(".radioCheckContainer");

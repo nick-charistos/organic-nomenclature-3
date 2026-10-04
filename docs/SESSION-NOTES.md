@@ -100,3 +100,38 @@ Verify in browser: all 3 modes, numbering, rule tables, menu grouping, one
 scenario Save → Present → Next → Exit round-trip (custom camera survives,
 highlights appear, exit restores menu-open + both viewers), Export/Import
 round-trip incl. a poisoned-`moveto` file (warning + default view).
+
+## 2026-10-04 (later) — ether/ester highlights + bond tweak + snapshot settings
+
+All in `mulermoc-nom-43` set, uncommitted until the recap commit below.
+No JS runtime here — static checks only (balance, grammar vs 64 data `moveto`s,
+index-convention audits) + user browser click-throughs.
+
+* Ether highlights (`molview-43.js`): COMMON alkyl clicks color C–C bonds green
+  in 3D (new `fColorFragmentBonds3D`, batched single script); COMMON `αιθέρας`
+  colors both C–O bonds (new `fGetEtherGroupFragment3D`); IUPAC alkoxy prefix
+  highlights the full chain in 3D (was: attachment C only).
+* Alkyl rule (generalized to esters): alkyl selections (COMMON alkyl, IUPAC
+  alkoxy, ester alcohol part — CnH2n+1) highlight all C + connected H + C–C +
+  C–H bonds in green on both viewers (`includeH` on `fHighlightAtomChain` /
+  `fColorFragmentBonds3D`, ether-branch-local C–H in `fHighlightFG[3D]`);
+  expanded 2D only, condensed/skeletal auto-no-op. `-ιο`/`αιθέρας` highlight
+  bare C–O–C (no H) by design; ester triad untouched.
+* Bond components (αν/εν/ιν): bonds-only highlight by default; new
+  `Επισήμανση ατόμων δεσμών` checkbox (`#bondAtomsCheck`, default off) opts
+  endpoint C atoms back in, with live re-apply (`molview` + `teaching-43.js`,
+  row in `43.html`).
+* Snapshots capture all settings: additive `styleHighlight`
+  (`bondAtoms`, `numberingAtoms`, legacy-defaulted, no version bump);
+  apply re-syncs `Έγχρωμα Σύμβολα` + atom/group radios from `style2D`;
+  Present stashes author checkbox states, Exit restores them
+  (`didactic-scenario-plan.md` §2).
+* Exit fix: `fScenarioRestoreChrome()` clears inline `display` AND the
+  `!important` `hide` class on all control bars + re-activates viewer buttons
+  (`#radio2DMode`/`#controls3D` stayed hidden otherwise).
+* Docs: CHANGELOG Unreleased entries, didactic-plan §2 notes.
+
+Browser checklist for owner: expanded-mode alkyl C+H+bonds green (2D+3D),
+bare C–O–C suffix, bonds-only αν/εν/ιν + checkbox, Save→Present→Exit with
+flipped settings (applied in present, author states back on exit), legacy
+scenario file loads with defaults.

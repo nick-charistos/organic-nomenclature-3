@@ -41,6 +41,7 @@ progress tracking, PubChem live lookup, server storage.
       "selectedRule": null,
       "style2D": {"atomColors": true, "colorMode": "atom", "zigzag": false},
       "styleName": {"box": true, "cross": false, "etherNaming": "iupac", "panelOpen": true},
+      "styleHighlight": {"bondAtoms": false, "numberingAtoms": true},
       "audio": {"narrate": false},
       "view3D": {"style": "ballnstick", "spin": false, "showH": true, "atomSymbols": true,
                  "moveto": "moveto 0.0 {...} ...;"},
@@ -73,7 +74,19 @@ State notes (grounded in v42):
   `fExplainNameComp:3124`.
 * 2D style: `svgAtomColors2DFlag`, `atomColorMode2D`,
   `zigzagCheck` are stored; menu grouping mode is not (menu is
-  hidden in playback).
+  hidden in playback). The legacy original-JSME pane toggle is not
+  stored either.
+* Highlight options: `styleHighlight` stores the DOM-class-only checkboxes
+  `bondAtomsCheck` (bond-component atom highlight, default off) and
+  `highlightNumberingCheck` (default on); apply restores the classes before
+  `fSelectMol` since highlight readers query them live; legacy files without
+  the group get defaults (additive, no version bump). Present entry stashes
+  the author's live states; Exit restores them (not the step's values).
+  Apply also re-syncs the `Έγχρωμα Σύμβολα` checkbox and atom/group radios
+  from `style2D` (the SVG class already re-syncs from the flag in
+  `fUpdateSVG`); Exit force-restores all control bars via
+  `fScenarioRestoreChrome()` (inline `display` + `hide` class + viewer
+  buttons), since class-based hides beat inline restore.
 * 3D style: JSmol style/spin/H/symbols are stored.
 * 3D camera: `view3D.moveto` stores the verbatim JSmol `moveto`
   string captured via `show moveto`
