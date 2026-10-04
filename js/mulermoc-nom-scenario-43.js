@@ -990,13 +990,15 @@ function fScenarioSyncAuthorUi() {
     tb.classList.toggle("open", showBar);
   }
   // Drawer: never force-open here (Steps button owns that); slide it out
-  // whenever the bar goes away.
+  // whenever the bar goes away (Steps loses its selected state too).
   if (!showBar) {
     var dr = document.getElementById("scenarioDrawer");
     if (dr) {
       dr.style.display = "";
       dr.classList.remove("open");
     }
+    var lb = document.getElementById("scList");
+    if (lb) lb.classList.remove("active");
   }
   var tab = document.getElementById("scenarioAuthorTab");
   if (tab) {
@@ -1101,6 +1103,9 @@ function fScenarioBuildUi() {
     document.getElementById("scList").onclick = function () {
       var d = document.getElementById("scenarioDrawer");
       if (d) d.classList.toggle("open");
+      // Steps is stateful: selected while the drawer is open.
+      var lb = document.getElementById("scList");
+      if (lb) lb.classList.toggle("active", !!(d && d.classList.contains("open")));
     };
     document.getElementById("scExport").onclick = fScenarioExport;
     document.getElementById("scImport").onclick = function () {

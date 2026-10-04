@@ -248,7 +248,10 @@ restores it; narrow widths unaffected.
   `Σενάριο Παρουσίασης` title header + light button panel, `Play ▶`
   (was `Present ▶`), matching drawer, `.stepNumber` badges, lightBlue
   `.sshow` checkboxes, `border-box` throughout, row separators from
-  step 2 on, `--lightGrayNick` `#f3f3f3`.
+  step 2 on.
+* Author-bar buttons follow the `.settingsBtn` states (`transition`,
+  darkEarth/white hover; stateful `#scList.active` = navy/white
+  while the drawer is open, reset via the sync helper).
 
 Browser checklist for owner: tab toggle slides bar; Steps slides drawer
 staggered; toggle off / Present entry slides both out; tab slides/fades

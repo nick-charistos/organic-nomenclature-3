@@ -60,7 +60,7 @@
    align-items: center;
    padding: 10px;
    padding-right: 30px;
-   background: var(--lightGrayNick);
+   background: var(--veryLightBlue);
    /* border-bottom-left-radius: 4px; */
    width: 100%;
 }
@@ -78,11 +78,27 @@
    border: 1px solid var(--darkEarth);
    font-family: "Roboto Condensed", sans-serif;
    color: var(--baseColor);
+   padding: 3px 5px;
+  font-weight: bold;
+   transition: all 0.2s;
+}
+
+#scenarioAuthorBar button:hover,
+#scenarioPlayBar button:hover {
+   background: var(--darkEarth);
+   color: #fff;
+}
+
+/* Steps is stateful: selected while the drawer is open */
+#scenarioAuthorBar button#scList.active {
+   background: var(--baseColor);
+   /* border-color: var(--lightBlue); */
+   color: #fff;
 }
 
 #scenarioDrawer {
 	position: fixed;
-	top: 92px;
+	top: 96px;
 	right: 0;
 	z-index: 500;
 	background: var(--lightGrayNick);
