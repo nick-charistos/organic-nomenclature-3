@@ -6,6 +6,7 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ## [Unreleased]
 
+- Χημικές Τάξεις menu groups now list molecules in ascending carbon order like the other classifications (`fSortPropsByCarbonCount` extended from series-only; rule mode keeps its pedagogical order) (`js/mulermoc-nom-teaching-43.js`).
 - Ether/ester alkyl highlights follow the alkyl rule (CnH2n+1: all C + connected H + C–C/C–H bonds, green, both viewers): explicit 3D bond coloring via new `fColorFragmentBonds3D` (+ `fGetEtherGroupFragment3D` for C–O–C) and `includeH` on `fHighlightAtomChain`; IUPAC alkoxy prefix highlights the full chain in 3D (was: attachment C only); `-ιο`/`αιθέρας` highlights bare C–O–C (no H); 2D expanded mode included, condensed/skeletal auto-no-op (`js/mulermoc-nom-molview-43.js`).
 - Scenario Exit force-restores all control bars (`#radio2DMode`, `#controls3D`, save buttons, viewers, menu): new `fScenarioRestoreChrome()` clears both inline `display` and the `!important` `hide` class left by viewer toggles, and re-activates the 2D/3D buttons so the next snapshot captures them truthfully (`js/mulermoc-nom-scenario-43.js`).
 - Bond-component clicks (αν/εν/ιν) highlight bonds only by default; new `Επισήμανση ατόμων δεσμών` settings checkbox (`#bondAtomsCheck`, default off) opts endpoint C atoms back in, with live re-apply (`js/mulermoc-nom-molview-43.js`, `js/mulermoc-nom-teaching-43.js`, `mulermoc-nom-43.html`).

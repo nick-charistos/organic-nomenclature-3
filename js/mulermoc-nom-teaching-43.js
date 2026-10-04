@@ -312,7 +312,8 @@ function fNarrateRule() {
 
 // ── fSortPropsByCarbonCount ─────────────────────────────────────────────────
 // Ascending total-carbon order, stable on data-file order, unclassified last.
-// Shared by series-mode groups and the flat "all molecules" list.
+// Shared by series/chemclass groups and the flat "all molecules" list.
+// Rule mode keeps its pedagogical ruleExamples order (never sorted here).
 function fSortPropsByCarbonCount(props) {
   return props
     .map((prop, originalIndex) => ({
@@ -366,7 +367,7 @@ function fInitNomeclatureMenu() {
     });
   }
 
-  if (moleculeGroupingMode === "series") {
+  if (moleculeGroupingMode === "series" || moleculeGroupingMode === "chemclass") {
     Object.keys(groups).forEach((groupKey) => {
       groups[groupKey] = fSortPropsByCarbonCount(groups[groupKey]);
     });
