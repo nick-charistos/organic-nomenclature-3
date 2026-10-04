@@ -958,8 +958,6 @@ function fScenarioChrome(show) {
   // own UI: author bar + drawer follow authoring mode; the edge tab
   // hides only in presentation (see fScenarioSyncAuthorUi)
   fScenarioSyncAuthorUi();
-  var dr = document.getElementById("scenarioDrawer");
-  if (dr && MuLERMoCScenario.present) dr.style.display = "none";
   var pb = document.getElementById("scenarioPlayBar");
   if (pb) pb.style.display = present ? "" : "none";
 }
@@ -974,7 +972,7 @@ function fScenarioSetAuthoring(on) {
   if (!MuLERMoCScenario.authoring) {
     MuLERMoCScenario.menuPickMode = false;
     var dr = document.getElementById("scenarioDrawer");
-    if (dr) dr.style.display = "none";
+    if (dr) dr.classList.remove("open");
   }
   fScenarioSyncAuthorUi();
   fScenarioPaintPickUi();
@@ -985,9 +983,21 @@ function fScenarioSetAuthoring(on) {
 function fScenarioSyncAuthorUi() {
   var showBar = MuLERMoCScenario.authoring && !MuLERMoCScenario.present;
   var tb = document.getElementById("scenarioAuthorBar");
-  if (tb) tb.style.display = showBar ? "" : "none";
-  var dr = document.getElementById("scenarioDrawer");
-  if (dr && !MuLERMoCScenario.present) dr.style.display = showBar ? dr.style.display : "none";
+  if (tb) {
+    // Classes are the sole visibility authority (inline display would
+    // beat them and snap instead of animating).
+    tb.style.display = "";
+    tb.classList.toggle("open", showBar);
+  }
+  // Drawer: never force-open here (Steps button owns that); slide it out
+  // whenever the bar goes away.
+  if (!showBar) {
+    var dr = document.getElementById("scenarioDrawer");
+    if (dr) {
+      dr.style.display = "";
+      dr.classList.remove("open");
+    }
+  }
   var tab = document.getElementById("scenarioAuthorTab");
   if (tab) {
     tab.classList.toggle("active", !!MuLERMoCScenario.authoring);
@@ -1065,15 +1075,20 @@ function fScenarioBuildUi() {
   if (!document.getElementById("scenarioAuthorBar")) {
     var bar = document.createElement("div");
     bar.id = "scenarioAuthorBar";
-    bar.style.display = "none"; // authoring mode off by default (right-edge tab reveals it)
+    // Closed by default via CSS (no .open); the tab reveals it.
+    // Inline display is never used here: it would beat the animation classes.
+    bar.style.display = "";
     bar.innerHTML =
+    "<div id='scenarioPlayBarTitle' >Σενάριο Παρουσίασης</div>" +
+    "<div id='scenarioPlayBarButtonPanel'>" +
       "<input type='text' id='scenarioTitle' value='untitled-scenario' title='Scenario title'>" +
       "<button id='scSave' title='Save current view as step'>Save step</button>" +
       "<button id='scList' title='Show/hide step list'>Steps (<span id='scCount'>0</span>)</button>" +
       "<button id='scExport' title='Download scenario JSON'>Export</button>" +
       "<button id='scImport' title='Import scenario JSON'>Import</button>" +
-      "<button id='scPresent' title='Open presentation at step 1'>Present ▶</button>" +
-      "<input type='file' id='scFile' accept='.json,application/json' style='display:none'>";
+      "<button id='scPresent' title='Open presentation at step 1'>Play ▶</button>" +
+      "<input type='file' id='scFile' accept='.json,application/json' style='display:none'>" +
+      "</div>";
     document.body.appendChild(bar);
     document.getElementById("scSave").onclick = function () {
       var st = fScenarioCapture();
@@ -1085,7 +1100,7 @@ function fScenarioBuildUi() {
     };
     document.getElementById("scList").onclick = function () {
       var d = document.getElementById("scenarioDrawer");
-      d.style.display = d.style.display === "none" ? "" : "none";
+      if (d) d.classList.toggle("open");
     };
     document.getElementById("scExport").onclick = fScenarioExport;
     document.getElementById("scImport").onclick = function () {
@@ -1125,7 +1140,9 @@ function fScenarioBuildUi() {
     };
     var dr = document.createElement("div");
     dr.id = "scenarioDrawer";
-    dr.style.display = "none";
+    // Closed by default via CSS (no .open); Steps reveals it.
+    // Inline display is never used here: it would beat the animation classes.
+    dr.style.display = "";
     dr.innerHTML = "<div><b>Steps</b> <span style='opacity:.6'>(in-memory + file)</span></div><div id='scSteps'></div>";
     document.body.appendChild(dr);
     // Right-edge authoring tab: vertical label + pencil, reveals the bar.
@@ -1241,7 +1258,7 @@ function fScenarioRenderList() {
     row.className = "srow";
     var badge = st.view3D.moveto ? "3D✓" : "3D–";
     row.innerHTML =
-      "<b>" + st.n + "</b><input type='text' value=''><span title='3D custom view'>" + badge + "</span>" +
+      "<span class='stepNumber'>" + st.n + "</span><input type='text' value=''><span title='3D custom view'>" + badge + "</span>" +
       "<button title='Jump'>Go</button><button title='Up'>↑</button><button title='Down'>↓</button>" +
       "<button title='Re-capture 3D view'>3D</button><button title='Delete'>✕</button>";
     // Step molecule at a glance: key, or menu-only when no molecule is stored.

@@ -235,6 +235,32 @@ toggle → bar/drawer; Pick only then; full Save→Present→Exit round-trip;
 toggle off mid-pick (boxes gone, scratch kept); Present hides tab, Exit
 restores it; narrow widths unaffected.
 
+## 2026-10-04 (later) — authoring slide animation (uncommitted)
+
+* Bar + drawer toggle via `.open` slide transitions (bar 0s, drawer
+  .06s stagger; hidden = translated out + `visibility`/`pointer-events`
+  safe; `prefers-reduced-motion` off switch). Inline `display` removed
+  from both (it would beat the classes). Drawer no longer force-opens:
+  Steps owns opening; hiding paths only remove `.open`.
+* Follow-up hardening: sync + creation clear inline `display` every run,
+  so classes stay the sole authority (no snap possible from stale markup).
+* Owner panel restyle (same batch): navy 510px author panel with
+  `Σενάριο Παρουσίασης` title header + light button panel, `Play ▶`
+  (was `Present ▶`), matching drawer, `.stepNumber` badges, lightBlue
+  `.sshow` checkboxes, `border-box` throughout, row separators from
+  step 2 on, `--lightGrayNick` `#f3f3f3`.
+
+Browser checklist for owner: tab toggle slides bar; Steps slides drawer
+staggered; toggle off / Present entry slides both out; tab slides/fades
+out on Present entry (no `display:none` snap — hard-reload if it snaps,
+then check OS reduce-motion); Exit restores bar only; reduced-motion;
+no focus/keyboard traps; panel edges align flush right.
+
+Browser checklist for owner: tab toggle slides bar; Steps slides drawer
+staggered; toggle off / Present entry slides both out; tab slides/fades
+out on Present entry (no `display:none` snap); Exit restores bar only;
+reduced-motion; no focus/keyboard traps.
+
 ## 2026-10-04 (later) — stored control selections applied (uncommitted)
 
 * New `fScenarioSyncControlUi()`: bars mirror restored globals (2D mode

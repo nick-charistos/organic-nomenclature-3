@@ -167,12 +167,11 @@ Visibility rules:
   mode but keeps picks and steps. The Pick checkbox appears only while
   authoring. The tab hides in presentation.
 * Toolbar: `[Save step]` + `[Scenarios...]`.
-* Step-list drawer: title/rename, per-step educational text
-  (`note` textarea, plain text), per-step `Text` visibility
-  checkbox (`show.text`), per-step `Menu` visibility checkbox
-  (`show.menu`, default on iff the pick is non-empty at Save),
-  reorder up/down, delete,
-  jump-to; step numbers auto-renumber.
+* Step-list drawer: per-step number + molecule badge (`selectedMol` or
+  `menu-only`), title/rename, per-step educational text (`note` textarea,
+  plain text), per-step chrome checkboxes (`Text`, `Menu`, `2D controls`,
+  `3D controls`, `Name controls`, `Name interact` — see §2), reorder
+  up/down, delete, jump-to; step numbers auto-renumber.
 * Step editor: `[Use current 3D view]` re-captures `moveto`
   without re-saving the whole step; per-step badge shows
   "custom view" vs "default view".
