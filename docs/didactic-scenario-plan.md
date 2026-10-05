@@ -165,11 +165,13 @@ Visibility rules:
 
 ## 3. Authoring UX
 
-* Authoring mode (off by default): the vertical `Σενάρια` handle,
-  docked flush to the author bar's top-left corner (`40px`, first child,
-  travels with the bar), reveals the panel stack; hiding it again
-  disengages pick mode but keeps picks and steps. The Pick checkbox
-  appears only while authoring. Presentation hides the whole unit.
+* Authoring mode (off by default): the vertical `Σενάρια` handle
+  (✎ pencil, docked flush to the author bar's top-left corner, `40px`,
+  first child, travels with the bar, highlighted while open),
+  reveals the panel stack. Closing: handle toggle, ✕ in the title
+  bar, or ESC (never while typing or presenting); hiding disengages
+  pick mode but keeps picks and steps. The Pick checkbox appears only
+  while authoring. Presentation hides the whole unit.
 * Global shell (`#scenarioAuthorBar`): title + `+ New` (empty scenario
   card) + `Import` (each import adds a card). Single column, panels
   scroll under the `85vh` cap, never shrink.

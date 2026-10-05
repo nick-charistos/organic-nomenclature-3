@@ -1347,7 +1347,7 @@ function fScenarioBuildUi() {
     // Inline display is never used here: it would beat the animation classes.
     bar.style.display = "";
     bar.innerHTML =
-    "<div id='scenarioPlayBarTitle'>Σενάρια Παρουσίασης</div>" +
+    "<div id='scenarioPlayBarTitle'><span>Σενάρια Παρουσίασης</span><button id='scCloseBar' title='Κλείσιμο (ESC)'>✕</button></div>" +
     "<div id='scenarioGlobalBar'>" +
       "<button id='scNew' title='New empty scenario'>+ New</button>" +
       "<button id='scImport' title='Import scenario JSON (adds a panel)'>Import</button>" +
@@ -1357,6 +1357,9 @@ function fScenarioBuildUi() {
     document.body.appendChild(bar);
     document.getElementById("scNew").onclick = function () {
       fScenarioNew("scenario-" + (MuLERMoCScenario.seq + 1));
+    };
+    document.getElementById("scCloseBar").onclick = function () {
+      fScenarioSetAuthoring(false);
     };
     document.getElementById("scImport").onclick = function () {
       document.getElementById("scFile").click();
@@ -1373,7 +1376,7 @@ function fScenarioBuildUi() {
       tab.id = "scenarioAuthorTab";
       tab.type = "button";
       tab.setAttribute("data-tooltip", "Σενάρια διδασκαλίας");
-      tab.innerHTML = '<span class="scTabText">Σενάρια</span>';
+      tab.innerHTML = '<span class="scTabIcon">✎</span><span class="scTabText">Σενάρια</span>';
       tab.onclick = function () {
         fScenarioSetAuthoring(!MuLERMoCScenario.authoring);
       };
@@ -1406,6 +1409,14 @@ function fScenarioBuildUi() {
       if (MuLERMoCScenario.present || !MuLERMoCScenario.authoring) return;
       fScenarioSetGroupPick($(this).attr("data-group"), this.checked);
       if (!this.checked) fScenarioDeselectIfUnpicked();
+    });
+    // ESC closes the author bar (never while typing or presenting).
+    $(document).on("keydown", function (e) {
+      if (!e || e.key !== "Escape" || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (MuLERMoCScenario.present || !MuLERMoCScenario.authoring) return;
+      var t = e.target;
+      if (t && /^(input|textarea|select)$/i.test(t.tagName || "")) return;
+      fScenarioSetAuthoring(false);
     });
   }
   if (!document.getElementById("scenarioPlayBar")) {

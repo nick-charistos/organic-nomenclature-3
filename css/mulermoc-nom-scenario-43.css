@@ -72,8 +72,42 @@
    max-width: 100%;
    align-self: stretch;
    text-align: center;
-   /* border-top-left-radius: 4px; */
-   height: 40px;
+   border-top-left-radius: 0px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   position: relative;
+}
+
+#scenarioPlayBarTitle > span {
+   flex: 1;
+}
+
+#scCloseBar {
+   appearance: none;
+   -webkit-appearance: none;
+   background: transparent;
+   border: 1px solid transparent;
+   border-radius: 4px;
+   color: #fff;
+   font-family: "Roboto Condensed", sans-serif;
+   font-weight: bold;
+   font-size: 1.0rem;
+   line-height: 1;
+   padding: 2px 8px;
+   margin-right: 8px;
+   cursor: pointer;
+   flex: none;
+}
+
+#scCloseBar:hover {
+   background: var(--darkEarth);
+   border-color: #fff;
+}
+
+#scCloseBar:focus-visible {
+   outline: 2px solid #fff;
+   outline-offset: 1px;
 }
 
 #scenarioPlayBarButtonPanel,
@@ -406,7 +440,7 @@
    left: -40px;
    top: -0px;
    width: 40px;
-   height: 80px;
+   /* height: 80px; */
    z-index: -10;
    display: flex;
    flex-direction: column;
@@ -436,8 +470,8 @@
 }
 
 #scenarioAuthorTab.active {
-	background: var(--veryLightBlue) !important;
-	color: var(--baseColor) !important;
+	background: var(--darkEarth) !important;
+	/* color: var(--baseColor) !important; */
 }
 
 #scenarioAuthorTab:focus-visible {
