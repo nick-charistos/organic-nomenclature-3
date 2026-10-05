@@ -249,7 +249,7 @@ Details: `docs/LAYERS-PLAN.md` (layer contracts, exercise types v1, research log
 
 ### Scenario authoring flow (v43, unreleased)
 
-Authoring hides behind the vertical `Σενάρια` tab (right edge; bar, drawer, and Pick checkbox stay hidden until enabled, and the tab hides in presentation). Authors pick molecules (or whole groups) per step — selecting a row in pick mode also picks it — tune per-step chrome in the drawer (text, menu subset, 2D/3D controls, naming controls, name interaction), and Save snapshots that may also be molecule-less (`menu`-only steps with an empty viewer). Present walks the flat per-step menus from the applied step 1; Exit restores the full author chrome. Details: `docs/didactic-scenario-plan.md`.
+Authoring hides behind the vertical `Σενάρια` handle (docked to the author bar, travels with it; presentation hides the whole unit). The bar is a global shell (`+ New` scenario, `Import` adds a card); each scenario card has its own Save/Steps/Export/Play panel plus an accordion drawer of steps. Authors pick molecules (or whole groups) per step — selecting a row in pick mode also picks it — tune per-step chrome in the drawer (2D/3D controls, naming controls, name interaction; text is automatic, menu is derived from picks), and Save snapshots that may also be molecule-less (`menu`-only steps with an empty viewer). Notes support `<b>`/`<sup>`/`<sub>`. Present walks the flat per-step menus from the applied step 1; Exit restores the full author chrome. Details: `docs/didactic-scenario-plan.md`.
 
 ### Team
 

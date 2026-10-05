@@ -131,50 +131,61 @@ Visibility rules:
 * Per-step menu subsets (`menuSubset: [...]`, molecule keys): the live pick
   at Save time (author ticks rows / whole tri-state groups in pick mode,
   or just clicks rows — selecting a molecule in pick mode also picks it,
-  and unpicking the selected molecule deselects it);
-  validation drops unknown molecules with a warning and always keeps the
-  step's own molecule (a step outside its subset would be dead). Legacy
-  files without the field behave as `menu: false` (additive, no bump).
-* Menu-only steps (`selectedMol: null`): a picked set with no molecule
+  and unpicking the selected molecule deselects it). No Menu checkbox:
+  the menu is derived — 2+ picks show the flat menu (the step molecule is
+  auto-included with a warning), a single pick collapses to the step
+  molecule (adopted with a toast when nothing is selected; selection wins
+  over a stray pick), and validation drops unknown molecules with a
+  warning. Legacy files migrate on import (stored `show.menu` ignored).
+* Menu-only steps (`selectedMol: null`): a picked set of 2+ with no molecule
   selected still saves (title `"menu"`); presentation deselects first
   (empty viewers, no previous molecule lingering) and shows the flat pick
-  menu, hiding the naming hint line. Accepted iff
-  the subset is non-empty and `show.menu` is true.
+  menu, hiding the naming hint line. Accepted iff the subset is non-empty.
 * `show.naming` / `show.rule` toggle the explanation and rule
   panels. `show.nameSettings` toggles the naming gear + panel
   (per-step drawer checkbox `Name controls`, default unchecked; the
   voice buttons follow it too);
-  `show.nameClick` gates name-box interaction (per-step drawer checkbox
-  `Name interact`, default unchecked: locked boxes ignore mouse clicks,
-  skip the auto-highlight, and hide the click-hint line; absent in
-  legacy files = allowed).
+  `show.nameClick` gates name-box interaction only (per-step drawer checkbox
+  `Name interact`, default unchecked: locked boxes ignore mouse clicks via
+  a `locked` class, but the stored `nameAnalysisMode` highlight +
+  explanation always replay; the explain line hides only when locked with
+  no stored highlight; absent in legacy files = allowed).
   `show.audio` toggles narration buttons. Playback never
   auto-plays TTS.
 * `title` is the step heading: in presentation it replaces the
   page `#pageTitle` (`N. title`); on exit the app title is
   restored. `note` is the educational paragraph in `#scStepText`
-  directly below the title (plain text, `textContent`-escaped;
-  `noteFormat: "text"` reserved for future rich text such as
-  bold/sub/sup). `show.text` (default `true`) toggles the text
-  div; when off, the app title is kept (pure-visual step). Author
+  directly below the title (simple-HTML subset: everything escaped
+  except attributeless `<b>`, `<sup>`, `<sub>`;
+  `noteFormat: "text"` reserved for further rich text). Heading +
+  text show automatically iff the step carries a title or note;
+  clear both for a silent visual step (app title kept). Author
   mode always shows the app title and hides the text div (text is
   written in the drawer textarea).
 
 ## 3. Authoring UX
 
-* Authoring mode (off by default): the vertical `Σενάρια` tab on the
-  right edge reveals the toolbar below; hiding it again disengages pick
-  mode but keeps picks and steps. The Pick checkbox appears only while
-  authoring. The tab hides in presentation.
-* Toolbar: `[Save step]` + `[Scenarios...]`.
-* Step-list drawer: per-step number + molecule badge (`selectedMol` or
-  `menu-only`), title/rename, per-step educational text (`note` textarea,
-  plain text), per-step chrome checkboxes (`Text`, `Menu`, `2D controls`,
-  `3D controls`, `Name controls`, `Name interact` — see §2), reorder
-  up/down, delete, jump-to; step numbers auto-renumber.
-* Step editor: `[Use current 3D view]` re-captures `moveto`
-  without re-saving the whole step; per-step badge shows
-  "custom view" vs "default view".
+* Authoring mode (off by default): the vertical `Σενάρια` handle,
+  docked flush to the author bar's top-left corner (`40px`, first child,
+  travels with the bar), reveals the panel stack; hiding it again
+  disengages pick mode but keeps picks and steps. The Pick checkbox
+  appears only while authoring. Presentation hides the whole unit.
+* Global shell (`#scenarioAuthorBar`): title + `+ New` (empty scenario
+  card) + `Import` (each import adds a card). Single column, panels
+  scroll under the `85vh` cap, never shrink.
+* Scenario cards (`.scenarioPanel[data-scenario-id]`, explicit active
+  card): per-card title rename, step count, delete; button panel
+  (`Save step`, `Steps`, `Export`, `Play ▶` — no Import); in-flow
+  drawer (down/up via `.open`, accordion: one open at a time).
+* Step rows: number + type badge (`molecule`/`menu`, key in tooltip),
+  step title (`Τίτλος βήματος` label above the field), per-step
+  educational text (`note` textarea, `<b>`/`<sup>`/`<sub>` allowed),
+  per-step chrome checkboxes (`2D controls`, `3D controls`,
+  `Name controls`, `Name interact` — see §2; no `Text`/`Menu`: text is
+  automatic, menu is derived), reorder up/down, delete, jump-to; step
+  numbers auto-renumber. Steps header carries the live scenario name.
+* 3D camera: `moveto` is captured at Save time (no per-step UI while
+  JSmol `moveto` is broken; returns with the fix).
 * `fCaptureSnapshot()` reads the live state described above.
 
 ## 4. Playback UX + URL shape (frozen)
@@ -194,16 +205,18 @@ Visibility rules:
   is expensive). Missing/invalid/clamped to 1/last with notice.
 * `Prev [3/8] Next` bar with step title + note.
 * Each step sets the page heading (`#pageTitle` ← `N. title`)
-  and the educational text div below it (`#scStepText` ← `note`),
-  following `show.text`. The PlayBar pill keeps only the one-line title/note
-  as a progress indicator.
+  and the educational text div below it (`#scStepText` ← `note`,
+  simple-HTML subset), automatically iff the step carries a title or
+  note — otherwise the app title is kept and nothing shows. The
+  PlayBar pill keeps only the one-line title/note as a progress
+  indicator (same subset rendering).
 * `#menuCol` is hidden wholesale in presentation so the remaining
   columns center on the page; exit restores it. Exception: a step with
   `show.menu` shows a simple flat menu — just its `menuSubset` with local
   1..N numbering (never the dataset-global counter), no group headers, no
   grouping switcher, no pick checkboxes; rows stay clickable for free
   browsing. Exit rebuilds the pristine author menu instead.
-* Menu forced shut in playback unless the step opts into its subset;
+* Menu forced shut in playback unless the step carries 2+ picks;
   panels and control bars follow `show.*`.
 * Student self-learning uses the same playback without a teacher.
 * Import-button flow is the primary v1 path (works offline from
@@ -294,7 +307,7 @@ LEARN is layer 1 of the twofold+1 vision (see `README.md`, `docs/LAYERS-PLAN.md`
 
 * **Stored scenarios** under `scenarios/*.json` (same-origin, validated v1 schema), listed by Drupal; URL shape unchanged (`?scenario=scenarios/<name>.json&present=1#step=N`); Import remains the offline/`file://` path.
 * **First library (P3):** 3–5 scenarios (alkanes → alcohols → ethers → esters); each step keeps `selectedMol + show.*`; exit forces full chrome restore (menu `menu-open` + both viewers visible).
-* **Per-step menu subsets (EXPLORE-lite enforcement):** steps may carry a browsable `menuSubset` (tri-state group pick in authoring, `show.menu` per step); a scenario can walk students through an expanding universe (3 alkanes → +alcohols → +ether) instead of the full 64-molecule menu.
+* **Per-step menu subsets (EXPLORE-lite enforcement):** steps may carry a browsable `menuSubset` (tri-state group pick in authoring; menu derived — 2+ picks show it, single pick collapses to the step molecule); a scenario can walk students through an expanding universe (3 alkanes → +alcohols → +ether) instead of the full 64-molecule menu.
 * **Two-level `note` convention:** `note` carries the teacher narrative; authoring guidance is EPAL-simple first line(s) / Lyceum-full extension (P3 authors, P5 uses for EPAL-vs-Lyceum comparison). Schema unchanged — convention only.
 * **`moveto` curation:** capture with `rotate off`; prefer curated per-step cameras for the library over ad-hoc capture.
 * **`externalLinks{}`** stays a reserved passthrough (+1: `isomerism | reactions` later, no lookup in v1).

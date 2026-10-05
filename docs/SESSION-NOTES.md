@@ -279,3 +279,50 @@ state; menu-only step with bars on matches step values, viewers empty.
 Browser checklist for owner: badge per row; menu-only save toast; break
 nothing in normal Present/Prev/Next/Go/deep-link flows; if the stale-view
 symptom recurs, report the badge + play-bar title vs viewers.
+
+## 2026-10-05 — multi-scenario builder day-batch (uncommitted until recap commit)
+
+All in `mulermoc-nom-43` set. No JS runtime here — static checks only
+(braces/parens balanced, selector audits) + owner browser click-throughs.
+
+* Multi-scenario architecture (`scenario-43.js`): `scenarios[]` +
+  `activeId`/`presentId` + `seq`; `fScenarioActive/Get/SetActive/New/
+  Delete/Present/PanelFor`; legacy `steps/title/index/menuPick` mirror
+  the active card. Bar is a global shell (title + `+ New`/`Import`,
+  Import adds a card); each `.scenarioPanel[data-scenario-id]` has its
+  own Save/Steps/Export/Play panel (no Import) + in-flow drawer;
+  per-card Export (v1 schema unchanged), delete + title rename.
+* Single column + scroll: bar `nowrap`/`stretch`, panels `flex: 0 0 auto`
+  (no-shrink — `overflow:hidden` had zeroed their min-size so they
+  collapsed instead of scrolling), `#scenarioPanels` scrolls under 85vh.
+* Accordion drawers (one open at a time); drawer header prefixed with
+  the live scenario name (`.scStepsName`, `textContent`-escaped).
+* Step rows: type-only badge (`molecule`/`menu` by `show.menu`, key in
+  tooltip, `.is-menu` tint); step title gets `scStepTitle` class +
+  persistent `Τίτλος βήματος` label above (placeholder alone was
+  invisible — new steps pre-fill the title); `Text` checkbox removed
+  (heading + text auto iff title or note; legacy `show.text` ignored);
+  3D badge + per-step re-capture removed (JSmol `moveto` broken;
+  schema/capture/validation kept for the fix).
+* Notes: safe `<b>`/`<sup>`/`<sub>` subset via `fScenarioRenderNote()`
+  (escape-all then whitelist, no attributes); both playback points
+  (`#scStepText`, play-bar note); textarea stays raw.
+* Tab-as-handle: first child of the bar (`40px`, `left:-40px`, `top:0`);
+  bar closes fully off-screen (`translateX(100%)`, shadow off);
+  authoring-off defers drawer/pick teardown past the slide
+  (`skipDrawers`, 260ms). Owner CSS tweaks kept: bar `top:50px`,
+  light panels, 2px borders, title fonts, `h1 margin-top` removed.
+* Docs: CHANGELOG Unreleased entries, didactic-plan §2/§3/§4/§9,
+  README authoring flow; `fScenarioPositionDrawer()` retired (no-op).
+* OPEN BUG (carried): tab-toggle close snaps (bar vanishes instantly)
+  while the Play close glides — same class op, same rules, no
+  interference found; compensation-snap + same-frame-churn theories
+  both falsified by experiment. Next: console triplets
+  (className + computed transform/transition before/mid/after, toggle
+  vs Play) to see where they diverge; fallback is WAAPI-driven close.
+  Repro: hard-reloaded, toggle-off only, drawers/picks vary.
+
+Browser checklist for owner: New → 2+ panels → Save steps in each →
+Steps accordion per drawer → Export per card → Import adds panel →
+Play/Prev/Next/Exit per active → `?scenario&present` deep link;
+toggle-off glide vs Play glide comparison for the open bug.

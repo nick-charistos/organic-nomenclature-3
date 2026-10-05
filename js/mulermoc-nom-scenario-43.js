@@ -7,18 +7,101 @@
 
 var MuLERMoCScenario = {
   SUPPORTED_VERSION: 1,
-  steps: [],
-  index: 0,
-  title: "untitled-scenario",
+  steps: [], // legacy mirror of the active scenario (kept in sync; use fScenarioActive())
+  index: 0, // legacy mirror of active.index
+  title: "untitled-scenario", // legacy mirror of active.title
+  menuPick: [], // legacy mirror of active.menuPick
+  scenarios: [], // multi-scenario: [{id, title, steps[], index, menuPick[]}]
+  activeId: null, // explicit active card; Save/pick/Present follow it
+  presentId: null, // scenario being presented (set on Play, cleared on Exit)
+  seq: 0, // scenario id sequence
   present: false,
   ready: false,
   applyToken: 0, // S2: bumped per fScenarioApply; stale async follow-ups abort
   pending3D: null, // S2: {token, mol, step, done} — name click waits for 3D parse
   authorSettings: null, // pre-Present checkbox states, restored on Exit
   menuPickMode: false, // authoring: show pick checkboxes in the left menu
-  menuPick: [], // authoring scratch: picked molecule keys (per-step copy on Save)
-  authoring: false, // authoring mode: bar + drawer + pick UI (off by default)
+  authoring: false, // authoring mode: bar + panels + pick UI (off by default)
 };
+
+// ── multi-scenario state manager ─────────────────────────────────────
+// Each scenario card: {id, title, steps[], index, menuPick[]}.
+// The legacy singletons (MuLERMoCScenario.steps/title/index/menuPick)
+// mirror the active card so older playback paths keep working.
+function fScenarioNewId() {
+  MuLERMoCScenario.seq = (MuLERMoCScenario.seq || 0) + 1;
+  return "s" + MuLERMoCScenario.seq;
+}
+function fScenarioGet(id) {
+  for (var i = 0; i < MuLERMoCScenario.scenarios.length; i++) {
+    if (MuLERMoCScenario.scenarios[i].id === id) return MuLERMoCScenario.scenarios[i];
+  }
+  return null;
+}
+function fScenarioSyncLegacy() {
+  var a = fScenarioActive();
+  if (!a) return;
+  MuLERMoCScenario.steps = a.steps;
+  MuLERMoCScenario.index = a.index;
+  MuLERMoCScenario.title = a.title;
+  MuLERMoCScenario.menuPick = a.menuPick;
+}
+function fScenarioActive() {
+  var a = MuLERMoCScenario.activeId ? fScenarioGet(MuLERMoCScenario.activeId) : null;
+  if (a) return a;
+  if (MuLERMoCScenario.scenarios.length) {
+    MuLERMoCScenario.activeId = MuLERMoCScenario.scenarios[0].id;
+    fScenarioSyncLegacy();
+    return MuLERMoCScenario.scenarios[0];
+  }
+  return fScenarioNew("untitled-scenario", true);
+}
+function fScenarioPresent() {
+  var p = MuLERMoCScenario.presentId ? fScenarioGet(MuLERMoCScenario.presentId) : null;
+  return p || fScenarioActive();
+}
+function fScenarioNew(title, silent) {
+  var scen = { id: fScenarioNewId(), title: title || ("scenario-" + (MuLERMoCScenario.seq)), steps: [], index: 0, menuPick: [] };
+  MuLERMoCScenario.scenarios.push(scen);
+  MuLERMoCScenario.activeId = scen.id;
+  fScenarioSyncLegacy();
+  if (!silent) {
+    fScenarioBuildPanels();
+    fScenarioPaintPickUi();
+  }
+  return scen;
+}
+function fScenarioDelete(id) {
+  var i;
+  for (i = 0; i < MuLERMoCScenario.scenarios.length; i++) {
+    if (MuLERMoCScenario.scenarios[i].id === id) break;
+  }
+  if (i >= MuLERMoCScenario.scenarios.length) return;
+  MuLERMoCScenario.scenarios.splice(i, 1);
+  if (!MuLERMoCScenario.scenarios.length) {
+    MuLERMoCScenario.activeId = null;
+    fScenarioActive();
+  } else if (MuLERMoCScenario.activeId === id) {
+    MuLERMoCScenario.activeId = MuLERMoCScenario.scenarios[Math.max(0, i - 1)].id;
+  }
+  fScenarioSyncLegacy();
+  fScenarioBuildPanels();
+  fScenarioPaintPickUi();
+}
+function fScenarioSetActive(id) {
+  var s = fScenarioGet(id);
+  if (!s) return;
+  MuLERMoCScenario.activeId = id;
+  fScenarioSyncLegacy();
+  fScenarioPaintPickUi();
+  var panels = document.querySelectorAll(".scenarioPanel");
+  for (var i = 0; i < panels.length; i++) {
+    panels[i].classList.toggle("active", panels[i].getAttribute("data-scenario-id") === id);
+  }
+}
+function fScenarioPanelFor(id) {
+  return document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"]');
+}
 
 // nameAnalysisMode -> name-box id (reverse of the .nameCompBox click map
 // in mulermoc-nom-teaching-43.js). comp10/11 depend on chemical class;
@@ -185,27 +268,40 @@ function fScenarioCapture() {
     fScenarioToast("Scenario: app not ready yet.");
     return null;
   }
+  var act = fScenarioActive();
   var mol = fScenarioG("selectedMol", null);
   if (!mol || typeof nameExamples === "undefined" || !nameExamples[mol]) mol = null;
-  var pick = MuLERMoCScenario.menuPick.slice();
-  // Menu-only snapshot: a picked set with no molecule selected. Molecule
-  // state (name mode, camera) is meaningless without a molecule.
-  var menuOnly = !mol && pick.length > 0;
+  var pick = act.menuPick.slice();
+  // Menu derivation (no Menu checkbox — the menu follows picks+selection):
+  // - single pick, nothing selected → adopted as the step's molecule;
+  // - selection wins over a single (stray) pick — subset dropped, no menu;
+  // - selection + 2+ picks → molecule step with a browsable subset menu;
+  // - no selection + 2+ picks → menu-only step (molecule-less menu);
+  // - selection alone (or nothing picked) → molecule step, no menu.
+  var adopted = false;
+  if (!mol && pick.length === 1) {
+    mol = pick[0];
+    adopted = true;
+  }
+  var menuOnly = !mol && pick.length > 1;
   if (!mol && !menuOnly) {
     fScenarioToast("Scenario: select a molecule or pick molecules first.");
     return null;
   }
+  var showMenu = menuOnly || (!!mol && pick.length > 1);
+  var subset = showMenu ? pick.slice() : [];
+  if (showMenu && mol && subset.indexOf(mol) < 0) subset.unshift(mol);
   var spin = !!fScenarioG("rotateFlag", false);
-  var moveto = !menuOnly && fScenarioViewerOn("3D") ? fScenarioGetMoveto() : null;
+  var moveto = !menuOnly && !adopted && fScenarioViewerOn("3D") ? fScenarioGetMoveto() : null;
   var step = {
-    n: MuLERMoCScenario.steps.length + 1,
+    n: act.steps.length + 1,
     title: mol || "menu",
     note: "",
     selectedMol: mol,
     mode2D: fScenarioG("mode2D", "condensed"),
     mainChainMode: fScenarioG("mainChainMode", "algorithmic"),
     etherNamingMode: fScenarioG("etherNamingMode", "iupac"),
-    nameAnalysisMode: menuOnly ? "none" : fScenarioG("nameAnalysisMode", "none"),
+    nameAnalysisMode: (menuOnly || adopted) ? "none" : fScenarioG("nameAnalysisMode", "none"),
     selectedRule: typeof selectedRule === "number" ? selectedRule : null,
     style2D: {
       atomColors: !!fScenarioG("svgAtomColors2DFlag", false),
@@ -231,9 +327,9 @@ function fScenarioCapture() {
       moveto: moveto,
     },
     externalLinks: {},
-    menuSubset: MuLERMoCScenario.menuPick.slice(),
+    menuSubset: subset,
     show: {
-      menu: MuLERMoCScenario.menuPick.length > 0,
+      menu: showMenu,
       viewerButtons: false,
       viewerSettings: false,
       viewers: { "2D": fScenarioViewerOn("2D"), "3D": fScenarioViewerOn("3D") },
@@ -249,6 +345,7 @@ function fScenarioCapture() {
     },
   };
   if (spin) fScenarioToast("Note: 3D spin is on — stored view may drift.");
+  MuLERMoCScenario.lastCaptureNote = adopted ? "Single pick adopted as the step molecule." : null;
   return step;
 }
 
@@ -316,8 +413,10 @@ function fScenarioValidate(obj) {
     if (rawMoveto && !st.view3D.moveto) {
       warnings.push("Step " + (i + 1) + ": invalid 3D view discarded (default used) — re-capture with rotate off.");
     }
-    // menu subset: drop unknown molecules, always keep the step's own
-    // molecule (a step outside its subset would be a dead step)
+    // menu derivation (mirrors fScenarioCapture; stored show.menu is
+    // ignored so legacy files migrate): single pick collapses to the
+    // step molecule, selection wins over a stray pick, menu shows only
+    // for 2+ picks (molecule + menu, or molecule-less menu-only).
     var kept = [];
     (st.menuSubset || []).forEach(function (m) {
       if (m && typeof nameExamples !== "undefined" && nameExamples[m]) {
@@ -326,13 +425,22 @@ function fScenarioValidate(obj) {
         warnings.push("Step " + (i + 1) + ": menu subset drops unknown molecule '" + m + "'.");
       }
     });
-    if (kept.indexOf(st.selectedMol) < 0 && hasMol) {
+    if (!hasMol && kept.length === 1) {
+      st.selectedMol = kept[0];
+      hasMol = true;
+      warnings.push("Step " + (i + 1) + ": single pick adopted as the step molecule.");
+    }
+    var showMenu = kept.length > 1;
+    if (showMenu && hasMol && kept.indexOf(st.selectedMol) < 0) {
       kept.unshift(st.selectedMol);
       warnings.push("Step " + (i + 1) + ": its molecule added to the menu subset.");
     }
+    if (!showMenu) kept = [];
+    st.show = st.show || {};
+    st.show.menu = showMenu;
     if (!hasMol) {
       // Menu-only step (selectedMol null): needs a browsable subset.
-      if (!kept.length || !(st.show && st.show.menu === true)) {
+      if (!kept.length) {
         warnings.push("Step " + (i + 1) + ": no molecule and no menu subset — skipped.");
         return;
       }
@@ -438,18 +546,20 @@ function fScenarioRestoreAuthorSettings() {
 
 // ── menu subset pick (per-step LEARN menus) ──────────────────────────────
 // Authors tick molecules (and whole groups) in the left menu; each step stores
-// its own copy (`menuSubset`) and presentation shows a filtered, browsable
-// menu when that step's `show.menu` is true. Off by default: empty pick +
-// menu:false reproduces legacy behavior exactly.
+// its own copy (`menuSubset`). No Menu checkbox: presentation shows the menu
+// only for 2+ picks (derived at capture/validate); a single pick collapses
+// to the step molecule and selection wins over a stray pick.
 function fScenarioPickHas(mol) {
-  return MuLERMoCScenario.menuPick.indexOf(mol) >= 0;
+  return fScenarioActive().menuPick.indexOf(mol) >= 0;
 }
 
 function fScenarioSetPick(mol, on) {
   if (!mol) return;
-  var i = MuLERMoCScenario.menuPick.indexOf(mol);
-  if (on && i < 0) MuLERMoCScenario.menuPick.push(mol);
-  if (!on && i >= 0) MuLERMoCScenario.menuPick.splice(i, 1);
+  var act = fScenarioActive();
+  var i = act.menuPick.indexOf(mol);
+  if (on && i < 0) act.menuPick.push(mol);
+  if (!on && i >= 0) act.menuPick.splice(i, 1);
+  fScenarioSyncLegacy();
   fScenarioPaintPickUi();
 }
 
@@ -460,13 +570,15 @@ function fScenarioSetGroupPick(groupKey, on) {
     var box = hdr.nextElementSibling;
     if (!box) return;
     var rows = box.querySelectorAll(".menuLi");
+    var act = fScenarioActive();
     for (var r = 0; r < rows.length; r++) {
       var mol = rows[r].id;
       if (!mol) continue;
-      var i = MuLERMoCScenario.menuPick.indexOf(mol);
-      if (on && i < 0) MuLERMoCScenario.menuPick.push(mol);
-      if (!on && i >= 0) MuLERMoCScenario.menuPick.splice(i, 1);
+      var i = act.menuPick.indexOf(mol);
+      if (on && i < 0) act.menuPick.push(mol);
+      if (!on && i >= 0) act.menuPick.splice(i, 1);
     }
+    fScenarioSyncLegacy();
   } catch (e) {
     /* menu unavailable */
   }
@@ -516,7 +628,7 @@ function fScenarioPaintPickUi() {
       if (btn) {
         btn.classList.remove("is-hidden");
         btn.style.display = "";
-        var n = MuLERMoCScenario.menuPick.length;
+        var n = fScenarioActive().menuPick.length;
         var on = !!MuLERMoCScenario.menuPickMode;
         btn.classList.remove("active");
         btn.classList.toggle("selectedCheck", on);
@@ -579,7 +691,8 @@ function fScenarioPaintPickUi() {
 
 // Current step's subset when presentation shows the menu, else null.
 function fScenarioStepSubset() {
-  var st = MuLERMoCScenario.steps[MuLERMoCScenario.index];
+  var ps = fScenarioPresent();
+  var st = ps.steps[ps.index];
   if (!MuLERMoCScenario.present || !st || !st.show || st.show.menu !== true) return null;
   return Array.isArray(st.menuSubset) ? st.menuSubset : [];
 }
@@ -652,8 +765,8 @@ function fScenarioClickNameBox(step, token) {
   if (typeof token === "number" && token !== MuLERMoCScenario.applyToken) return; // stale
   if (!step || !step.nameAnalysisMode ||
       fScenarioNormMode(step.nameAnalysisMode) === "none") return;
-  // Locked interaction: no auto-highlight in presentation.
-  if (MuLERMoCScenario.present && step.show && step.show.nameClick === false) return;
+  // Locked interaction only gates user clicks (CSS .locked); the stored
+  // highlight + explanation always replay in presentation.
   var compId = fScenarioCompIdFor(step.nameAnalysisMode);
   var box = compId && document.getElementById(compId);
   if (!box) return;
@@ -853,7 +966,22 @@ function fScenarioRestoreChrome() {
 }
 
 function showTextOn(step) {
-  return !step || !step.show || step.show.text !== false;
+  // Automatic: heading + text show iff the step carries content
+  // (title or note). The legacy show.text flag is ignored.
+  return !!(step && (step.title || step.note));
+}
+
+// Simple note formatting: escape everything, then re-allow only
+// <b>, <sup>, <sub> (no attributes). Anything else stays escaped,
+// so there is no markup/script injection surface.
+function fScenarioRenderNote(el, note) {
+  if (!el) return;
+  var div = document.createElement("div");
+  div.textContent = note || "";
+  el.innerHTML = div.innerHTML.replace(
+    /&lt;(\/?)(b|sup|sub)&gt;/gi,
+    function (m, slash, tag) { return "<" + slash + tag.toLowerCase() + ">"; }
+  );
 }
 
 function fScenarioFillStepPanel(step) {
@@ -861,10 +989,10 @@ function fScenarioFillStepPanel(step) {
   var p = document.getElementById("scStepText");
   if (!h1 || !p) return;
   var appTitle = MuLERMoCScenario.appTitle || h1.textContent || "";
-  // plain text only (textContent escapes markup); rich noteFormat reserved for later
+  // simple-HTML note subset (see fScenarioRenderNote); rich noteFormat reserved for later
   if (MuLERMoCScenario.present && step && step.n && showTextOn(step)) {
     h1.textContent = step.title ? step.n + ". " + step.title : appTitle;
-    p.textContent = step.note || "";
+    fScenarioRenderNote(p, step.note);
   } else {
     h1.textContent = appTitle;
     p.textContent = "";
@@ -903,7 +1031,8 @@ function fScenarioChrome(show) {
   fScenarioHide("viewerSettingsPanel", present);
   // menu column: hidden wholesale in presentation, unless this step carries
   // a menu subset to browse (flex row recenters the rest when hidden)
-  var _menuStep = MuLERMoCScenario.steps[MuLERMoCScenario.index];
+  var _ps = fScenarioPresent();
+  var _menuStep = _ps.steps[_ps.index];
   var _menuOn = present && _menuStep && _menuStep.show && _menuStep.show.menu === true;
   fScenarioHide("menuCol", present && !_menuOn);
   // pick UI never appears in presentation (paint strips it on rebuilds too)
@@ -920,8 +1049,9 @@ function fScenarioChrome(show) {
   // naming panel + settings + audio
   fScenarioHide("nameAnalysisContainer", present && show.naming === false);
   // locked name interaction: boxes ignore mouse clicks in presentation
-  // (programmatic clicks are skipped in fScenarioClickNameBox above);
-  // the click-hint line stays hidden too (nothing clickable remains)
+  // (CSS .locked); the stored highlight + explanation still replay via
+  // fScenarioClickNameBox. Hide the explain line only when locked with no
+  // stored highlight (the click-hint would be dead); otherwise keep it.
   var locked = !!(present && show.nameClick === false);
   try {
     var _nc = document.getElementById("nameAnalysisContainer");
@@ -929,11 +1059,19 @@ function fScenarioChrome(show) {
   } catch (e) {
     /* naming DOM unavailable */
   }
-  fScenarioHide("nameAnalysisExplain", locked);
+  var _lockStep = null;
+  try {
+    _lockStep = fScenarioPresent().steps[fScenarioPresent().index];
+  } catch (e) {
+    /* steps unavailable */
+  }
+  var _lockHasHl = !!(_lockStep && _lockStep.nameAnalysisMode &&
+    fScenarioNormMode(_lockStep.nameAnalysisMode) !== "none" && _lockStep.selectedMol);
+  fScenarioHide("nameAnalysisExplain", locked && !_lockHasHl);
   // Menu-only steps have no naming to explain: hide the hint line even when
   // interaction is allowed (same lookup pattern as the menu step above).
   try {
-    var _molStep = MuLERMoCScenario.steps[MuLERMoCScenario.index];
+    var _molStep = fScenarioPresent().steps[fScenarioPresent().index];
     if (present && (!_molStep || !_molStep.selectedMol)) {
       fScenarioHide("nameAnalysisExplain", true);
     }
@@ -941,8 +1079,9 @@ function fScenarioChrome(show) {
     /* steps unavailable */
   }
   // per-step heading (page h1) + text div below it (title/note, plain text)
-  fScenarioFillStepPanel(MuLERMoCScenario.steps[MuLERMoCScenario.index]);
-  fScenarioHide("scStepText", !present || show.text === false);
+  var _txtStep = fScenarioPresent().steps[fScenarioPresent().index];
+  fScenarioFillStepPanel(_txtStep);
+  fScenarioHide("scStepText", !present || !showTextOn(_txtStep));
   var ns = !(present && show.nameSettings !== true);
   fScenarioHide("nameSettingsBtnDiv", present && !ns);
   var panel = document.getElementById("nameSettingsPanel");
@@ -971,16 +1110,31 @@ function fScenarioSetAuthoring(on) {
   MuLERMoCScenario.authoring = !!on;
   if (!MuLERMoCScenario.authoring) {
     MuLERMoCScenario.menuPickMode = false;
-    var dr = document.getElementById("scenarioDrawer");
-    if (dr) dr.classList.remove("open");
+    // Close the bar alone in this frame so its slide animates cleanly
+    // (same sequencing as the Play close); teardown after it lands.
+    fScenarioSyncAuthorUi(true);
+    setTimeout(function () {
+      var drs = document.querySelectorAll(".scenarioDrawer");
+      for (var di = 0; di < drs.length; di++) drs[di].classList.remove("open");
+      var lbs = document.querySelectorAll(".scList");
+      for (var lbi = 0; lbi < lbs.length; lbi++) lbs[lbi].classList.remove("active");
+      fScenarioPaintPickUi();
+    }, 260);
+    return;
   }
   fScenarioSyncAuthorUi();
   fScenarioPaintPickUi();
 }
 
+// Drawers live in-flow inside their own panel (down/up via .open), so no
+// fixed-top anchoring is needed. Kept as a no-op for older call sites.
+function fScenarioPositionDrawer(panel) {
+  return;
+}
+
 // Author bar + drawer follow authoring && !present; the tab hides in
 // presentation (clean stage) and shows otherwise.
-function fScenarioSyncAuthorUi() {
+function fScenarioSyncAuthorUi(skipDrawers) {
   var showBar = MuLERMoCScenario.authoring && !MuLERMoCScenario.present;
   var tb = document.getElementById("scenarioAuthorBar");
   if (tb) {
@@ -989,38 +1143,45 @@ function fScenarioSyncAuthorUi() {
     tb.style.display = "";
     tb.classList.toggle("open", showBar);
   }
-  // Drawer: never force-open here (Steps button owns that); slide it out
+  // Drawers: never force-open here (Steps buttons own that); close them
   // whenever the bar goes away (Steps loses its selected state too).
-  if (!showBar) {
-    var dr = document.getElementById("scenarioDrawer");
-    if (dr) {
-      dr.style.display = "";
-      dr.classList.remove("open");
+  // skipDrawers (authoring-off path) defers this past the bar slide so the
+  // toggle frame carries only the bar animation.
+  if (!showBar && !skipDrawers) {
+    var drs = document.querySelectorAll(".scenarioDrawer");
+    for (var dri = 0; dri < drs.length; dri++) {
+      drs[dri].style.display = "";
+      drs[dri].classList.remove("open");
     }
-    var lb = document.getElementById("scList");
-    if (lb) lb.classList.remove("active");
+    var lbs = document.querySelectorAll(".scList");
+    for (var lbi = 0; lbi < lbs.length; lbi++) lbs[lbi].classList.remove("active");
   }
+  // Present hides the whole bar (handle travels with it); otherwise the
+  // closed bar leaves only the handle peeking out at the right edge.
+  if (tb) tb.classList.toggle("is-hidden", !!MuLERMoCScenario.present);
   var tab = document.getElementById("scenarioAuthorTab");
   if (tab) {
     tab.classList.toggle("active", !!MuLERMoCScenario.authoring);
-    if (MuLERMoCScenario.present) tab.classList.add("is-hidden");
-    else tab.classList.remove("is-hidden");
+    tab.classList.remove("is-hidden");
   }
 }
 
 // ── file export / import (memory + file, decision A) ────────────────────
-function fScenarioExport() {
+// Export is per scenario card (v1 schema unchanged); Import adds a panel.
+function fScenarioExport(id) {
+  var scen = (id && fScenarioGet(id)) || fScenarioActive();
+  if (!scen) return;
   var data = {
     scenarioVersion: MuLERMoCScenario.SUPPORTED_VERSION,
     app: "mulermoc-nom-43",
-    scenario: MuLERMoCScenario.title,
-    title: MuLERMoCScenario.title,
-    steps: MuLERMoCScenario.steps,
+    scenario: scen.title,
+    title: scen.title,
+    steps: scen.steps,
   };
   var blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json;charset=utf-8" });
   var a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = String(MuLERMoCScenario.title || "scenario").replace(/\s+/g, "_") + ".scenario.json";
+  a.download = String(scen.title || "scenario").replace(/\s+/g, "_") + ".scenario.json";
   document.body.appendChild(a);
   a.click();
   setTimeout(function () {
@@ -1036,11 +1197,12 @@ function fScenarioImportFile(file) {
       var res = fScenarioValidate(JSON.parse(r.result));
       res.warnings.forEach(fScenarioToast);
       if (!res.ok) return;
-      MuLERMoCScenario.steps = res.steps;
-      MuLERMoCScenario.title = res.title;
-      MuLERMoCScenario.index = 0;
-      fScenarioRenderList();
-      fScenarioToast("Imported " + res.steps.length + " steps.");
+      var scen = fScenarioNew(res.title || "imported-scenario", true);
+      scen.steps = res.steps;
+      scen.index = 0;
+      fScenarioSyncLegacy();
+      fScenarioBuildPanels();
+      fScenarioToast("Imported " + res.steps.length + " steps as '" + scen.title + "'.");
     } catch (e) {
       fScenarioToast("Import failed: invalid JSON.");
     }
@@ -1074,6 +1236,110 @@ function fScenarioBuildUi() {
     if (h1 && h1.parentNode) h1.parentNode.insertBefore(textDiv, h1.nextSibling);
     else document.body.appendChild(textDiv);
   }
+  // Per-scenario panel actions (resolved via closest .scenarioPanel).
+  function fScenarioPanelIdFromEl(el) {
+    try {
+      var p = el && el.closest ? el.closest(".scenarioPanel") : null;
+      return p ? p.getAttribute("data-scenario-id") : null;
+    } catch (e) {
+      return null;
+    }
+  }
+  function fScenarioPresentBegin(id) {
+    var scen = (id && fScenarioGet(id)) || fScenarioActive();
+    if (!scen || !scen.steps.length) {
+      fScenarioToast("Save at least one step first.");
+      return;
+    }
+    try {
+      history.replaceState(null, "", "#step=1");
+    } catch (e) {
+      /* file:// */
+    }
+    fScenarioSetActive(scen.id);
+    // in-place present (no reload: memory + file keeps steps in this page)
+    fScenarioStashAuthorSettings();
+    MuLERMoCScenario.present = true;
+    MuLERMoCScenario.presentId = scen.id;
+    scen.index = 0;
+    fScenarioSyncLegacy();
+    var applied = false;
+    try {
+      applied = !!fScenarioApply(scen.steps[0]);
+    } catch (e) {
+      applied = false;
+    }
+    if (!applied) {
+      MuLERMoCScenario.present = false;
+      MuLERMoCScenario.presentId = null;
+      fScenarioToast("Could not start presentation at step 1.");
+      return;
+    }
+    fScenarioPlayUi();
+    fScenarioRenderPresentMenu();
+  }
+  if (!window._scMultiHook) {
+    window._scMultiHook = true;
+    $(document).on("click", ".scenarioPanel .scSave", function () {
+      var id = fScenarioPanelIdFromEl(this);
+      if (id) fScenarioSetActive(id);
+      var st = fScenarioCapture();
+      if (!st) return;
+      var act = fScenarioActive();
+      act.steps.push(st);
+      fScenarioSyncLegacy();
+      fScenarioRenderList(act.id);
+      var _note = MuLERMoCScenario.lastCaptureNote;
+      MuLERMoCScenario.lastCaptureNote = null;
+      fScenarioToast(!st.selectedMol ? "Saved menu-only step " + st.n + " (no molecule selected)." : "Saved step " + st.n + "." + (_note ? " " + _note : ""));
+    });
+    $(document).on("click", ".scenarioPanel .scList", function () {
+      var id = fScenarioPanelIdFromEl(this);
+      if (id) fScenarioSetActive(id);
+      var panel = id && fScenarioPanelFor(id);
+      var d = panel && panel.querySelector(".scenarioDrawer");
+      // Accordion: opening one scenario's steps closes all others.
+      var willOpen = !!(d && !d.classList.contains("open"));
+      if (willOpen) {
+        var all = document.querySelectorAll(".scenarioDrawer");
+        for (var ai = 0; ai < all.length; ai++) {
+          if (all[ai] !== d) all[ai].classList.remove("open");
+        }
+        var btns = document.querySelectorAll(".scenarioPanel .scList");
+        for (var bi = 0; bi < btns.length; bi++) {
+          if (btns[bi] !== this) btns[bi].classList.remove("active");
+        }
+      }
+      if (d) d.classList.toggle("open");
+      if (this.classList) this.classList.toggle("active", !!(d && d.classList.contains("open")));
+    });
+    $(document).on("click", ".scenarioPanel .scExport", function () {
+      var id = fScenarioPanelIdFromEl(this);
+      fScenarioExport(id || undefined);
+    });
+    $(document).on("click", ".scenarioPanel .scPresent", function () {
+      fScenarioPresentBegin(fScenarioPanelIdFromEl(this));
+    });
+    $(document).on("click", ".scenarioPanel .scDelete", function () {
+      var id = fScenarioPanelIdFromEl(this);
+      if (id) fScenarioDelete(id);
+    });
+    $(document).on("click", ".scenarioPanel", function () {
+      var id = this.getAttribute && this.getAttribute("data-scenario-id");
+      if (id && id !== MuLERMoCScenario.activeId) fScenarioSetActive(id);
+    });
+    $(document).on("change", ".scenarioPanel .scenarioTitle", function () {
+      var id = fScenarioPanelIdFromEl(this);
+      var s = (id && fScenarioGet(id)) || fScenarioActive();
+      if (s) {
+        s.title = this.value || s.title;
+        fScenarioSyncLegacy();
+        var panel = id && fScenarioPanelFor(id);
+        var nm = panel && panel.querySelector(".scStepsName");
+        if (nm) nm.textContent = s.title || "";
+      }
+    });
+  }
   if (!document.getElementById("scenarioAuthorBar")) {
     var bar = document.createElement("div");
     bar.id = "scenarioAuthorBar";
@@ -1081,33 +1347,17 @@ function fScenarioBuildUi() {
     // Inline display is never used here: it would beat the animation classes.
     bar.style.display = "";
     bar.innerHTML =
-    "<div id='scenarioPlayBarTitle' >Σενάριο Παρουσίασης</div>" +
-    "<div id='scenarioPlayBarButtonPanel'>" +
-      "<input type='text' id='scenarioTitle' value='untitled-scenario' title='Scenario title'>" +
-      "<button id='scSave' title='Save current view as step'>Save step</button>" +
-      "<button id='scList' title='Show/hide step list'>Steps (<span id='scCount'>0</span>)</button>" +
-      "<button id='scExport' title='Download scenario JSON'>Export</button>" +
-      "<button id='scImport' title='Import scenario JSON'>Import</button>" +
-      "<button id='scPresent' title='Open presentation at step 1'>Play ▶</button>" +
+    "<div id='scenarioPlayBarTitle'>Σενάρια Παρουσίασης</div>" +
+    "<div id='scenarioGlobalBar'>" +
+      "<button id='scNew' title='New empty scenario'>+ New</button>" +
+      "<button id='scImport' title='Import scenario JSON (adds a panel)'>Import</button>" +
       "<input type='file' id='scFile' accept='.json,application/json' style='display:none'>" +
-      "</div>";
+      "</div>" +
+    "<div id='scenarioPanels'></div>";
     document.body.appendChild(bar);
-    document.getElementById("scSave").onclick = function () {
-      var st = fScenarioCapture();
-      if (!st) return;
-      MuLERMoCScenario.steps.push(st);
-      MuLERMoCScenario.title = document.getElementById("scenarioTitle").value || "untitled-scenario";
-      fScenarioRenderList();
-      fScenarioToast(!st.selectedMol ? "Saved menu-only step " + st.n + " (no molecule selected)." : "Saved step " + st.n + ".");
+    document.getElementById("scNew").onclick = function () {
+      fScenarioNew("scenario-" + (MuLERMoCScenario.seq + 1));
     };
-    document.getElementById("scList").onclick = function () {
-      var d = document.getElementById("scenarioDrawer");
-      if (d) d.classList.toggle("open");
-      // Steps is stateful: selected while the drawer is open.
-      var lb = document.getElementById("scList");
-      if (lb) lb.classList.toggle("active", !!(d && d.classList.contains("open")));
-    };
-    document.getElementById("scExport").onclick = fScenarioExport;
     document.getElementById("scImport").onclick = function () {
       document.getElementById("scFile").click();
     };
@@ -1115,52 +1365,19 @@ function fScenarioBuildUi() {
       if (e.target.files[0]) fScenarioImportFile(e.target.files[0]);
       e.target.value = "";
     };
-    document.getElementById("scPresent").onclick = function () {
-      if (!MuLERMoCScenario.steps.length) {
-        fScenarioToast("Save at least one step first.");
-        return;
-      }
-      try {
-        history.replaceState(null, "", "#step=1");
-      } catch (e) {
-        /* file:// */
-      }
-      // in-place present (no reload: memory + file keeps steps in this page)
-      fScenarioStashAuthorSettings();
-      MuLERMoCScenario.present = true;
-      MuLERMoCScenario.index = 0;
-      var applied = false;
-      try {
-        applied = !!fScenarioApply(MuLERMoCScenario.steps[0]);
-      } catch (e) {
-        applied = false;
-      }
-      if (!applied) {
-        MuLERMoCScenario.present = false;
-        fScenarioToast("Could not start presentation at step 1.");
-        return;
-      }
-      fScenarioPlayUi();
-      fScenarioRenderPresentMenu();
-    };
-    var dr = document.createElement("div");
-    dr.id = "scenarioDrawer";
-    // Closed by default via CSS (no .open); Steps reveals it.
-    // Inline display is never used here: it would beat the animation classes.
-    dr.style.display = "";
-    dr.innerHTML = "<div><b>Steps</b> <span style='opacity:.6'>(in-memory + file)</span></div><div id='scSteps'></div>";
-    document.body.appendChild(dr);
-    // Right-edge authoring tab: vertical label + pencil, reveals the bar.
+    fScenarioActive();
+    fScenarioBuildPanels();
+    // Authoring handle: child of the bar docked to its left edge, travels with it.
     if (!document.getElementById("scenarioAuthorTab")) {
       var tab = document.createElement("button");
       tab.id = "scenarioAuthorTab";
       tab.type = "button";
       tab.setAttribute("data-tooltip", "Σενάρια διδασκαλίας");
-      tab.innerHTML = '<span class="scTabIcon">✎</span><span class="scTabText">Σενάρια</span>';
+      tab.innerHTML = '<span class="scTabText">Σενάρια</span>';
       tab.onclick = function () {
         fScenarioSetAuthoring(!MuLERMoCScenario.authoring);
       };
-      document.body.appendChild(tab);
+      bar.insertBefore(tab, bar.firstChild);
     }
     fScenarioSyncAuthorUi();
     // menu-subset pick wiring (delegated: the menu DOM rebuilds on every
@@ -1169,8 +1386,10 @@ function fScenarioBuildUi() {
       if (e && e.stopPropagation) e.stopPropagation();
       if (MuLERMoCScenario.present || !MuLERMoCScenario.authoring) return;
       MuLERMoCScenario.menuPickMode = !MuLERMoCScenario.menuPickMode;
-      if (!MuLERMoCScenario.menuPickMode && MuLERMoCScenario.menuPick.length) {
-        MuLERMoCScenario.menuPick = [];
+      var _act = fScenarioActive();
+      if (!MuLERMoCScenario.menuPickMode && _act.menuPick.length) {
+        _act.menuPick = [];
+        fScenarioSyncLegacy();
         fScenarioToast("Menu pick cleared.");
       }
       fScenarioPaintPickUi();
@@ -1199,16 +1418,17 @@ function fScenarioBuildUi() {
       "<span style='flex:1'></span><button id='scExit'>Exit ✕</button>";
     document.body.appendChild(pb);
     document.getElementById("scPrev").onclick = function () {
-      fScenarioGo(MuLERMoCScenario.index - 1);
+      fScenarioGo(fScenarioPresent().index - 1);
     };
     document.getElementById("scNext").onclick = function () {
-      fScenarioGo(MuLERMoCScenario.index + 1);
+      fScenarioGo(fScenarioPresent().index + 1);
     };
     document.getElementById("scExit").onclick = function () {
       // exit in place (keeps in-memory steps): restore full chrome (menu
       // menu-open + both viewers + all bars) via a transient clone — the
       // stored step keeps its authored show.* for a later Export.
       MuLERMoCScenario.present = false;
+      MuLERMoCScenario.presentId = null;
       MuLERMoCScenario.pending3D = null;
       try {
         history.replaceState(null, "", location.pathname);
@@ -1224,7 +1444,8 @@ function fScenarioBuildUi() {
       } catch (e) {
         /* no drawer */
       }
-      var st = MuLERMoCScenario.steps[MuLERMoCScenario.index];
+      var _psx = fScenarioPresent();
+      var st = _psx.steps[_psx.index];
       if (st) {
         var s;
         try {
@@ -1252,67 +1473,95 @@ function fScenarioBuildUi() {
   }
 }
 
-function fScenarioRenderList() {
-  var box = document.getElementById("scSteps");
-  var cnt = document.getElementById("scCount");
+// ── multi-scenario panels ────────────────────────────────────────────
+// #scenarioAuthorBar (singleton: title + New/Import) owns #scenarioPanels.
+// Each .scenarioPanel[data-scenario-id] has its own button panel (no Import)
+// and its own in-flow .scenarioDrawer (down/up via .open).
+function fScenarioBuildPanels() {
+  var host = document.getElementById("scenarioPanels");
+  if (!host) return;
+  host.innerHTML = "";
+  if (!MuLERMoCScenario.scenarios.length) fScenarioActive();
+  MuLERMoCScenario.scenarios.forEach(function (scen) {
+    var panel = document.createElement("div");
+    panel.className = "scenarioPanel" + (scen.id === MuLERMoCScenario.activeId ? " active" : "");
+    panel.setAttribute("data-scenario-id", scen.id);
+    panel.innerHTML =
+      "<div class='scenarioHeader'>" +
+        "<input type='text' class='scenarioTitle' value='' title='Scenario title'>" +
+        "<span class='scCount'>0</span>" +
+        "<button class='scDelete' title='Delete scenario'>✕</button>" +
+      "</div>" +
+      "<div class='scenarioButtonPanel'>" +
+        "<button class='scSave' title='Save current view as step'>Save step</button>" +
+        "<button class='scList' title='Show/hide step list'>Steps</button>" +
+        "<button class='scExport' title='Download scenario JSON'>Export</button>" +
+        "<button class='scPresent' title='Open presentation at step 1'>Play ▶</button>" +
+      "</div>" +
+      "<div class='scenarioDrawer'>" +
+        "<div class='scStepsTitle'><b><span class='scStepsName'></span> Steps</b> <span style='opacity:.6'>(in-memory + file)</span></div>" +
+        "<div class='scSteps'></div>" +
+      "</div>";
+    var ti = panel.querySelector(".scenarioTitle");
+    if (ti) ti.value = scen.title || "";
+    host.appendChild(panel);
+  });
+  fScenarioRenderList();
+}
+
+function fScenarioRenderOne(scen) {
+  var panel = scen && fScenarioPanelFor(scen.id);
+  if (!panel) return;
+  var box = panel.querySelector(".scSteps");
+  var cnts = panel.querySelectorAll(".scCount");
+  var listBtn = panel.querySelector(".scList");
   if (!box) return;
-  if (cnt) cnt.textContent = MuLERMoCScenario.steps.length;
+  for (var ci = 0; ci < cnts.length; ci++) cnts[ci].textContent = String(scen.steps.length);
+  if (listBtn) listBtn.innerHTML = "Steps (" + scen.steps.length + ")";
+  var nm = panel.querySelector(".scStepsName");
+  if (nm) nm.textContent = scen.title || "";
+  var ti = panel.querySelector(".scenarioTitle");
+  if (ti && document.activeElement !== ti && ti.value !== scen.title) ti.value = scen.title || "";
   box.innerHTML = "";
-  MuLERMoCScenario.steps.forEach(function (st, i) {
+  scen.steps.forEach(function (st, i) {
     var row = document.createElement("div");
     row.className = "srow";
-    var badge = st.view3D.moveto ? "3D✓" : "3D–";
     row.innerHTML =
-      "<span class='stepNumber'>" + st.n + "</span><input type='text' value=''><span title='3D custom view'>" + badge + "</span>" +
+      "<span class='stepNumber'>" + st.n + "</span><span class='scStepTitleWrap'><span class='scStepTitleLabel'>Τίτλος βήματος</span><input type='text' class='scStepTitle' placeholder='Τίτλος βήματος' value=''></span>" +
       "<button title='Jump'>Go</button><button title='Up'>↑</button><button title='Down'>↓</button>" +
-      "<button title='Re-capture 3D view'>3D</button><button title='Delete'>✕</button>";
-    // Step molecule at a glance: key, or menu-only when no molecule is stored.
+      "<button title='Delete'>✕</button>";
+    // Step type at a glance: "menu" when the step carries a browsable
+    // menu (menu-only or molecule+menu subset), else "molecule".
+    // Detail (molecule key / subset size) lives in the tooltip.
     var molBadge = document.createElement("span");
-    molBadge.className = "scMolBadge";
-    molBadge.title = "Step molecule";
-    molBadge.textContent = st.selectedMol || "menu-only";
+    var _isMenu = !!(st.show && st.show.menu === true);
+    molBadge.className = "scMolBadge" + (_isMenu ? " is-menu" : " is-mol");
+    var _subN = Array.isArray(st.menuSubset) ? st.menuSubset.length : 0;
+    molBadge.title = st.selectedMol
+      ? st.selectedMol + (_isMenu ? " + menu (" + _subN + ")" : "")
+      : "menu-only (" + _subN + ")";
+    molBadge.textContent = _isMenu ? "Μενού" : "Μόριο";
     row.insertBefore(molBadge, row.firstChild.nextSibling);
-    var titleInput = row.querySelector("input");
+    var titleInput = row.querySelector("input.scStepTitle");
     titleInput.value = st.title || "";
     titleInput.onchange = function () {
       st.title = titleInput.value;
     };
     var noteInput = document.createElement("textarea");
     noteInput.className = "snote";
-    noteInput.placeholder = "Educational text (plain text)";
+    noteInput.placeholder = "Educational text (supports <b>, <sup>, <sub>)";
     noteInput.value = st.note || "";
     noteInput.onchange = function () {
       st.note = noteInput.value;
     };
     row.appendChild(noteInput);
-    var textLabel = document.createElement("label");
-    textLabel.className = "sshow";
-    var textCheck = document.createElement("input");
-    textCheck.type = "checkbox";
-    textCheck.checked = !st.show || st.show.text !== false;
-    textCheck.onchange = function () {
-      st.show = st.show || {};
-      st.show.text = textCheck.checked;
-    };
-    textLabel.appendChild(textCheck);
-    textLabel.appendChild(document.createTextNode(" Text"));
-    row.appendChild(textLabel);
-    var menuLabel = document.createElement("label");
-    menuLabel.className = "sshow";
-    menuLabel.title = "Show the menu in presentation, filtered to this step's picked molecules";
-    var menuCheck = document.createElement("input");
-    menuCheck.type = "checkbox";
-    menuCheck.checked = !!(st.show && st.show.menu === true);
-    menuCheck.onchange = function () {
-      st.show = st.show || {};
-      st.show.menu = menuCheck.checked;
-    };
-    menuLabel.appendChild(menuCheck);
-    menuLabel.appendChild(document.createTextNode(" Menu"));
-    row.appendChild(menuLabel);
+    // No Text checkbox: heading + text show automatically iff the step
+    // carries a title or note (see showTextOn); clear both for silence.
+    // No Menu checkbox: the menu follows picks + selection (derived at
+    // capture/validate — 2+ picks show it, otherwise the step stands alone).
     // Viewer control bars (authored per step; enabled only when that step's
     // viewer is visible — viewers are set live via [2D][3D] before saving).
-    [["2D controls", "2D"], ["3D controls", "3D"]].forEach(function (pair) {
+    [["2D ρυθμίσεις", "2D"], ["3D ρυθμίσεις", "3D"]].forEach(function (pair) {
       var label = document.createElement("label");
       label.className = "sshow";
       var kind = pair[1];
@@ -1346,10 +1595,10 @@ function fScenarioRenderList() {
       st.show.nameSettings = nameCtlCheck.checked;
     };
     nameCtlLabel.appendChild(nameCtlCheck);
-    nameCtlLabel.appendChild(document.createTextNode(" Name controls"));
+    nameCtlLabel.appendChild(document.createTextNode(" Ρυθμίσεις ονομασίας"));
     row.appendChild(nameCtlLabel);
-    // Name-box interaction (clicks + auto-highlight). Absent = allowed
-    // (legacy files); capture stores explicit false for new steps.
+    // Name-box interaction (user clicks only; stored highlight always
+    // replays). Absent = allowed (legacy files); capture stores false.
     var nameClickLabel = document.createElement("label");
     nameClickLabel.className = "sshow";
     nameClickLabel.title = "Allow clicking the name boxes in presentation";
@@ -1361,61 +1610,76 @@ function fScenarioRenderList() {
       st.show.nameClick = nameClickCheck.checked;
     };
     nameClickLabel.appendChild(nameClickCheck);
-    nameClickLabel.appendChild(document.createTextNode(" Name interact"));
+    nameClickLabel.appendChild(document.createTextNode(" Διάδραση ονομασίας"));
     row.appendChild(nameClickLabel);
     var btns = row.querySelectorAll("button");
-    btns[0].onclick = function () {
-      fScenarioGo(i);
-    };
-    btns[1].onclick = function () {
-      if (i === 0) return;
-      MuLERMoCScenario.steps.splice(i - 1, 0, MuLERMoCScenario.steps.splice(i, 1)[0]);
-      fScenarioRenumber();
-    };
-    btns[2].onclick = function () {
-      if (i >= MuLERMoCScenario.steps.length - 1) return;
-      MuLERMoCScenario.steps.splice(i + 1, 0, MuLERMoCScenario.steps.splice(i, 1)[0]);
-      fScenarioRenumber();
-    };
-    btns[3].onclick = function () {
-      var m = fScenarioViewerOn("3D") ? fScenarioGetMoveto() : null;
-      st.view3D.moveto = m;
-      fScenarioRenderList();
-      fScenarioToast(m ? "3D view updated (custom)." : "No 3D view captured (default).");
-    };
-    btns[4].onclick = function () {
-      MuLERMoCScenario.steps.splice(i, 1);
-      fScenarioRenumber();
-    };
+    (function (scenId, idx) {
+      btns[0].onclick = function () {
+        fScenarioGo(idx);
+      };
+      btns[1].onclick = function () {
+        if (idx === 0) return;
+        var s = fScenarioGet(scenId) || fScenarioActive();
+        s.steps.splice(idx - 1, 0, s.steps.splice(idx, 1)[0]);
+        fScenarioRenumber(scenId);
+      };
+      btns[2].onclick = function () {
+        var s = fScenarioGet(scenId) || fScenarioActive();
+        if (idx >= s.steps.length - 1) return;
+        s.steps.splice(idx + 1, 0, s.steps.splice(idx, 1)[0]);
+        fScenarioRenumber(scenId);
+      };
+      btns[3].onclick = function () {
+        var s = fScenarioGet(scenId) || fScenarioActive();
+        s.steps.splice(idx, 1);
+        fScenarioRenumber(scenId);
+      };
+    })(scen.id, i);
     box.appendChild(row);
   });
 }
 
-function fScenarioRenumber() {
-  MuLERMoCScenario.steps.forEach(function (st, i) {
+function fScenarioRenderList(id) {
+  if (id) {
+    var one = fScenarioGet(id);
+    if (one) fScenarioRenderOne(one);
+    fScenarioSyncLegacy();
+    return;
+  }
+  MuLERMoCScenario.scenarios.forEach(fScenarioRenderOne);
+  fScenarioSyncLegacy();
+}
+
+function fScenarioRenumber(id) {
+  var s = (id && fScenarioGet(id)) || fScenarioActive();
+  s.steps.forEach(function (st, i) {
     st.n = i + 1;
   });
-  if (MuLERMoCScenario.index >= MuLERMoCScenario.steps.length) {
-    MuLERMoCScenario.index = Math.max(0, MuLERMoCScenario.steps.length - 1);
+  if (s.index >= s.steps.length) {
+    s.index = Math.max(0, s.steps.length - 1);
   }
-  fScenarioRenderList();
+  fScenarioSyncLegacy();
+  fScenarioRenderList(s.id);
 }
 
 function fScenarioPlayUi() {
-  var st = MuLERMoCScenario.steps[MuLERMoCScenario.index];
+  var ps = fScenarioPresent();
+  var st = ps.steps[ps.index];
   var pos = document.getElementById("scPos");
-  if (pos) pos.textContent = MuLERMoCScenario.steps.length ? MuLERMoCScenario.index + 1 + "/" + MuLERMoCScenario.steps.length : "0/0";
+  if (pos) pos.textContent = ps.steps.length ? ps.index + 1 + "/" + ps.steps.length : "0/0";
   var ti = document.getElementById("scStepTitle");
   if (ti) ti.textContent = st ? st.n + ". " + (st.title || "") : "";
   var no = document.getElementById("scStepNote");
-  if (no) no.textContent = st && st.note ? st.note : "";
+  fScenarioRenderNote(no, st && st.note);
 }
 
 function fScenarioGo(i) {
-  if (!MuLERMoCScenario.steps.length) return;
+  var ps = fScenarioPresent();
+  if (!ps.steps.length) return;
   if (i < 0) i = 0;
-  if (i >= MuLERMoCScenario.steps.length) i = MuLERMoCScenario.steps.length - 1;
-  MuLERMoCScenario.index = i;
+  if (i >= ps.steps.length) i = ps.steps.length - 1;
+  ps.index = i;
+  fScenarioSyncLegacy();
   try {
     history.replaceState(null, "", "#step=" + (i + 1));
   } catch (e) {
@@ -1424,7 +1688,7 @@ function fScenarioGo(i) {
   // Fail loud: never show a half-applied step as if it worked.
   var ok = false;
   try {
-    ok = !!fScenarioApply(MuLERMoCScenario.steps[i]);
+    ok = !!fScenarioApply(ps.steps[i]);
   } catch (e) {
     ok = false;
   }
@@ -1508,9 +1772,12 @@ function fScenarioBoot() {
           var res = fScenarioValidate(obj);
           res.warnings.forEach(fScenarioToast);
           if (!res.ok) return;
-          MuLERMoCScenario.steps = res.steps;
-          MuLERMoCScenario.title = res.title;
-          fScenarioRenderList();
+          var scen = fScenarioNew(res.title || "imported-scenario", true);
+          scen.steps = res.steps;
+          scen.index = 0;
+          fScenarioSyncLegacy();
+          fScenarioBuildPanels();
+          MuLERMoCScenario.presentId = scen.id;
           fScenarioWhenJSmolReady(function () {
             fScenarioStashAuthorSettings();
             fScenarioGo(Math.min(url.step, res.steps.length) - 1);
@@ -1524,20 +1791,22 @@ function fScenarioBoot() {
     }
   });
   window.addEventListener("hashchange", function () {
-    if (!MuLERMoCScenario.present || !MuLERMoCScenario.steps.length) return;
+    var hps = fScenarioPresent();
+    if (!MuLERMoCScenario.present || !hps.steps.length) return;
     var m = /step=(\d+)/.exec(location.hash);
     if (m) {
       var i = Math.max(1, parseInt(m[1], 10)) - 1;
-      if (i !== MuLERMoCScenario.index) {
-        MuLERMoCScenario.index = Math.min(i, MuLERMoCScenario.steps.length - 1);
+      if (i !== hps.index) {
+        hps.index = Math.min(i, hps.steps.length - 1);
+        fScenarioSyncLegacy();
         var hok = false;
         try {
-          hok = !!fScenarioApply(MuLERMoCScenario.steps[MuLERMoCScenario.index]);
+          hok = !!fScenarioApply(hps.steps[hps.index]);
         } catch (e) {
           hok = false;
         }
         if (!hok) {
-          fScenarioToast("Could not apply step " + (MuLERMoCScenario.index + 1) + ".");
+          fScenarioToast("Could not apply step " + (hps.index + 1) + ".");
           return;
         }
         fScenarioPlayUi();

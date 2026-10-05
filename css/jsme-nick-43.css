@@ -76,7 +76,7 @@ h1 {
   font-weight: 700;
   text-align: center;
   color: var(--baseColor);
-  margin-top: 10px;
+  /* margin-top: 10px; */
 }
 
 header {
