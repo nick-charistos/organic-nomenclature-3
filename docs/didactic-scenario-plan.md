@@ -205,7 +205,10 @@ Visibility rules:
 * `#step=N`: 1-based step in the hash so Prev/Next can use
   `history.replaceState` without a full reload (JSME/JSmol init
   is expensive). Missing/invalid/clamped to 1/last with notice.
-* `Prev [3/8] Next` bar with step title + note.
+* `Prev [3/8] Next` bar with step title + note; keyboard: `←`/`→`
+  walk steps (clamped, no wrap), `ESC` exits. Keys ignore modifiers
+  and typing focus; JSmol arrow-rotate under applet focus is a known
+  overlap (mouse-drag is the normal rotate path).
 * Each step sets the page heading (`#pageTitle` ← `N. title`)
   and the educational text div below it (`#scStepText` ← `note`,
   simple-HTML subset), automatically iff the step carries a title or

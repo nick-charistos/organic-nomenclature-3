@@ -1210,6 +1210,54 @@ function fScenarioImportFile(file) {
   r.readAsText(file);
 }
 
+// Exit presentation in place (keeps in-memory steps): restore full chrome
+// (menu menu-open + both viewers + all bars) via a transient clone — the
+// stored step keeps its authored show.* for a later Export.
+function fScenarioExitPresent() {
+  MuLERMoCScenario.present = false;
+  MuLERMoCScenario.presentId = null;
+  MuLERMoCScenario.pending3D = null;
+  try {
+    history.replaceState(null, "", location.pathname);
+  } catch (e) {
+    /* file:// */
+  }
+  try {
+    var drawer = document.getElementById("menuDrawer");
+    if (drawer) {
+      drawer.classList.remove("menu-closed");
+      drawer.classList.add("menu-open");
+    }
+  } catch (e) {
+    /* no drawer */
+  }
+  var _psx = fScenarioPresent();
+  var st = _psx.steps[_psx.index];
+  if (st) {
+    var s;
+    try {
+      s = JSON.parse(JSON.stringify(st));
+    } catch (e) {
+      s = st;
+    }
+    s.show = s.show || {};
+    s.show.viewers = { "2D": true, "3D": true };
+    fScenarioApply(s);
+    // exit restores full chrome (bars beaten by `hide` class or inline
+    // display all come back; viewer buttons re-activated) ...
+    fScenarioRestoreChrome();
+    // ... the pristine author menu (present replaced it with the flat
+    // subset list, so rebuild; the render hook repaints pick UI) ...
+    fScenarioRestoreAuthorMenu();
+    // ... and the author's own checkbox settings, not the step's
+    fScenarioRestoreAuthorSettings();
+  } else {
+    fScenarioChrome(null);
+    fScenarioRestoreChrome();
+    fScenarioRestoreAuthorMenu();
+  }
+}
+
 // ── UI (scenario chrome lives in css/mulermoc-nom-scenario-43.css) ─────────
 function fScenarioBuildUi() {
   if (!document.getElementById("scenarioToast")) {
@@ -1410,12 +1458,26 @@ function fScenarioBuildUi() {
       fScenarioSetGroupPick($(this).attr("data-group"), this.checked);
       if (!this.checked) fScenarioDeselectIfUnpicked();
     });
-    // ESC closes the author bar (never while typing or presenting).
+    // Presentation keys (←/→ steps, ESC exit) + author-bar ESC.
+    // Never while typing (caret safety) or with modifiers.
     $(document).on("keydown", function (e) {
-      if (!e || e.key !== "Escape" || e.ctrlKey || e.metaKey || e.altKey) return;
-      if (MuLERMoCScenario.present || !MuLERMoCScenario.authoring) return;
+      if (!e || e.ctrlKey || e.metaKey || e.altKey) return;
       var t = e.target;
       if (t && /^(input|textarea|select)$/i.test(t.tagName || "")) return;
+      if (MuLERMoCScenario.present) {
+        if (e.key === "ArrowRight") {
+          e.preventDefault();
+          fScenarioGo(fScenarioPresent().index + 1);
+        } else if (e.key === "ArrowLeft") {
+          e.preventDefault();
+          fScenarioGo(fScenarioPresent().index - 1);
+        } else if (e.key === "Escape") {
+          fScenarioExitPresent();
+        }
+        return;
+      }
+      // ESC closes the author bar (never while presenting — see above).
+      if (e.key !== "Escape" || !MuLERMoCScenario.authoring) return;
       fScenarioSetAuthoring(false);
     });
   }
@@ -1424,9 +1486,11 @@ function fScenarioBuildUi() {
     pb.id = "scenarioPlayBar";
     pb.style.display = "none";
     pb.innerHTML =
-      "<button id='scPrev'>◀</button><span id='scPos'>1/1</span><button id='scNext'>▶</button>" +
-      "<b id='scStepTitle'></b><span class='snote' id='scStepNote'></span>" +
-      "<span style='flex:1'></span><button id='scExit'>Exit ✕</button>";
+      "<div id='scenarioPlayBarNextPrevContainer'>" +
+      "<button id='scPrev' title='Προηγούμενο (←)'>◀</button><span id='scPos'>1/1</span><button id='scNext' title='Επόμενο (→)'>▶</button>" +
+      "</div>" +
+      // "<b id='scStepTitle'></b><span class='snote' id='scStepNote'></span>" +
+      "<button id='scExit' title='Έξοδος (ESC)'>Exit ✕</button>";
     document.body.appendChild(pb);
     document.getElementById("scPrev").onclick = function () {
       fScenarioGo(fScenarioPresent().index - 1);
@@ -1434,53 +1498,7 @@ function fScenarioBuildUi() {
     document.getElementById("scNext").onclick = function () {
       fScenarioGo(fScenarioPresent().index + 1);
     };
-    document.getElementById("scExit").onclick = function () {
-      // exit in place (keeps in-memory steps): restore full chrome (menu
-      // menu-open + both viewers + all bars) via a transient clone — the
-      // stored step keeps its authored show.* for a later Export.
-      MuLERMoCScenario.present = false;
-      MuLERMoCScenario.presentId = null;
-      MuLERMoCScenario.pending3D = null;
-      try {
-        history.replaceState(null, "", location.pathname);
-      } catch (e) {
-        /* file:// */
-      }
-      try {
-        var drawer = document.getElementById("menuDrawer");
-        if (drawer) {
-          drawer.classList.remove("menu-closed");
-          drawer.classList.add("menu-open");
-        }
-      } catch (e) {
-        /* no drawer */
-      }
-      var _psx = fScenarioPresent();
-      var st = _psx.steps[_psx.index];
-      if (st) {
-        var s;
-        try {
-          s = JSON.parse(JSON.stringify(st));
-        } catch (e) {
-          s = st;
-        }
-        s.show = s.show || {};
-        s.show.viewers = { "2D": true, "3D": true };
-        fScenarioApply(s);
-        // exit restores full chrome (bars beaten by `hide` class or inline
-        // display all come back; viewer buttons re-activated) ...
-        fScenarioRestoreChrome();
-        // ... the pristine author menu (present replaced it with the flat
-        // subset list, so rebuild; the render hook repaints pick UI) ...
-        fScenarioRestoreAuthorMenu();
-        // ... and the author's own checkbox settings, not the step's
-        fScenarioRestoreAuthorSettings();
-      } else {
-        fScenarioChrome(null);
-        fScenarioRestoreChrome();
-        fScenarioRestoreAuthorMenu();
-      }
-    };
+    document.getElementById("scExit").onclick = fScenarioExitPresent;
   }
 }
 

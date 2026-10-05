@@ -312,6 +312,11 @@ All in `mulermoc-nom-43` set. No JS runtime here — static checks only
   authoring-off defers drawer/pick teardown past the slide
   (`skipDrawers`, 260ms). Owner CSS tweaks kept: bar `top:50px`,
   light panels, 2px borders, title fonts, `h1 margin-top` removed.
+* Keys: `←`/`→` walk present steps (clamped, `preventDefault`),
+  `ESC` exits via extracted `fScenarioExitPresent()` (shared with the
+  Exit button); modifiers + typing focus ignored; key-hint tooltips on
+  Prev/Next/Exit. Play-bar restyle (lightBlue, centered, Exit pinned
+  right, snote rule retired).
 * Docs: CHANGELOG Unreleased entries, didactic-plan §2/§3/§4/§9,
   README authoring flow; `fScenarioPositionDrawer()` retired (no-op).
 * OPEN BUG (carried): tab-toggle close snaps (bar vanishes instantly)
