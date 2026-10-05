@@ -178,14 +178,19 @@ Visibility rules:
 * Scenario cards (`.scenarioPanel[data-scenario-id]`, explicit active
   card): per-card title rename, step count, delete; button panel
   (`Save step`, `Steps`, `Export`, `Play ▶` — no Import); in-flow
-  drawer (down/up via `.open`, accordion: one open at a time).
-* Step rows: number + type badge (`molecule`/`menu`, key in tooltip),
-  step title (`Τίτλος βήματος` label above the field), per-step
-  educational text (`note` textarea, `<b>`/`<sup>`/`<sub>` allowed),
-  per-step chrome checkboxes (`2D controls`, `3D controls`,
-  `Name controls`, `Name interact` — see §2; no `Text`/`Menu`: text is
-  automatic, menu is derived), reorder up/down, delete, jump-to; step
-  numbers auto-renumber. Steps header carries the live scenario name.
+  drawer (down/up via `.open`, accordion: one open at a time,
+  drawer follows the active card — panel click or Save opens it).
+* Step rows: number + type badge (`molecule`/`menu`, key in tooltip)
+  stacked in `.scStepNumberWrap`, step title (`Τίτλος βήματος` label
+  above the field, defaults to the live Greek IUPAC name at Save —
+  key fallback, `"menu"` for menu-only), per-step educational text
+  (`note` textarea, `<b>`/`<sup>`/`<sub>` allowed), per-step chrome
+  checkboxes (`2D controls`, `3D controls`, `Name controls`,
+  `Name interact` — see §2; no `Text`/`Menu`: text is automatic, menu
+  is derived), reorder up/down, delete, jump-to; step numbers
+  auto-renumber. Steps header carries the live scenario name.
+  Headers lead with a positional counter (`S1`, `S2`, …); empty
+  scenarios flag `.is-empty` on card, count, and Steps button.
 * 3D camera: `moveto` is captured at Save time (no per-step UI while
   JSmol `moveto` is broken; returns with the fix).
 * `fCaptureSnapshot()` reads the live state described above.

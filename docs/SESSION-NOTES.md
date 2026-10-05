@@ -331,3 +331,18 @@ Browser checklist for owner: New → 2+ panels → Save steps in each →
 Steps accordion per drawer → Export per card → Import adds panel →
 Play/Prev/Next/Exit per active → `?scenario&present` deep link;
 toggle-off glide vs Play glide comparison for the open bug.
+
+## 2026-10-05 (later) — polish batch-2 (builder UX details)
+
+* Drawer follows the card (`fScenarioOpenDrawer()`): panel-background
+  click or Save opens it (controls guarded out), Steps on the open card
+  shuts everything; single shared path with the accordion.
+* Badge housed in new `.scStepNumberWrap` under the step number
+  (stray `</span>` removed); owner translated labels to `Μενού`/`Μόριο`.
+* Positional `S1`/`S2`/… header counter (index-based, gap-free;
+  internal ids untouched); `.is-empty` flags on card/count/Steps at 0
+  steps (owner dimmed only the count, left card/button unstyled).
+* New-step titles default to the live Greek IUPAC name (staleness
+  guard: loaded molecule must match; key fallback, `"menu"` menu-only).
+* OPEN BUG still carried (close snap, diagnostics + WAAPI fallback
+  queued — see above).

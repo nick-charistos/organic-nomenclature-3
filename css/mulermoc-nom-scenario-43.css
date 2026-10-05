@@ -107,6 +107,8 @@
    margin-right: 8px;
    cursor: pointer;
    flex: none;
+   position: absolute;
+  right: 20px;
 }
 
 #scCloseBar:hover {
@@ -134,7 +136,7 @@
    align-self: stretch;
    flex: 0 0 auto;
    flex-wrap: wrap;
-   height: 40px;
+   /* height: 40px; */
 }
 
 #scenarioPlayBarTitle,
@@ -144,29 +146,47 @@
    width: 100%;
 }
 
+#scenarioGlobalBar {
+   background: var(--lightBlue);
+}
+
 #scenarioPanels {
    display: flex;
    flex-direction: column;
    flex-wrap: nowrap;
    gap: 10px;
    padding: 10px;
-   padding-right: 30px;
+   padding-right: 20px;
    flex: 1 1 auto;
    min-height: 0;
    overflow: auto;
+   background: var(--lightBlue);
 }
 
 .scenarioPanel {
    background: var(--lightGrayNick);
-   border: 2px solid var(--lightBlue);
+   border: 3px solid var(--lightGrayNick);
    border-radius: 4px;
    overflow: hidden;
    flex: 0 0 auto;
 }
 
 .scenarioPanel.active {
-   border-color: var(--baseColor);
+   border-color: var(--lightEarth);
 
+}
+
+/* Empty scenario (0 steps): dimmed card + count, ghosted Steps button. */
+.scenarioPanel.is-empty {
+   /* opacity: .75; */
+}
+
+.scenarioPanel .scenarioHeader .scCount.is-empty {
+   opacity: .45;
+}
+
+.scenarioPanel .scList.is-empty {
+   /* opacity: .55; */
 }
 
 .scenarioPanel .scenarioHeader {
@@ -183,18 +203,31 @@
    font-size: 1rem;
    font-family: "Roboto Condensed", sans-serif;
    color: var(--baseColor);
-   /* font-weight: bold; */
+   font-weight: bold;
 }
 
 .scenarioPanel .scenarioHeader .scCount {
    font-size: .75rem;
    font-weight: bold;
-   background: var(--lightEarth);
-   color: var(--baseColor);
+   background: var(--guiColor);
+   color: #fff;
    border-radius: 10px;
    padding: 0 7px;
    line-height: 20px;
    white-space: nowrap;
+}
+
+.scenarioPanel .scenarioHeader .scScenarioNo {
+	font-size: 1rem;
+	font-weight: bold;
+	background: var(--baseColor);
+	color: #fff;
+	border-radius: 4px;
+	padding: 2px 7px;
+	line-height: 20px;
+	white-space: nowrap;
+	flex: none;
+   font-family: "Roboto Condensed", sans-serif;
 }
 
 .scenarioPanel .scenarioButtonPanel {
@@ -228,8 +261,8 @@
 /* Steps is stateful: selected while the drawer is open */
 #scenarioAuthorBar button#scList.active,
 #scenarioAuthorBar button.scList.active {
-   background: var(--baseColor);
-   /* border-color: var(--lightBlue); */
+   background: var(--guiColor);
+   border-color: var(--guiColor);
    color: #fff;
 }
 
@@ -279,7 +312,7 @@
 }
 
 .scenarioDrawer .srow:not(:first-child) {
-   border-top: 5px solid var(--lightBlue);
+   border-top: 2px solid var(--lightBlue);
    margin-top: 10px;
    padding-top: 10px;
 }
@@ -298,10 +331,11 @@
 }
 
 .scenarioDrawer .srow .scStepTitleWrap .scStepTitleLabel {
-   font-size: .7rem;
-   color: var(--baseColor);
-   opacity: .7;
-   line-height: 1.2;
+	font-size: .7rem;
+	color: var(--lightBlue);
+	opacity: .8;
+	line-height: 1.2;
+	font-weight: bold;
 }
 
 .scenarioDrawer .srow .scStepTitleWrap input.scStepTitle {
@@ -335,33 +369,42 @@
 
 .scenarioDrawer .scMolBadge {
    font-size: .7rem;
-   color: #666;
-   background: #f0f0f0;
-   border-radius: 8px;
+   color: #fff;
+   background: var(--lightBlue);
+   border-radius: 4px;
    padding: 0 6px;
    white-space: nowrap;
    max-width: 130px;
    overflow: hidden;
    text-overflow: ellipsis;
+   font-family: "Roboto Condensed", sans-serif;
 }
 
 .scenarioDrawer .scMolBadge.is-menu {
-   background: var(--lightBlue);
-   color: #fff;
+   background: var(--veryLightBlue);
+   color: var(--baseColor);
+}
+
+.scenarioDrawer .scStepNumberWrap {
+   display: inline-flex;
+   flex-direction: column;
+   align-items: center;
+   gap: 2px;
+   flex: none;
 }
 
 .scenarioDrawer .stepNumber {
    font-family: "Roboto Condensed", sans-serif;
-   font-size: 1.0rem;
-   color: var(--lightGrayNick);
-   font-weight: bold;
-   background: var(--baseColor);
-   /* padding: 10px; */
-   border-radius: 50%;
-   width: 22px;
-   height: 22px;
-   text-align: center;
-   line-height: 22px;
+	font-size: 1.0rem;
+	color: var(--lightGrayNick);
+	font-weight: bold;
+	background: var(--guiColor);
+	/* padding: 10px; */
+	border-radius: 50%;
+	width: 22px;
+	height: 22px;
+	text-align: center;
+	line-height: 22px;
 }
 
 #nameAnalysisContainer.locked .nameCompBox {
@@ -422,14 +465,13 @@
 }
 
 .scStepsTitle {
-   color: var(--baseColor);
-   font-weight: bold;
-   font-size: 1rem;
-   border-bottom: 1px dashed var(--lightBlue);
-   padding-bottom: 5px;
-   margin-bottom: 20px;
+	color: var(--lightBlue);
+	font-weight: bold;
+	font-size: 1rem;
+	border-bottom: 2px dotted var(--lightBlue);
+	padding-bottom: 5px;
+	margin-bottom: 20px;
 }
-
 #scStepText {
    font-size: 1rem;
    margin: 0 auto 20px auto;
@@ -467,7 +509,7 @@
    gap: 6px;
    background: var(--baseColor) !important;
    color: #fff !important;
-   border: 1px solid var(--baseColor) !important;
+   border: 1px solid var(--lightGrayNick) !important;
    border-right: 0 !important;
    border-radius: 8px 0 0 8px !important;
    padding: 10px 10px !important;
@@ -489,8 +531,8 @@
 }
 
 #scenarioAuthorTab.active {
-    background: var(--veryLightBlue) !important;
-    color: var(--baseColor) !important;
+    background: var(--lightBlue) !important;
+    /* color: var(--baseColor) !important; */
 }
 
 #scenarioAuthorTab:focus-visible {

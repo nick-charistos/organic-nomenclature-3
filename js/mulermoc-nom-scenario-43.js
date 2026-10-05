@@ -152,6 +152,7 @@ function fScenarioG(name, fallback) {
   try {
     switch (name) {
       case "selectedMol": return typeof selectedMol !== "undefined" ? selectedMol : fallback;
+      case "currentMolName": return typeof currentMolName !== "undefined" ? currentMolName : fallback;
       case "mode2D": return typeof mode2D !== "undefined" ? mode2D : fallback;
       case "mainChainMode": return typeof mainChainMode !== "undefined" ? mainChainMode : fallback;
       case "etherNamingMode": return typeof etherNamingMode !== "undefined" ? etherNamingMode : fallback;
@@ -293,9 +294,14 @@ function fScenarioCapture() {
   if (showMenu && mol && subset.indexOf(mol) < 0) subset.unshift(mol);
   var spin = !!fScenarioG("rotateFlag", false);
   var moveto = !menuOnly && !adopted && fScenarioViewerOn("3D") ? fScenarioGetMoveto() : null;
+  // Default step title: the live Greek IUPAC name when the loaded
+  // molecule matches the capture (fresh `currentMolName`); the dataset
+  // key when nothing is loaded (adopted pick); "menu" for menu-only.
+  var _liveMol = fScenarioG("selectedMol", null);
+  var _greek = fScenarioG("currentMolName", null);
   var step = {
     n: act.steps.length + 1,
-    title: mol || "menu",
+    title: !mol ? "menu" : (_liveMol === mol && _greek ? _greek : mol),
     note: "",
     selectedMol: mol,
     mode2D: fScenarioG("mode2D", "condensed"),
@@ -1326,6 +1332,20 @@ function fScenarioBuildUi() {
     fScenarioPlayUi();
     fScenarioRenderPresentMenu();
   }
+  // Drawer follows the card: open this panel's drawer (accordion —
+  // all others shut), mark its Steps button. Safe if the panel is gone.
+  function fScenarioOpenDrawer(id) {
+    var panel = id && fScenarioPanelFor(id);
+    var all = document.querySelectorAll(".scenarioDrawer");
+    for (var ai = 0; ai < all.length; ai++) all[ai].classList.remove("open");
+    var btns = document.querySelectorAll(".scenarioPanel .scList");
+    for (var bi = 0; bi < btns.length; bi++) btns[bi].classList.remove("active");
+    if (!panel) return;
+    var d = panel.querySelector(".scenarioDrawer");
+    var lb = panel.querySelector(".scList");
+    if (d) d.classList.add("open");
+    if (lb) lb.classList.add("active");
+  }
   if (!window._scMultiHook) {
     window._scMultiHook = true;
     $(document).on("click", ".scenarioPanel .scSave", function () {
@@ -1337,6 +1357,7 @@ function fScenarioBuildUi() {
       act.steps.push(st);
       fScenarioSyncLegacy();
       fScenarioRenderList(act.id);
+      fScenarioOpenDrawer(act.id);
       var _note = MuLERMoCScenario.lastCaptureNote;
       MuLERMoCScenario.lastCaptureNote = null;
       fScenarioToast(!st.selectedMol ? "Saved menu-only step " + st.n + " (no molecule selected)." : "Saved step " + st.n + "." + (_note ? " " + _note : ""));
@@ -1346,20 +1367,13 @@ function fScenarioBuildUi() {
       if (id) fScenarioSetActive(id);
       var panel = id && fScenarioPanelFor(id);
       var d = panel && panel.querySelector(".scenarioDrawer");
-      // Accordion: opening one scenario's steps closes all others.
-      var willOpen = !!(d && !d.classList.contains("open"));
-      if (willOpen) {
-        var all = document.querySelectorAll(".scenarioDrawer");
-        for (var ai = 0; ai < all.length; ai++) {
-          if (all[ai] !== d) all[ai].classList.remove("open");
-        }
-        var btns = document.querySelectorAll(".scenarioPanel .scList");
-        for (var bi = 0; bi < btns.length; bi++) {
-          if (btns[bi] !== this) btns[bi].classList.remove("active");
-        }
+      if (d && d.classList.contains("open")) {
+        // Toggle-off: shut everything.
+        d.classList.remove("open");
+        if (this.classList) this.classList.remove("active");
+      } else {
+        fScenarioOpenDrawer(id);
       }
-      if (d) d.classList.toggle("open");
-      if (this.classList) this.classList.toggle("active", !!(d && d.classList.contains("open")));
     });
     $(document).on("click", ".scenarioPanel .scExport", function () {
       var id = fScenarioPanelIdFromEl(this);
@@ -1372,9 +1386,15 @@ function fScenarioBuildUi() {
       var id = fScenarioPanelIdFromEl(this);
       if (id) fScenarioDelete(id);
     });
-    $(document).on("click", ".scenarioPanel", function () {
+    $(document).on("click", ".scenarioPanel", function (e) {
       var id = this.getAttribute && this.getAttribute("data-scenario-id");
-      if (id && id !== MuLERMoCScenario.activeId) fScenarioSetActive(id);
+      if (!id) return;
+      // Controls handle themselves (Save opens via its own path, Steps
+      // toggles, inputs just focus); background clicks select + reveal.
+      if (e && e.target && e.target.closest &&
+          e.target.closest("button,input,textarea,select,label,a")) return;
+      if (id !== MuLERMoCScenario.activeId) fScenarioSetActive(id);
+      fScenarioOpenDrawer(id);
     });
     $(document).on("change", ".scenarioPanel .scenarioTitle", function () {
       var id = fScenarioPanelIdFromEl(this);
@@ -1517,6 +1537,7 @@ function fScenarioBuildPanels() {
     panel.setAttribute("data-scenario-id", scen.id);
     panel.innerHTML =
       "<div class='scenarioHeader'>" +
+        "<span class='scScenarioNo' title=''>S1</span>" +
         "<input type='text' class='scenarioTitle' value='' title='Scenario title'>" +
         "<span class='scCount'>0</span>" +
         "<button class='scDelete' title='Delete scenario'>✕</button>" +
@@ -1528,7 +1549,7 @@ function fScenarioBuildPanels() {
         "<button class='scPresent' title='Open presentation at step 1'>Play ▶</button>" +
       "</div>" +
       "<div class='scenarioDrawer'>" +
-        "<div class='scStepsTitle'><b><span class='scStepsName'></span> Steps</b> <span style='opacity:.6'>(in-memory + file)</span></div>" +
+        "<div class='scStepsTitle'><b><span class='scStepsName'></span> Steps</b> <span style='opacity:.6'></span></div>" +
         "<div class='scSteps'></div>" +
       "</div>";
     var ti = panel.querySelector(".scenarioTitle");
@@ -1545,8 +1566,25 @@ function fScenarioRenderOne(scen) {
   var cnts = panel.querySelectorAll(".scCount");
   var listBtn = panel.querySelector(".scList");
   if (!box) return;
-  for (var ci = 0; ci < cnts.length; ci++) cnts[ci].textContent = String(scen.steps.length);
-  if (listBtn) listBtn.innerHTML = "Steps (" + scen.steps.length + ")";
+  // Empty-state flags (0 steps): count pills, Steps button, and the card.
+  var _empty = scen.steps.length === 0;
+  for (var ci = 0; ci < cnts.length; ci++) {
+    cnts[ci].textContent = String(scen.steps.length);
+    if (cnts[ci].classList) cnts[ci].classList.toggle("is-empty", _empty);
+  }
+  if (panel.classList) panel.classList.toggle("is-empty", _empty);
+  // Positional scenario counter (S1, S2, …): index in scenarios[],
+  // recomputed every render so add/delete never leave gaps.
+  var _pos = MuLERMoCScenario.scenarios.indexOf(scen);
+  var _no = panel.querySelector(".scScenarioNo");
+  if (_no) {
+    _no.textContent = "S" + (_pos + 1);
+    _no.title = "Scenario " + (_pos + 1);
+  }
+  if (listBtn) {
+    listBtn.innerHTML = "Steps (" + scen.steps.length + ")";
+    if (listBtn.classList) listBtn.classList.toggle("is-empty", _empty);
+  }
   var nm = panel.querySelector(".scStepsName");
   if (nm) nm.textContent = scen.title || "";
   var ti = panel.querySelector(".scenarioTitle");
@@ -1556,7 +1594,8 @@ function fScenarioRenderOne(scen) {
     var row = document.createElement("div");
     row.className = "srow";
     row.innerHTML =
-      "<span class='stepNumber'>" + st.n + "</span><span class='scStepTitleWrap'><span class='scStepTitleLabel'>Τίτλος βήματος</span><input type='text' class='scStepTitle' placeholder='Τίτλος βήματος' value=''></span>" +
+      "<span id='scStep" + i + "' class='scStepNumberWrap'>" +
+      "<span class='stepNumber'>" + st.n + "</span></span><span class='scStepTitleWrap'><span class='scStepTitleLabel'>Τίτλος βήματος</span><input type='text' class='scStepTitle' placeholder='Τίτλος βήματος' value=''></span>" +
       "<button title='Jump'>Go</button><button title='Up'>↑</button><button title='Down'>↓</button>" +
       "<button title='Delete'>✕</button>";
     // Step type at a glance: "menu" when the step carries a browsable
@@ -1570,7 +1609,9 @@ function fScenarioRenderOne(scen) {
       ? st.selectedMol + (_isMenu ? " + menu (" + _subN + ")" : "")
       : "menu-only (" + _subN + ")";
     molBadge.textContent = _isMenu ? "Μενού" : "Μόριο";
-    row.insertBefore(molBadge, row.firstChild.nextSibling);
+    var numWrap = row.querySelector(".scStepNumberWrap");
+    if (numWrap) numWrap.appendChild(molBadge);
+    else row.insertBefore(molBadge, row.firstChild.nextSibling);
     var titleInput = row.querySelector("input.scStepTitle");
     titleInput.value = st.title || "";
     titleInput.onchange = function () {
@@ -1578,7 +1619,7 @@ function fScenarioRenderOne(scen) {
     };
     var noteInput = document.createElement("textarea");
     noteInput.className = "snote";
-    noteInput.placeholder = "Educational text (supports <b>, <sup>, <sub>)";
+    noteInput.placeholder = "Κείμενο βήματος (υποστηρίζει <b>, <sup>, <sub>)";
     noteInput.value = st.note || "";
     noteInput.onchange = function () {
       st.note = noteInput.value;
