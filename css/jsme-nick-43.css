@@ -328,40 +328,6 @@ font-size: 1rem;
   border: 1px solid var(--baseColor);
 }
 
-/* ── Molecule info button + panel (mirrors name settings) ─────────────── */
-#molInfoBtnDiv .infoBtn {
-  right: 36px;
-}
-
-#molInfoPanel {  
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  box-sizing: border-box;
-  max-height: 0;
-  overflow: hidden;
-  transition:
-    max-height 0.25s ease,
-    padding 0.25s ease;
-  padding: 0 8px;
-  background: #fff;
-  border-bottom: 0;
-  border-top: 0;
-  will-change: max-height;
-}
-
-#molInfoPanel.open {
-  max-height: 260px;
-  padding: 6px 8px;
-  overflow: visible;
-  border-bottom: 1px solid var(--darkEarth);
-}
-
-.molInfoRow {
-  font-size: 0.85rem;
-  color: #333;
-}
-
 .nameContainer {
   justify-content: center;
   /* background-color: var(--bgColor); */
@@ -2283,40 +2249,6 @@ font-size: 1rem;
   padding: 6px 8px;
   overflow: visible;
   border: 1px solid var(--baseColor);
-}
-
-/* ── Molecule info button + panel (mirrors name settings) ─────────────── */
-#molInfoBtnDiv .infoBtn {
-  right: 36px;
-}
-
-#molInfoPanel {  
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  box-sizing: border-box;
-  max-height: 0;
-  overflow: hidden;
-  transition:
-    max-height 0.25s ease,
-    padding 0.25s ease;
-  padding: 0 8px;
-  background: #fff;
-  border-bottom: 0;
-  border-top: 0;
-  will-change: max-height;
-}
-
-#molInfoPanel.open {
-  max-height: 260px;
-  padding: 6px 8px;
-  overflow: visible;
-  border-bottom: 1px solid var(--darkEarth);
-}
-
-.molInfoRow {
-  font-size: 0.85rem;
-  color: #333;
 }
 
 .nameContainer {

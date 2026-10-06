@@ -18,9 +18,18 @@ sequence of steps.
   not implement it.
 
 Non-goals for v1: branching scenarios, quiz scoring, student
-progress tracking, PubChem live lookup, server storage.
+progress tracking, server storage.
+(Removed 2026-10-06: PubChem/external-links placeholders — not in this phase.)
 
 ## 2. Snapshot schema (v1 JSON)
+
+> **Working-copy note 2026-10-06:** the file below is one scenario card.
+> The author bar holds multiple cards (`scenarios[]`, explicit active card,
+> per-card Save/Steps/Export/Play); Export writes one card per file in this
+> shape. Working-copy field notes: there is no Menu checkbox (menu is derived
+> from picks), no `Text` checkbox (heading + text show automatically iff the
+> step carries title or note — legacy `show.text` is ignored/self-healing),
+> and `styleHighlight` is additive (`bondAtoms`, `numberingAtoms`).
 
 ```json
 {
@@ -46,7 +55,6 @@ progress tracking, PubChem live lookup, server storage.
       "audio": {"narrate": false},
       "view3D": {"style": "ballnstick", "spin": false, "showH": true, "atomSymbols": true,
                  "moveto": "moveto 0.0 {...} ...;"},
-      "externalLinks": {},
       "show": {
         "menu": true,
         "viewerButtons": false,
@@ -59,8 +67,7 @@ progress tracking, PubChem live lookup, server storage.
         "nameClick": false,
         "audio": false,
         "rule": false,
-        "text": true,
-        "infoHost": false
+        "text": true   // LEGACY, ignored in working copy: heading + text show automatically iff title/note present
       }
     }
   ]
@@ -71,9 +78,9 @@ State notes (grounded in v42):
 
 * `selectedMol`, `mode2D/modeSuffix`, `mainChainMode`,
   `etherNamingMode`, `nameAnalysisMode`, `selectedRule` mirror
-  `js/mulermoc-nom-molview-42.js:7-41`,
-  `fSelectMol:489`, `fShowNameAnalysis:2723`,
-  `fExplainNameComp:3124`.
+  `js/mulermoc-nom-molview-43.js` (`fSelectMol`, `fShowNameAnalysis`,
+  `fExplainNameComp`). (Older revisions cited `molview-42.js` line numbers;
+  line refs are fragile — prefer function names.)
 * 2D style: `svgAtomColors2DFlag`, `atomColorMode2D`,
   `zigzagCheck` are stored; menu grouping mode is not (menu is
   hidden in playback). The legacy original-JSME pane toggle is not
@@ -91,32 +98,32 @@ State notes (grounded in v42):
   buttons), since class-based hides beat inline restore.
 * 3D style: JSmol style/spin/H/symbols are stored.
 * 3D camera: `view3D.moveto` stores the verbatim JSmol `moveto`
-  string captured via `show moveto`
-  (`Jmol.getPropertyAsString(applet, "moveto")`, fallback
-  `Jmol.scriptWait(applet, "show moveto")`). `null` means "use
+  string captured via `Jmol.scriptWait(applet, "show moveto")`-only
+  (S1 repair 2026-10-04: the `getPropertyAsString(applet, "moveto")`
+  branch poisoned stored steps and is deleted). `null` means "use
   the data-file default" (`nameExamples[mol].moveto`, applied in
-  `fLoadMol3D:2418-2429`). Capture with `rotate off`; apply
+  `fLoadMol3D`). Capture with `rotate off`; apply
   after `load + center`, before `spt/init-3.spt`, then restore
-  the `spin` flag. Validate prefix `moveto`, strip newlines.
+  the `spin` flag. Validate prefix `moveto`, strict numeric grammar, strip newlines.
 * Never persist transient handles: SVG nodes, JSmol objects,
   `myNumberingTimeout`, TTS voices.
-* `externalLinks` is a reserved passthrough for the future
-  `PUBCHEM_HYBRID_PLAN.md` lookup; no lookup in v1.
+  (Removed 2026-10-06: `externalLinks` reserved passthrough — not in this phase;
+  legacy files carrying it load with it silently stripped.)
 
 Visibility rules:
 
 * `show.viewers` is the representation mode: 2D-only, 3D-only,
   or both. A hidden viewer is not rendered at all (skip
   `fLoadMol2D` / `fLoadMol3D`, `display:none`), reusing the
-  scope of `fToggleViewer2D:231` and `fToggleViewer3D:247`.
+  scope of `fToggleViewer2D` and `fToggleViewer3D`.
 * `show.controls.2D` toggles `#radio2DMode`
-  (`mulermoc-nom-42.html:194-230`: `Έγχρωμα Σύμβολα`,
+  (`mulermoc-nom-43.html`: `Έγχρωμα Σύμβολα`,
   `Συνεπτυγμένος/Ανεπτυγμένος/Σκελετικός`, `Σύμβολα CHn`).
   Per-step drawer checkbox `2D controls` (default unchecked; disabled
   unless the step's 2D viewer is visible). On apply the bar visuals
   (mode radios, color checkbox + atom/group radios, CHn box) mirror the
   step's stored values via `fScenarioSyncControlUi()`, not the live states.
-* `show.controls.3D` toggles `#controls3D` (`:241-274`:
+* `show.controls.3D` toggles `#controls3D`:
   `Σύμβολα ατόμων`, `Υδρογόνα C-H`, `#dropMenu` style,
   `Περιστροφή`). Irrelevant when that viewer is hidden.
   Per-step drawer checkbox `3D controls` (default unchecked; disabled
@@ -255,23 +262,24 @@ Visibility rules:
   "legacy file" warning; `> 1` = refuse ("needs a newer app");
   `== 1` = apply; `< 1` = in-memory `migrateScenario()`
   filling defaults (`moveto: null`,
-  `show.save/audio/infoHost: false`) without overwriting the
-  file — the user Exports to upgrade. Bump `scenarioVersion`
+  `show.save/audio: false`) without overwriting the
+  file — the user Exports to upgrade. Removed fields (`externalLinks`,
+  `show.infoHost`) are stripped silently. Bump `scenarioVersion`
   only on breaking schema changes; additive optional fields use
   defaults and need no bump.
 
-## 6. molInfo cleanup (deferred to v44)
+## 6. molInfo / PubChem removal (done 2026-10-06 — not in this phase)
 
-The v40-v42 `molInfoBtn` / `molInfoPanel` is dead code
-(`molInfoEnabled = false`, see
-`js/mulermoc-nom-molview-42.js:32-33,309-321,2746-2784` and
-`css/jsme-nick-42.css:330-358`).
+Removed from the v43 set: `molInfoBtn` / `molInfoPanel` dead code
+(`molInfoEnabled = false`) in `js/mulermoc-nom-molview-43.js`
+(`fToggleMolInfo`, `svgInfo`, panel/button builders) + molInfo CSS in
+`css/jsme-nick-43.css` + `molInfoPanelSlot` host + `externalLinks` /
+`show.infoHost` in `js/mulermoc-nom-scenario-43.js` (capture/defaults
+stripped; legacy files load with them silently ignored, no version bump).
+`docs/PUBCHEM_HYBRID_PLAN.md` deleted.
 
-Status in v43: **not deleted**. The scenario module instead injects
-a minimal `<div id="molInfoPanelSlot">` host at runtime (hidden
-unless `show.infoHost`), reserving the slot for the future PubChem
-`externalLinksPanel`. Full deletion of the dead button/panel code
-moves to v44 (canonical set), when `molview` is touched anyway.
+Kept untouched: v42 copies (`molview-42.js`, `jsme-nick-42.css` — frozen),
+`archive/**` (museum), `mols/**/*.sdf` (`PUBCHEM_*` source-data tags).
 
 * Legacy `#molInfo` in `functional-groups.html:80` is a
   different page and stays untouched (now in `archive/html/`).
@@ -283,11 +291,11 @@ Done in v43 (`mulermoc-nom-43.html`, last suffixed copy):
 1. ✅ `js/mulermoc-nom-scenario-43.js`:
    capture / validate / apply / export / import.
 2. ✅ `mulermoc-nom-43.html`: includes the scenario module + `css/mulermoc-nom-scenario-43.css`
-   (toolbar, playback bar, import input, info-host slot are injected at
+   (toolbar, playback bar, import input are injected at
    runtime; all scenario chrome formats live in the stylesheet, not in JS).
 3. ✅ Apply path through `fSelectMol -> fShowNameAnalysis ->
    fExplainNameComp -> fShowRule`; chrome hidden in playback.
-4. ⏭️ `molInfo` deletion deferred to v44 (see section 6).
+4. ✅ `molInfo`/PubChem placeholders removed from v43 (see section 6).
 5. Browser tests: save/present/navigate/exit, export/import
    round-trip, corrupt/missing-molecule imports, hidden-chrome
    assertions (manual click-through pending).
@@ -298,7 +306,7 @@ same reuse contract.
 
 ## 8. Open questions for development (moveto timing closed 2026-10-04)
 
-* ~~Where the PubChem host panel should live long-term.~~ (open — `#molInfoPanelSlot` reserves the slot)
+* ~~Where the PubChem host panel should live long-term.~~ (removed 2026-10-06 — not in this phase; plan file deleted)
 * ~~JSmol `moveto` timing on async `load`~~ — **closed by S1–S4 repair:**
   S1 capture is `scriptWait("show moveto")`-only (the `getPropertyAsString`
   branch poisoned stored steps and is deleted) with a strict numeric grammar
@@ -323,5 +331,4 @@ LEARN is layer 1 of the twofold+1 vision (see `README.md`, `docs/LAYERS-PLAN.md`
 * **Per-step menu subsets (EXPLORE-lite enforcement):** steps may carry a browsable `menuSubset` (tri-state group pick in authoring; menu derived — 2+ picks show it, single pick collapses to the step molecule); a scenario can walk students through an expanding universe (3 alkanes → +alcohols → +ether) instead of the full 64-molecule menu.
 * **Two-level `note` convention:** `note` carries the teacher narrative; authoring guidance is EPAL-simple first line(s) / Lyceum-full extension (P3 authors, P5 uses for EPAL-vs-Lyceum comparison). Schema unchanged — convention only.
 * **`moveto` curation:** capture with `rotate off`; prefer curated per-step cameras for the library over ad-hoc capture.
-* **`externalLinks{}`** stays a reserved passthrough (+1: `isomerism | reactions` later, no lookup in v1).
 * **Authoring docs:** Save → Export → Present → Exit flow (Exit restores menu + both viewers + all bars; in-memory steps kept).

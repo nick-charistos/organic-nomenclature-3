@@ -483,15 +483,6 @@
 
 }
 
-#molInfoPanelSlot {
-   border: 1px dashed #bbb;
-   border-radius: 6px;
-   padding: 6px;
-   margin: 6px 0;
-   font-size: .8rem;
-   color: #555
-}
-
 /* authoring handle: child of the bar docked flush to its top-left corner.
    Overrides the closed bar's hiding (visibility/pointer-events are
    re-enableable on children). The closed bar has no shadow and parks at
@@ -1265,15 +1256,6 @@
    text-align: center;
    max-width: 900px;
 
-}
-
-#molInfoPanelSlot {
-   border: 1px dashed #bbb;
-   border-radius: 6px;
-   padding: 6px;
-   margin: 6px 0;
-   font-size: .8rem;
-   color: #555
 }
 
 /* authoring handle: child of the bar docked flush to its top-left corner.

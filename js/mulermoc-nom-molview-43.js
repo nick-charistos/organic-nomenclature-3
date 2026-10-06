@@ -32,8 +32,6 @@ let vis3D = "ballnstick";
 let JmolSelection = "select none";
 let selectedRule;
 let nameSettingsFlag = true;
-let molInfoFlag = false;
-const molInfoEnabled = false; // master switch: true = show Info button + panel
 let narrateAnalysisFlag = false;
 if (typeof window.nameBoxFlag === "undefined") window.nameBoxFlag = true;
 if (typeof window.nameCrossFlag === "undefined") window.nameCrossFlag = false;
@@ -98,9 +96,6 @@ const svgNameCross =
 
 const svgNameCrossOff =
   "<svg viewBox='0 0 22 22' width='18' height='18' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' style='vertical-align:middle' xmlns='http://www.w3.org/2000/svg'><path d='M3.494 11.91h4.76m-6.347 3.173 3.39-7.457c.183-.404.275-.606.402-.668a.397.397 0 0 1 .35 0c.128.062.22.264.403.668l3.39 7.457M13.745 11.91h4.761m-6.348 3.173 3.39-7.457c.183-.404.275-.606.402-.668a.397.397 0 0 1 .351 0c.127.062.219.264.403.668l3.39 7.457' stroke='currentColor' style='stroke-width:1.65;stroke-dasharray:none'/></svg>";
-
-const svgInfo =
-  "<svg viewBox='0 0 22 22' width='18' height='18' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' style='vertical-align:middle' xmlns='http://www.w3.org/2000/svg'><circle cx='11' cy='11' r='8'/><path d='M11 10.5v5'/><circle cx='11' cy='7.5' r='0.5' fill='currentColor' stroke='none'/></svg>";
 
 fInitViewerSettingsBtn();
 
@@ -301,20 +296,6 @@ function fToggleNameSettings() {
   var btn = document.getElementById("nameSettingsBtn");
   // var isOpen = panel.classList.contains('open')
   if (!nameSettingsFlag) {
-    panel.classList.remove("open");
-    btn.classList.remove("active");
-  } else {
-    panel.classList.add("open");
-    btn.classList.add("active");
-  }
-}
-
-function fToggleMolInfo() {
-  molInfoFlag = !molInfoFlag;
-  var panel = document.getElementById("molInfoPanel");
-  var btn = document.getElementById("molInfoBtn");
-  if (!panel || !btn) return;
-  if (!molInfoFlag) {
     panel.classList.remove("open");
     btn.classList.remove("active");
   } else {
@@ -2744,28 +2725,6 @@ function fShowNameAnalysis() {
 
   const nameSettingClass = nameSettingsFlag ? "open" : "";
   const namesSettingsBtnActiveClass = nameSettingsFlag ? "active" : "";
-  const molInfoPanelClass = molInfoFlag ? "open" : "";
-  const molInfoBtnActiveClass = molInfoFlag ? "active" : "";
-
-  // Molecule info (chemical class + homologous series) for #molInfoPanel.
-  const _molClassification =
-    selectedMol && nameExamples[selectedMol]
-      ? nameExamples[selectedMol].classification || {}
-      : {};
-  const _chemClassLabel =
-    (typeof chemicalClassLabels !== "undefined" &&
-      _molClassification.chemicalClass &&
-      chemicalClassLabels[_molClassification.chemicalClass]) ||
-    (typeof molTaxonomy !== "undefined" && molTaxonomy) ||
-    "";
-  const _seriesLabel =
-    (typeof homologousSeriesLabels !== "undefined" &&
-      _molClassification.seriesKey &&
-      homologousSeriesLabels[_molClassification.seriesKey]) ||
-    (typeof molTaxonomy !== "undefined" && molTaxonomy) ||
-    "";
-  const molInfoPanelHtml = `<div id='molInfoPanel' class='${molInfoPanelClass}'><div class='molInfoRow'>Χημική τάξη: <b>${_chemClassLabel}</b></div><div class='molInfoRow'>Ομόλογη σειρά: <b>${_seriesLabel}</b></div></div>`;
-
   // Ether IUPAC/COMMON toggle (ethers only, name panel).
   const _isEtherNaming =
     !!selectedMol &&
@@ -2776,13 +2735,8 @@ function fShowNameAnalysis() {
     ? `<div id='radioEtherNaming' class='HFlex' style='align-items:center;gap:0;margin-right:8px'><span class='radioLabel'>Ονομασία:</span><div class='radioCheckContainer etherNamingRadio ${_iupacCls}' data-naming-mode='iupac'>IUPAC<span class='radioCheck'></span></div><div class='radioCheckContainer etherNamingRadio ${_commonCls}' data-naming-mode='common'>Κοινή<span class='radioCheck'></span></div></div>`
     : "";
 
-  const molInfoBtnHtml = molInfoEnabled
-    ? `<div id='molInfoBtnDiv'><button id='molInfoBtn' class='settingsBtn infoBtn ${molInfoBtnActiveClass}' onclick='fToggleMolInfo()' data-tooltip='Πληροφορίες μορίου'>${svgInfo}</button></div>`
-    : "";
-  const molInfoPanelSlot = molInfoEnabled ? molInfoPanelHtml : "";
-
   nameCompContainer =
-    `<div class='panelTitle'><span>Ονομασία</span>${molInfoBtnHtml}<div id='nameSettingsBtnDiv'><button  id='nameSettingsBtn'  class='settingsBtn ${namesSettingsBtnActiveClass}'  onclick='fToggleNameSettings()'  data-tooltip='Ρυθμίσεις Ονομασίας' >${svgSettings} </button></div></div><div id='nameSettingsPanel' class='${nameSettingClass}'>${etherNamingToggle}<button id='narrateAnalysisToggle' class='narrateBtn' data-tooltip='${toggleTitle}'>${toggleIcon}</button><button id='readNameBtn' class='readNameBtn' data-tooltip='Εκφώνηση ονόματος' >${svgPlay}</button><button id='nameStyleBoxToggle' class='nameStyleBox' data-tooltip='${boxTooltip}'>${toggleNameStyleBox}</button><button id='nameStyleCrossToggle' class='nameStyleCross' data-tooltip='${crossTooltip}'>${toggleNameStyleCross}</button></div>${molInfoPanelSlot}<div class='HFlex nameContainer' style='justify-content:center;'><div class='nameCompContainer'>`;
+    `<div class='panelTitle'><span>Ονομασία</span><div id='nameSettingsBtnDiv'><button  id='nameSettingsBtn'  class='settingsBtn ${namesSettingsBtnActiveClass}'  onclick='fToggleNameSettings()'  data-tooltip='Ρυθμίσεις Ονομασίας' >${svgSettings} </button></div></div><div id='nameSettingsPanel' class='${nameSettingClass}'>${etherNamingToggle}<button id='narrateAnalysisToggle' class='narrateBtn' data-tooltip='${toggleTitle}'>${toggleIcon}</button><button id='readNameBtn' class='readNameBtn' data-tooltip='Εκφώνηση ονόματος' >${svgPlay}</button><button id='nameStyleBoxToggle' class='nameStyleBox' data-tooltip='${boxTooltip}'>${toggleNameStyleBox}</button><button id='nameStyleCrossToggle' class='nameStyleCross' data-tooltip='${crossTooltip}'>${toggleNameStyleCross}</button></div><div class='HFlex nameContainer' style='justify-content:center;'><div class='nameCompContainer'>`;
 
   // COMMON ether naming: render alkyl boxes + αιθέρας instead of IUPAC slots.
   const _commonParts = _isEtherNaming && etherNamingMode === "common" ? fGetEtherCommonParts() : null;

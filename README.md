@@ -2,7 +2,7 @@
 
 A Greek-first interactive learning platform for organic nomenclature, built around molecular structure, naming logic, and multiple representations.
 
-**Current working baseline:** v43 (didactic-scenarios scaffold, byte-identical engine to v42)
+**Current working baseline:** v43 (multi-scenario authoring in working copy; tag v43 was a single-scenario scaffold with engine identical to v42 — working-copy `molview/teaching-43` have since diverged, see CHANGELOG [Unreleased])
 **Main entry point:** [mulermoc-nom-43.html](mulermoc-nom-43.html)
 **Core engine:** [js/mulermoc-nom-core-43.js](js/mulermoc-nom-core-43.js)
 **Viewer layer:** [js/mulermoc-nom-molview-43.js](js/mulermoc-nom-molview-43.js)
@@ -37,12 +37,12 @@ Runnable history via tags `v41`/`v42` (pushed to repo3). The old versioned file 
 - First ester molecules: `ethanoic_methyl_ester` (CH3COOCH3) and `propanoic_methyl_ester` (CH3CH2COOCH3), with condensed, expanded and skeletal 2D data plus 3D SDFs. They run in algorithmic main-chain mode; stored `mainChain`/`moveto` data remains optional.
 - Ester detection in 2D and 3D (`functionalGroupObj.ester`), two-fragment `esterInfo` analysis, and two-word Greek IUPAC naming (e.g. προπανοϊκός μεθυλεστέρας) with ester-aware euphony.
 - Ester highlight/numbering: alcohol-fragment click numbers only the alcohol chain; ester-word click highlights the `O-C(=O)-O` triad in 2D and 3D.
-- Viewer: `[2D][3D]` title-bar visibility toggles, `Επισήμανση ατόμων κατά την αρίθμηση` setting (on by default), 2D atom colors on by default, molecule info button + panel (disabled by default via `molInfoEnabled = false`).
+- Viewer: `[2D][3D]` title-bar visibility toggles, `Επισήμανση ατόμων κατά την αρίθμηση` setting (on by default), 2D atom colors on by default.
 - Menu: chemical-class taxonomy (`carbonylCompounds`, `esters`; hydroxy/amino acids folded into `carboxylicAcids`), flat `Όλα τα μόρια` grouping mode, rewritten rule-3 table with `data-row` keys.
 
 ---
 
-## Recent fix: branch highlighting
+## Recent fix: branch highlighting (v43 working copy, unreleased — see CHANGELOG [Unreleased])
 
 The current working branch focuses on the selection logic for alkyl side chains and related expanded hydrogens.
 
@@ -101,7 +101,7 @@ The next product iteration is being re-scoped around a clearer educational model
 - 2D atom colors on by default
 - Current molecule data set for the teaching application (64 molecules, incl. 2 ethers + 2 esters)
 
-### Molecule grouping (v39, refined in v41)
+### Molecule grouping (v39, refined in v41–v43)
 
 The menu classifies molecules through the existing structure-analysis
 pipeline (`fAnalyseStructure()` and `fDetectMolType()`). Each molecule receives
@@ -109,11 +109,14 @@ a classification snapshot containing its functional groups, homologous-series
 key, bond-series type, and total carbon count.
 
 The default menu groups molecules by homologous series. Rule grouping and a
-flat `Όλα τα μόρια` (all molecules) list are available as alternate modes.
-Chemical classes in v41 include `ethers`, `esters` and `carbonylCompounds`
+flat `Όλα τα μόρια` (all molecules) list are available as alternate modes
+(v43 working copy defaults to the flat `all` mode; rule mode keeps its
+pedagogical order). Chemical classes in v41 include `ethers`, `esters` and `carbonylCompounds`
 (merged aldehydes/ketones); hydroxy/amino acids are folded into
 `carboxylicAcids`. Remaining special series include keto acids, hydroxy
-nitriles, and oxo carboxylic acids.
+nitriles, and oxo carboxylic acids. Since the v43 working copy, `Χημικές Τάξεις`
+groups are also sorted by ascending carbon count (`fSortPropsByCarbonCount`;
+see CHANGELOG [Unreleased]).
 
 Within each homologous-series group, molecules are ordered by increasing total
 number of carbon atoms. The optional `mainChain` data is not required for this
@@ -210,7 +213,7 @@ These plans describe the research and product ambitions, but the current impleme
 - The project plans still describe older intended milestones and should be reconciled with the real v43 baseline.
 - The chemistry engine should be validated before expanding into more complex categories.
 - Ester detection/naming/highlight paths are implemented since v41; tertiary-amine detection still needs explicit testing.
-- v43 adds the didactic-scenario layer (`docs/didactic-scenario-plan.md`, `js/mulermoc-nom-scenario-43.js`) without changing the engine: `core-43` is byte-identical to `core-42`.
+- v43 adds the didactic-scenario layer (`docs/didactic-scenario-plan.md`, `js/mulermoc-nom-scenario-43.js`) without changing chemistry logic: tag-v43 `core-43` differed from `core-42` only by `let`-scoping hygiene plus two shared-state declarations (`esterInfo`, `alkylSubstituentNames`); `molview/teaching-43` diverged further in the working copy (MOL2D registry, 3D bond coloring, `all`-default grouping — see CHANGELOG [Unreleased]).
 
 ---
 
@@ -247,9 +250,9 @@ All layers reuse the same v43 engine (analysis + 2D/3D viewers + naming panels),
 
 Details: `docs/LAYERS-PLAN.md` (layer contracts, exercise types v1, research logging schema v1, timeline, ownership).
 
-### Scenario authoring flow (v43, unreleased)
+### Scenario authoring flow (v43 working copy, unreleased)
 
-Authoring hides behind the vertical `Σενάρια` handle (docked to the author bar, travels with it; presentation hides the whole unit). The bar is a global shell (`+ New` scenario, `Import` adds a card); each scenario card has its own Save/Steps/Export/Play panel plus an accordion drawer of steps. Authors pick molecules (or whole groups) per step — selecting a row in pick mode also picks it — tune per-step chrome in the drawer (2D/3D controls, naming controls, name interaction; text is automatic, menu is derived from picks), and Save snapshots that may also be molecule-less (`menu`-only steps with an empty viewer). Notes support `<b>`/`<sup>`/`<sub>`. Present walks the flat per-step menus from the applied step 1; Exit restores the full author chrome. Details: `docs/didactic-scenario-plan.md`.
+Authoring hides behind the vertical `Σενάρια` handle (docked to the author bar, travels with it; presentation hides the whole unit). The bar is a global shell (`+ New` scenario, `Import` adds a card); each scenario card has its own Save/Steps/Export/Play panel plus an accordion drawer of steps. Authors pick molecules (or whole groups) per step — selecting a row in pick mode also picks it — tune per-step chrome in the drawer (2D/3D controls, naming controls, name interaction; text is automatic, menu is derived from picks), and Save snapshots that may also be molecule-less (`menu`-only steps with an empty viewer). Notes support `<b>`/`<sup>`/`<sub>`. Present walks the flat per-step menus from the applied step 1; Exit restores the full author chrome (menu + both viewers + all bars). Tag v43 had a simpler single-scenario flow. Details: `docs/didactic-scenario-plan.md`.
 
 ### Team
 
@@ -266,7 +269,7 @@ Authoring hides behind the vertical `Σενάρια` handle (docked to the autho
 
 - **Embedded static:** the chemistry app stays dependency-free static (JSME/JSmol/Snap.svg/jQuery, no build); Drupal embeds it and owns scenarios, exercises/quizzes, users/sessions, logging, and exports.
 - **Stats primary for research:** response + time logs are designed for publication (pseudonymous participants, condition/layer flags, school-type covariate joined in Drupal — no PII in the static app).
-- **Extensible:** scenario `externalLinks{}`, exercise `itemType`, log `domain` fields reserve `nomenclature | isomerism | reactions` — future domains without schema breaks.
+- **Extensible:** scenario `menuSubset`, exercise `itemType`, log `domain` fields reserve `nomenclature | isomerism | reactions` — future domains without schema breaks.
 
 ---
 

@@ -17,7 +17,7 @@ Hosting: **embedded static** — the chemistry app stays dependency-free static;
 | **PLAY** | TBD (Drupal quiz session) | gamified items, score/streak/levels v1; events queued offline, synced to Drupal | P2 leads, P1 thin client; P5/P6 research | response+time log → CSV; EPAL-vs-Lyceum analysis possible |
 
 `show.*`, `scenarioVersion: 1`, and validation policy are defined in `docs/didactic-scenario-plan.md`.
-`externalLinks{}`, exercise `itemType`, and log `domain` reserve `nomenclature | isomerism | reactions`.
+Exercise `itemType` and log `domain` reserve `nomenclature | isomerism | reactions`.
 Scenario schema and log events reserve an optional `lang` field (`gr` default; no implementation until Phase 5).
 
 ---

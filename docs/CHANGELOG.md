@@ -4,9 +4,18 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ---
 
-## [Unreleased]
+## [Unreleased] (v43 working copy — splits committed vs uncommitted 2026-10-06)
 
-- Fixed duplicated `mulermoc-nom-43.html` document (stray `>` + full second `<head><body>` copy): single `pageContainer`, single JSmol applet init, single `</html>` — duplicate IDs had desynced viewer capture/apply/toggles (`2D-only → 2D+3D` saved as 3D-only).
+### Committed (hashes in git log)
+- S1–S4 JSmol scenario repair (`js/mulermoc-nom-scenario-43.js`, `js/mulermoc-nom-molview-43.js`, `mulermoc-nom-43.html`): `scriptWait("show moveto")`-only capture (poisoned `getPropertyAsString` branch deleted), strict numeric `moveto` grammar with import-time quarantine (`moveto: null` + warning), per-step token gating the camera (+400ms) and the name-box click (on `fFetchAndParse3D` completion via `fScenarioOn3DParsed`, 2s fallback), `jmol_isReady` handshake (`window.JSmolReadyFlag`) for `?scenario&present` deep links, `" compSecondSub*"` mode-key normalization; `zap` guard fixed (`!show3D`); Exit restores full chrome (menu `menu-open` + both viewers) via a transient clone so stored `show.*` survives for Export. Closes `didactic-scenario-plan.md` §8 `moveto`-timing question.
+- Fixed duplicated `mulermoc-nom-43.html` document (stray `>` + full second `<head><body>` copy, commit `49aead3`): single `pageContainer`, single JSmol applet init, single `</html>` — duplicate IDs had desynced viewer capture/apply/toggles (`2D-only → 2D+3D` saved as 3D-only).
+- Vision twofold+1 with LEARN-first layers (LEARN → EXPLORE-lite → PRACTICE → PLAY); embedded static in Drupal; research-primary logging. See `README.md` and new `docs/LAYERS-PLAN.md` (contracts, exercise types v1, event schema v1, timeline, P1–P6 ownership).
+- Scenario exit now restores full chrome (menu `menu-open` + both viewers + all bars) in `js/mulermoc-nom-scenario-43.js`.
+- LEARN v1.1: stored `scenarios/` library plan + two-level EPAL/Lyceum `note` convention (`docs/didactic-scenario-plan.md` §9).
+- EN upgrade recorded as conditional Phase 5 (`docs/LAYERS-PLAN.md` §8); `lang` reserved in schema/events, not implemented.
+
+### Working copy (uncommitted batches — verify with `git status` before release)
+- Removed PubChem/molInfo placeholders (not in this phase): `molInfoBtn`/`molInfoPanel` dead code (`fToggleMolInfo`, `svgInfo`, panel/button builders) from `js/mulermoc-nom-molview-43.js`, molInfo CSS from `css/jsme-nick-43.css`, `molInfoPanelSlot` host + `externalLinks`/`show.infoHost` from `js/mulermoc-nom-scenario-43.js` (capture/defaults stripped; legacy files load with them silently ignored, `scenarioVersion` stays 1); deleted `docs/PUBCHEM_HYBRID_PLAN.md`; docs updated (`README.md`, `docs/LAYERS-PLAN.md`, `docs/didactic-scenario-plan.md` §1/§2/§5/§6/§7/§8/§9). v42 copies frozen untouched.
 - Menu-only naming hint follows the lock: hidden only when `Name interact` is off; when interaction is on it shows on step entry and reappears after free-browse selection via new `fScenarioOnPresentBrowse()` (flat-menu click hook; `fExplainNameComp` only sets HTML, never display, so the step-apply hide persisted) (`js/mulermoc-nom-scenario-43.js`, `js/mulermoc-nom-teaching-43.js`, `docs/didactic-scenario-plan.md` §2).
 - Naming-controls steps open without a flash: `fScenarioApply` forces `nameSettingsFlag = false` before `fSelectMol()` when `show.nameSettings !== true` in presentation, so the rebuilt `#nameSettingsPanel` renders closed on first paint instead of a visible open→close fade; `fScenarioChrome` remains the authority afterwards (`js/mulermoc-nom-scenario-43.js`).
 
@@ -30,13 +39,7 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 - Scenario Exit force-restores all control bars (`#radio2DMode`, `#controls3D`, save buttons, viewers, menu): new `fScenarioRestoreChrome()` clears both inline `display` and the `!important` `hide` class left by viewer toggles, and re-activates the 2D/3D buttons so the next snapshot captures them truthfully (`js/mulermoc-nom-scenario-43.js`).
 - Bond-component clicks (αν/εν/ιν) highlight bonds only by default; new `Επισήμανση ατόμων δεσμών` settings checkbox (`#bondAtomsCheck`, default off) opts endpoint C atoms back in, with live re-apply (`js/mulermoc-nom-molview-43.js`, `js/mulermoc-nom-teaching-43.js`, `mulermoc-nom-43.html`).
 - Snapshots capture all applied settings: new additive `styleHighlight` group (`bondAtoms`, `numberingAtoms`; defaults for legacy files, no version bump); step apply also re-syncs the `Έγχρωμα Σύμβολα` checkbox and atom/group radios from `style2D` (render already followed the flag); Present stashes the author's live checkbox states and Exit restores them (`js/mulermoc-nom-scenario-43.js`, `docs/didactic-scenario-plan.md` §2).
-- S1–S4 JSmol scenario repair (`js/mulermoc-nom-scenario-43.js`, `js/mulermoc-nom-molview-43.js`, `mulermoc-nom-43.html`): `scriptWait("show moveto")`-only capture (poisoned `getPropertyAsString` branch deleted), strict numeric `moveto` grammar with import-time quarantine (`moveto: null` + warning), per-step token gating the camera (+400ms) and the name-box click (on `fFetchAndParse3D` completion via `fScenarioOn3DParsed`, 2s fallback), `jmol_isReady` handshake (`window.JSmolReadyFlag`) for `?scenario&present` deep links, `" compSecondSub*"` mode-key normalization; `zap` guard fixed (`!show3D`); Exit restores full chrome (menu `menu-open` + both viewers) via a transient clone so stored `show.*` survives for Export. Closes `didactic-scenario-plan.md` §8 `moveto`-timing question.
-- Vision twofold+1 with LEARN-first layers (LEARN → EXPLORE-lite → PRACTICE → PLAY); embedded static in Drupal; research-primary logging. See `README.md` and new `docs/LAYERS-PLAN.md` (contracts, exercise types v1, event schema v1, timeline, P1–P6 ownership).
-- Scenario exit now restores full chrome (menu `menu-open` + both viewers + all bars) in `js/mulermoc-nom-scenario-43.js`.
-- LEARN v1.1: stored `scenarios/` library plan + two-level EPAL/Lyceum `note` convention (`docs/didactic-scenario-plan.md` §9).
-- EN upgrade recorded as conditional Phase 5 (`docs/LAYERS-PLAN.md` §8); `lang` reserved in schema/events, not implemented.
-- Scenario steps gain heading + text: per-step `title` replaces the page `#pageTitle` in presentation (restored on exit) and `note` renders as an educational paragraph in `#scStepText` below it (plain text, `show.text` default `true`; drawer textarea + visibility checkbox; `noteFormat` reserved). `#menuCol` hidden wholesale in presentation so content centers.
-- Scenario chrome formats moved from `fScenarioInjectCss` to `css/mulermoc-nom-scenario-43.css` (injector deleted; linked in `43.html`).
+- Scenario steps gain heading + text: per-step `title` replaces the page `#pageTitle` in presentation (restored on exit) and `note` renders as an educational paragraph in `#scStepText` below it (safe subset `<b>`/`<sup>`/`<sub>`; heading + text show automatically iff title/note present, legacy `show.text` ignored; drawer textarea, no visibility checkbox; `noteFormat` reserved). `#menuCol` hidden wholesale in presentation so content centers.
 
 ---
 
@@ -44,7 +47,7 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 **Didactic scenarios scaffold — last suffixed copy**
 
-- New parallel file set `mulermoc-nom-43.html` + `js/*-43.js` + `css/jsme-nick-43.css`, copied verbatim from v42 (only path renames + one script include). `core/molview/teaching/data/css-43` are byte-identical to v42, so `43-no-params == 42`.
+- New parallel file set `mulermoc-nom-43.html` + `js/*-43.js` + `css/jsme-nick-43.css`, copied from v42 (path renames + `state-43.js`/`scenario-43.js` includes + `JSmolReadyFlag` handshake + `bondAtoms` UI). Tag-time `core-43` differed from `core-42` only by `let`-scoping hygiene plus `esterInfo`/`alkylSubstituentNames` declarations (no logic change); `molview/teaching/data/css-43` diverged further in the working copy (see [Unreleased]). Chemistry parity at tag: `43-no-params == 42`.
 - New additive module `js/mulermoc-nom-scenario-43.js` (off by default): snapshot capture (molecule, 2D/3D modes, chain/naming modes, styles, audio flag, 3D `moveto` via `show moveto`), `scenarioVersion: 1` validation with legacy/future policy, apply through the standard `fSelectMol` + name-box click path, per-step `show.*` chrome matrix, memory + JSON file export/import (decision A), `?scenario=…&present=1` + `#step=N` playback URLs. See `docs/didactic-scenario-plan.md`.
 - Museum moved to `archive/` (non-runnable reference); runnable history via tags `v41`/`v42`. v43 is the last suffixed copy; v44 introduces the canonical un-suffixed set.
 - Repositories split: `organic-nomenclature-2` frozen serving v42 (`index.html` → `mulermoc-nom-42.html`); `organic-nomenclature-3` (this repo) serves v43 (`index.html` → `mulermoc-nom-43.html`). All new work happens here.

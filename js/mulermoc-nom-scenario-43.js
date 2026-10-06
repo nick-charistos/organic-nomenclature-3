@@ -332,7 +332,6 @@ function fScenarioCapture() {
       atomSymbols: !!fScenarioG("atomSymbols3DFlag", true),
       moveto: moveto,
     },
-    externalLinks: {},
     menuSubset: subset,
     show: {
       menu: showMenu,
@@ -347,7 +346,6 @@ function fScenarioCapture() {
       audio: false,
       rule: false,
       text: true,
-      infoHost: false,
     },
   };
   if (spin) fScenarioToast("Note: 3D spin is on — stored view may drift.");
@@ -372,22 +370,25 @@ function fScenarioDefaults(step, i) {
     audio: { narrate: false },
     menuSubset: [],
     view3D: { style: "ballnstick", spin: false, showH: true, atomSymbols: true, moveto: null },
-    externalLinks: {},
     show: {
       menu: false, viewerButtons: false, viewerSettings: false,
       viewers: { "2D": true, "3D": true },
       controls: { "2D": false, "3D": false },
       save: { "2D": false, "3D": false },
-      naming: true, nameSettings: false, audio: false, rule: false, text: true, infoHost: false,
+      naming: true, nameSettings: false, audio: false, rule: false, text: true,
     },
   };
   var out = Object.assign({}, d, step);
-  ["style2D", "styleName", "styleHighlight", "audio", "view3D", "show", "externalLinks"].forEach(function (k) {
+  ["style2D", "styleName", "styleHighlight", "audio", "view3D", "show"].forEach(function (k) {
     out[k] = Object.assign({}, d[k], step[k] || {});
   });
   out.show.viewers = Object.assign({}, d.show.viewers, (step.show || {}).viewers || {});
   out.show.controls = Object.assign({}, d.show.controls, (step.show || {}).controls || {});
   out.show.save = Object.assign({}, d.show.save, (step.show || {}).save || {});
+  // removed 2026-10-06 (not in this phase): legacy files may still carry
+  // externalLinks / show.infoHost — strip silently, no warning.
+  delete out.externalLinks;
+  if (out.show) delete out.show.infoHost;
   // arrays copy by value, not by reference (steps stay independent)
   out.menuSubset = Array.isArray(step.menuSubset) ? step.menuSubset.slice() : [];
   out.n = i + 1;
@@ -1139,9 +1140,6 @@ function fScenarioChrome(show) {
   ["narrateAnalysisToggle", "readNameBtn"].forEach(function (id) {
     fScenarioHide(id, !audioOn);
   });
-  // minimal info host for future PubChem links
-  var host = document.getElementById("molInfoPanelSlot");
-  if (host) host.style.display = present && show.infoHost === true ? "" : "none";
   // own UI: author bar + drawer follow authoring mode; the edge tab
   // hides only in presentation (see fScenarioSyncAuthorUi)
   fScenarioSyncAuthorUi();
@@ -1312,16 +1310,6 @@ function fScenarioBuildUi() {
     var t = document.createElement("div");
     t.id = "scenarioToast";
     document.body.appendChild(t);
-  }
-  // minimal info host for future PubChem links (hidden unless show.infoHost)
-  if (!document.getElementById("molInfoPanelSlot")) {
-    var host = document.createElement("div");
-    host.id = "molInfoPanelSlot";
-    host.style.display = "none";
-    host.innerHTML = "<div class='molInfoRow'>Εξωτερικοί σύνδεσμοι: <b>—</b> (PubChem: μελλοντικά)</div>";
-    var anchor = document.getElementById("nameAnalysis") || document.getElementById("nameAnalysisContainer");
-    if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(host, anchor.nextSibling);
-    else document.body.appendChild(host);
   }
   // per-step educational text below the page title (heading = #pageTitle itself)
   if (!document.getElementById("scStepText")) {
