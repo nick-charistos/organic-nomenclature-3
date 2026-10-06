@@ -197,7 +197,13 @@ Visibility rules:
   (`note` textarea, `<b>`/`<sup>`/`<sub>` allowed), per-step chrome
   checkboxes (`2D controls`, `3D controls`, `Name controls`,
   `Name interact` — see §2; no `Text`/`Menu`: text is automatic, menu
-  is derived), reorder up/down, delete, jump-to; step numbers
+  is derived), `Go` (preview/apply the step in authoring), `Update`
+  (rewrite the step's stored view snapshot from the current live view:
+  Go → tweak molecule, 2D/3D modes + styles, naming clicks/toggles,
+  camera, pick → Update; preserves `title`/`note` + the 4 chrome
+  checkboxes, refreshes everything visual incl. `nameAnalysisMode`,
+  `menuSubset`/`show.menu`/`show.viewers`; toasts kind/subset changes),
+  reorder up/down, delete, jump-to; step numbers
   auto-renumber. Steps header carries the live scenario name.
   Headers lead with a positional counter (`S1`, `S2`, …); empty
   scenarios flag `.is-empty` on card, count, and Steps button.

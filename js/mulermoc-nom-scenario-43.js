@@ -1626,7 +1626,7 @@ function fScenarioRenderOne(scen) {
     row.innerHTML =
       "<span id='scStep" + i + "' class='scStepNumberWrap'>" +
       "<span class='stepNumber'>" + st.n + "</span></span><span class='scStepTitleWrap'><span class='scStepTitleLabel'>Τίτλος βήματος</span><input type='text' class='scStepTitle' placeholder='Τίτλος βήματος' value=''></span>" +
-      "<button title='Jump'>Go</button><button title='Up'>↑</button><button title='Down'>↓</button>" +
+      "<button title='Jump'>Go</button><button class='scUpdate' title='Update this step from current view'>Update</button><button title='Up'>↑</button><button title='Down'>↓</button>" +
       "<button title='Delete'>✕</button>";
     // Step type at a glance: "menu" when the step carries a browsable
     // menu (menu-only or molecule+menu subset), else "molecule".
@@ -1718,18 +1718,21 @@ function fScenarioRenderOne(scen) {
         fScenarioGo(idx);
       };
       btns[1].onclick = function () {
+        fScenarioUpdateStep(scenId, idx);
+      };
+      btns[2].onclick = function () {
         if (idx === 0) return;
         var s = fScenarioGet(scenId) || fScenarioActive();
         s.steps.splice(idx - 1, 0, s.steps.splice(idx, 1)[0]);
         fScenarioRenumber(scenId);
       };
-      btns[2].onclick = function () {
+      btns[3].onclick = function () {
         var s = fScenarioGet(scenId) || fScenarioActive();
         if (idx >= s.steps.length - 1) return;
         s.steps.splice(idx + 1, 0, s.steps.splice(idx, 1)[0]);
         fScenarioRenumber(scenId);
       };
-      btns[3].onclick = function () {
+      btns[4].onclick = function () {
         var s = fScenarioGet(scenId) || fScenarioActive();
         s.steps.splice(idx, 1);
         fScenarioRenumber(scenId);
@@ -1798,6 +1801,57 @@ function fScenarioGo(i) {
   }
   fScenarioPlayUi();
   fScenarioRenderPresentMenu();
+}
+
+// ── per-step Update (authoring): Go → tweak live view → Update ───────────
+// Captures the current live view via fScenarioCapture() and overwrites the
+// stored view snapshot at scen.steps[idx]. Authored layer is preserved:
+// title, note, and the 4 drawer chrome checkboxes (show.controls.2D/3D,
+// show.nameSettings, show.nameClick). Everything visual is refreshed:
+// selectedMol, mode2D, mainChainMode, etherNamingMode, nameAnalysisMode
+// (clicked name-box highlight), selectedRule, style2D (atom colors, color
+// mode, zigzag), styleName (box/cross/etherNaming/panelOpen), styleHighlight,
+// audio, view3D (style/spin/showH/atomSymbols/moveto), menuSubset +
+// show.menu/show.viewers. No schema change (scenarioVersion stays 1).
+function fScenarioUpdateStep(scenId, idx) {
+  if (scenId && scenId !== MuLERMoCScenario.activeId) fScenarioSetActive(scenId);
+  var s = (scenId && fScenarioGet(scenId)) || fScenarioActive();
+  if (!s || !s.steps || idx < 0 || idx >= s.steps.length) return;
+  var old = s.steps[idx];
+  var fresh = fScenarioCapture();
+  if (!fresh) return; // capture already toasted the reason; no partial overwrite
+  var oldKind = !old.selectedMol ? "menu" : "mol";
+  var newKind = !fresh.selectedMol ? "menu" : "mol";
+  var oldSub = Array.isArray(old.menuSubset) ? old.menuSubset.slice().sort().join("|") : "";
+  var newSub = Array.isArray(fresh.menuSubset) ? fresh.menuSubset.slice().sort().join("|") : "";
+  // Preserve the authored layer: step identity, heading + text, per-step
+  // chrome permissions. These are edited directly in the drawer at any time.
+  fresh.n = old.n;
+  fresh.title = old.title;
+  fresh.note = old.note;
+  fresh.show = fresh.show || {};
+  var oldShow = old.show || {};
+  fresh.show.controls = oldShow.controls
+    ? { "2D": !!oldShow.controls["2D"], "3D": !!oldShow.controls["3D"] }
+    : { "2D": false, "3D": false };
+  fresh.show.nameSettings = oldShow.nameSettings === true;
+  fresh.show.nameClick = oldShow.nameClick === true;
+  s.steps[idx] = fresh;
+  fScenarioSyncLegacy();
+  fScenarioRenderList(s.id);
+  var msg = "Updated step " + fresh.n + ".";
+  if (oldKind !== newKind) {
+    msg += newKind === "menu" ? " (now menu-only.)" : " (now molecule.)";
+  }
+  if (oldSub !== newSub) {
+    msg += fresh.menuSubset && fresh.menuSubset.length
+      ? " Menu: " + fresh.menuSubset.length + " molecules."
+      : " Menu cleared.";
+  }
+  var extra = MuLERMoCScenario.lastCaptureNote;
+  MuLERMoCScenario.lastCaptureNote = null;
+  if (extra) msg += " " + extra;
+  fScenarioToast(msg);
 }
 
 // S3: JSmol readiness wait for deep links. The applet fires the page's
