@@ -205,8 +205,12 @@ Visibility rules:
   `menuSubset`/`show.menu`/`show.viewers`; toasts kind/subset changes),
   reorder up/down, delete, jump-to; step numbers
   auto-renumber. Steps header carries the live scenario name.
-  Headers lead with a positional counter (`S1`, `S2`, …); empty
-  scenarios flag `.is-empty` on card, count, and Steps button.
+   Headers lead with a positional counter (`S1`, `S2`, …); empty
+   scenarios (0 steps) flag `.is-empty` on card, count, and Steps button,
+   disable Steps/Export/Play (`disabled`, dimmed 0.7, no hover — Save step
+   + Delete stay live, first save re-enables), and never drop the drawer
+   (the clicked card still activates, other drawers still collapse).
+   The Steps button carries the dark `baseColor` chrome.
 * 3D camera: `moveto` is captured at Save time (no per-step UI while
   JSmol `moveto` is broken; returns with the fix).
 * `fCaptureSnapshot()` reads the live state described above.
