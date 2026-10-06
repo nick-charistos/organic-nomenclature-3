@@ -903,6 +903,13 @@ $(document).ready(function () {
     } catch (e) {
       /* scenario absent */
     }
+    // Scenario present hook (additive, guarded): in a menu-only step with
+    // interaction on, re-show the naming hint after free-browse selection.
+    try {
+      if (typeof window.fScenarioOnPresentBrowse === "function") window.fScenarioOnPresentBrowse();
+    } catch (e) {
+      /* scenario absent */
+    }
   });
 
   /////////////// MENU ///////////////

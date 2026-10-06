@@ -346,3 +346,26 @@ toggle-off glide vs Play glide comparison for the open bug.
   guard: loaded molecule must match; key fallback, `"menu"` menu-only).
 * OPEN BUG still carried (close snap, diagnostics + WAAPI fallback
   queued — see above).
+
+## 2026-10-06 — presentation fixes (dup-HTML, menu hint, naming flash)
+
+* `mulermoc-nom-43.html` dedup (committed `49aead3`): stray `>` + second
+  `<head><body>` copy deleted (707 → 352 lines); single `pageContainer` /
+  applet init. Root cause of `2D-only → 2D+3D` saving as 3D-only
+  (duplicate IDs desynced `fScenarioViewerOn` capture from the clicked
+  buttons). Owner verified fixed after hard reload.
+* Menu-only `#nameAnalysisExplain` follows the lock (`scenario-43.js`,
+  `teaching-43.js`): step-apply hide narrowed to `locked`-only, plus new
+  guarded `fScenarioOnPresentBrowse()` on flat-menu clicks (free browse
+  rebuilds boxes via `fSelectMol()` but the inline hide persisted).
+  Interact-on shows the hint on entry + after browsing; locked stays
+  hidden. Plan §2 wording updated; CHANGELOG entries added.
+* Naming-controls no-flash (`scenario-43.js`): `fScenarioApply` forces
+  `nameSettingsFlag = false` pre-load when `show.nameSettings !== true`
+  in present, so the rebuilt panel renders closed (was: open then
+  `fScenarioChrome` closed it with a visible fade).
+
+Browser checklist for owner: menu-only interact-on (hint on entry +
+after row click, clicks explain; locked hides); naming-off step entry
+(gear/panel/voice off first frame, no fade; naming-on unchanged);
+rapid Prev/Next on/off steps; Exit restores author panel.

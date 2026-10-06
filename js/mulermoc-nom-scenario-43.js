@@ -612,6 +612,27 @@ function fScenarioDeselectIfUnpicked() {
   }
 }
 
+// Free-browse resync (additive, guarded): in a present menu-only step with
+// interaction on, selecting a flat-menu row rebuilds the name boxes via the
+// standard path but the step-apply hide on #nameAnalysisExplain persists
+// (fExplainNameComp only sets html, never display). Re-show the hint so the
+// freshly browsed molecule is clickable with guidance. No-op when locked,
+// when naming is off, or outside presentation.
+function fScenarioOnPresentBrowse() {
+  try {
+    if (!MuLERMoCScenario.present) return;
+    var ps = fScenarioPresent();
+    var st = ps && ps.steps ? ps.steps[ps.index] : null;
+    if (!st || st.selectedMol) return;
+    var show = st.show || {};
+    if (show.nameClick === false) return;
+    if (show.naming === false) return;
+    fScenarioHide("nameAnalysisExplain", false);
+  } catch (e) {
+    /* menu unavailable */
+  }
+}
+
 // (Re)paints the pick UI after every menu rebuild. Author mode: toggle button
 // + checkboxes (tri-state group boxes). Present mode: no checkboxes — apply
 // the current step's filter instead (covers grouping switches mid-present).
@@ -842,6 +863,21 @@ function fScenarioApply(step) {
   nameCrossFlag = window.nameCrossFlag;
   narrateAnalysisFlag = !!step.audio.narrate;
   nameSettingsFlag = !!step.styleName.panelOpen;
+  // No-flash: the load path rebuilds #nameSettingsPanel from this flag, and
+  // chrome only closes it afterwards (visible open->close fade). When the
+  // step hides the naming controls, render closed on first paint instead.
+  // Author mode and nameSettings:true steps keep the stored value.
+  try {
+    var _nsOff = MuLERMoCScenario.present && step.show && step.show.nameSettings !== true;
+    if (_nsOff) {
+      nameSettingsFlag = false;
+      window.nameSettingsFlag = false;
+    } else {
+      window.nameSettingsFlag = nameSettingsFlag;
+    }
+  } catch (e) {
+    window.nameSettingsFlag = nameSettingsFlag;
+  }
   // Highlight checkboxes (DOM-class-only settings): restore per step so the
   // highlight readers observe snapshot values. Missing group → UI defaults.
   var _sh = step.styleHighlight || {};
@@ -1074,12 +1110,18 @@ function fScenarioChrome(show) {
   var _lockHasHl = !!(_lockStep && _lockStep.nameAnalysisMode &&
     fScenarioNormMode(_lockStep.nameAnalysisMode) !== "none" && _lockStep.selectedMol);
   fScenarioHide("nameAnalysisExplain", locked && !_lockHasHl);
-  // Menu-only steps have no naming to explain: hide the hint line even when
-  // interaction is allowed (same lookup pattern as the menu step above).
+  // Menu-only steps have no stored naming to explain: hide the hint line
+  // only when interaction is locked (the hint would be dead). When
+  // interaction is on the hint stays visible and reappears on free-browse
+  // selection (see fScenarioOnPresentBrowse).
   try {
     var _molStep = fScenarioPresent().steps[fScenarioPresent().index];
     if (present && (!_molStep || !_molStep.selectedMol)) {
-      fScenarioHide("nameAnalysisExplain", true);
+      if (locked) {
+        fScenarioHide("nameAnalysisExplain", true);
+      } else if (show && show.naming !== false) {
+        fScenarioHide("nameAnalysisExplain", false);
+      }
     }
   } catch (e) {
     /* steps unavailable */

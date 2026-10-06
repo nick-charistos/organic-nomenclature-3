@@ -140,7 +140,10 @@ Visibility rules:
 * Menu-only steps (`selectedMol: null`): a picked set of 2+ with no molecule
   selected still saves (title `"menu"`); presentation deselects first
   (empty viewers, no previous molecule lingering) and shows the flat pick
-  menu, hiding the naming hint line. Accepted iff the subset is non-empty.
+  menu. The naming hint line hides only when interaction is locked
+  (`Name interact` off); when interaction is on it stays visible and
+  reappears on free-browse selection (the browsed molecule's boxes are
+  clickable with guidance). Accepted iff the subset is non-empty.
 * `show.naming` / `show.rule` toggle the explanation and rule
   panels. `show.nameSettings` toggles the naming gear + panel
   (per-step drawer checkbox `Name controls`, default unchecked; the
