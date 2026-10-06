@@ -1371,6 +1371,11 @@ function fScenarioBuildUi() {
     var btns = document.querySelectorAll(".scenarioPanel .scList");
     for (var bi = 0; bi < btns.length; bi++) btns[bi].classList.remove("active");
     if (!panel) return;
+    // Empty scenario (0 steps): never drop a drawer. The accordion above
+    // still collapses the other cards; the clicked card activates via its
+    // own handler but shows nothing until its first save.
+    var _sc = id && fScenarioGet(id);
+    if (!_sc || !_sc.steps || !_sc.steps.length) return;
     var d = panel.querySelector(".scenarioDrawer");
     var lb = panel.querySelector(".scList");
     if (d) d.classList.add("open");
@@ -1614,7 +1619,16 @@ function fScenarioRenderOne(scen) {
   if (listBtn) {
     listBtn.innerHTML = "Steps (" + scen.steps.length + ")";
     if (listBtn.classList) listBtn.classList.toggle("is-empty", _empty);
+    listBtn.disabled = _empty;
   }
+  // Empty scenario (0 steps): gate every button except Save step + Delete.
+  // Steps/Export/Play are meaningless with no steps; Save stays live so the
+  // author can add the first step, Delete stays live so the empty card can
+  // be removed. Re-runs on every render, so the first save re-enables them.
+  ["scExport", "scPresent"].forEach(function (cls) {
+    var b = panel.querySelector("." + cls);
+    if (b) b.disabled = _empty;
+  });
   var nm = panel.querySelector(".scStepsName");
   if (nm) nm.textContent = scen.title || "";
   var ti = panel.querySelector(".scenarioTitle");

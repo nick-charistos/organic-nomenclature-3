@@ -189,6 +189,15 @@
    /* opacity: .55; */
 }
 
+/* Empty scenario: every button except Save step + Delete is disabled
+   (see fScenarioRenderOne); dim the gated ones. Save + Delete stay live. */
+.scenarioPanel.is-empty .scList:disabled,
+.scenarioPanel.is-empty .scExport:disabled,
+.scenarioPanel.is-empty .scPresent:disabled {
+   opacity: .7;
+   cursor: not-allowed;
+}
+
 
 
 .scenarioPanel .scenarioHeader {
@@ -260,6 +269,14 @@
    color: #fff;
 }
 
+ /* Disabled buttons (empty-panel gating) never hover: keep base chrome. */
+ #scenarioAuthorBar button:disabled:hover,
+ #scenarioPlayBar button:disabled:hover {
+    background: var(--bgColor);
+    color: var(--baseColor);
+    cursor: not-allowed;
+ }
+
 /* Steps is stateful: selected while the drawer is open */
 #scenarioAuthorBar button#scList.active,
 #scenarioAuthorBar button.scList.active {
@@ -267,6 +284,14 @@
    border-color: var(--guiColor);
    color: #fff;
 }
+
+#scenarioAuthorBar .scenarioButtonPanel button.scList {
+   background: var(--baseColor);
+   border-color: var(--baseColor);
+   color: #fff;
+}
+
+
 
 /* Per-scenario drawers live in-flow inside their panel and drop down/up
    below their own button panel (class-driven so it animates). */
@@ -772,6 +797,16 @@
 
 #nomeclature2Menu .menuLi:has(.scPickBox:checked) {
    background-color: var(--bgColor);
+}
+
+/* Empty-panel Steps button: always dark chrome while disabled — no hover response. */
+#scenarioAuthorBar .scenarioPanel.is-empty .scList:disabled,
+#scenarioAuthorBar .scenarioPanel.is-empty .scList:disabled:hover {
+   background: var(--baseColor);
+   border-color: var(--baseColor);
+   color: #fff;
+   opacity: .7;
+   cursor: not-allowed;
 }
 
 
@@ -964,6 +999,16 @@
    /* opacity: .55; */
 }
 
+/* Empty scenario: every button except Save step + Delete is disabled
+   (see fScenarioRenderOne); dim the gated ones. Save + Delete stay live. */
+.scenarioPanel.is-empty .scList:disabled,
+.scenarioPanel.is-empty .scExport:disabled,
+.scenarioPanel.is-empty .scPresent:disabled {
+   opacity: .7;
+   cursor: not-allowed;
+   background: var(--baseColor);
+}
+
 
 
 .scenarioPanel .scenarioHeader {
@@ -1034,6 +1079,14 @@
    background: var(--darkEarth);
    color: #fff;
 }
+
+ /* Disabled buttons (empty-panel gating) never hover: keep base chrome. */
+ #scenarioAuthorBar button:disabled:hover,
+ #scenarioPlayBar button:disabled:hover {
+    background: var(--bgColor);
+    color: var(--baseColor);
+    cursor: not-allowed;
+ }
 
 /* Steps is stateful: selected while the drawer is open */
 #scenarioAuthorBar button#scList.active,
@@ -1547,4 +1600,14 @@
 
 #nomeclature2Menu .menuLi:has(.scPickBox:checked) {
    background-color: var(--bgColor);
+}
+
+/* Empty-panel Steps button: always dark chrome while disabled — no hover response. */
+#scenarioAuthorBar .scenarioPanel.is-empty .scList:disabled,
+#scenarioAuthorBar .scenarioPanel.is-empty .scList:disabled:hover {
+   background: var(--baseColor);
+   border-color: var(--baseColor);
+   color: #fff;
+   opacity: .7;
+   cursor: not-allowed;
 }
