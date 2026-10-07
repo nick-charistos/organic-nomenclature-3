@@ -421,9 +421,11 @@ function fDetectMolType() {
                                             myFunctionalGroup = "alcohol"
                                             molTaxonomy = "Αλκοόλες"
                                             break;
-                                        case 2:// double bond 
+                                        case 2:// double bond
                                             theCarbon = atomConnectivityList[j]
-                                            if (atomValenceList[theCarbon] == 3) {
+                                            // connectivity is a neighbor list; the carbonyl C is its first entry
+                                            theCarbon = Array.isArray(theCarbon) ? theCarbon[0] : theCarbon
+                                            if (typeof theCarbon !== 'undefined' && atomValenceList[theCarbon] == 3) {
                                                 myFunctionalGroup = "aldehyde"
                                                 molTaxonomy = "Αλδεϋδες"
                                             } else {
@@ -1621,9 +1623,10 @@ function fGuessName() {
     // Compute and validate main chain (result overwritten below until integration is complete)
     fCalcMainChain()
     if (mainChainMode !== 'algorithmic') {
-        const _dChain = nameExamples[selectedMol]['mainChain' + theSuffix]
+        const _dEntry = (typeof nameExamples !== 'undefined') ? nameExamples[selectedMol] : undefined
+        const _dChain = _dEntry ? _dEntry['mainChain' + theSuffix] : undefined
         if (_dChain && _dChain.length) mainChainAtomsList = _dChain
-        const _d3Chain = nameExamples[selectedMol].mainChain3D
+        const _d3Chain = _dEntry ? _dEntry.mainChain3D : undefined
         if (_d3Chain && _d3Chain.length) mainChainAtoms3D = _d3Chain
         // fall through to algorithmic result when suffix-specific data is absent
     }
