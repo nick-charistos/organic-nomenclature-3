@@ -4,7 +4,7 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ---
 
-## [v44] (working copy, unreleased — v43 frozen at tag `v43`)
+## [v44] — 2026-10-07 (index →44; v43 frozen at tag `v43`)
 
 New parallel file set `mulermoc-nom-44.html` + `js/*-44.js` + `css/*-44.css`, copied from v43 (`index.html` still → v43 until browser verification). All fixes below are `*44*`-only; `*43*` untouched.
 

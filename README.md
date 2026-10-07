@@ -2,8 +2,8 @@
 
 A Greek-first interactive learning platform for organic nomenclature, built around molecular structure, naming logic, and multiple representations.
 
-**Current working baseline:** v44 (engine/viewer hardening in working copy, unreleased; v43 frozen at tag `v43` — `index.html` still serves v43 until browser verification)
-**Main entry point:** [mulermoc-nom-44.html](mulermoc-nom-44.html) (dev) — production: [mulermoc-nom-43.html](mulermoc-nom-43.html)
+**Current working baseline:** v44 (released 2026-10-07; v43 frozen at tag `v43`)
+**Main entry point:** [mulermoc-nom-44.html](mulermoc-nom-44.html)
 **Core engine:** [js/mulermoc-nom-core-44.js](js/mulermoc-nom-core-44.js)
 **Viewer layer:** [js/mulermoc-nom-molview-44.js](js/mulermoc-nom-molview-44.js)
 **Teaching layer:** [js/mulermoc-nom-teaching-44.js](js/mulermoc-nom-teaching-44.js)
@@ -275,9 +275,9 @@ Authoring hides behind the vertical `Σενάρια` handle (docked to the autho
 
 ## Repository status summary
 
-- Working baseline: **v44** (working copy, unreleased; v43 frozen at tag `v43`, v42 frozen in repo2)
+- Working baseline: **v44** (released 2026-10-07; v43 frozen at tag `v43`, v42 frozen in repo2)
 - Main focus: **LEARN pilot (stored scenarios) + bounded EXPLORE-lite**
-- Near-term goal: **v44 browser verification, then `index.html` flip + tag `v44`**
+- Near-term goal: **scenario library verification on v44**
 - Product model: **LEARN narrative first, homologous series as database order**
 - Rules: **secondary explanatory layer**
 - Research layer: **active design (P2/P5/P6; schema v1 in `docs/LAYERS-PLAN.md`)**
