@@ -30,6 +30,9 @@ progress tracking, server storage.
 > from picks), no `Text` checkbox (heading + text show automatically iff the
 > step carries title or note — legacy `show.text` is ignored/self-healing),
 > and `styleHighlight` is additive (`bondAtoms`, `numberingAtoms`).
+> `menuGroups` is additive (`molecules` default = flat list, `chemclass` /
+> `series` classify the picked subset; unknown values coerce out, missing or
+> empty falls back to flat — no version bump).
 
 ```json
 {
@@ -52,6 +55,7 @@ progress tracking, server storage.
       "styleName": {"box": true, "cross": false, "etherNaming": "iupac", "panelOpen": true},
       "styleHighlight": {"bondAtoms": false, "numberingAtoms": true},
       "menuSubset": ["methane", "ethane"],
+      "menuGroups": ["molecules"],
       "audio": {"narrate": false},
       "view3D": {"style": "ballnstick", "spin": false, "showH": true, "atomSymbols": true,
                  "moveto": "moveto 0.0 {...} ...;"},
@@ -143,14 +147,30 @@ Visibility rules:
   auto-included with a warning), a single pick collapses to the step
   molecule (adopted with a toast when nothing is selected; selection wins
   over a stray pick), and validation drops unknown molecules with a
-  warning. Legacy files migrate on import (stored `show.menu` ignored).
+   warning. Legacy files migrate on import (stored `show.menu` ignored).
+* Per-step menu grouping (`menuGroups: [...]`, Ταξινομήσεις Μένου drawer
+  checkboxes per step row: `Μόρια` default-checked, `Χημικές Τάξεις`,
+  `Ομόλογες Σειρές`; presentation-only, author menu unchanged):
+  `molecules`/empty renders the flat list; a single classified mode groups
+  the picked subset (collapsible headers, carbon-count order, local
+  numbering); 2+ checked modes show a present grouping switcher (memory-only
+  choice, default = molecules when checked). Rows stay browsable in all
+  views; unknown values coerce out, legacy files default to flat
+  (`scenarioVersion` stays 1). Classified groups start shut (headers mirror
+  the app `.crossMenuLi`, open header + body take its `--baseColor`
+  selected chrome/border); the group holding the selected molecule renders
+  open. Headers run a main-app-identical accordion (open shuts the rest,
+  explicit slideUp/slideDown, selection preserved); the switcher lays its
+  radios in one column.
 * Menu-only steps (`selectedMol: null`): a picked set of 2+ with no molecule
   selected still saves (title `"menu"`); presentation deselects first
   (empty viewers, no previous molecule lingering) and shows the flat pick
   menu. The naming hint line hides only when interaction is locked
   (`Name interact` off); when interaction is on it stays visible and
   reappears on free-browse selection (the browsed molecule's boxes are
-  clickable with guidance). Accepted iff the subset is non-empty.
+   clickable with guidance). Every rebuild re-asserts the step's naming
+   chrome (`fScenarioApplyNamingChrome`: gear/panel + voice stay hidden
+   when their boxes are unchecked). Accepted iff the subset is non-empty.
 * `show.naming` / `show.rule` toggle the explanation and rule
   panels. `show.nameSettings` toggles the naming gear + panel
   (per-step drawer checkbox `Name controls`, default unchecked; the
@@ -183,8 +203,11 @@ Visibility rules:
   pick mode but keeps picks and steps. The Pick checkbox appears only
   while authoring. Presentation hides the whole unit.
 * Global shell (`#scenarioAuthorBar`): title + `+ New` (empty scenario
-  card) + `Import` (each import adds a card). Single column, panels
-  scroll under the `85vh` cap, never shrink.
+  card; locks with a toast while `maxEmptyScenarios = 3` empties exist) +
+  `Import` (each import adds a card, always lands untouched). Single column,
+  panels scroll under the `85vh` cap, never shrink. One empty card is
+  always kept: a panel's Delete locks when it is the last remaining card
+  and empty (a sole filled card keeps delete-then-autocreate).
 * Scenario cards (`.scenarioPanel[data-scenario-id]`, explicit active
   card): per-card title rename, step count, delete; button panel
   (`Save step`, `Steps`, `Export`, `Play ▶` — no Import); in-flow
@@ -196,19 +219,23 @@ Visibility rules:
   key fallback, `"menu"` for menu-only), per-step educational text
   (`note` textarea, `<b>`/`<sup>`/`<sub>` allowed), per-step chrome
   checkboxes (`2D controls`, `3D controls`, `Name controls`,
-  `Name interact` — see §2; no `Text`/`Menu`: text is automatic, menu
+  `Name interact`, plus `Ταξινομήσεις Μένου` (`Μόρια` default-checked,
+  `Χημικές Τάξεις`, `Ομόλογες Σειρές` — presentation-only menu views,
+  shown only on menu-carrying steps, all-off valid → flat fallback;
+  see §2) — see §2; no `Text`/`Menu`: text is automatic, menu
   is derived), `Go` (preview/apply the step in authoring), `Update`
   (rewrite the step's stored view snapshot from the current live view:
   Go → tweak molecule, 2D/3D modes + styles, naming clicks/toggles,
   camera, pick → Update; preserves `title`/`note` + the 4 chrome
-  checkboxes, refreshes everything visual incl. `nameAnalysisMode`,
+  checkboxes + `menuGroups`, refreshes everything visual incl. `nameAnalysisMode`,
   `menuSubset`/`show.menu`/`show.viewers`; toasts kind/subset changes),
   reorder up/down, delete, jump-to; step numbers
   auto-renumber. Steps header carries the live scenario name.
    Headers lead with a positional counter (`S1`, `S2`, …); empty
    scenarios (0 steps) flag `.is-empty` on card, count, and Steps button,
    disable Steps/Export/Play (`disabled`, dimmed 0.7, no hover — Save step
-   + Delete stay live, first save re-enables), and never drop the drawer
+   stays live, Delete stays live except on the last remaining empty card,
+   first save re-enables), and never drop the drawer
    (the clicked card still activates, other drawers still collapse).
    The Steps button carries the dark `baseColor` chrome.
 * 3D camera: `moveto` is captured at Save time (no per-step UI while
@@ -242,10 +269,14 @@ Visibility rules:
   indicator (same subset rendering).
 * `#menuCol` is hidden wholesale in presentation so the remaining
   columns center on the page; exit restores it. Exception: a step with
-  `show.menu` shows a simple flat menu — just its `menuSubset` with local
-  1..N numbering (never the dataset-global counter), no group headers, no
-  grouping switcher, no pick checkboxes; rows stay clickable for free
-  browsing. Exit rebuilds the pristine author menu instead.
+  `show.menu` shows its `menuSubset` with local
+  1..N numbering (never the dataset-global counter) — flat list by default,
+  single-grouped collapsible view for one classified `menuGroups` mode, or
+  a present grouping switcher for 2+ modes (see §2); no pick checkboxes;
+  rows stay clickable for free
+  browsing. `#pageContainer.presenting` scopes present-only CSS (flipped
+  on every step apply + Exit; first override: taller `.menuListContainer`,
+  350px vs the 150px author default). Exit rebuilds the pristine author menu instead.
 * Menu forced shut in playback unless the step carries 2+ picks;
   panels and control bars follow `show.*`.
 * Student self-learning uses the same playback without a teacher.

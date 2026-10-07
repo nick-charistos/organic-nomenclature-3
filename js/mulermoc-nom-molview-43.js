@@ -2884,6 +2884,16 @@ function fShowNameAnalysis() {
   }
 
   fExplainNameComp();
+
+  // Scenario rebuild hook (additive, guarded): this rebuild recreates
+  // #nameSettingsBtnDiv/#nameSettingsPanel + voice buttons without the
+  // presentation hides, so re-assert the current present step's naming
+  // chrome (same pattern as the fScenarioOn3DParsed hook below).
+  try {
+    if (typeof window.fScenarioApplyNamingChrome === "function") window.fScenarioApplyNamingChrome();
+  } catch (e) {
+    /* scenario absent */
+  }
 }
 
 // ── fClearHighlights ──────────────────────────────────────────────────────

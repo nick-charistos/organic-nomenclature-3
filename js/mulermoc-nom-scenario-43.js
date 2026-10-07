@@ -22,6 +22,7 @@ var MuLERMoCScenario = {
   authorSettings: null, // pre-Present checkbox states, restored on Exit
   menuPickMode: false, // authoring: show pick checkboxes in the left menu
   authoring: false, // authoring mode: bar + panels + pick UI (off by default)
+  maxEmptyScenarios: 3, // adjustable cap on step-less cards (scNew locks at cap)
 };
 
 // ── multi-scenario state manager ─────────────────────────────────────
@@ -333,6 +334,7 @@ function fScenarioCapture() {
       moveto: moveto,
     },
     menuSubset: subset,
+    menuGroups: ["molecules"], // Ταξινομήσεις Μένου drawer default (flat list)
     show: {
       menu: showMenu,
       viewerButtons: false,
@@ -354,6 +356,16 @@ function fScenarioCapture() {
 }
 
 // ── validation (version policy) ────────────────────────────────────────
+// Menu grouping selection (Ταξινομήσεις Μένου drawer checkboxes): subset of
+// molecules|chemclass|series; empty/unknown → ["molecules"] flat fallback.
+var SCENARIO_MENU_GROUPS = ["molecules", "chemclass", "series"];
+function fScenarioValidMenuGroups(g) {
+  var out = [];
+  (Array.isArray(g) ? g : []).forEach(function (m) {
+    if (SCENARIO_MENU_GROUPS.indexOf(m) >= 0 && out.indexOf(m) < 0) out.push(m);
+  });
+  return out.length ? out : ["molecules"];
+}
 function fScenarioDefaults(step, i) {
   var d = {
     n: i + 1,
@@ -369,6 +381,7 @@ function fScenarioDefaults(step, i) {
     styleHighlight: { bondAtoms: false, numberingAtoms: true },
     audio: { narrate: false },
     menuSubset: [],
+    menuGroups: ["molecules"],
     view3D: { style: "ballnstick", spin: false, showH: true, atomSymbols: true, moveto: null },
     show: {
       menu: false, viewerButtons: false, viewerSettings: false,
@@ -391,6 +404,7 @@ function fScenarioDefaults(step, i) {
   if (out.show) delete out.show.infoHost;
   // arrays copy by value, not by reference (steps stay independent)
   out.menuSubset = Array.isArray(step.menuSubset) ? step.menuSubset.slice() : [];
+  out.menuGroups = fScenarioValidMenuGroups(step.menuGroups);
   out.n = i + 1;
   return out;
 }
@@ -613,22 +627,15 @@ function fScenarioDeselectIfUnpicked() {
   }
 }
 
-// Free-browse resync (additive, guarded): in a present menu-only step with
-// interaction on, selecting a flat-menu row rebuilds the name boxes via the
-// standard path but the step-apply hide on #nameAnalysisExplain persists
-// (fExplainNameComp only sets html, never display). Re-show the hint so the
-// freshly browsed molecule is clickable with guidance. No-op when locked,
-// when naming is off, or outside presentation.
+// Free-browse resync (additive, guarded): selecting a flat-menu row (or any
+// in-presentation control) rebuilds the name boxes via the standard path,
+// which recreates #nameSettingsBtnDiv/#nameSettingsPanel + voice buttons
+// without the presentation hides. Re-assert the current step's naming chrome
+// so the freshly browsed molecule honors the step's checkboxes.
 function fScenarioOnPresentBrowse() {
   try {
     if (!MuLERMoCScenario.present) return;
-    var ps = fScenarioPresent();
-    var st = ps && ps.steps ? ps.steps[ps.index] : null;
-    if (!st || st.selectedMol) return;
-    var show = st.show || {};
-    if (show.nameClick === false) return;
-    if (show.naming === false) return;
-    fScenarioHide("nameAnalysisExplain", false);
+    fScenarioApplyNamingChrome();
   } catch (e) {
     /* menu unavailable */
   }
@@ -727,29 +734,182 @@ function fScenarioStepSubset() {
 
 // Flat present menu for subset steps: a simple per-step molecule list with
 // LOCAL numbering (1..N of the shown subset) — never the global dataset
-// numbering. No group headers, no grouping switcher, no pick checkboxes.
-// Rows keep id + .menuLi so selection marking and click-to-browse work
-// unchanged. Rebuilt on every present navigation; Exit rebuilds the author
-// menu instead (see exit handler).
-function fScenarioRenderPresentMenu() {
+// numbering. Rows keep id + .menuLi so selection marking and click-to-browse
+// work unchanged. Rebuilt on every present navigation; Exit rebuilds the
+// author menu instead (see exit handler).
+// Per-step Ταξινομήσεις Μένου (st.menuGroups): ["molecules"] (or empty →
+// fallback) renders the flat list; a single classified mode renders the
+// subset grouped (collapsible); 2+ checked modes render a present grouping
+// switcher (memory-only choice, default = molecules when checked).
+function fScenarioMenuFormula(prop) {
+  return String((nameExamples[prop] && nameExamples[prop].formula) || prop)
+    .replace(/(\d+)/g, "<sub>$1</sub>")
+    .replace(/(['='])/g, '<span class="bondSymbol large">&#9552;</span>')
+    .replace(/(['_'])/g, '<span class="bondSymbol">&#9776;</span>');
+}
+function fScenarioMenuRowHtml(prop, n) {
+  var sel = prop === selectedMol ? " selectedLi" : "";
+  return "<div id='" + prop + "' class='menuLi" + sel + "'><span class='menuLiCounter'>" + n + ".</span><span class='menuLiFormula'> " + fScenarioMenuFormula(prop) + "</span></div>";
+}
+function fScenarioPresentMenuGroups() {
+  try {
+    var ps = fScenarioPresent();
+    var st = ps && ps.steps ? ps.steps[ps.index] : null;
+    if (!MuLERMoCScenario.present || !st || !st.show || st.show.menu !== true) return ["molecules"];
+    return fScenarioValidMenuGroups(st.menuGroups);
+  } catch (e) {
+    return ["molecules"];
+  }
+}
+var SCENARIO_MENU_GROUP_LABELS = { molecules: "Μόρια", chemclass: "Χημικές Τάξεις", series: "Ομόλογες Σειρές" };
+function fScenarioPresentGroupsHtml(subset, mode, counter) {
+  var isChem = mode === "chemclass";
+  var buckets = {}, labels = {}, order = [];
+  subset.forEach(function (prop) {
+    if (!prop || !nameExamples[prop]) return;
+    var cl = nameExamples[prop].classification || {};
+    var key = isChem ? (cl.chemicalClass || "unclassified") : (cl.seriesKey || "unclassified");
+    if (!buckets[key]) {
+      buckets[key] = [];
+      var lab = isChem
+        ? ((typeof chemicalClassLabels !== "undefined" && chemicalClassLabels[key]) || cl.taxonomy)
+        : ((typeof homologousSeriesLabels !== "undefined" && homologousSeriesLabels[key]) || cl.taxonomy);
+      labels[key] = lab || "Μη ταξινομημένα";
+      order.push(key);
+    }
+    buckets[key].push(prop);
+  });
+  // canonical author-menu group order first (never drop picked molecules:
+  // leftover keys append after it).
+  var canon = isChem
+    ? (typeof chemicalClassLabels !== "undefined" ? Object.keys(chemicalClassLabels) : [])
+    : (typeof homologousSeriesLabels !== "undefined" ? Object.keys(homologousSeriesLabels).concat(["unclassified"]) : []);
+  var seen = {};
+  var sorted = [];
+  canon.concat(order).forEach(function (k) {
+    if (!buckets[k] || seen[k]) return;
+    seen[k] = true;
+    sorted.push(k);
+  });
+  var html = "";
+  // All groups start shut except the one holding the selected molecule
+  // (visible selection on step entry / free-browse).
+  var selKey = null;
+  if (typeof selectedMol !== "undefined" && selectedMol) {
+    for (var sk = 0; sk < sorted.length && !selKey; sk++) {
+      if (buckets[sorted[sk]].indexOf(selectedMol) >= 0) selKey = sorted[sk];
+    }
+  }
+  sorted.forEach(function (key) {
+    var members = buckets[key];
+    try {
+      if (typeof fSortPropsByCarbonCount === "function") members = fSortPropsByCarbonCount(members.slice());
+    } catch (e) {
+      /* keep pick order */
+    }
+    var openCls = key === selKey ? "open" : "closed";
+    html += "<div class='scPresentGroup " + openCls + "' data-pgroup-key='" + key + "'>" + labels[key] + "</div><div class='scPresentGroups " + openCls + "'>";
+    members.forEach(function (prop) {
+      counter.n++;
+      html += fScenarioMenuRowHtml(prop, counter.n);
+    });
+    html += "</div>";
+  });
+  return html;
+}
+function fScenarioRenderPresentMenu(view) {
   var subset = fScenarioStepSubset();
   if (!subset) return;
   try {
     var menu = document.getElementById("nomeclature2Menu");
     if (!menu || typeof nameExamples === "undefined") return;
-    var html = "<div class='panelTitle'> Παραδείγματα </div><div class='menuNomeclature2Container'><div class='menuListContainer'>";
-    for (var i = 0; i < subset.length; i++) {
-      var prop = subset[i];
-      if (!prop || !nameExamples[prop]) continue;
-      var formula = String(nameExamples[prop].formula || prop)
-        .replace(/(\d+)/g, "<sub>$1</sub>")
-        .replace(/(['='])/g, '<span class="bondSymbol large">&#9552;</span>')
-        .replace(/(['_'])/g, '<span class="bondSymbol">&#9776;</span>');
-      var sel = prop === selectedMol ? " selectedLi" : "";
-      html += "<div id='" + prop + "' class='menuLi" + sel + "'><span class='menuLiCounter'>" + (i + 1) + ".</span><span class='menuLiFormula'> " + formula + "</span></div>";
+    var groups = fScenarioPresentMenuGroups();
+    if (!view || groups.indexOf(view) < 0) {
+      view = groups.indexOf("molecules") >= 0 ? "molecules" : groups[0];
     }
-    html += "</div></div>";
+    var html = "<div class='panelTitle'> Παραδείγματα </div>";
+    if (groups.length > 1) {
+      html += "<div class='scPresentGrouping' role='group' aria-label='Ομαδοποίηση μενού'>";
+      groups.forEach(function (g) {
+        html += "<div class='radioCheckContainer " + (g === view ? "selectedRadio" : "unselectedRadio") + "' data-pgroup='" + g + "'>" + (SCENARIO_MENU_GROUP_LABELS[g] || g) + "<span class='radioCheck'></span></div>";
+      });
+      html += "</div>";
+    }
+    html += "<div class='menuNomeclature2Container'>";
+    if (view === "molecules") {
+      html += "<div class='menuListContainer'>";
+      for (var i = 0; i < subset.length; i++) {
+        var prop = subset[i];
+        if (!prop || !nameExamples[prop]) continue;
+        html += fScenarioMenuRowHtml(prop, i + 1);
+      }
+      html += "</div>";
+    } else {
+      // one scroll box for all groups (reuses the menuListContainer cap)
+      html += "<div class='menuListContainer'>" + fScenarioPresentGroupsHtml(subset, view, { n: 0 }) + "</div>";
+    }
+    html += "</div>";
     menu.innerHTML = html;
+    // switcher (scenario-owned; the teaching .groupingMode stays hidden in
+    // presentation and untouched)
+    var sw = menu.querySelectorAll(".scPresentGrouping [data-pgroup]");
+    for (var s = 0; s < sw.length; s++) {
+      sw[s].onclick = (function (m) {
+        return function () { fScenarioRenderPresentMenu(m); };
+      })(sw[s].getAttribute("data-pgroup"));
+    }
+    // collapsible group headers (scenario-owned: no teaching-layer
+    // .crossMenuLi deselect side effects). App-identical accordion: opening
+    // a group shuts the others, clicking the open one shuts it. Explicit
+    // slideUp/slideDown like the main menu (never direction-inferring
+    // slideToggle); classes stay the styling authority. Selection and
+    // show.rule state are preserved (no fDeselectMol in presentation).
+    var hd = menu.querySelectorAll(".scPresentGroup");
+    for (var h = 0; h < hd.length; h++) {
+      hd[h].onclick = (function (el) {
+        return function () {
+          var box = el.nextElementSibling;
+          if (!box) return;
+          var canSlide = (typeof $ !== "undefined" && $(box).slideUp && $(box).slideDown);
+          if (el.classList.contains("open")) {
+            el.classList.remove("open");
+            el.classList.add("closed");
+            box.classList.remove("open");
+            box.classList.add("closed");
+            try {
+              if (canSlide) $(box).slideUp(150);
+            } catch (e) {
+              /* classes already hide */
+            }
+            return;
+          }
+          var others = menu.querySelectorAll(".scPresentGroup.open");
+          for (var o = 0; o < others.length; o++) {
+            others[o].classList.remove("open");
+            others[o].classList.add("closed");
+          }
+          var openBoxes = menu.querySelectorAll(".scPresentGroups.open");
+          for (var b = 0; b < openBoxes.length; b++) {
+            openBoxes[b].classList.remove("open");
+            openBoxes[b].classList.add("closed");
+            try {
+              if (canSlide) $(openBoxes[b]).slideUp(150);
+            } catch (e) {
+              /* classes already hide */
+            }
+          }
+          el.classList.remove("closed");
+          el.classList.add("open");
+          box.classList.remove("closed");
+          box.classList.add("open");
+          try {
+            if (canSlide) $(box).slideDown(150);
+          } catch (e) {
+            /* classes already show */
+          }
+        };
+      })(hd[h]);
+    }
   } catch (e) {
     /* menu unavailable */
   }
@@ -975,6 +1135,18 @@ function fScenarioHide(id, hide) {
   if (el) el.style.display = hide ? "none" : "";
 }
 
+// Presentation CSS hook: #pageContainer.presenting scopes all present-only
+// overrides (scenario stylesheet). Display authority stays in CSS; JS only
+// flips this one class, so present styling survives menu/name rebuilds.
+function fScenarioSyncPresentClass() {
+  try {
+    var pc = document.getElementById("pageContainer");
+    if (pc) pc.classList.toggle("presenting", !!MuLERMoCScenario.present);
+  } catch (e) {
+    /* no DOM */
+  }
+}
+
 // Full-chrome restore for Exit: clears BOTH the inline display set by
 // fScenarioHide and the `hide` class set by the app's own viewer toggles
 // (fToggleViewer2D/3D add it to the control bars; `.hide` is
@@ -1042,6 +1214,67 @@ function fScenarioFillStepPanel(step) {
   }
 }
 
+// Naming-chrome authority, shared by step entry (fScenarioChrome) and every
+// later rebuild: fShowNameAnalysis() recreates #nameSettingsBtnDiv/
+// #nameSettingsPanel + voice buttons without the presentation hides
+// (free-browse selection, 2D/chain/ether control switches), so the current
+// present step's show.* is re-asserted after any rebuild via
+// fScenarioOnPresentBrowse() and the molview rebuild hook. Display-only:
+// never mutates step data, nameSettingsFlag, or stored show.* (Export-safe).
+// No-op outside presentation or without a current step.
+function fScenarioApplyNamingChrome(show) {
+  var present = MuLERMoCScenario.present;
+  if (!present) return;
+  try {
+    var _pst = fScenarioPresent();
+    var _st = _pst && _pst.steps ? _pst.steps[_pst.index] : null;
+    if (!_st) return;
+    show = show || _st.show || {};
+    // naming panel + settings + audio
+    fScenarioHide("nameAnalysisContainer", present && show.naming === false);
+    // locked name interaction: boxes ignore mouse clicks in presentation
+    // (CSS .locked); the stored highlight + explanation still replay via
+    // fScenarioClickNameBox. Hide the explain line only when locked with no
+    // stored highlight (the click-hint would be dead); otherwise keep it.
+    var locked = !!(present && show.nameClick === false);
+    try {
+      var _nc = document.getElementById("nameAnalysisContainer");
+      if (_nc) _nc.classList.toggle("locked", locked);
+    } catch (e) {
+      /* naming DOM unavailable */
+    }
+    var _lockHasHl = !!(_st && _st.nameAnalysisMode &&
+      fScenarioNormMode(_st.nameAnalysisMode) !== "none" && _st.selectedMol);
+    fScenarioHide("nameAnalysisExplain", locked && !_lockHasHl);
+    // Menu-only steps have no stored naming to explain: hide the hint line
+    // only when interaction is locked (the hint would be dead). When
+    // interaction is on the hint stays visible and reappears on free-browse
+    // selection (see fScenarioOnPresentBrowse).
+    try {
+      if (present && (!_st || !_st.selectedMol)) {
+        if (locked) {
+          fScenarioHide("nameAnalysisExplain", true);
+        } else if (show && show.naming !== false) {
+          fScenarioHide("nameAnalysisExplain", false);
+        }
+      }
+    } catch (e) {
+      /* steps unavailable */
+    }
+    var ns = !(present && show.nameSettings !== true);
+    fScenarioHide("nameSettingsBtnDiv", present && !ns);
+    var panel = document.getElementById("nameSettingsPanel");
+    if (panel && present && !ns) panel.classList.remove("open");
+    // voice buttons: visible with audio on, or with the naming controls
+    var audioOn = !(present && show.audio !== true && show.nameSettings !== true);
+    ["narrateAnalysisToggle", "readNameBtn"].forEach(function (id) {
+      fScenarioHide(id, !audioOn);
+    });
+  } catch (e) {
+    /* naming DOM unavailable */
+  }
+}
+
 function fScenarioChrome(show) {
   show = show || {};
   var present = MuLERMoCScenario.present;
@@ -1089,62 +1322,20 @@ function fScenarioChrome(show) {
       /* menu unavailable */
     }
   }
-  // naming panel + settings + audio
-  fScenarioHide("nameAnalysisContainer", present && show.naming === false);
-  // locked name interaction: boxes ignore mouse clicks in presentation
-  // (CSS .locked); the stored highlight + explanation still replay via
-  // fScenarioClickNameBox. Hide the explain line only when locked with no
-  // stored highlight (the click-hint would be dead); otherwise keep it.
-  var locked = !!(present && show.nameClick === false);
-  try {
-    var _nc = document.getElementById("nameAnalysisContainer");
-    if (_nc) _nc.classList.toggle("locked", locked);
-  } catch (e) {
-    /* naming DOM unavailable */
-  }
-  var _lockStep = null;
-  try {
-    _lockStep = fScenarioPresent().steps[fScenarioPresent().index];
-  } catch (e) {
-    /* steps unavailable */
-  }
-  var _lockHasHl = !!(_lockStep && _lockStep.nameAnalysisMode &&
-    fScenarioNormMode(_lockStep.nameAnalysisMode) !== "none" && _lockStep.selectedMol);
-  fScenarioHide("nameAnalysisExplain", locked && !_lockHasHl);
-  // Menu-only steps have no stored naming to explain: hide the hint line
-  // only when interaction is locked (the hint would be dead). When
-  // interaction is on the hint stays visible and reappears on free-browse
-  // selection (see fScenarioOnPresentBrowse).
-  try {
-    var _molStep = fScenarioPresent().steps[fScenarioPresent().index];
-    if (present && (!_molStep || !_molStep.selectedMol)) {
-      if (locked) {
-        fScenarioHide("nameAnalysisExplain", true);
-      } else if (show && show.naming !== false) {
-        fScenarioHide("nameAnalysisExplain", false);
-      }
-    }
-  } catch (e) {
-    /* steps unavailable */
-  }
+  // naming panel + settings + audio (shared authority — also re-asserted
+  // after every rebuild, see fScenarioApplyNamingChrome)
+  fScenarioApplyNamingChrome(show);
   // per-step heading (page h1) + text div below it (title/note, plain text)
   var _txtStep = fScenarioPresent().steps[fScenarioPresent().index];
   fScenarioFillStepPanel(_txtStep);
   fScenarioHide("scStepText", !present || !showTextOn(_txtStep));
-  var ns = !(present && show.nameSettings !== true);
-  fScenarioHide("nameSettingsBtnDiv", present && !ns);
-  var panel = document.getElementById("nameSettingsPanel");
-  if (panel && present && !ns) panel.classList.remove("open");
-  // voice buttons: visible with audio on, or with the naming controls
-  var audioOn = !(present && show.audio !== true && show.nameSettings !== true);
-  ["narrateAnalysisToggle", "readNameBtn"].forEach(function (id) {
-    fScenarioHide(id, !audioOn);
-  });
   // own UI: author bar + drawer follow authoring mode; the edge tab
   // hides only in presentation (see fScenarioSyncAuthorUi)
   fScenarioSyncAuthorUi();
   var pb = document.getElementById("scenarioPlayBar");
   if (pb) pb.style.display = present ? "" : "none";
+  // presentation CSS hook (self-heals on every step apply)
+  fScenarioSyncPresentClass();
 }
 
 // ── authoring mode (right-edge tab) ────────────────────────────────────
@@ -1302,6 +1493,9 @@ function fScenarioExitPresent() {
     fScenarioRestoreChrome();
     fScenarioRestoreAuthorMenu();
   }
+  // presentation CSS hook off (apply/chrome above already re-synced it,
+  // this covers the no-step path explicitly)
+  fScenarioSyncPresentClass();
 }
 
 // ── UI (scenario chrome lives in css/mulermoc-nom-scenario-43.css) ─────────
@@ -1356,6 +1550,7 @@ function fScenarioBuildUi() {
     if (!applied) {
       MuLERMoCScenario.present = false;
       MuLERMoCScenario.presentId = null;
+      fScenarioSyncPresentClass();
       fScenarioToast("Could not start presentation at step 1.");
       return;
     }
@@ -1459,6 +1654,10 @@ function fScenarioBuildUi() {
     "<div id='scenarioPanels'></div>";
     document.body.appendChild(bar);
     document.getElementById("scNew").onclick = function () {
+      if (fScenarioEmptyCount() >= MuLERMoCScenario.maxEmptyScenarios) {
+        fScenarioToast("Fill an empty scenario first (max " + MuLERMoCScenario.maxEmptyScenarios + " empty).");
+        return;
+      }
       fScenarioNew("scenario-" + (MuLERMoCScenario.seq + 1));
     };
     document.getElementById("scCloseBar").onclick = function () {
@@ -1594,6 +1793,44 @@ function fScenarioBuildPanels() {
   fScenarioRenderList();
 }
 
+// Empty-cap authority: at most maxEmptyScenarios step-less cards. scNew
+// locks while the cap is reached (fill an empty card first); a panel's
+// Delete locks only when it is the last remaining card AND empty (a sole
+// filled card keeps today's delete-then-autocreate fallback). Runs on every
+// render via fScenarioRenderOne, so New/Delete/Import/Save/step-delete all
+// stay in sync with no extra call sites. Display-only: no step data touched.
+function fScenarioEmptyCount() {
+  var n = 0;
+  for (var i = 0; i < MuLERMoCScenario.scenarios.length; i++) {
+    if (!MuLERMoCScenario.scenarios[i].steps.length) n++;
+  }
+  return n;
+}
+function fScenarioSyncNewDeleteUi() {
+  try {
+    var cap = MuLERMoCScenario.maxEmptyScenarios;
+    if (!(cap >= 0)) cap = 0;
+    var locked = fScenarioEmptyCount() >= cap;
+    var nb = document.getElementById("scNew");
+    if (nb) {
+      nb.disabled = locked;
+      if (nb.setAttribute) {
+        if (locked) nb.setAttribute("data-tooltip", "Fill an empty scenario first (max " + cap + " empty)");
+        else nb.removeAttribute("data-tooltip");
+      }
+    }
+    var panels = document.querySelectorAll(".scenarioPanel");
+    for (var p = 0; p < panels.length; p++) {
+      var pid = panels[p].getAttribute && panels[p].getAttribute("data-scenario-id");
+      var sc = (pid && fScenarioGet(pid)) || null;
+      var del = panels[p].querySelector(".scDelete");
+      if (del) del.disabled = !!sc && !sc.steps.length && MuLERMoCScenario.scenarios.length <= 1;
+    }
+  } catch (e) {
+    /* author bar unavailable */
+  }
+}
+
 function fScenarioRenderOne(scen) {
   var panel = scen && fScenarioPanelFor(scen.id);
   if (!panel) return;
@@ -1623,8 +1860,10 @@ function fScenarioRenderOne(scen) {
   }
   // Empty scenario (0 steps): gate every button except Save step + Delete.
   // Steps/Export/Play are meaningless with no steps; Save stays live so the
-  // author can add the first step, Delete stays live so the empty card can
-  // be removed. Re-runs on every render, so the first save re-enables them.
+  // author can add the first step. Delete stays live except on the last
+  // remaining empty card (locked by fScenarioSyncNewDeleteUi — one empty
+  // card is always kept). Re-runs on every render, so the first save
+  // re-enables them.
   ["scExport", "scPresent"].forEach(function (cls) {
     var b = panel.querySelector("." + cls);
     if (b) b.disabled = _empty;
@@ -1726,6 +1965,41 @@ function fScenarioRenderOne(scen) {
     nameClickLabel.appendChild(nameClickCheck);
     nameClickLabel.appendChild(document.createTextNode(" Διάδραση ονομασίας"));
     row.appendChild(nameClickLabel);
+    // Menu grouping (presentation only, menu-carrying steps only): which
+    // menu views the step offers. Μόρια = flat list (default); Τάξεις/Σειρές
+    // classify the picked subset. 2+ checked → grouping switcher in
+    // presentation; none → flat fallback. Pure molecule steps (no menu)
+    // show no trace of this block.
+    if (Array.isArray(st.menuSubset) && st.menuSubset.length > 1) {
+    var menuGroupTitle = document.createElement("span");
+    menuGroupTitle.className = "sshow scMenuGroupsTitle";
+    menuGroupTitle.appendChild(document.createTextNode("Ταξινομήσεις Μένου:"));
+    row.appendChild(menuGroupTitle);
+    [["Μόρια", "molecules"], ["Χημικές Τάξεις", "chemclass"], ["Ομόλογες Σειρές", "series"]].forEach(function (pair) {
+      var gLabel = document.createElement("label");
+      gLabel.className = "sshow scMenuGroup";
+      var gKind = pair[1];
+      var gCheck = document.createElement("input");
+      gCheck.type = "checkbox";
+      // Stored state shown as-is (all-off is valid → flat fallback); only a
+      // missing field (legacy) displays the molecules default.
+      var _mgShown = Array.isArray(st.menuGroups) ? st.menuGroups : ["molecules"];
+      gCheck.checked = _mgShown.indexOf(gKind) >= 0;
+      gCheck.onchange = function () {
+        var cur = Array.isArray(st.menuGroups) ? st.menuGroups.slice() : ["molecules"];
+        // all-off is a valid stored state (renders the flat fallback);
+        // the default only applies to fresh captures.
+        var at = cur.indexOf(gKind);
+        if (gCheck.checked && at < 0) cur.push(gKind);
+        if (!gCheck.checked && at >= 0) cur.splice(at, 1);
+        cur.sort(function (a, b) { return SCENARIO_MENU_GROUPS.indexOf(a) - SCENARIO_MENU_GROUPS.indexOf(b); });
+        st.menuGroups = cur;
+      };
+      gLabel.appendChild(gCheck);
+      gLabel.appendChild(document.createTextNode(" " + pair[0]));
+      row.appendChild(gLabel);
+    });
+    }
     var btns = row.querySelectorAll("button");
     (function (scenId, idx) {
       btns[0].onclick = function () {
@@ -1754,6 +2028,8 @@ function fScenarioRenderOne(scen) {
     })(scen.id, i);
     box.appendChild(row);
   });
+  // empty-cap states (scNew + per-panel Delete) follow every render
+  fScenarioSyncNewDeleteUi();
 }
 
 function fScenarioRenderList(id) {
@@ -1826,7 +2102,8 @@ function fScenarioGo(i) {
 // (clicked name-box highlight), selectedRule, style2D (atom colors, color
 // mode, zigzag), styleName (box/cross/etherNaming/panelOpen), styleHighlight,
 // audio, view3D (style/spin/showH/atomSymbols/moveto), menuSubset +
-// show.menu/show.viewers. No schema change (scenarioVersion stays 1).
+// show.menu/show.viewers, menuGroups (Ταξινομήσεις Μένου). No schema change
+// (scenarioVersion stays 1).
 function fScenarioUpdateStep(scenId, idx) {
   if (scenId && scenId !== MuLERMoCScenario.activeId) fScenarioSetActive(scenId);
   var s = (scenId && fScenarioGet(scenId)) || fScenarioActive();
@@ -1850,6 +2127,7 @@ function fScenarioUpdateStep(scenId, idx) {
     : { "2D": false, "3D": false };
   fresh.show.nameSettings = oldShow.nameSettings === true;
   fresh.show.nameClick = oldShow.nameClick === true;
+  fresh.menuGroups = fScenarioValidMenuGroups(old.menuGroups);
   s.steps[idx] = fresh;
   fScenarioSyncLegacy();
   fScenarioRenderList(s.id);

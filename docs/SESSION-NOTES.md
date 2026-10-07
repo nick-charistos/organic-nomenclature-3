@@ -369,3 +369,49 @@ Browser checklist for owner: menu-only interact-on (hint on entry +
 after row click, clicks explain; locked hides); naming-off step entry
 (gear/panel/voice off first frame, no fade; naming-on unchanged);
 rapid Prev/Next on/off steps; Exit restores author panel.
+
+## 2026-10-07 — naming-chrome reassert, CSS dedupes, empty cap, menu grouping
+
+All in the v43 set. JS verified with `node --check` + brace balance; CSS by
+selector-count/brace audits; browser click-throughs pending (owner).
+
+* Naming gear leak on menu steps (`scenario-43.js`, `molview-43.js`):
+  `fShowNameAnalysis()` rebuilds `#nameSettingsBtnDiv`/panel + voice buttons
+  without the presentation hides, so free-browse row clicks resurrected the
+  gear on steps with `Name controls` unchecked. Fix: `fScenarioChrome`'s
+  naming block extracted verbatim into `fScenarioApplyNamingChrome()`
+  (display-only, Export-safe); `fScenarioOnPresentBrowse()` delegates to it
+  (now step-kind-agnostic) and a guarded tail hook in `fShowNameAnalysis()`
+  re-asserts after every rebuild (browse + 2D/chain/ether switches).
+* CSS dedupes (paste accidents, render-identical, pure deletions):
+  `css/jsme-nick-43.css` 3845 → 1922 lines (exact 2×); `css/mulermoc-nom-
+  scenario-43.css` 3226 → 810 lines (`[X][Y][X][Y]`, kept the X superset —
+  zero non-blank lines lost, LF no-BOM preserved). Backups in the temp
+  opencode dir. CHANGELOG entries added.
+* Empty-scenario cap (`scenario-43.js` + CSS): `MuLERMoCScenario.
+  maxEmptyScenarios = 3` — `scNew` locks with toast at cap, panel Delete
+  locks only on the last remaining empty card (sole filled keeps
+  delete-then-autocreate); synced in `fScenarioRenderOne()`; imports always
+  land untouched.
+* Per-step menu grouping, Ταξινομήσεις Μένου (`scenario-43.js` + CSS):
+  additive `menuGroups` field (`molecules` default/flat, `chemclass`,
+  `series`; coerce-on-import, no version bump), 3 drawer checkboxes on
+  menu-step rows only (hidden on pure molecule steps), all-off valid →
+  flat, preserved by Update. Present renders flat / single-grouped
+  (carbon-count sorted, local numbering) / 2+ switcher (memory-only choice,
+  molecules default when checked); rows stay browsable in all views.
+* Accordion saga: groups started open-all → collapsed-by-default (selection's
+  group open) → `slideToggle` inverted styling vs visibility → class-only
+  toggle → final: main-app-identical accordion (open shuts rest, explicit
+  slideUp/slideDown, selection preserved, `--baseColor` header + body
+  chrome); switcher radios in one column.
+* Presentation CSS hook: `#pageContainer.presenting` flipped by new
+  `fScenarioSyncPresentClass()` (every apply + Exit + failed-start rollback);
+  first override is a 350px present `.menuListContainer` (author: 150px).
+* Docs: full sweep — didactic §§2–4 (schema, drawer, Update, cap, views,
+  hook), README authoring paragraph, LAYERS-PLAN §2 line.
+
+Browser checklist for owner: gear stays hidden after free-browse on
+naming-off menu steps; grouped menus ( shut-by-default, selection's group
+open, accordion + baseColor chrome, single-column switcher); empty-cap
+lock/unlock cycle; 350px present menu list; Exit restores everything.

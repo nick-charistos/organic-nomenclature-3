@@ -28,6 +28,7 @@ Scenario schema and log events reserve an optional `lang` field (`gr` default; n
 * Two-level `note` convention: EPAL-simple first / Lyceum-full extension (P3 authors; P5 compares).
 * Curated `moveto` per step (captured with rotate off).
 * Authoring flow: Save → Export → Present → Exit (Exit = full restore).
+* Per-step menu subsets render flat, single-grouped (collapsible), or with a grouping switcher in presentation (`menuGroups`; flat default).
 
 ## 3. EXPLORE-lite (bounded)
 
