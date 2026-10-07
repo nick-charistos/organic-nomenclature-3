@@ -358,7 +358,7 @@ function fDetectMolType() {
                                     }
                                 } else { //is not terminal: classify by bond-order counts, not summed valence
                                     // (valence-sum misclassifies R3N as imine and leaves R-NO2 unmatched)
-                                    let nSingleN = 0, nDoubleN = 0, nTripleN = 0, nDoubleON = 0, nDoubleCN = 0;
+                                    let nSingleN = 0, nDoubleN = 0, nTripleN = 0, nDoubleON = 0, nDoubleCN = 0, nON = 0;
                                     if (Array.isArray(bondList)) {
                                         for (let b = 0; b < bondList.length; b++) {
                                             const bb = bondList[b];
@@ -367,18 +367,19 @@ function fDetectMolType() {
                                             if (bb[0] === j + 1) { nbN = bb[1] - 1; }
                                             else if (bb[1] === j + 1) { nbN = bb[0] - 1; }
                                             else { continue; }
+                                            const nbTypeN0 = allAtomsTypeList[nbN];
+                                            if (nbTypeN0 === "O") { nON++; }
                                             if (bb[2] === 1) { nSingleN++; }
                                             else if (bb[2] === 2) {
                                                 nDoubleN++;
-                                                const nbTypeN = allAtomsTypeList[nbN];
-                                                if (nbTypeN === "O") { nDoubleON++; }
-                                                if (nbTypeN === "C") { nDoubleCN++; }
+                                                if (nbTypeN0 === "O") { nDoubleON++; }
+                                                if (nbTypeN0 === "C") { nDoubleCN++; }
                                             }
                                             else if (bb[2] === 3) { nTripleN++; }
                                         }
                                     }
-                                    if (nDoubleON >= 2 && nSingleN >= 1) {
-                                        // R-NO2: one single + two O-doubles (valence 5)
+                                    if (nON >= 2 && nSingleN >= 1 && nDoubleON >= 1) {
+                                        // R-NO2 incl. JSME charge-separated form (1 C-single + 1 O-single + 1 O-double)
                                         myFunctionalGroup = "nitro";
                                         molTaxonomy = "Νιτροενώσεις";
                                     } else if (nTripleN >= 1) {
@@ -2172,7 +2173,7 @@ function fDetectMolType3D() {
                             } else {
                                 // Non-terminal: classify by bond-order counts, not summed valence
                                 // (mirrors fDetectMolType 2D: R3N is amine, R-NO2 is nitro)
-                                let nSingleN3 = 0, nDoubleN3 = 0, nTripleN3 = 0, nDoubleON3 = 0, nDoubleCN3 = 0;
+                                let nSingleN3 = 0, nDoubleN3 = 0, nTripleN3 = 0, nDoubleON3 = 0, nDoubleCN3 = 0, nON3 = 0;
                                 if (Array.isArray(bondList3D)) {
                                     for (let b3 = 0; b3 < bondList3D.length; b3++) {
                                         const bb3 = bondList3D[b3];
@@ -2181,17 +2182,18 @@ function fDetectMolType3D() {
                                         if (bb3[0] === j + 1) { nbN3 = bb3[1] - 1; }
                                         else if (bb3[1] === j + 1) { nbN3 = bb3[0] - 1; }
                                         else { continue; }
+                                        const nbTypeN30 = allAtomsTypeList3D[nbN3];
+                                        if (nbTypeN30 === 'O') { nON3++; }
                                         if (bb3[2] === 1) { nSingleN3++; }
                                         else if (bb3[2] === 2) {
                                             nDoubleN3++;
-                                            const nbTypeN3 = allAtomsTypeList3D[nbN3];
-                                            if (nbTypeN3 === 'O') { nDoubleON3++; }
-                                            if (nbTypeN3 === 'C') { nDoubleCN3++; }
+                                            if (nbTypeN30 === 'O') { nDoubleON3++; }
+                                            if (nbTypeN30 === 'C') { nDoubleCN3++; }
                                         }
                                         else if (bb3[2] === 3) { nTripleN3++; }
                                     }
                                 }
-                                if (nDoubleON3 >= 2 && nSingleN3 >= 1) { myFunctionalGroup = 'nitro'; }
+                                if (nON3 >= 2 && nSingleN3 >= 1 && nDoubleON3 >= 1) { myFunctionalGroup = 'nitro'; }
                                 else if (nTripleN3 >= 1) { myFunctionalGroup = 'cyanide'; }
                                 else if (nDoubleCN3 >= 1) { myFunctionalGroup = 'CCimine'; }
                                 else { myFunctionalGroup = 'CCamine'; }
