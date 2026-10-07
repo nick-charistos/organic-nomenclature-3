@@ -109,9 +109,9 @@ function fScenarioPanelFor(id) {
 // verified after triggering, mismatch falls back to "none".
 var fScenarioModeToCompId = {
   compNumber1: "comp0",
-  " compSecondSub1": "comp1",
+  compSecondSub1: "comp1",
   compNumber2: "comp2",
-  " compSecondSub2": "comp3",
+  compSecondSub2: "comp3",
   compBondPos: "comp4",
   compCarbonsCount: "comp5",
   compBondType: "comp6",
@@ -125,9 +125,9 @@ var fScenarioModeToCompId = {
   commonEther: "comp12",
 };
 
-// S3: legacy engine modes carry a leading space (" compSecondSub1/2",
-// see mulermoc-nom-teaching-43.js). Normalize before comparing or looking up
-// so capture → apply → click survives trimming on either side.
+// S3: older saved scenarios may carry a legacy leading space (" compSecondSub1/2").
+// Normalize before comparing or looking up so capture → apply → click
+// survives trimming on either side.
 function fScenarioNormMode(m) {
   return String(m == null ? "none" : m).replace(/^\s+|\s+$/g, "");
 }

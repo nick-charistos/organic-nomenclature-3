@@ -2905,9 +2905,9 @@ function fShowNameAnalysis() {
   if (nameAnalysisMode !== "none") {
     const _modeToCompId = {
       compNumber1: "comp0",
-      " compSecondSub1": "comp1",
+      "compSecondSub1": "comp1",
       compNumber2: "comp2",
-      " compSecondSub2": "comp3",
+      "compSecondSub2": "comp3",
       compBondPos: "comp4",
       compCarbonsCount: "comp5",
       compBondType: "comp6",
@@ -3237,7 +3237,7 @@ function fExplainNameComp() {
       numberingFlag = true;
       fShowNumbering(0);
       break;
-    case " compSecondSub1":
+    case "compSecondSub1":
       numberingFlag = false;
       nStyle = "";
       myClass = "";
@@ -3291,7 +3291,7 @@ function fExplainNameComp() {
       fHighlightFG3D(2);
       fShowNumbering(0);
       break;
-    case " compSecondSub2":
+    case "compSecondSub2":
       nStyle = "";
       myClass = "";
       myText = ` Δηλώνει το όνομα  της δεύτερης αλφαβητικά δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(2)}.`;
@@ -3626,7 +3626,7 @@ function fShowRule(theRule) {
         ruleTitle = "Κανόνας συνθετικού τύπου δεσμών";
       }
       break;
-    case " compSecondSub1":
+    case "compSecondSub1":
       ruleText = namingRules.rule4;
       ruleTable = namingRules.table4;
       ruleTitle = "Σειρά ισχύος Χαρακτηριστικών Ομάδων";
@@ -4202,8 +4202,8 @@ function fHighlightFG(FGno) {
   const allowBranchFallback = [
     "compNumber1",
     "compNumber2",
-    " compSecondSub1",
-    " compSecondSub2",
+    "compSecondSub1",
+    "compSecondSub2",
   ].includes(nameAnalysisMode);
 
   if (fgKeys.length === 0) {
@@ -4606,8 +4606,8 @@ function fHighlightFG3D(FGno) {
   const allowBranchFallback = [
     "compNumber1",
     "compNumber2",
-    " compSecondSub1",
-    " compSecondSub2",
+    "compSecondSub1",
+    "compSecondSub2",
   ].includes(nameAnalysisMode);
 
   let highAtoms3D = [];

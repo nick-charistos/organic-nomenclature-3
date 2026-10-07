@@ -817,13 +817,13 @@ $(document).ready(function () {
           nameAnalysisMode = "compNumber1";
           break;
         case "comp1":
-          nameAnalysisMode = " compSecondSub1";
+          nameAnalysisMode = "compSecondSub1";
           break;
         case "comp2":
           nameAnalysisMode = "compNumber2";
           break;
         case "comp3":
-          nameAnalysisMode = " compSecondSub2";
+          nameAnalysisMode = "compSecondSub2";
           break;
         case "comp4":
           nameAnalysisMode = "compBondPos";
