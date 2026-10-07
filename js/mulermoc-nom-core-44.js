@@ -87,9 +87,14 @@ function fGetMoleculeClassification() {
             : hasCyanide && functionalGroups.includes("alcohol")
                 ? "hydroxyNitriles"
             : null
-    const principalFunctionalGroup = functionalGroups.find((group) =>
-        gFunctionalGroupsOrder.includes(group),
-    ) || functionalGroups.find((group) => ["halogen", "nitro", "ether", "ester"].includes(group)) || "hydrocarbon"
+    // Highest-priority group wins (gFunctionalGroupsOrder rank); unranked groups
+    // (halogen/ether/CCamine/...) tie after all ranked ones in insertion order
+    // (stable sort). Previously find() returned the first-inserted ranked group.
+    const _rankOf = (group) => {
+        const _i = gFunctionalGroupsOrder.indexOf(group);
+        return _i < 0 ? gFunctionalGroupsOrder.length : _i;
+    };
+    const principalFunctionalGroup = functionalGroups.slice().sort((a, b) => _rankOf(a) - _rankOf(b))[0] || "hydrocarbon"
     const seriesKey = specialSeriesKey || (principalFunctionalGroup === "hydrocarbon" ? bondSeries : principalFunctionalGroup)
     const chemicalClass = (() => {
         if (["alkanes", "alkenes", "alkadienes", "alkynes", "enynes"].includes(seriesKey)) {
