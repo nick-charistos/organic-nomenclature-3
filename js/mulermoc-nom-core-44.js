@@ -1893,27 +1893,28 @@ function fGuessName() {
 
     } else { // αν περιέχει > 1 ΧΟ
         // console.log("multiple functional groups ", functionalGroupsList)
-        functionalGroupsOrder = ["carboxylicAcid", "ester", "cyanide", "aldehyde", "ketone", "alcohol", "amine", "nitro", "ether"]
+        // Local priority copy: the global stays pristine for the next molecule
+        const fgOrder = ["carboxylicAcid", "ester", "cyanide", "aldehyde", "ketone", "alcohol", "amine", "nitro", "ether"]
 
         ///////// PATCH για σωστή σειρά υποκαταστατών ////////////
 
         functionalGroupsList.sort(function (a, b) {
-            return functionalGroupsOrder.indexOf(b) - functionalGroupsOrder.indexOf(a);
+            return fgOrder.indexOf(b) - fgOrder.indexOf(a);
         });
 
         /////////////////////////////////////////
 
-        // functionalGroupsOrder
-        for (let i = functionalGroupsOrder.length - 1; i >= 0; i--) {
-            if (functionalGroupsList.indexOf(functionalGroupsOrder[i]) < 0) {
-                functionalGroupsOrder.splice(i, 1)
+        // fgOrder pruned to the groups present in this molecule
+        for (let i = fgOrder.length - 1; i >= 0; i--) {
+            if (functionalGroupsList.indexOf(fgOrder[i]) < 0) {
+                fgOrder.splice(i, 1)
             }
         }
 
-        if (functionalGroupsOrder[0] == "cyanide") {
-            myFunctionalGroups = functionalGroupObj[functionalGroupsOrder[0]].N
+        if (fgOrder[0] == "cyanide") {
+            myFunctionalGroups = functionalGroupObj[fgOrder[0]].N
         } else {
-            myFunctionalGroups = functionalGroupObj[functionalGroupsOrder[0]].O
+            myFunctionalGroups = functionalGroupObj[fgOrder[0]].O
         }
         if (myFunctionalGroups.length < 3) {
             theCountPrefix = nameMultiPrefix[myFunctionalGroups.length - 1] // τιποτα ή Δι
@@ -1921,18 +1922,18 @@ function fGuessName() {
             theCountPrefix = nameMultiPrefix[1] // δι
         }
 
-        comp4 = theCountPrefix + nameMainCompObj3[functionalGroupsOrder[0]].suffix
+        comp4 = theCountPrefix + nameMainCompObj3[fgOrder[0]].suffix
         XOPrefix = ""
         myXpositions = ""
         sortedFunPositions = []
-        for (let i = 1; i < functionalGroupsOrder.length; i++) {
-            currXO = functionalGroupsOrder[i] // η τρεχουσα ΧΟ υποκαταστατη
-            currXOhetero = Object.keys(functionalGroupObj[functionalGroupsOrder[i]])[0] // το ετεροάτομο της ΧΟ
-            currXOcount = functionalGroupObj[functionalGroupsOrder[i]][currXOhetero].length // ποσες φορες υπάρχει η ΧΟ
+        for (let i = 1; i < fgOrder.length; i++) {
+            currXO = fgOrder[i] // η τρεχουσα ΧΟ υποκαταστατη
+            currXOhetero = Object.keys(functionalGroupObj[fgOrder[i]])[0] // το ετεροάτομο της ΧΟ
+            currXOcount = functionalGroupObj[fgOrder[i]][currXOhetero].length // ποσες φορες υπάρχει η ΧΟ
             theCountPrefix = nameMultiPrefix[currXOcount - 1] // τιποτα,Δι,τρι....
 
             for (let j = 0; j < currXOcount; j++) {
-                theXno = functionalGroupObj[functionalGroupsOrder[i]][currXOhetero][j] // ο αριθμός του ετερορατομου της τρεχουσας ΧΟ
+                theXno = functionalGroupObj[fgOrder[i]][currXOhetero][j] // ο αριθμός του ετερορατομου της τρεχουσας ΧΟ
                 currXPos = mainChainAtomsList.indexOf(atomConnectivityList[theXno][0] + 1) + 1
                 sortedFunPositions.push(currXPos)
             }
