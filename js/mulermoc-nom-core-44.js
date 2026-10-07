@@ -1742,13 +1742,17 @@ function fGuessName() {
         switch (functionalGroupsList[0]) { // ΟΜΟΛΟΓΕΣ ΣΕΙΡΕΣ
             case "halogen": //ΑΛΚΥΛΑΛΟΓΟΝΙΔΙΑ
                 theHalogens = Object.keys(functionalGroupObj.halogen)
-                sortedHalogens = Object.keys(nameMainCompObj3.halogen.substitute)
-                for (let i = sortedHalogens.length - 1; i >= 0; i--) { // αλβαβητική σειρα αλογόνων
-                    if (theHalogens.indexOf(sortedHalogens[i]) < 0) {
-                        sortedHalogens.splice(i, 1)
-                    }
-                }
-                for (let i = sortedHalogens.length - 1; i >= 0; i--) { // τρεχει για κάθε διαφορετικό αλογόνο που υπάρχει
+                // Present halogens in explicit Greek-alphabetical order of their
+                // substitute names (βρωμο < ιωδο < φθορο < χλωρο); robust for
+                // any number of halogen types (was: reverse key order + 2-type patch)
+                sortedHalogens = theHalogens.filter(function (hx) {
+                    return Object.prototype.hasOwnProperty.call(nameMainCompObj3.halogen.substitute, hx)
+                }).sort(function (a, b) {
+                    const _sa = nameMainCompObj3.halogen.substitute[a];
+                    const _sb = nameMainCompObj3.halogen.substitute[b];
+                    return _sa < _sb ? -1 : (_sa > _sb ? 1 : 0);
+                });
+                for (let i = 0; i < sortedHalogens.length; i++) { // τρεχει για κάθε διαφορετικό αλογόνο που υπάρχει
                     let currX = sortedHalogens[i]
                     myXpositions = ""
                     theCountPrefix = nameMultiPrefix[functionalGroupObj.halogen[currX].length - 1] // Δι, τρι, τετρα....
@@ -1764,8 +1768,9 @@ function fGuessName() {
                     comp0NumberList.push(myXpositions)
                     comp0TextList.push(subPrefix)
                 }
-                comp0 = myXpositions + "-"
-                comp0Text = subPrefix
+                // comp0/comp0b assignment for any number of types happens below
+                // (comp0NumberList block): first alphabetical type -> comp0,
+                // remaining types joined -> comp0b
                 if (bondPrefixDB !== "") {
                     comp1No = "-" + bondPrefixDB
                 } else {
@@ -1955,18 +1960,25 @@ function fGuessName() {
             if (currXO == "aldehyde") { myXpositions = "" }
             if (currXO == "ketone" && mainChainAtomsList.length < 5) { myXpositions = "" }
 
-            XOPrefix += nameMainCompObj3[currXO].substitute
+            // Per-group count prefix accumulated with its own substitute
+            // (was: only the last group's count prefix applied to the whole string)
+            XOPrefix += nameMultiPrefix[currXOcount - 1] + nameMainCompObj3[currXO].substitute
         }
 
         comp0 = myXpositions;
-        comp0Text = theCountPrefix + XOPrefix;
+        comp0Text = XOPrefix;
 
     }
-    if (comp0NumberList.length > 1) {
-        comp0 = comp0NumberList[1] + "-"
-        comp0Text = comp0TextList[1]
-        comp0b = "-" + comp0NumberList[0] + "-"
-        comp0bText = comp0TextList[0]
+    // Alkyl-halide prefix slots: first alphabetical halogen type -> comp0,
+    // any remaining types joined into comp0b (generalizes the old 2-type patch)
+    if (comp0NumberList.length === 1) {
+        comp0 = comp0NumberList[0] + "-"
+        comp0Text = comp0TextList[0]
+    } else if (comp0NumberList.length > 1) {
+        comp0 = comp0NumberList[0] + "-"
+        comp0Text = comp0TextList[0]
+        comp0b = "-" + comp0NumberList.slice(1).join("-") + "-"
+        comp0bText = comp0TextList.slice(1).join("-")
     }
 
     // console.log(comp0, comp0Text, comp0b, comp0bText, comp1No, comp1, comp2, comp3, comp2b, comp4)
