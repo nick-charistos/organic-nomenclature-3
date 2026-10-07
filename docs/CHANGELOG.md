@@ -4,6 +4,25 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ---
 
+## [v44] (working copy, unreleased — v43 frozen at tag `v43`)
+
+New parallel file set `mulermoc-nom-44.html` + `js/*-44.js` + `css/*-44.css`, copied from v43 (`index.html` still → v43 until browser verification). All fixes below are `*44*`-only; `*43*` untouched.
+
+### Engine (`js/mulermoc-nom-core-44.js`)
+- N-table rewrite (2D `fDetectMolType` + 3D mirror): non-terminal N classified by bond-order counts instead of valence sum — tertiary amine R3N → amine (was: misclassified imine), R-NO2 → nitro incl. JSME charge-separated form (1 C-single + 1 O-single + 1 O-double; was: stale-group leak + crash); every branch sets taxonomy explicitly; terminal-N `default → amine` guard.
+- Principal functional group by priority rank (`gFunctionalGroupsOrder`), not insertion order (stable sort; unranked buckets tie after ranked ones).
+- `functionalGroupsOrder` no longer mutated per `fGuessName()` call (local `fgOrder` copy in multi-FG branch).
+- Stored-chain override guarded (unknown molecule falls through to algorithmic chain instead of `TypeError`); aldehyde/ketone carbonyl index fixed (`[0]`, parity with 3D).
+- Halogen prefixes generalized to N types (explicit Greek-alphabetical order; old reverse-iterate + 2-type patch dropped — 1/2-type output byte-identical, 3+ types no longer drop a halogen); polyfunctional `di-/tri-` accumulated per group (single-group output unchanged).
+- Defensive suffix fallback (`hydrocarbon`) for buckets without a naming entry; cyclic C-skeleton early-out (console warning + deterministic fallback, 2D + 3D).
+
+### Viewer (`js/mulermoc-nom-molview-44.js`)
+- Numbering: `fShowNumber` off-by-one (`>=`), diagrammatic no-match `continue` (no stale coords), `fShowNumbering3D` no longer mutates global `mainChainAtoms3D` (local copy + optional chain param on `fShowNumber3D`).
+- `fUpdateSVG` null guards (empty SVG / logo); `carbonHydrogens.fill(0)`; `JmolSelection` join contract normalized; `fClassifyAllMolecules` snapshots/restores core globals in `finally`.
+
+### Deferred to a later phase (Greek-convention decision)
+- Ketone/alcohol/nitro locant suppression thresholds (`butan-2-one` without `2-` etc.) kept as-is — Greek convention differs from English; revisit separately.
+
 ## [Unreleased] (v43 working copy — splits committed vs uncommitted 2026-10-06)
 
 ### Committed (hashes in git log)

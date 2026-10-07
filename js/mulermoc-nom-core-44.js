@@ -625,6 +625,14 @@ function fCalcMainChain() {
     // Simple linear chain → exactly 2 terminals.
     // Branched chain → 3 or more terminals (each branch tip is a terminal).
     const terminals = carbAtoms.filter(function(c) { return cAdj[c].length <= 1 })
+    if (terminals.length === 0) {
+        // Cyclic C-skeleton: out of scope (engine is acyclic-only). Same
+        // deterministic fallback as the null-path case below, flagged in console.
+        console.warn("fCalcMainChain: cyclic molecule, acyclic naming applied as fallback")
+        mainChainAtomsList = carbAtoms.map(function(c) { return c + 1 })
+        fValidateMainChain()
+        return
+    }
 
     // ── Step 4: DFS — enumerate all simple paths between terminal pairs ──────────
     // For acyclic (tree) graphs there is exactly ONE simple path between any two nodes,
@@ -1211,6 +1219,13 @@ function fCalcMainChain3D() {
 
     // ── Step 3: Terminal carbons ──────────────────────────────────────────────────
     const terminals3D = carbAtoms3D.filter(function(c) { return cAdj3D[c].length <= 1 })
+    if (terminals3D.length === 0) {
+        // Cyclic C-skeleton: out of scope (engine is acyclic-only, mirrors 2D).
+        console.warn("fCalcMainChain3D: cyclic molecule, acyclic naming applied as fallback")
+        mainChainAtoms3D = carbAtoms3D.map(function(c) { return c + 1 })
+        fValidateMainChain3D()
+        return
+    }
 
     // ── Step 4: DFS — enumerate all simple paths between terminal pairs ──────────
     function dfsAllPaths3D(start) {
@@ -1716,7 +1731,10 @@ function fGuessName() {
     }
 
     // Υδρογονάνθρακες, αλκυλαλογονίδια, νιτρο (-ιο): τόνος στο τελευταίο συνθετικό δεσμού (άν/έν/ίν)
-    if (nameMainCompObj3[functionalGroupsList[0]].suffix === "ιο") {
+    // Defensive: buckets without a naming entry (e.g. CCamine) fall back to
+    // hydrocarbon instead of throwing on undefined (cf. nitro crash at :1710)
+    const _principalEntry = nameMainCompObj3[functionalGroupsList[0]] || nameMainCompObj3.hydrocarbon
+    if (_principalEntry.suffix === "ιο") {
         if (comp2b !== "") { // μεικτή περίπτωση (διπλοί + τριπλοί): τόνος μόνο στο τελευταίο (comp2b)
             comp2b = "ίν"
         } else { // μόνο ένας τύπος δεσμού: τόνος στο τελικό συλλαβικό
@@ -1738,7 +1756,7 @@ function fGuessName() {
     }
 
     if (functionalGroupsList.length < 2) { // αν περιέχει 1 ΧΟ
-        comp4 = nameMainCompObj3[functionalGroupsList[0]].suffix // 3o Κυριο Συνθετικό - κατάληξη
+        comp4 = _principalEntry.suffix // 3o Κυριο Συνθετικό - κατάληξη
         switch (functionalGroupsList[0]) { // ΟΜΟΛΟΓΕΣ ΣΕΙΡΕΣ
             case "halogen": //ΑΛΚΥΛΑΛΟΓΟΝΙΔΙΑ
                 theHalogens = Object.keys(functionalGroupObj.halogen)
