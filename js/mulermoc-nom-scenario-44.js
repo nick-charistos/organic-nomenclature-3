@@ -316,8 +316,8 @@ function fScenarioCapture() {
       zigzag: fScenarioG("mode2D", "") === "condensedZigZag",
     },
     styleName: {
-      box: !!(typeof nameBoxFlag !== "undefined" ? nameBoxFlag : window.nameBoxFlag),
-      cross: !!(typeof nameCrossFlag !== "undefined" ? nameCrossFlag : window.nameCrossFlag),
+      box: !!window.nameBoxFlag,
+      cross: !!window.nameCrossFlag,
       etherNaming: fScenarioG("etherNamingMode", "iupac"),
       panelOpen: !!fScenarioG("nameSettingsFlag", true),
     },
@@ -1019,9 +1019,7 @@ function fScenarioApply(step) {
     /* private mode */
   }
   window.nameBoxFlag = !!step.styleName.box;
-  nameBoxFlag = window.nameBoxFlag;
   window.nameCrossFlag = !!step.styleName.cross;
-  nameCrossFlag = window.nameCrossFlag;
   narrateAnalysisFlag = !!step.audio.narrate;
   nameSettingsFlag = !!step.styleName.panelOpen;
   // No-flash: the load path rebuilds #nameSettingsPanel from this flag, and

@@ -560,8 +560,8 @@ $(document).ready(function () {
   $("#readNameBtn").prop("disabled", false);
 
   $(document).on("click", "#nameStyleBoxToggle", function () {
-    nameBoxFlag = !nameBoxFlag;
-    if (nameBoxFlag) {
+    window.nameBoxFlag = !window.nameBoxFlag;
+    if (window.nameBoxFlag) {
       $(".nameCompBox ").removeClass("unboxed").addClass("boxed");
       $(this).html(svgNameBox).attr("data-tooltip", "Πλαίσια συνθετικών");
     } else {
@@ -573,8 +573,8 @@ $(document).ready(function () {
   });
 
   $(document).on("click", "#nameStyleCrossToggle", function () {
-    nameCrossFlag = !nameCrossFlag;
-    if (nameCrossFlag) {
+    window.nameCrossFlag = !window.nameCrossFlag;
+    if (window.nameCrossFlag) {
       $(".nameCompPlus ").removeClass("hide");
       $(this).html(svgNameCross).attr("data-tooltip", "Διαχωρισμένα συνθετικά");
     } else {

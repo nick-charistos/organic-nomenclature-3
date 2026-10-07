@@ -35,9 +35,8 @@ let nameSettingsFlag = true;
 let narrateAnalysisFlag = false;
 if (typeof window.nameBoxFlag === "undefined") window.nameBoxFlag = true;
 if (typeof window.nameCrossFlag === "undefined") window.nameCrossFlag = false;
-// keep local aliases for existing code that references plain identifiers
-var nameBoxFlag = window.nameBoxFlag;
-var nameCrossFlag = window.nameCrossFlag;
+// Single source: all code reads/writes window.* directly (no local aliases,
+// which desynced after toggles since primitives copy by value)
 let mainChainMode = "algorithmic"; // 'data' | 'algorithmic'
 let etherNamingMode = "iupac"; // 'iupac' | 'common' — ether naming variant toggle
 let compactNumberingLabelMap = {};
@@ -2745,15 +2744,15 @@ function fShowNameAnalysis() {
     : "Αφήγηση ανενεργή";
   const playDisabled = narrateAnalysisFlag ? "" : " disabled";
 
-  const toggleNameStyleBox = nameBoxFlag ? svgNameBox : svgNameBoxOff;
-  const boxClass = nameBoxFlag ? "nameCompBox boxed" : "nameCompBox unboxed";
-  const boxTooltip = nameBoxFlag
+  const toggleNameStyleBox = window.nameBoxFlag ? svgNameBox : svgNameBoxOff;
+  const boxClass = window.nameBoxFlag ? "nameCompBox boxed" : "nameCompBox unboxed";
+  const boxTooltip = window.nameBoxFlag
     ? "Πλαίσια συνθετικών"
     : "Χωρίς πλαίσια συνθετικών";
 
-  const toggleNameStyleCross = nameCrossFlag ? svgNameCross : svgNameCrossOff;
-  const crossClass = nameCrossFlag ? "nameCompPlus" : "nameCompPlus hide";
-  const crossTooltip = nameCrossFlag
+  const toggleNameStyleCross = window.nameCrossFlag ? svgNameCross : svgNameCrossOff;
+  const crossClass = window.nameCrossFlag ? "nameCompPlus" : "nameCompPlus hide";
+  const crossTooltip = window.nameCrossFlag
     ? "Διαχωρισμένα συνθετικά"
     : "Ενωμένα συνθετικά";
 
