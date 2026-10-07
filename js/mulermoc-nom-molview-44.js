@@ -131,7 +131,7 @@ function jsmeOnLoad() {
   ];
   jsmeNomeclatureApplet.setBackGroundColorPalette(bgAtom);
 
-  carbonHydrogens = Array(jsmeNomeclatureApplet.totalNumberOfAtoms());
+  carbonHydrogens = Array(jsmeNomeclatureApplet.totalNumberOfAtoms()).fill(0);
 
   jsmeNomeclatureAppletORGNL = new JSApplet.JSME(
     "jsmeNomeclatureORGNL",
@@ -171,15 +171,44 @@ function jsmeOnLoad() {
 
 function fClassifyAllMolecules() {
   const previousMol = selectedMol;
+  // Snapshot live analysis globals: the loop recomputes them per molecule,
+  // so restore afterwards instead of leaving the last molecule's state behind
+  const _coreSnapshot = {
+    atomsCount, bondsCount, allAtomsTypeList, atomTypes, atomTypeObj,
+    atomConnectivityList, atomValenceList, bondList, multiBondListCC,
+    multiBondsObj, svgBondList, functionalGroupObj, molType, molTaxonomy,
+    carbons, carbonHydrogens: carbonHydrogens.slice(),
+  };
 
-  for (const prop of Object.keys(nameExamples)) {
-    const structure = nameExamples[prop].structure2D;
-    if (!structure) continue;
+  try {
+    for (const prop of Object.keys(nameExamples)) {
+      const structure = nameExamples[prop].structure2D;
+      if (!structure) continue;
 
-    jsmeNomeclatureApplet.readMolFile(structure);
-    fAnalyseStructure();
-    fDetectMolType();
-    nameExamples[prop].classification = fGetMoleculeClassification();
+      jsmeNomeclatureApplet.readMolFile(structure);
+      fAnalyseStructure();
+      fDetectMolType();
+      nameExamples[prop].classification = fGetMoleculeClassification();
+    }
+  } finally {
+    // Direct rebinding: these are `let` globals (not globalThis props),
+    // so restore each binding instead of Object.assign on globalThis
+    atomsCount = _coreSnapshot.atomsCount;
+    bondsCount = _coreSnapshot.bondsCount;
+    allAtomsTypeList = _coreSnapshot.allAtomsTypeList;
+    atomTypes = _coreSnapshot.atomTypes;
+    atomTypeObj = _coreSnapshot.atomTypeObj;
+    atomConnectivityList = _coreSnapshot.atomConnectivityList;
+    atomValenceList = _coreSnapshot.atomValenceList;
+    bondList = _coreSnapshot.bondList;
+    multiBondListCC = _coreSnapshot.multiBondListCC;
+    multiBondsObj = _coreSnapshot.multiBondsObj;
+    svgBondList = _coreSnapshot.svgBondList;
+    functionalGroupObj = _coreSnapshot.functionalGroupObj;
+    molType = _coreSnapshot.molType;
+    molTaxonomy = _coreSnapshot.molTaxonomy;
+    carbons = _coreSnapshot.carbons;
+    carbonHydrogens = _coreSnapshot.carbonHydrogens;
   }
 
   selectedMol = previousMol;
@@ -2280,8 +2309,13 @@ function fUpdateSVG() {
     fAddHydrogens2SVG();
   }
   molSnap = Snap("#jsmeNomeclatureSVG svg");
+  if (!molSnap) {
+    return; // empty SVG (molecule with missing representation): nothing to post-process
+  }
   const snapLogo = molSnap.select("polygon:last-of-type");
-  snapLogo.remove();
+  if (snapLogo) {
+    snapLogo.remove();
+  }
   if (mode2D === "expanded") {
     fMarkExpandedHydrogens();
   }
@@ -2915,7 +2949,7 @@ function fClearHighlights() {
   ruleTableHighlight = null;
   numberingAtomOverride = null;
   numberingAtomOverride3D = null;
-  JmolSelection = "select none;";
+  JmolSelection = "select none"; // no trailing ";": call sites join as "...;" + JmolSelection + ";"
 }
 
 // ── Secondary-group display names ─────────────────────────────────────────
@@ -5135,6 +5169,7 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
       );
       numberOffset = [-50, -180];
       for (let i = 0; i < highAtoms.length; i++) {
+        let _foundBond = false;
         for (let b = 0; b < bondList.length; b++) {
           if (highAtoms[i] == bondList[b][0]) {
             currAtomTextElement = molSnap.select(
@@ -5143,6 +5178,7 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
             x = parseInt(currAtomTextElement.attr("x1")) + numberOffset[0];
             y = parseInt(currAtomTextElement.attr("y1")) + +numberOffset[1];
 
+            _foundBond = true;
             break;
           } else {
             if (highAtoms[i] == bondList[b][1]) {
@@ -5151,8 +5187,12 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
               );
               x = parseInt(currAtomTextElement.attr("x2")) + numberOffset[0];
               y = parseInt(currAtomTextElement.attr("y2")) + +numberOffset[1];
+              _foundBond = true;
             }
           }
+        }
+        if (!_foundBond) {
+          continue; // atom has no drawn bond: skip instead of reusing stale x/y
         }
 
         r = 220;
@@ -5180,7 +5220,7 @@ function fShowNumber() {
   molSnap.select("g").append(numberElement);
   currNumberEl += 1;
 
-  if (currNumberEl > numbersSVGElements.length) {
+  if (currNumberEl >= numbersSVGElements.length) {
     currNumberEl = 0;
     clearInterval(myNumberingTimeout);
   }
@@ -5195,7 +5235,12 @@ function fShowNumbering3D() {
       ? nameExamples[selectedMol].mainChain3D
       : null;
   if (chain3D) {
-    mainChainAtoms3D = chain3D;
+    // Local copy: a step override must not leak into the global chain
+    const _chain3D = chain3D.slice();
+    for (let i = 0; i < _chain3D.length; i++) {
+      fShowNumber3D(i, _chain3D);
+    }
+    return;
   } else if (mainChainMode !== "algorithmic") {
     mainChainAtoms3D = nameExamples[selectedMol].mainChain3D;
   }
@@ -5214,12 +5259,13 @@ function removeEcho3D() {
 
 // ── fShowNumber3D ─────────────────────────────────────────────────────────
 
-function fShowNumber3D(n) {
+function fShowNumber3D(n, chain) {
+  const _chain = Array.isArray(chain) ? chain : mainChainAtoms3D;
   let myAtom =
     Array.isArray(numberingAtomOverride3D)
       ? numberingAtomOverride3D[n]
       : mainChainMode === "algorithmic"
-        ? mainChainAtoms3D[n]
+        ? _chain[n]
         : nameExamples[selectedMol].mainChain3D[n];
 
   if (typeof myAtom === "undefined" || myAtom === null) {
