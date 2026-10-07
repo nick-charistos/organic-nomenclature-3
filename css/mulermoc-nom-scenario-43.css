@@ -22,6 +22,7 @@
    flex-wrap: nowrap;
    background: var(--lightGrayNick);
    border: 1px solid var(--baseColor);
+   border-top-color: #fff;
    border-right: 0;
    /* border-top-left-radius: 4px; */
    border-bottom-left-radius: 4px;
@@ -161,6 +162,7 @@
    min-height: 0;
    overflow: auto;
    background: var(--lightBlue);
+   border-bottom-left-radius: 3px;
 }
 
 .scenarioPanel {
@@ -534,7 +536,7 @@
    -webkit-appearance: none;
    position: absolute;
    left: -40px;
-   top: -0px;
+   top: -1px;
    width: 40px;
    /* height: 80px; */
    z-index: -10;
