@@ -415,3 +415,31 @@ Browser checklist for owner: gear stays hidden after free-browse on
 naming-off menu steps; grouped menus ( shut-by-default, selection's group
 open, accordion + baseColor chrome, single-column switcher); empty-cap
 lock/unlock cycle; 350px present menu list; Exit restores everything.
+
+## 2026-10-07 — v44 released (`222ceab`…`905946e`, tag `v44`)
+
+`index.html` → `mulermoc-nom-44.html`. `*43*` frozen; all fixes `*44*`-only.
+
+* N-table rewrite (2D + 3D mirror): non-terminal N by bond-order counts —
+  R3N → amine, R-NO2 → nitro incl. JSME charge-separated form; every branch
+  sets taxonomy explicitly; terminal-N `default → amine`.
+* Principal FG by priority rank (stable sort); `fgOrder` local copy (global
+  splice leak fixed); stored-chain optional deref; aldehyde/ketone `[0]` +
+  connectivity-array guard; N-way halogen prefixes (Greek-alphabetical,
+  1/2-type byte-identical); per-group `di-/tri-`; `hydrocarbon` suffix
+  fallback; cyclic early-out (console warn + deterministic fallback).
+* Viewer: numbering `>=` + no-match `continue`, local 3D chain copy +
+  `fShowNumber3D(n, chain)` param, `fUpdateSVG` null guards,
+  `carbonHydrogens.fill(0)`, `JmolSelection` join contract, boot
+  snapshot/restore in `finally`; `window.nameBoxFlag/Cross` single-source
+  (teaching + molview + scenario).
+* Docs: README + CHANGELOG v44; LAYERS-PLAN/didactic/PROJECT-PLAN(-GR)/
+  banners reconciled to v44 (this batch).
+
+Browser checklist for owner (pending): 64-mol classification diff v43 vs
+v44; ether/ester/amine/nitro/halogen golden names (incl. multi-FG +
+3-halogen synthetic); all 3 modes + numbering + rule tables + menu
+grouping; one scenario Save → Present → Next → Exit + Export/Import incl.
+legacy `"app": "mulermoc-nom-43"` file; Exit restores menu-open + both
+viewers. Known deferred: ketone/alcohol/nitro locant thresholds (Greek
+convention), rings/aromatics out of scope.

@@ -2,7 +2,7 @@
 ## Project: MuLERMoCs-Anastasia | Organic Nomenclature v37+
 ## Created: 2026-05-02 | Status: HISTORICAL — superseded (see banner below)
 
-> **HISTORICAL 2026-10-06:** this plan predates the v43 baseline (64 molecules, LEARN-first layers, scenario scaffold in `js/mulermoc-nom-scenario-43.js`). Status claims (`PLANNING — no implementation yet`, v37+/59 mols, `mulermoc-nom-38.html`/`quiz-nom-1.html`) are superseded. Source of truth: `README.md` + `docs/LAYERS-PLAN.md` + `docs/didactic-scenario-plan.md`. Kept for theory/history only.
+> **HISTORICAL 2026-10-07:** this plan predates the v44 baseline (64 molecules, LEARN-first layers, scenario scaffold in `js/mulermoc-nom-scenario-44.js`; v43 frozen at tag `v43`). Status claims (`PLANNING — no implementation yet`, v37+/59 mols, `mulermoc-nom-38.html`/`quiz-nom-1.html`) are superseded. Source of truth: `README.md` + `docs/LAYERS-PLAN.md` + `docs/didactic-scenario-plan.md`. Kept for theory/history only.
 
 ---
 

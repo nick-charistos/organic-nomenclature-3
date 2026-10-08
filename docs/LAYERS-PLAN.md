@@ -2,7 +2,7 @@
 
 Source of truth for the four layers of the twofold+1 vision (see `README.md`):
 1. a useful community tool, 2. ongoing research publications, 3. (+1) platform for isomerism/reactions and beyond.
-Baseline: **v43** (`index.html` → `mulermoc-nom-43.html`, scenario scaffold, exit restores full chrome).
+Baseline: **v44** (`index.html` → `mulermoc-nom-44.html`, scenario scaffold, exit restores full chrome; v43 frozen at tag `v43`).
 Hosting: **embedded static** — the chemistry app stays dependency-free static; Drupal owns scenarios, exercises/quizzes, users/sessions, logging, exports.
 
 ---
@@ -11,8 +11,8 @@ Hosting: **embedded static** — the chemistry app stays dependency-free static;
 
 | Layer | Entry | Chrome / behavior | Owner | Exit criteria |
 |---|---|---|---|---|
-| **LEARN** | `mulermoc-nom-43.html?scenario=scenarios/<name>.json&present=1#step=N` (hosted) or Import (offline/`file://`) | linear snapshots (`selectedMol + show.* + note`); menu hidden in present; Exit restores menu (`menu-open`) + both viewers + all bars; in-memory steps kept | P1 (player) + P3 (content) + P2-lite (listing) | teacher unfamiliar with code can Present + Exit in class |
-| **EXPLORE** | `mulermoc-nom-43.html` (no params) | free browsing, left menu (series-first), all DB molecules | P1 (app) + P4→P3 (molecules) | menu search works; scenario-needed molecules present |
+| **LEARN** | `mulermoc-nom-44.html?scenario=scenarios/<name>.json&present=1#step=N` (hosted) or Import (offline/`file://`) | linear snapshots (`selectedMol + show.* + note`); menu hidden in present; Exit restores menu (`menu-open`) + both viewers + all bars; in-memory steps kept | P1 (player) + P3 (content) + P2-lite (listing) | teacher unfamiliar with code can Present + Exit in class |
+| **EXPLORE** | `mulermoc-nom-44.html` (no params) | free browsing, left menu (series-first), all DB molecules | P1 (app) + P4→P3 (molecules) | menu search works; scenario-needed molecules present |
 | **PRACTICE** | TBD (`?exercise=` + `itemType`) on the same engine | until-correct feedback loop, attempt counting; reuses `fSelectMol` + name-box click path | P1 + P3 (wording) + P2 (schema) | 3 types v1 usable in small-class pilots |
 | **PLAY** | TBD (Drupal quiz session) | gamified items, score/streak/levels v1; events queued offline, synced to Drupal | P2 leads, P1 thin client; P5/P6 research | response+time log → CSV; EPAL-vs-Lyceum analysis possible |
 

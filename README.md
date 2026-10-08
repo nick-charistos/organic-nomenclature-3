@@ -17,7 +17,7 @@ A Greek-first interactive learning platform for organic nomenclature, built arou
 | Site | Serves | Status |
 |---|---|---|
 | [organic-nomenclature-2](https://nick-charistos.github.io/organic-nomenclature-2/) | v42 (`index.html` → `mulermoc-nom-42.html`) | frozen — emergency hotfixes only, never push feature work there |
-| [organic-nomenclature-3](https://nick-charistos.github.io/organic-nomenclature-3/) | v43 (`index.html` → `mulermoc-nom-43.html`) | active — all new work happens here |
+| [organic-nomenclature-3](https://nick-charistos.github.io/organic-nomenclature-3/) | v44 (`index.html` → `mulermoc-nom-44.html`) | active — all new work happens here |
 
 Runnable history via tags `v41`/`v42` (pushed to repo3). The old versioned file sets live on as a non-runnable museum in [archive/](archive/README.md).
 
@@ -42,9 +42,9 @@ Runnable history via tags `v41`/`v42` (pushed to repo3). The old versioned file 
 
 ---
 
-## Recent fix: branch highlighting (v43 working copy, unreleased — see CHANGELOG [Unreleased])
+## Shipped: branch highlighting (v43 working copy → carried into v44)
 
-The current working branch focuses on the selection logic for alkyl side chains and related expanded hydrogens.
+The alkyl-side-chain selection logic (incl. related expanded hydrogens) shipped in the v43 working copy and is carried into v44.
 
 - Selected methyl and other hydrocarbon branches now highlight correctly in both the 2D JSME view and the 3D JSmol view.
 - The branch fallback works even when the molecule includes additional functional groups, instead of only pure hydrocarbon cases.
@@ -110,11 +110,11 @@ key, bond-series type, and total carbon count.
 
 The default menu groups molecules by homologous series. Rule grouping and a
 flat `Όλα τα μόρια` (all molecules) list are available as alternate modes
-(v43 working copy defaults to the flat `all` mode; rule mode keeps its
+(defaults to the flat `all` mode; rule mode keeps its
 pedagogical order). Chemical classes in v41 include `ethers`, `esters` and `carbonylCompounds`
 (merged aldehydes/ketones); hydroxy/amino acids are folded into
 `carboxylicAcids`. Remaining special series include keto acids, hydroxy
-nitriles, and oxo carboxylic acids. Since the v43 working copy, `Χημικές Τάξεις`
+nitriles, and oxo carboxylic acids. Since v43, `Χημικές Τάξεις`
 groups are also sorted by ascending carbon count (`fSortPropsByCarbonCount`;
 see CHANGELOG [Unreleased]).
 
@@ -200,20 +200,20 @@ These belong to a later product phase.
 - [PROJECT-PLAN.md](docs/PROJECT-PLAN.md)
 - [PROJECT-PLAN-GR.md](docs/PROJECT-PLAN-GR.md)
 - [CHANGELOG.md](docs/CHANGELOG.md)
-- [didactic-scenario-plan.md](docs/didactic-scenario-plan.md) — snapshot scenarios (v43)
+- [didactic-scenario-plan.md](docs/didactic-scenario-plan.md) — snapshot scenarios (v44)
 
-These plans describe the research and product ambitions, but the current implementation should be treated as the working v43 baseline rather than as a fully finished research platform.
+These plans describe the research and product ambitions, but the current implementation should be treated as the working v44 baseline rather than as a fully finished research platform.
 
 ---
 
 ## Technical notes
 
 ### Important observations
-- The workspace keeps one canonical versioned set per release at root (`*43*` now); older sets are frozen in [archive/](archive/README.md), runnable via tags `v41`/`v42`.
-- The project plans still describe older intended milestones and should be reconciled with the real v43 baseline.
+- The workspace keeps one canonical versioned set per release at root (`*44*` now); older sets are frozen in [archive/](archive/README.md), runnable via tags `v41`/`v42`/`v43`.
+- The project plans still describe older intended milestones and should be reconciled with the real v44 baseline.
 - The chemistry engine should be validated before expanding into more complex categories.
-- Ester detection/naming/highlight paths are implemented since v41; tertiary-amine detection still needs explicit testing.
-- v43 adds the didactic-scenario layer (`docs/didactic-scenario-plan.md`, `js/mulermoc-nom-scenario-43.js`) without changing chemistry logic: tag-v43 `core-43` differed from `core-42` only by `let`-scoping hygiene plus two shared-state declarations (`esterInfo`, `alkylSubstituentNames`); `molview/teaching-43` diverged further in the working copy (MOL2D registry, 3D bond coloring, `all`-default grouping — see CHANGELOG [Unreleased]).
+- Ester detection/naming/highlight paths are implemented since v41; tertiary-amine R3N classification fixed in v44 via the bond-order N-table (browser verification pending).
+- v43 added the didactic-scenario layer (`docs/didactic-scenario-plan.md`, `js/mulermoc-nom-scenario-43.js`, carried into v44 as `*-44.js`) without changing chemistry logic: tag-v43 `core-43` differed from `core-42` only by `let`-scoping hygiene plus two shared-state declarations (`esterInfo`, `alkylSubstituentNames`); `molview/teaching-43` diverged further in the working copy (MOL2D registry, 3D bond coloring, `all`-default grouping — see CHANGELOG [Unreleased]). v44 adds engine hardening (N-table, principal-FG rank, halogen N-way) + viewer hardening — see CHANGELOG [v44].
 
 ---
 
@@ -239,18 +239,18 @@ This makes the platform more pedagogically coherent and more scalable than a str
 
 ### Four layers (LEARN-first order)
 
-All layers reuse the same v43 engine (analysis + 2D/3D viewers + naming panels), embedded as a static app in Drupal:
+All layers reuse the same v44 engine (analysis + 2D/3D viewers + naming panels), embedded as a static app in Drupal:
 
 | # | Layer | Contract | State |
 |---|---|---|---|
-| 1 | **LEARN** | teacher-authored didactic scenarios (linear snapshots); presentation + self-paced learning; stored team scenarios | v43 scaffold done (`js/mulermoc-nom-scenario-43.js`, off by default); exit restores full chrome (menu + both viewers); next: stored `scenarios/` library with EPAL/Lyceum two-level notes |
+| 1 | **LEARN** | teacher-authored didactic scenarios (linear snapshots); presentation + self-paced learning; stored team scenarios | v44 scaffold (since v43; `js/mulermoc-nom-scenario-44.js`, off by default); exit restores full chrome (menu + both viewers); next: stored `scenarios/` library with EPAL/Lyceum two-level notes |
 | 2 | **EXPLORE** | current v42-style free browsing: left menu, all molecules of the database | working (64 mols); next: bounded EXPLORE-lite (~15 mols for LEARN scenarios incl. unsaturated ethers/esters) + menu search; full DB expansion is a standing content workstream |
 | 3 | **PRACTICE** | exercises with corrective feedback until correct (3 types v1) | not started — see `docs/LAYERS-PLAN.md` |
 | 4 | **PLAY** | gamified quizzes; responses + times logged for **research statistics** (primary) | not started — Drupal-owned auth/session/logging; app sends events; see `docs/LAYERS-PLAN.md` |
 
 Details: `docs/LAYERS-PLAN.md` (layer contracts, exercise types v1, research logging schema v1, timeline, ownership).
 
-### Scenario authoring flow (v43 working copy, unreleased)
+### Scenario authoring flow (v44; built up over the v43 working copy)
 
 Authoring hides behind the vertical `Σενάρια` handle (docked to the author bar, travels with it; presentation hides the whole unit). The bar is a global shell (`+ New` scenario capped at 3 empties, `Import` adds a card); each scenario card has its own Save/Steps/Export/Play panel plus an accordion drawer of steps. Authors pick molecules (or whole groups) per step — selecting a row in pick mode also picks it — tune per-step chrome in the drawer (2D/3D controls, naming controls, name interaction, `Ταξινομήσεις Μένου` menu views; text is automatic, menu is derived from picks), and Save snapshots that may also be molecule-less (`menu`-only steps with an empty viewer). Notes support `<b>`/`<sup>`/`<sub>`. Present walks the per-step menus (flat, grouped collapsible, or switcher per `menuGroups`) from the applied step 1 under the `#pageContainer.presenting` CSS hook; Exit restores the full author chrome (menu + both viewers + all bars). Tag v43 had a simpler single-scenario flow. Details: `docs/didactic-scenario-plan.md`.
 

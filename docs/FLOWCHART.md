@@ -1,5 +1,5 @@
-﻿# Flowchart: mulermoc-nom-core-43.js (origin: core-37)
-> **HISTORICAL 2026-10-06:** engine diagram predates ethers/esters/branched chains and the viewer/teaching/scenario layers. Covers core analysis flow only; viewer/teaching/scenario flows are not diagrammed. Source of truth for layers: `docs/LAYERS-PLAN.md`. Duplicate High-Level Flow block removed; version/count claims before v43 superseded.
+﻿# Flowchart: mulermoc-nom-core-44.js (origin: core-37)
+> **HISTORICAL 2026-10-07:** engine diagram predates ethers/esters/branched chains and the viewer/teaching/scenario layers. Covers core analysis flow only; viewer/teaching/scenario flows are not diagrammed. Source of truth for layers: `docs/LAYERS-PLAN.md`. Duplicate High-Level Flow block removed; version/count claims before v44 superseded.
 
 ## High-Level Flow
 
