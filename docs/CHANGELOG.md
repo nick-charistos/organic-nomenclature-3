@@ -16,6 +16,8 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 - Exit restores interactivity: `fScenarioApplyNamingChrome` actively clears a leaked `.locked` class + hidden explain line outside presentation (a locked present step no longer leaves boxes dead in authoring).
 - Hiding the selected component clears its highlights + rule theory first (deselect mirror); hiding a non-selected box leaves the live selection untouched.
 - Zero visible components hides the explain line (restored on reveal; menu-only present steps keep their hint by design). The non-present chrome hook applies the same verdict so it can't resurrect a hidden line on authoring rebuilds.
+- Eye tooltips paint above the naming panel (z-index over the panel buttons). Stacking constraint: nothing on `.compEye` may create a stacking context (no `z-index`, no `opacity`/`filter` — off-state dims via `color`), or tooltips sink behind the panel again.
+- Layout contract: fixed-height eye slot above each box (never collapse it), `+`/space separators outside the wrap and bottom-aligned to the fixed-height box. Step drawers render the `Ταξινομήσεις Μένου` set (title + 3 checkboxes) on one nowrap line; `.compEye` buttons are flat white and borderless.
 
 ## [v44] — 2026-10-07 (index →44; v43 frozen at tag `v43`)
 

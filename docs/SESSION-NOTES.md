@@ -480,3 +480,9 @@ Hide-selected clears theory: select a box (theory + atoms) → eye-hide it →
 theory hides, atoms clear, hint text; hiding a non-selected box changes nothing.
 Zero-visible hides explain: hide all boxes → line hides; reveal one → line
 returns; menu-only present steps keep their hint.
+Presentation gate: master on → Present an unchecked step → no eyes; checked
+step → eyes live; Exit → master position intact.
+Layout + icons: `+` centered on box text (eyes off/on, boxed/unboxed, ester,
+COMMON ether); eye artwork crisp at 14/18px; per-box tooltips readable over
+the panel in both eye states; drawer `Ταξινομήσεις Μένου` set on one line
+(report overflow if any).
