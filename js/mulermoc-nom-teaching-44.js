@@ -538,6 +538,7 @@ $(document).ready(function () {
     narrateAnalysisFlag = !narrateAnalysisFlag;
     $(this)
       .html(narrateAnalysisFlag ? svgSpeaker : svgMute)
+      .toggleClass("active", narrateAnalysisFlag)
       .attr(
         "data-tooltip",
         narrateAnalysisFlag ? "Αφήγηση ενεργή" : "Αφήγηση ανενεργή",
@@ -601,9 +602,11 @@ $(document).ready(function () {
     }
   });
 
-  // Master eye-edit switch (live-only authoring aid): single icon, active
+  // Master eye-edit switch (live-only aid): single icon, active
   // state via .active highlight; toggling re-renders with the eye buttons
-  // applied. Never stored — Save/Update captures the result.
+  // applied. In presentation it stays functional while the naming settings
+  // gear is shown (seeded from the step's visibility flag on step entry).
+  // Never stored — Save/Update captures the result.
   $(document).on("click", "#nameStyleEyeToggle", function () {
     window.nameEyeEdit = !window.nameEyeEdit;
     $(this)
@@ -639,6 +642,10 @@ $(document).ready(function () {
     window.nameHiddenComps = h;
     if (hiding && wasSel && typeof fClearHighlights === "function") {
       fClearHighlights();
+      // Repaint the 2D SVG: fClearHighlights resets the applet colors but
+      // the stale highlight + numbering stay painted until fUpdateSVG
+      // rebuilds the SVG (same pairing as the box-deselect path below).
+      if (typeof fUpdateSVG === "function") fUpdateSVG();
     }
     if (typeof fShowNameAnalysis === "function") fShowNameAnalysis();
   });

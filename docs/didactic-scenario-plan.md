@@ -189,13 +189,17 @@ Visibility rules:
   (PNG shows them as displayed). Authors toggle boxes via the master
   eye-edit switch in `#nameSettingsPanel` (live-only, never stored) +
   per-box eye buttons; Save/Update captures the set. `show.nameEye`
-  gates live per-box eye toggles in presentation (per-step drawer
-  checkbox `Ορατότητα συνθετικών`, default unchecked, molecule steps
-  only; absent in legacy files = no toggles). `Update` refreshes
-  `hidden` from the live view and preserves `nameEye`; Present stashes
-  / Exit restores the author's live hidden set + edit mode.
+  (per-step drawer checkbox `Ορατότητα συνθετικών`, default unchecked,
+  molecule steps only; absent in legacy files = no toggles) seeds the
+  master switch on step entry; while the naming settings gear is shown
+  the master toggles the eyes live, otherwise eyes follow `show.nameEye`
+  directly. `Update` refreshes `hidden` from the live view and preserves
+  `nameEye`; Present stashes / Exit restores the author's live hidden set
+  + edit mode. Eye-hiding the highlighted box also repaints the 2D SVG
+  so its highlight vanishes at once.
 * `title` is the step heading: in presentation it replaces the
-  page `#pageTitle` (`N. title`); on exit the app title is
+  page `#pageTitle` as `<span class="scStepNumberTitle">N.</span> Title`
+  (no space inside the span); on exit the app title is
   restored. `note` is the educational paragraph in `#scStepText`
   directly below the title (simple-HTML subset: everything escaped
   except attributeless `<b>`, `<sup>`, `<sub>`;

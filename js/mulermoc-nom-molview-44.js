@@ -120,10 +120,11 @@ function fNameCompHidden(id) {
   }
 }
 
-// Eye buttons show while the authoring master switch is on, or in
-// presentation when the current step permits live toggling (show.nameEye).
-// Presentation ignores the authoring master flag entirely: an unchecked
-// step never shows eyes, even if the master was left on.
+// Eye buttons show while the authoring master switch is on. In presentation
+// the master switch stays functional whenever the step exposes the naming
+// settings gear (show.nameSettings): it is seeded from show.nameEye on step
+// entry and toggles the eyes live. Without the gear, eyes follow
+// show.nameEye directly.
 function fNameEyeVisible() {
   var _inPresent = false;
   try {
@@ -136,6 +137,7 @@ function fNameEyeVisible() {
       if (typeof fScenarioPresent === "function") {
         var p = fScenarioPresent();
         var st = p && p.steps ? p.steps[p.index] : null;
+        if (st && st.show && st.show.nameSettings === true) return window.nameEyeEdit === true;
         return !!(st && st.show && st.show.nameEye === true);
       }
     } catch (e) {
@@ -2814,6 +2816,7 @@ function fShowNameAnalysis() {
   const toggleTitle = narrateAnalysisFlag
     ? "Αφήγηση ενεργή"
     : "Αφήγηση ανενεργή";
+  const narrateActiveClass = narrateAnalysisFlag ? " active" : "";
   const playDisabled = narrateAnalysisFlag ? "" : " disabled";
 
   const toggleNameStyleBox = window.nameBoxFlag ? svgNameBox : svgNameBoxOff;
@@ -2846,7 +2849,7 @@ function fShowNameAnalysis() {
     : "";
 
   nameCompContainer =
-    `<div class='panelTitle'><span>Ονομασία</span><div id='nameSettingsBtnDiv'><button  id='nameSettingsBtn'  class='settingsBtn ${namesSettingsBtnActiveClass}'  onclick='fToggleNameSettings()'  data-tooltip='Ρυθμίσεις Ονομασίας' >${svgSettings} </button></div></div><div id='nameSettingsPanel' class='${nameSettingClass}'>${etherNamingToggle}<button id='narrateAnalysisToggle' class='narrateBtn' data-tooltip='${toggleTitle}'>${toggleIcon}</button><button id='readNameBtn' class='readNameBtn' data-tooltip='Εκφώνηση ονόματος' >${svgPlay}</button><button id='nameStyleBoxToggle' class='nameStyleBox' data-tooltip='${boxTooltip}'>${toggleNameStyleBox}</button><button id='nameStyleCrossToggle' class='nameStyleCross' data-tooltip='${crossTooltip}'>${toggleNameStyleCross}</button><button id='nameStyleEyeToggle' class='nameStyleEye${eyeActiveClass}' data-tooltip='Ορατότητα συνθετικών'>${toggleNameStyleEye}</button></div><div class='HFlex nameContainer' style='justify-content:center;'><div class='nameCompContainer'>`;
+    `<div class='panelTitle'><span>Ονομασία</span><div id='nameSettingsBtnDiv'><button  id='nameSettingsBtn'  class='settingsBtn ${namesSettingsBtnActiveClass}'  onclick='fToggleNameSettings()'  data-tooltip='Ρυθμίσεις Ονομασίας' >${svgSettings} </button></div></div><div id='nameSettingsPanel' class='${nameSettingClass}'>${etherNamingToggle}<button id='narrateAnalysisToggle' class='narrateBtn${narrateActiveClass}' data-tooltip='${toggleTitle}'>${toggleIcon}</button><button id='readNameBtn' class='readNameBtn' data-tooltip='Εκφώνηση ονόματος' >${svgPlay}</button><button id='nameStyleBoxToggle' class='nameStyleBox' data-tooltip='${boxTooltip}'>${toggleNameStyleBox}</button><button id='nameStyleCrossToggle' class='nameStyleCross' data-tooltip='${crossTooltip}'>${toggleNameStyleCross}</button><button id='nameStyleEyeToggle' class='nameStyleEye${eyeActiveClass}' data-tooltip='Ορατότητα συνθετικών'>${toggleNameStyleEye}</button></div><div class='HFlex nameContainer' style='justify-content:center;'><div class='nameCompContainer'>`;
 
   // COMMON ether naming: render alkyl boxes + αιθέρας instead of IUPAC slots.
   const _commonParts = _isEtherNaming && etherNamingMode === "common" ? fGetEtherCommonParts() : null;

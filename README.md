@@ -93,6 +93,7 @@ The next product iteration is being re-scoped around a clearer educational model
   - annotated skeletal
 - Greek IUPAC name generation (incl. ether systematic + common names, two-word ester names)
 - Name analysis and explanation panels (per-fragment highlight/numbering, IUPAC/COMMON toggle for ethers)
+- Per-component name visibility (eye toggles: master switch + per-box eyes, stored per scenario step, narration-aware)
 - Rule theory panel
 - TTS narration in Greek
 - PNG export for 2D and 3D views
@@ -243,7 +244,7 @@ All layers reuse the same v44 engine (analysis + 2D/3D viewers + naming panels),
 
 | # | Layer | Contract | State |
 |---|---|---|---|
-| 1 | **LEARN** | teacher-authored didactic scenarios (linear snapshots); presentation + self-paced learning; stored team scenarios | v44 scaffold (since v43; `js/mulermoc-nom-scenario-44.js`, off by default); exit restores full chrome (menu + both viewers); next: stored `scenarios/` library with EPAL/Lyceum two-level notes |
+| 1 | **LEARN** | teacher-authored didactic scenarios (linear snapshots); presentation + self-paced learning; stored team scenarios | v44 scaffold (since v43; `js/mulermoc-nom-scenario-44.js`, off by default); exit restores full chrome (menu + both viewers); first stored scenario `scenarios/ethene.scenario.json`; next: scenario library verification with EPAL/Lyceum two-level notes |
 | 2 | **EXPLORE** | current v42-style free browsing: left menu, all molecules of the database | working (64 mols); next: bounded EXPLORE-lite (~15 mols for LEARN scenarios incl. unsaturated ethers/esters) + menu search; full DB expansion is a standing content workstream |
 | 3 | **PRACTICE** | exercises with corrective feedback until correct (3 types v1) | not started — see `docs/LAYERS-PLAN.md` |
 | 4 | **PLAY** | gamified quizzes; responses + times logged for **research statistics** (primary) | not started — Drupal-owned auth/session/logging; app sends events; see `docs/LAYERS-PLAN.md` |
@@ -252,7 +253,7 @@ Details: `docs/LAYERS-PLAN.md` (layer contracts, exercise types v1, research log
 
 ### Scenario authoring flow (v44; built up over the v43 working copy)
 
-Authoring hides behind the vertical `Σενάρια` handle (docked to the author bar, travels with it; presentation hides the whole unit). The bar is a global shell (`+ New` scenario capped at 3 empties, `Import` adds a card); each scenario card has its own Save/Steps/Export/Play panel plus an accordion drawer of steps. Authors pick molecules (or whole groups) per step — selecting a row in pick mode also picks it — tune per-step chrome in the drawer (2D/3D controls, naming controls, name interaction, `Ταξινομήσεις Μένου` menu views; text is automatic, menu is derived from picks), and Save snapshots that may also be molecule-less (`menu`-only steps with an empty viewer). Notes support `<b>`/`<sup>`/`<sub>`. Present walks the per-step menus (flat, grouped collapsible, or switcher per `menuGroups`) from the applied step 1 under the `#pageContainer.presenting` CSS hook; Exit restores the full author chrome (menu + both viewers + all bars). Tag v43 had a simpler single-scenario flow. Details: `docs/didactic-scenario-plan.md`.
+Authoring hides behind the vertical `Σενάρια` handle (docked to the author bar, travels with it; presentation hides the whole unit). The bar is a global shell (`+ New` scenario capped at 3 empties, `Import` adds a card); each scenario card has its own Save/Steps/Export/Play panel plus an accordion drawer of steps. Authors pick molecules (or whole groups) per step — selecting a row in pick mode also picks it — tune per-step chrome in the drawer (2D/3D controls, naming controls, name interaction, component visibility, `Ταξινομήσεις Μένου` menu views; text is automatic, menu is derived from picks), and Save snapshots that may also be molecule-less (`menu`-only steps with an empty viewer). Notes support `<b>`/`<sup>`/`<sub>`. Present walks the per-step menus (flat, grouped collapsible, or switcher per `menuGroups`) from the applied step 1 under the `#pageContainer.presenting` CSS hook; Exit restores the full author chrome (menu + both viewers + all bars). Tag v43 had a simpler single-scenario flow. Details: `docs/didactic-scenario-plan.md`.
 
 ### Team
 

@@ -357,10 +357,19 @@ font-size: 1rem;
 .nameStyleBox:hover,
 .nameStyleCross:hover,
 .nameStyleEye:hover,
-.nameStyleEye.active,
 .readNameBtn:hover {
   color: #fff;
   background-color: var(--darkEarth);
+}
+
+.narrateBtn.active {
+  color: #fff;
+  background-color: var(--lightBlue);
+}
+
+.nameStyleEye.active {
+  color: #fff;
+  background-color: var(--lightBlue);
 }
 
 .readNameBtn:disabled {
@@ -1273,7 +1282,7 @@ max-height: 596px;
 }
 
 .compEye {
-  color: var(--baseColor);
+  color: var(--lightBlue);
   background-color: #fff;
   border: 0;
   padding: 1px 3px;
@@ -1292,7 +1301,7 @@ max-height: 596px;
 .compEye.off-state {
   /* Dimmed via color, not opacity: opacity < 1 would create a stacking
      context on the button and trap its tooltip below the panel again. */
-  color: #8c8c8c;
+  color: var(--veryLightBlue);
 }
 
 .compEye.off-state:hover {

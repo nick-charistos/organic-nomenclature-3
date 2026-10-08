@@ -486,3 +486,29 @@ Layout + icons: `+` centered on box text (eyes off/on, boxed/unboxed, ester,
 COMMON ether); eye artwork crisp at 14/18px; per-box tooltips readable over
 the panel in both eye states; drawer `Ταξινομήσεις Μένου` set on one line
 (report overflow if any).
+
+## v44 working copy — follow-ups 2026-10-08 (uncommitted)
+
+* Step heading number wrapped in `<span class="scStepNumberTitle">N.</span>`
+  (`fScenarioFillStepPanel`; DOM-built via `textContent`, no injection
+  surface; pill styling owner-side in `mulermoc-nom-scenario-44.css`).
+* Master eye switch functional in presentation while the naming settings
+  gear is shown (`fNameEyeVisible` returns the master; step entry seeds it
+  from `show.nameEye`, i.e. the `Ορατότητα συνθετικών` checkbox sets the
+  initial state; stash/restore still preserves the author's switch).
+  Without the gear, eyes follow `show.nameEye` as before.
+* `#narrateAnalysisToggle` carries `.active` when narration is on
+  (render + click + control-UI mirror; styling owner-side).
+* Eye-hiding the highlighted component now repaints the 2D SVG
+  (`fUpdateSVG` after `fClearHighlights` — green + numbering vanish at once;
+  3D already cleared directly). Hiding any other component keeps the live
+  highlight.
+* Present typography: `#scStepText` card style; `.compEye` lightBlue
+  recolor. First stored scenario `scenarios/ethene.scenario.json`
+  (5 steps, ethene walkthrough).
+
+Browser checklist for owner (extends the list above): step titles show the
+number pill; settings-on step → master lit iff visibility checked, click
+toggles eyes live; narrate button highlights when on; hide the highlighted
+box → 2D clears instantly; Present `scenarios/ethene.scenario.json`
+via `?scenario=scenarios/ethene.scenario.json&present=1`.

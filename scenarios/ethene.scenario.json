@@ -1,0 +1,348 @@
+{
+  "scenarioVersion": 1,
+  "app": "mulermoc-nom-44",
+  "scenario": "ethene",
+  "title": "ethene",
+  "steps": [
+    {
+      "n": 1,
+      "title": "Πώς ονομάζεται ένα μόριο;",
+      "note": "Το όνομα μιας άκυκλης οργανικής ένωσης που έχει συνεχή ευθύγραμμη ανθρακική αλυσίδα προκύπτει από τον συνδυασμό τριών συνθετικών.",
+      "mode2D": "expanded",
+      "mainChainMode": "algorithmic",
+      "etherNamingMode": "iupac",
+      "nameAnalysisMode": "none",
+      "selectedRule": null,
+      "style2D": {
+        "atomColors": true,
+        "colorMode": "atom",
+        "zigzag": false
+      },
+      "styleName": {
+        "box": true,
+        "cross": true,
+        "etherNaming": "iupac",
+        "panelOpen": true,
+        "hidden": [
+          "comp5",
+          "comp6",
+          "comp9"
+        ]
+      },
+      "styleHighlight": {
+        "bondAtoms": false,
+        "numberingAtoms": true
+      },
+      "audio": {
+        "narrate": false
+      },
+      "menuSubset": [],
+      "menuGroups": [
+        "molecules"
+      ],
+      "view3D": {
+        "style": "ballnstick",
+        "spin": false,
+        "showH": true,
+        "atomSymbols": true,
+        "moveto": null
+      },
+      "show": {
+        "menu": false,
+        "viewerButtons": false,
+        "viewerSettings": false,
+        "viewers": {
+          "2D": true,
+          "3D": false
+        },
+        "controls": {
+          "2D": true,
+          "3D": false
+        },
+        "save": {
+          "2D": false,
+          "3D": false
+        },
+        "naming": true,
+        "nameSettings": false,
+        "nameEye": false,
+        "audio": false,
+        "rule": false,
+        "text": true,
+        "nameClick": false
+      },
+      "selectedMol": "ethane"
+    },
+    {
+      "n": 2,
+      "title": "Πρώτο Συνθετικό",
+      "note": "Το <b>1<sup>o</sup> Συνθετικό</b> δείχνει τον αριθμό των ατόμων άνθρακα της ανθρακικής αλυσίδας.",
+      "mode2D": "expanded",
+      "mainChainMode": "algorithmic",
+      "etherNamingMode": "iupac",
+      "nameAnalysisMode": "compCarbonsCount",
+      "selectedRule": null,
+      "style2D": {
+        "atomColors": true,
+        "colorMode": "atom",
+        "zigzag": false
+      },
+      "styleName": {
+        "box": true,
+        "cross": true,
+        "etherNaming": "iupac",
+        "panelOpen": true,
+        "hidden": [
+          "comp6",
+          "comp9"
+        ]
+      },
+      "styleHighlight": {
+        "bondAtoms": false,
+        "numberingAtoms": true
+      },
+      "audio": {
+        "narrate": false
+      },
+      "menuSubset": [],
+      "menuGroups": [
+        "molecules"
+      ],
+      "view3D": {
+        "style": "ballnstick",
+        "spin": false,
+        "showH": true,
+        "atomSymbols": true,
+        "moveto": null
+      },
+      "show": {
+        "menu": false,
+        "viewerButtons": false,
+        "viewerSettings": false,
+        "viewers": {
+          "2D": true,
+          "3D": false
+        },
+        "controls": {
+          "2D": false,
+          "3D": false
+        },
+        "save": {
+          "2D": false,
+          "3D": false
+        },
+        "naming": true,
+        "nameSettings": false,
+        "nameEye": false,
+        "audio": false,
+        "rule": false,
+        "text": true,
+        "nameClick": false
+      },
+      "selectedMol": "ethane"
+    },
+    {
+      "n": 3,
+      "title": "Δεύτερο Συνθετικό",
+      "note": "Το <b>2<sup>o</sup> Συνθετικό</b>  δείχνει το είδος των δεσμών που υπάρχουν μεταξύ των ατόμων του άνθρακα.",
+      "mode2D": "expanded",
+      "mainChainMode": "algorithmic",
+      "etherNamingMode": "iupac",
+      "nameAnalysisMode": "compBondType",
+      "selectedRule": null,
+      "style2D": {
+        "atomColors": true,
+        "colorMode": "atom",
+        "zigzag": false
+      },
+      "styleName": {
+        "box": true,
+        "cross": true,
+        "etherNaming": "iupac",
+        "panelOpen": true,
+        "hidden": [
+          "comp9"
+        ]
+      },
+      "styleHighlight": {
+        "bondAtoms": false,
+        "numberingAtoms": true
+      },
+      "audio": {
+        "narrate": false
+      },
+      "menuSubset": [],
+      "menuGroups": [
+        "molecules"
+      ],
+      "view3D": {
+        "style": "ballnstick",
+        "spin": false,
+        "showH": true,
+        "atomSymbols": true,
+        "moveto": null
+      },
+      "show": {
+        "menu": false,
+        "viewerButtons": false,
+        "viewerSettings": false,
+        "viewers": {
+          "2D": true,
+          "3D": false
+        },
+        "controls": {
+          "2D": false,
+          "3D": false
+        },
+        "save": {
+          "2D": false,
+          "3D": false
+        },
+        "naming": true,
+        "nameSettings": false,
+        "nameEye": false,
+        "audio": false,
+        "rule": false,
+        "text": true,
+        "nameClick": false
+      },
+      "selectedMol": "ethane"
+    },
+    {
+      "n": 4,
+      "title": "Τρίτο Συνθετικό",
+      "note": "Το <b>3<sup>o</sup> Συνθετικό</b> δηλώνει την χημική τάξη που ανήκει.",
+      "mode2D": "expanded",
+      "mainChainMode": "algorithmic",
+      "etherNamingMode": "iupac",
+      "nameAnalysisMode": "compSuffix",
+      "selectedRule": null,
+      "style2D": {
+        "atomColors": true,
+        "colorMode": "atom",
+        "zigzag": false
+      },
+      "styleName": {
+        "box": true,
+        "cross": true,
+        "etherNaming": "iupac",
+        "panelOpen": true,
+        "hidden": []
+      },
+      "styleHighlight": {
+        "bondAtoms": false,
+        "numberingAtoms": true
+      },
+      "audio": {
+        "narrate": false
+      },
+      "menuSubset": [],
+      "menuGroups": [
+        "molecules"
+      ],
+      "view3D": {
+        "style": "ballnstick",
+        "spin": false,
+        "showH": true,
+        "atomSymbols": true,
+        "moveto": null
+      },
+      "show": {
+        "menu": false,
+        "viewerButtons": false,
+        "viewerSettings": false,
+        "viewers": {
+          "2D": true,
+          "3D": false
+        },
+        "controls": {
+          "2D": false,
+          "3D": false
+        },
+        "save": {
+          "2D": false,
+          "3D": false
+        },
+        "naming": true,
+        "nameSettings": false,
+        "nameEye": false,
+        "audio": false,
+        "rule": false,
+        "text": true,
+        "nameClick": false
+      },
+      "selectedMol": "ethane"
+    },
+    {
+      "n": 5,
+      "title": "Έτσι ονομάζεται ένα μόριο.",
+      "note": "Διάλεξε τα μόρια στο αριστερό μενού και δες την ονομασία τους.\nΕπίλεξε κάθε συνθετικό και δες σε ποιό χαρακτηριστικό του μορίου αντιστοιχεί.",
+      "selectedMol": "ethane",
+      "mode2D": "expanded",
+      "mainChainMode": "algorithmic",
+      "etherNamingMode": "iupac",
+      "nameAnalysisMode": "none",
+      "selectedRule": null,
+      "style2D": {
+        "atomColors": true,
+        "colorMode": "atom",
+        "zigzag": false
+      },
+      "styleName": {
+        "box": true,
+        "cross": false,
+        "etherNaming": "iupac",
+        "panelOpen": true,
+        "hidden": []
+      },
+      "styleHighlight": {
+        "bondAtoms": false,
+        "numberingAtoms": true
+      },
+      "audio": {
+        "narrate": false
+      },
+      "view3D": {
+        "style": "ballnstick",
+        "spin": false,
+        "showH": true,
+        "atomSymbols": true,
+        "moveto": null
+      },
+      "menuSubset": [
+        "ethane",
+        "methane",
+        "propane",
+        "butane",
+        "pentane"
+      ],
+      "menuGroups": [
+        "molecules"
+      ],
+      "show": {
+        "menu": true,
+        "viewerButtons": false,
+        "viewerSettings": false,
+        "viewers": {
+          "2D": true,
+          "3D": false
+        },
+        "controls": {
+          "2D": true,
+          "3D": false
+        },
+        "save": {
+          "2D": false,
+          "3D": false
+        },
+        "naming": true,
+        "nameSettings": true,
+        "nameClick": true,
+        "nameEye": true,
+        "audio": false,
+        "rule": false,
+        "text": true
+      }
+    }
+  ]
+}

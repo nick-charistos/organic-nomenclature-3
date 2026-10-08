@@ -548,6 +548,17 @@ function fScenarioSyncControlUi() {
   } catch (e) {
     /* naming controls unavailable */
   }
+  // Narration toggle mirrors narrateAnalysisFlag (icon + .active highlight).
+  try {
+    var _narrBtn = document.getElementById("narrateAnalysisToggle");
+    if (_narrBtn && typeof svgSpeaker !== "undefined" && typeof svgMute !== "undefined"
+        && typeof narrateAnalysisFlag !== "undefined") {
+      _narrBtn.innerHTML = narrateAnalysisFlag ? svgSpeaker : svgMute;
+      _narrBtn.classList.toggle("active", narrateAnalysisFlag === true);
+    }
+  } catch (e) {
+    /* naming controls unavailable */
+  }
 }
 
 // Checkbox settings live only as DOM classes (no JS global) — capture them
@@ -1097,6 +1108,9 @@ function fScenarioApply(step) {
   // visibility for the new molecule, then the step's stored set applies.
   // Same synchronous task as the load render → single paint, no flash.
   window.nameHiddenComps = Array.isArray(step.styleName.hidden) ? step.styleName.hidden.slice() : [];
+  // Master eye switch seeds from the step's visibility flag: with the naming
+  // settings gear shown it stays live and toggles the eyes (fNameEyeVisible).
+  window.nameEyeEdit = !!(step.show && step.show.nameEye === true);
   try {
     if (typeof fShowNameAnalysis === "function") fShowNameAnalysis();
   } catch (e) {
@@ -1245,7 +1259,16 @@ function fScenarioFillStepPanel(step) {
   var appTitle = MuLERMoCScenario.appTitle || h1.textContent || "";
   // simple-HTML note subset (see fScenarioRenderNote); rich noteFormat reserved for later
   if (MuLERMoCScenario.present && step && step.n && showTextOn(step)) {
-    h1.textContent = step.title ? step.n + ". " + step.title : appTitle;
+    if (step.title) {
+      h1.textContent = "";
+      var numSpan = document.createElement("span");
+      numSpan.className = "scStepNumberTitle";
+      numSpan.textContent = step.n + ".";
+      h1.appendChild(numSpan);
+      h1.appendChild(document.createTextNode(" " + step.title));
+    } else {
+      h1.textContent = appTitle;
+    }
     fScenarioRenderNote(p, step.note);
   } else {
     h1.textContent = appTitle;
@@ -2038,10 +2061,11 @@ function fScenarioRenderOne(scen) {
     nameClickLabel.appendChild(document.createTextNode(" Διάδραση ονομασίας"));
     row.appendChild(nameClickLabel);
     // Per-component eye toggles in presentation (Ορατότητα συνθετικών):
-    // checked → small eye buttons above each name box stay live during
-    // presentation (visibility itself still comes from the stored hidden
-    // set); unchecked → dash boxes render with no toggles. Molecule steps
-    // only — menu-only steps carry no naming.
+    // checked → the master eye switch starts lit and the small eye buttons
+    // above each name box stay live during presentation (visibility itself
+    // still comes from the stored hidden set); unchecked → master starts
+    // unlit, click it to reveal the eyes (needs Ρυθμίσεις ονομασίας shown).
+    // Molecule steps only — menu-only steps carry no naming.
     var nameEyeLabel = document.createElement("label");
     nameEyeLabel.className = "sshow";
     nameEyeLabel.title = "Show per-component eye toggles in presentation";
