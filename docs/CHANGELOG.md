@@ -4,6 +4,19 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ---
 
+## [Unreleased] (v44 working copy)
+
+### Per-component name visibility (eye toggles)
+
+- Master eye-edit switch in `#nameSettingsPanel` (`#nameStyleEyeToggle`, live-only `window.nameEyeEdit`, never stored; single `eye-state-button` icon + `.active` highlight): reveals a small eye button above each name component (`js/mulermoc-nom-molview-44.js`, `js/mulermoc-nom-teaching-44.js`, `css/jsme-nick-44.css`). Eye artwork from the Industrial-Sharp set (`imgs/eye-*.svg`, inlined as consts with `currentColor` fills; uniform `-9 -244 800 800` viewBox).
+- Hidden boxes render a dash on a `lightBlue` fill (`.comp-hidden`), stay inert (no highlight/explanation; stored highlight replay skips them), and masking applies at box-construction time so every rebuild honors it.
+- Narration follows visibility (`#readNameBtn`, `fSpeakNameWithPauses`); PNG export shows the dash boxes as displayed (DOM clone, no code change).
+- Scenario steps store `styleName.hidden` (comp ids) + `show.nameEye` (per-step drawer checkbox `Ορατότητα συνθετικών`, default off, molecule steps only): checked steps keep live eye toggles in presentation (step data untouched); unchecked steps render dashes with no toggles. `Update` refreshes `hidden` from the live view and preserves `nameEye`; legacy files default to all-visible. Present entry stashes / Exit restores the author's live hidden set + edit mode.
+- New-molecule reset: selecting a molecule clears the hidden set (all visible); scenario steps re-assert their stored set after the load. In presentation, per-box eyes ignore the authoring master flag — unchecked steps never show eyes.
+- Exit restores interactivity: `fScenarioApplyNamingChrome` actively clears a leaked `.locked` class + hidden explain line outside presentation (a locked present step no longer leaves boxes dead in authoring).
+- Hiding the selected component clears its highlights + rule theory first (deselect mirror); hiding a non-selected box leaves the live selection untouched.
+- Zero visible components hides the explain line (restored on reveal; menu-only present steps keep their hint by design). The non-present chrome hook applies the same verdict so it can't resurrect a hidden line on authoring rebuilds.
+
 ## [v44] — 2026-10-07 (index →44; v43 frozen at tag `v43`)
 
 New parallel file set `mulermoc-nom-44.html` + `js/*-44.js` + `css/*-44.css`, copied from v43 (`index.html` → v44 since `905946e`; browser verification pending). All fixes below are `*44*`-only; `*43*` untouched.

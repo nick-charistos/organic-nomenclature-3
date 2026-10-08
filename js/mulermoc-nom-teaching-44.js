@@ -552,7 +552,25 @@ $(document).ready(function () {
 
   $(document).on("click", "#readNameBtn", function () {
     if (!selectedMol || !nameExamples[selectedMol]) return;
-    const text = currentMolName.replace(/<[^>]*>/g, "");
+    // Narration follows component visibility: hidden (dash) boxes are
+    // skipped; falls back to the full name when no boxes are rendered.
+    var vis = [];
+    try {
+      document
+        .querySelectorAll(".nameCompContainer .nameCompBox")
+        .forEach(function (b) {
+          if (!b.classList.contains("comp-hidden") && b.textContent) {
+            vis.push(b.textContent);
+          }
+        });
+    } catch (e) {
+      /* DOM unavailable */
+    }
+    const text = (vis.length ? vis.join(" ") : currentMolName).replace(
+      /<[^>]*>/g,
+      "",
+    );
+    if (!text.trim()) return;
     fSpeakGreek(text);
   });
 
@@ -581,6 +599,48 @@ $(document).ready(function () {
       $(".nameCompPlus ").addClass("hide");
       $(this).html(svgNameCrossOff).attr("data-tooltip", "Ενωμένα συνθετικά");
     }
+  });
+
+  // Master eye-edit switch (live-only authoring aid): single icon, active
+  // state via .active highlight; toggling re-renders with the eye buttons
+  // applied. Never stored — Save/Update captures the result.
+  $(document).on("click", "#nameStyleEyeToggle", function () {
+    window.nameEyeEdit = !window.nameEyeEdit;
+    $(this)
+      .html(svgEyeState)
+      .toggleClass("active", window.nameEyeEdit)
+      .attr("data-tooltip", "Ορατότητα συνθετικών");
+    if (typeof fShowNameAnalysis === "function") fShowNameAnalysis();
+  });
+
+  // Per-component eye toggle (live only — step data untouched in
+  // presentation; authoring persists via Save/Update). Hiding the
+  // currently-selected box mirrors the deselect path: clear highlights +
+  // rule theory first, then re-render (guard forces mode "none").
+  $(document).on("click", ".compEye", function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+    var id = $(this).attr("data-comp");
+    if (!id) return;
+    var wasSel = false;
+    try {
+      var _box = document.getElementById(id);
+      wasSel = !!(_box && _box.classList && _box.classList.contains("selected"));
+    } catch (e) {
+      /* DOM unavailable */
+    }
+    var h = Array.isArray(window.nameHiddenComps)
+      ? window.nameHiddenComps.slice()
+      : [];
+    var at = h.indexOf(id);
+    var hiding = at < 0;
+    if (hiding) h.push(id);
+    else h.splice(at, 1);
+    window.nameHiddenComps = h;
+    if (hiding && wasSel && typeof fClearHighlights === "function") {
+      fClearHighlights();
+    }
+    if (typeof fShowNameAnalysis === "function") fShowNameAnalysis();
   });
 
   // ---- Drop menu: init early so upstream errors don't prevent it loading ----
@@ -791,6 +851,8 @@ $(document).ready(function () {
   $(document).on("click", ".nameCompBox", function (event) {
     event.preventDefault();
     event.stopPropagation();
+    // Hidden (dash) boxes are inert: no highlight, no explanation change.
+    if ($(this).hasClass("comp-hidden")) return;
     const scrollX = window.scrollX;
     const scrollY = window.scrollY;
     const lockScroll = () => window.scrollTo(scrollX, scrollY);

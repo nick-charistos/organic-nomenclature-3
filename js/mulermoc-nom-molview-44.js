@@ -37,6 +37,11 @@ if (typeof window.nameBoxFlag === "undefined") window.nameBoxFlag = true;
 if (typeof window.nameCrossFlag === "undefined") window.nameCrossFlag = false;
 // Single source: all code reads/writes window.* directly (no local aliases,
 // which desynced after toggles since primitives copy by value)
+// Per-component name visibility (eye toggles): window.nameHiddenComps holds
+// the hidden comp ids (e.g. ["comp5"]); window.nameEyeEdit is the live-only
+// authoring edit mode (never stored in steps).
+if (typeof window.nameHiddenComps === "undefined") window.nameHiddenComps = [];
+if (typeof window.nameEyeEdit === "undefined") window.nameEyeEdit = false;
 let mainChainMode = "algorithmic"; // 'data' | 'algorithmic'
 let etherNamingMode = "iupac"; // 'iupac' | 'common' — ether naming variant toggle
 let compactNumberingLabelMap = {};
@@ -95,6 +100,69 @@ const svgNameCross =
 
 const svgNameCrossOff =
   "<svg viewBox='0 0 22 22' width='18' height='18' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' style='vertical-align:middle' xmlns='http://www.w3.org/2000/svg'><path d='M3.494 11.91h4.76m-6.347 3.173 3.39-7.457c.183-.404.275-.606.402-.668a.397.397 0 0 1 .35 0c.128.062.22.264.403.668l3.39 7.457M13.745 11.91h4.761m-6.348 3.173 3.39-7.457c.183-.404.275-.606.402-.668a.397.397 0 0 1 .351 0c.127.062.219.264.403.668l3.39 7.457' stroke='currentColor' style='stroke-width:1.65;stroke-dasharray:none'/></svg>";
+const svgEye =
+  "<svg viewBox='-9 -244 800 800' width='14' height='14' fill='currentColor' style='vertical-align:middle' xmlns='http://www.w3.org/2000/svg'><g transform='translate(42.666667, 85.333333)'><path d='M348.3-196C115-196,15,70.7,15,70.7s100,266.7,333.3,266.7S681.7,70.7,681.7,70.7S581.7-196,348.3-196z M348.3,270.7 C201,270.7,116.2,128,88,70.7c28.2-57.5,113.1-200,260.3-200c147.3,0,232.2,142.7,260.3,200C580.4,128.1,495.6,270.7,348.3,270.7z M348.3-46C283.9-46,231.7,6.2,231.7,70.7s52.2,116.7,116.7,116.7S465,135.1,465,70.7S412.8-46,348.3-46z'/></g></svg>";
+const svgEyeOff =
+  "<svg viewBox='-9 -244 800 800' width='14' height='14' fill='currentColor' style='vertical-align:middle' xmlns='http://www.w3.org/2000/svg'><path d='M131.2-150.9l566.7,566.7l-47.1,47.1l-92.5-92.5c-45.5,30.8-101,52.3-167.3,52.3C157.7,422.7,57.7,156,57.7,156 S93.4,60.7,171.9-15.9l-87.9-87.9L131.2-150.9z M219.3,31.4c-44.9,43.5-74.2,95.2-88.6,124.6c28.2,57.3,113.1,200,260.3,200 c45.5,0,85-13.6,118.8-34.1L219.3,31.4z M391-110.7c233.3,0,333.3,266.7,333.3,266.7s-22.2,59.3-70.2,122l-47.8-47.8 c21-28.5,35.9-55.8,45-74.3C623.2,98.7,538.3-44,391-44c-18.5,0-36,2.2-52.5,6.3l-53.2-53.2C316.9-103.3,352.1-110.7,391-110.7z'/></svg>";
+// Master eye-edit switch icon (single icon + .active highlight; Industrial-Sharp set, imgs/).
+const svgEyeState =
+  "<svg viewBox='-9 -244 800 800' width='18' height='18' fill='currentColor' style='vertical-align:middle' xmlns='http://www.w3.org/2000/svg'><g><path d='M391-110.7c-38.9,0-74.1,7.4-105.7,19.8l0.7,0.7l52.5,52.5c16.5-4,34.1-6.3,52.5-6.3c147.3,0,232.2,142.7,260.3,200c-0.1,0.2-0.2,0.3-0.2,0.5c-9.1,18.5-24,45.5-44.8,73.8l0.4,0.4L654,278c45.5-59.4,67.8-115.7,70-121.5c0.1-0.3,0.2-0.5,0.2-0.5S624.3-110.7,391-110.7z'/><path d='M563.3,281.1L494,211.8l0,0l-12.7-12.7L441,158.8L389.3,107l-53-53c-6.2,3.3-12.2,7.2-17.7,11.6c5.5-4.4,11.4-8.3,17.7-11.6l-63.3-63.3l-48.5-48.5l-93.1-93.1l-47.1,47.1l87.9,87.9C93.4,60.7,57.7,156,57.7,156s0.1,0.2,0.2,0.5c-0.1,0.3-0.2,0.5-0.2,0.5s100,266.7,333.3,266.7c66.5,0,122.2-21.7,167.8-52.7l91.9,91.9l47.1-47.1l-87.4-87.4L563.3,281.1z M391,356c-146.9,0-231.7-141.8-260.1-199.5c14.6-29.6,44-81.2,88.9-124.6L285,97.2l-0.7,1.3c-9.8,17.8-15,38.1-15,58.6c0,67.1,54.6,121.7,121.7,121.7c20.5,0,40.7-5.2,58.6-15l1.3-0.7l58.9,58.9C476,342.4,436.5,356,391,356z'/></g></svg>";
+
+// Per-component name visibility helpers (eye toggles). Masking is applied at
+// box-construction time in fShowNameAnalysis so every rebuild (mode switch,
+// free-browse, scenario apply) honors the live hidden set automatically.
+function fNameCompHidden(id) {
+  try {
+    var h = window.nameHiddenComps;
+    return Array.isArray(h) && h.indexOf(id) >= 0;
+  } catch (e) {
+    return false;
+  }
+}
+
+// Eye buttons show while the authoring master switch is on, or in
+// presentation when the current step permits live toggling (show.nameEye).
+// Presentation ignores the authoring master flag entirely: an unchecked
+// step never shows eyes, even if the master was left on.
+function fNameEyeVisible() {
+  var _inPresent = false;
+  try {
+    _inPresent = (typeof MuLERMoCScenario !== "undefined" && MuLERMoCScenario.present === true);
+  } catch (e) {
+    /* scenario absent */
+  }
+  if (_inPresent) {
+    try {
+      if (typeof fScenarioPresent === "function") {
+        var p = fScenarioPresent();
+        var st = p && p.steps ? p.steps[p.index] : null;
+        return !!(st && st.show && st.show.nameEye === true);
+      }
+    } catch (e) {
+      /* scenario unavailable */
+    }
+    return false;
+  }
+  return window.nameEyeEdit === true;
+}
+
+// Wrapped name-component box: eye row above, box below. The eye row keeps
+// a fixed-height slot whether eyes are shown or not, so every wrap has the
+// same height and the outside "+" separators align uniformly (see CSS).
+// Hidden boxes render
+// a dash on a lightBlue fill (CSS .comp-hidden); the full text lives only in
+// memory (never persisted). Euphony connectors stay as computed for the full
+// name — neighbors of a dash box keep their connector letter.
+function fNameCompBox(boxId, boxClass, displayComp) {
+  var hidden = fNameCompHidden(boxId);
+  var cls = boxClass + (hidden ? " comp-hidden" : "");
+  var body = hidden ? "–" : displayComp;
+  var eye = "";
+  if (fNameEyeVisible()) {
+    eye = "<button class='compEye" + (hidden ? " off-state" : "") + "' data-comp='" + boxId + "' data-tooltip='" + (hidden ? "Εμφάνιση συνθετικού" : "Απόκρυψη συνθετικού") + "'>" + (hidden ? svgEyeOff : svgEye) + "</button>";
+  }
+  return "<div class='nameCompWrap'><div class='nameCompEyeRow'>" + eye + "</div><div class='" + cls + "' id='" + boxId + "'>" + body + "</div></div>";
+}
 
 fInitViewerSettingsBtn();
 
@@ -536,6 +604,10 @@ function fInitProps() {
   currNumberEl = 0;
   clearInterval(myNumberingTimeout);
   nameAnalysisMode = "none";
+  // New-molecule reset: component visibility never leaks across molecules
+  // (comp ids are slot-based, not molecule-based). Scenario steps re-assert
+  // their stored hidden set after fSelectMol returns.
+  window.nameHiddenComps = [];
   carbons = 0;
   ruleTableHighlight = null;
 }
@@ -2756,6 +2828,11 @@ function fShowNameAnalysis() {
     ? "Διαχωρισμένα συνθετικά"
     : "Ενωμένα συνθετικά";
 
+  // Master eye-edit switch: single icon + .active highlight (live-only
+  // authoring aid; never stored in steps).
+  const toggleNameStyleEye = svgEyeState;
+  const eyeActiveClass = window.nameEyeEdit === true ? " active" : "";
+
   const nameSettingClass = nameSettingsFlag ? "open" : "";
   const namesSettingsBtnActiveClass = nameSettingsFlag ? "active" : "";
   // Ether IUPAC/COMMON toggle (ethers only, name panel).
@@ -2769,7 +2846,7 @@ function fShowNameAnalysis() {
     : "";
 
   nameCompContainer =
-    `<div class='panelTitle'><span>Ονομασία</span><div id='nameSettingsBtnDiv'><button  id='nameSettingsBtn'  class='settingsBtn ${namesSettingsBtnActiveClass}'  onclick='fToggleNameSettings()'  data-tooltip='Ρυθμίσεις Ονομασίας' >${svgSettings} </button></div></div><div id='nameSettingsPanel' class='${nameSettingClass}'>${etherNamingToggle}<button id='narrateAnalysisToggle' class='narrateBtn' data-tooltip='${toggleTitle}'>${toggleIcon}</button><button id='readNameBtn' class='readNameBtn' data-tooltip='Εκφώνηση ονόματος' >${svgPlay}</button><button id='nameStyleBoxToggle' class='nameStyleBox' data-tooltip='${boxTooltip}'>${toggleNameStyleBox}</button><button id='nameStyleCrossToggle' class='nameStyleCross' data-tooltip='${crossTooltip}'>${toggleNameStyleCross}</button></div><div class='HFlex nameContainer' style='justify-content:center;'><div class='nameCompContainer'>`;
+    `<div class='panelTitle'><span>Ονομασία</span><div id='nameSettingsBtnDiv'><button  id='nameSettingsBtn'  class='settingsBtn ${namesSettingsBtnActiveClass}'  onclick='fToggleNameSettings()'  data-tooltip='Ρυθμίσεις Ονομασίας' >${svgSettings} </button></div></div><div id='nameSettingsPanel' class='${nameSettingClass}'>${etherNamingToggle}<button id='narrateAnalysisToggle' class='narrateBtn' data-tooltip='${toggleTitle}'>${toggleIcon}</button><button id='readNameBtn' class='readNameBtn' data-tooltip='Εκφώνηση ονόματος' >${svgPlay}</button><button id='nameStyleBoxToggle' class='nameStyleBox' data-tooltip='${boxTooltip}'>${toggleNameStyleBox}</button><button id='nameStyleCrossToggle' class='nameStyleCross' data-tooltip='${crossTooltip}'>${toggleNameStyleCross}</button><button id='nameStyleEyeToggle' class='nameStyleEye${eyeActiveClass}' data-tooltip='Ορατότητα συνθετικών'>${toggleNameStyleEye}</button></div><div class='HFlex nameContainer' style='justify-content:center;'><div class='nameCompContainer'>`;
 
   // COMMON ether naming: render alkyl boxes + αιθέρας instead of IUPAC slots.
   const _commonParts = _isEtherNaming && etherNamingMode === "common" ? fGetEtherCommonParts() : null;
@@ -2812,7 +2889,7 @@ function fShowNameAnalysis() {
         break;
       }
 
-      compBox = `<div class='${boxClass} nameCompBox' id='comp${10 + ci}' >${displayComp}</div>`;
+      compBox = fNameCompBox("comp" + (10 + ci), boxClass, displayComp);
       if (ci < _labels.length - 1) {
         compBox += `<div class='${crossClass}' > + </div>`;
       }
@@ -2872,7 +2949,7 @@ function fShowNameAnalysis() {
       break;
     }
 
-    compBox = `<div class='${boxClass}' id='comp${i}' >${displayComp}</div>`;
+    compBox = fNameCompBox("comp" + i, boxClass, displayComp);
     if (_nextIdx >= 0) {
       // Esters: two-word name — blank space after ικός instead of +.
       if (_isEsterWordBoundary && i < 10 && _nextIdx >= 10) {
@@ -2888,6 +2965,16 @@ function fShowNameAnalysis() {
   // nameCompContainer += "</div><button id='readNameBtn' class='readNameBtn' data-tooltip='Ανάγνωση ονόματος'" + playDisabled + ">" + svgPlay + "</button></div>"
 
   $("#nameAnalysis").html(nameCompContainer);
+
+  // Fix 3: the explain line follows box visibility — hidden when zero
+  // components are visible, restored on reveal (toggle, so both directions
+  // work; the presentation lock logic re-asserts afterwards).
+  try {
+    var _visBoxes = document.querySelectorAll(".nameCompContainer .nameCompBox:not(.comp-hidden)");
+    $("#nameAnalysisExplain").toggle(_visBoxes.length > 0);
+  } catch (e) {
+    /* DOM unavailable */
+  }
 
   // Restore .selected on the previously-selected box after HTML rebuild
   if (nameAnalysisMode !== "none") {
@@ -2909,7 +2996,8 @@ function fShowNameAnalysis() {
       esterEster: "comp11",
     };
     const _selId = _modeToCompId[nameAnalysisMode];
-    if (_selId && $(`#${_selId}`).length) {
+    // Hidden boxes stay inert: never restore .selected onto a dash box.
+    if (_selId && $(`#${_selId}`).length && !fNameCompHidden(_selId)) {
       $(`#${_selId}`).addClass("selected");
     } else {
       nameAnalysisMode = "none";

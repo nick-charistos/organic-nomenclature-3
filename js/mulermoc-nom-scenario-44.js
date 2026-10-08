@@ -320,6 +320,7 @@ function fScenarioCapture() {
       cross: !!window.nameCrossFlag,
       etherNaming: fScenarioG("etherNamingMode", "iupac"),
       panelOpen: !!fScenarioG("nameSettingsFlag", true),
+      hidden: Array.isArray(window.nameHiddenComps) ? window.nameHiddenComps.slice() : [],
     },
     styleHighlight: {
       bondAtoms: fScenarioCheck("bondAtomsCheck", false),
@@ -345,6 +346,7 @@ function fScenarioCapture() {
       naming: true,
       nameSettings: false,
       nameClick: false,
+      nameEye: false,
       audio: false,
       rule: false,
       text: true,
@@ -377,7 +379,7 @@ function fScenarioDefaults(step, i) {
     nameAnalysisMode: "none",
     selectedRule: null,
     style2D: { atomColors: false, colorMode: "atom", zigzag: false },
-    styleName: { box: true, cross: false, etherNaming: "iupac", panelOpen: true },
+    styleName: { box: true, cross: false, etherNaming: "iupac", panelOpen: true, hidden: [] },
     styleHighlight: { bondAtoms: false, numberingAtoms: true },
     audio: { narrate: false },
     menuSubset: [],
@@ -388,7 +390,7 @@ function fScenarioDefaults(step, i) {
       viewers: { "2D": true, "3D": true },
       controls: { "2D": false, "3D": false },
       save: { "2D": false, "3D": false },
-      naming: true, nameSettings: false, audio: false, rule: false, text: true,
+      naming: true, nameSettings: false, nameEye: false, audio: false, rule: false, text: true,
     },
   };
   var out = Object.assign({}, d, step);
@@ -404,6 +406,7 @@ function fScenarioDefaults(step, i) {
   if (out.show) delete out.show.infoHost;
   // arrays copy by value, not by reference (steps stay independent)
   out.menuSubset = Array.isArray(step.menuSubset) ? step.menuSubset.slice() : [];
+  out.styleName.hidden = Array.isArray(step.styleName && step.styleName.hidden) ? step.styleName.hidden.slice() : [];
   out.menuGroups = fScenarioValidMenuGroups(step.menuGroups);
   out.n = i + 1;
   return out;
@@ -534,6 +537,17 @@ function fScenarioSyncControlUi() {
   } catch (e) {
     /* controls unavailable */
   }
+  // Master eye-edit button mirrors the live-only authoring flag (single
+  // icon + .active highlight).
+  try {
+    var _eyeBtn = document.getElementById("nameStyleEyeToggle");
+    if (_eyeBtn && typeof svgEyeState !== "undefined") {
+      _eyeBtn.innerHTML = svgEyeState;
+      _eyeBtn.classList.toggle("active", window.nameEyeEdit === true);
+    }
+  } catch (e) {
+    /* naming controls unavailable */
+  }
 }
 
 // Checkbox settings live only as DOM classes (no JS global) — capture them
@@ -554,6 +568,8 @@ function fScenarioStashAuthorSettings() {
   MuLERMoCScenario.authorSettings = {
     bondAtoms: fScenarioCheck("bondAtomsCheck", false),
     numberingAtoms: fScenarioCheck("highlightNumberingCheck", true),
+    nameHidden: Array.isArray(window.nameHiddenComps) ? window.nameHiddenComps.slice() : [],
+    nameEyeEdit: window.nameEyeEdit === true,
   };
 }
 
@@ -562,6 +578,16 @@ function fScenarioRestoreAuthorSettings() {
   if (!a) return;
   fScenarioSetCheck("bondAtomsCheck", !!a.bondAtoms, "selectedCheck", "unselectedCheck");
   fScenarioSetCheck("highlightNumberingCheck", a.numberingAtoms !== false, "selectedCheck", "unselectedCheck");
+  window.nameHiddenComps = Array.isArray(a.nameHidden) ? a.nameHidden.slice() : [];
+  window.nameEyeEdit = a.nameEyeEdit === true;
+  // Re-render the name boxes with the author's live hidden set (the last
+  // present step's view lingers otherwise); the naming-chrome hook no-ops
+  // outside presentation.
+  try {
+    if (typeof fShowNameAnalysis === "function") fShowNameAnalysis();
+  } catch (e) {
+    /* naming unavailable */
+  }
   MuLERMoCScenario.authorSettings = null;
 }
 
@@ -958,6 +984,12 @@ function fScenarioClickNameBox(step, token) {
   var compId = fScenarioCompIdFor(step.nameAnalysisMode);
   var box = compId && document.getElementById(compId);
   if (!box) return;
+  // Hidden (dash) boxes stay inert: skip the stored highlight replay.
+  try {
+    if (box.classList && box.classList.contains("comp-hidden")) return;
+  } catch (e) {
+    /* DOM unavailable */
+  }
   $(box).trigger("click");
   if (fScenarioNormMode(nameAnalysisMode) !== fScenarioNormMode(step.nameAnalysisMode)) {
     nameAnalysisMode = "none";
@@ -1061,6 +1093,15 @@ function fScenarioApply(step) {
 
   // 3. load molecule through the standard path
   fSelectMol();
+  // Per-step hidden set re-asserted after the load: fSelectMol resets
+  // visibility for the new molecule, then the step's stored set applies.
+  // Same synchronous task as the load render → single paint, no flash.
+  window.nameHiddenComps = Array.isArray(step.styleName.hidden) ? step.styleName.hidden.slice() : [];
+  try {
+    if (typeof fShowNameAnalysis === "function") fShowNameAnalysis();
+  } catch (e) {
+    /* naming unavailable */
+  }
   rotate3D();
   // 3b. control bars mirror the restored globals (bars keep live states
   // otherwise); runs after the load so representation fallbacks are final.
@@ -1219,10 +1260,33 @@ function fScenarioFillStepPanel(step) {
 // present step's show.* is re-asserted after any rebuild via
 // fScenarioOnPresentBrowse() and the molview rebuild hook. Display-only:
 // never mutates step data, nameSettingsFlag, or stored show.* (Export-safe).
-// No-op outside presentation or without a current step.
+// Outside presentation it actively clears any leaked lock/explain hide.
 function fScenarioApplyNamingChrome(show) {
   var present = MuLERMoCScenario.present;
-  if (!present) return;
+  if (!present) {
+    // Full interactivity outside presentation: a locked present step must
+    // never leak its lock (or its hidden explain line) into authoring —
+    // the container node survives box rebuilds, so clear both actively.
+    // Nothing outside presentation ever sets them; fExplainNameComp owns
+    // the line's content independently.
+    try {
+      var _nc0 = document.getElementById("nameAnalysisContainer");
+      if (_nc0 && _nc0.classList) _nc0.classList.remove("locked");
+    } catch (e) {
+      /* naming DOM unavailable */
+    }
+    // Clear a leaked hide, but honor fix 3: zero visible boxes keeps the
+    // line hidden (a hint pointing at dashes is dead). Runs after the
+    // render-path toggle on every authoring rebuild, same verdict.
+    var _authNoVis = false;
+    try {
+      _authNoVis = document.querySelectorAll(".nameCompContainer .nameCompBox:not(.comp-hidden)").length === 0;
+    } catch (e) {
+      /* DOM unavailable */
+    }
+    fScenarioHide("nameAnalysisExplain", _authNoVis);
+    return;
+  }
   try {
     var _pst = fScenarioPresent();
     var _st = _pst && _pst.steps ? _pst.steps[_pst.index] : null;
@@ -1243,7 +1307,17 @@ function fScenarioApplyNamingChrome(show) {
     }
     var _lockHasHl = !!(_st && _st.nameAnalysisMode &&
       fScenarioNormMode(_st.nameAnalysisMode) !== "none" && _st.selectedMol);
-    fScenarioHide("nameAnalysisExplain", locked && !_lockHasHl);
+    // Fix 3: zero visible components hides the line even when the lock
+    // logic above would keep it (a hint pointing at dashes is dead).
+    // Molecule steps only — menu-only steps keep their hint by design.
+    var _molNoVis = false;
+    try {
+      _molNoVis = !!(_st && _st.selectedMol) &&
+        document.querySelectorAll(".nameCompContainer .nameCompBox:not(.comp-hidden)").length === 0;
+    } catch (e) {
+      /* DOM unavailable */
+    }
+    fScenarioHide("nameAnalysisExplain", (locked && !_lockHasHl) || _molNoVis);
     // Menu-only steps have no stored naming to explain: hide the hint line
     // only when interaction is locked (the hint would be dead). When
     // interaction is on the hint stays visible and reappears on free-browse
@@ -1963,6 +2037,29 @@ function fScenarioRenderOne(scen) {
     nameClickLabel.appendChild(nameClickCheck);
     nameClickLabel.appendChild(document.createTextNode(" Διάδραση ονομασίας"));
     row.appendChild(nameClickLabel);
+    // Per-component eye toggles in presentation (Ορατότητα συνθετικών):
+    // checked → small eye buttons above each name box stay live during
+    // presentation (visibility itself still comes from the stored hidden
+    // set); unchecked → dash boxes render with no toggles. Molecule steps
+    // only — menu-only steps carry no naming.
+    var nameEyeLabel = document.createElement("label");
+    nameEyeLabel.className = "sshow";
+    nameEyeLabel.title = "Show per-component eye toggles in presentation";
+    var nameEyeCheck = document.createElement("input");
+    nameEyeCheck.type = "checkbox";
+    nameEyeCheck.checked = !!(st.show && st.show.nameEye === true);
+    if (!st.selectedMol) {
+      nameEyeCheck.disabled = true;
+      nameEyeLabel.classList.add("disabled");
+      nameEyeLabel.title = "Molecule steps only (this step carries no naming)";
+    }
+    nameEyeCheck.onchange = function () {
+      st.show = st.show || {};
+      st.show.nameEye = nameEyeCheck.checked;
+    };
+    nameEyeLabel.appendChild(nameEyeCheck);
+    nameEyeLabel.appendChild(document.createTextNode(" Ορατότητα συνθετικών"));
+    row.appendChild(nameEyeLabel);
     // Menu grouping (presentation only, menu-carrying steps only): which
     // menu views the step offers. Μόρια = flat list (default); Τάξεις/Σειρές
     // classify the picked subset. 2+ checked → grouping switcher in
@@ -2125,6 +2222,7 @@ function fScenarioUpdateStep(scenId, idx) {
     : { "2D": false, "3D": false };
   fresh.show.nameSettings = oldShow.nameSettings === true;
   fresh.show.nameClick = oldShow.nameClick === true;
+  fresh.show.nameEye = oldShow.nameEye === true;
   fresh.menuGroups = fScenarioValidMenuGroups(old.menuGroups);
   s.steps[idx] = fresh;
   fScenarioSyncLegacy();

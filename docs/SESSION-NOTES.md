@@ -443,3 +443,40 @@ grouping; one scenario Save → Present → Next → Exit + Export/Import incl.
 legacy `"app": "mulermoc-nom-43"` file; Exit restores menu-open + both
 viewers. Known deferred: ketone/alcohol/nitro locant thresholds (Greek
 convention), rings/aromatics out of scope.
+
+## v44 working copy — per-component name visibility (eye toggles, uncommitted)
+
+All in the `*44*` set. JS verified with `node --check`; CSS brace-balanced;
+browser click-throughs pending (owner).
+
+* Master eye-edit switch in `#nameSettingsPanel` (`window.nameEyeEdit`,
+  live-only, never stored) + per-box eye buttons above each name component
+  (`fNameCompBox` wrap in `fShowNameAnalysis`; IUPAC + COMMON ether loops).
+  Hidden boxes render `–` on `lightBlue` (`.comp-hidden`), ignore clicks
+  (teaching guard + `.selected`-restore guard), and are skipped by stored
+  highlight replay (`fScenarioClickNameBox`) and narration (`#readNameBtn`,
+  `fSpeakNameWithPauses`); PNG shows dashes as displayed (DOM clone).
+* Steps store `styleName.hidden` (comp ids) + `show.nameEye` (drawer
+  checkbox `Ορατότητα συνθετικών`, default off, molecule steps only):
+  checked steps keep live eye toggles in presentation (step data untouched);
+  `Update` refreshes `hidden` from live, preserves `nameEye`; legacy files
+  default to all-visible. Present stashes / Exit restores the author's live
+  hidden set + edit mode (with guarded re-render).
+* Presentation gate fix (`fNameEyeVisible`): in presentation the authoring
+  master flag is ignored — unchecked steps never show per-box eyes even if
+  the master was left on; authoring behavior unchanged.
+* Docs: CHANGELOG [Unreleased] entry, didactic §§2–3 (schema, drawer, Update).
+
+Browser checklist for owner: master switch → eyes appear → hide 2 boxes
+→ Save step → Present (dashes, inert, no eyes) → Exit (author
+hidden set back) → check `Ορατότητα συνθετικών` → Present (eyes live-toggle,
+step data unmutated after Exit) → Export/Import round-trip + legacy v44
+file (all visible) → TTS skips hidden → PNG shows dashes.
+New-molecule reset: hide a box on mol A → select mol B (all visible,
+eyes still up if master on) → Present a step with hidden comps (masked).
+Exit interactivity: Present a `Διάδραση ονομασίας`-off step → Exit →
+boxes clickable + explain line visible (leaked `.locked` cleared).
+Hide-selected clears theory: select a box (theory + atoms) → eye-hide it →
+theory hides, atoms clear, hint text; hiding a non-selected box changes nothing.
+Zero-visible hides explain: hide all boxes → line hides; reveal one → line
+returns; menu-only present steps keep their hint.

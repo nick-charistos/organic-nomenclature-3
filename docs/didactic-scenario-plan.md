@@ -52,7 +52,7 @@ progress tracking, server storage.
       "nameAnalysisMode": "esterAlkyl",
       "selectedRule": null,
       "style2D": {"atomColors": true, "colorMode": "atom", "zigzag": false},
-      "styleName": {"box": true, "cross": false, "etherNaming": "iupac", "panelOpen": true},
+      "styleName": {"box": true, "cross": false, "etherNaming": "iupac", "panelOpen": true, "hidden": ["comp5"]},
       "styleHighlight": {"bondAtoms": false, "numberingAtoms": true},
       "menuSubset": ["methane", "ethane"],
       "menuGroups": ["molecules"],
@@ -69,6 +69,7 @@ progress tracking, server storage.
         "naming": true,
         "nameSettings": false,
         "nameClick": false,
+        "nameEye": false,
         "audio": false,
         "rule": false,
         "text": true   // LEGACY, ignored in working copy: heading + text show automatically iff title/note present
@@ -182,6 +183,17 @@ Visibility rules:
   no stored highlight; absent in legacy files = allowed).
   `show.audio` toggles narration buttons. Playback never
   auto-plays TTS.
+* Per-component visibility: `styleName.hidden` lists hidden comp ids
+  (e.g. `["comp5"]`); hidden boxes render a dash on a `lightBlue` fill,
+  ignore clicks, and are skipped by narration and stored-highlight replay
+  (PNG shows them as displayed). Authors toggle boxes via the master
+  eye-edit switch in `#nameSettingsPanel` (live-only, never stored) +
+  per-box eye buttons; Save/Update captures the set. `show.nameEye`
+  gates live per-box eye toggles in presentation (per-step drawer
+  checkbox `Ορατότητα συνθετικών`, default unchecked, molecule steps
+  only; absent in legacy files = no toggles). `Update` refreshes
+  `hidden` from the live view and preserves `nameEye`; Present stashes
+  / Exit restores the author's live hidden set + edit mode.
 * `title` is the step heading: in presentation it replaces the
   page `#pageTitle` (`N. title`); on exit the app title is
   restored. `note` is the educational paragraph in `#scStepText`
@@ -218,16 +230,17 @@ Visibility rules:
   above the field, defaults to the live Greek IUPAC name at Save —
   key fallback, `"menu"` for menu-only), per-step educational text
   (`note` textarea, `<b>`/`<sup>`/`<sub>` allowed), per-step chrome
-  checkboxes (`2D controls`, `3D controls`, `Name controls`,
-  `Name interact`, plus `Ταξινομήσεις Μένου` (`Μόρια` default-checked,
+   checkboxes (`2D controls`, `3D controls`, `Name controls`,
+   `Name interact`, `Ορατότητα συνθετικών`, plus `Ταξινομήσεις Μένου` (`Μόρια` default-checked,
   `Χημικές Τάξεις`, `Ομόλογες Σειρές` — presentation-only menu views,
   shown only on menu-carrying steps, all-off valid → flat fallback;
   see §2) — see §2; no `Text`/`Menu`: text is automatic, menu
   is derived), `Go` (preview/apply the step in authoring), `Update`
   (rewrite the step's stored view snapshot from the current live view:
   Go → tweak molecule, 2D/3D modes + styles, naming clicks/toggles,
-  camera, pick → Update; preserves `title`/`note` + the 4 chrome
-  checkboxes + `menuGroups`, refreshes everything visual incl. `nameAnalysisMode`,
+   camera, pick → Update; preserves `title`/`note` + the 4 chrome
+   checkboxes + `show.nameEye` + `menuGroups`, refreshes everything visual incl. `nameAnalysisMode`,
+   `styleName.hidden` (from the live eye toggles),
   `menuSubset`/`show.menu`/`show.viewers`; toasts kind/subset changes),
   reorder up/down, delete, jump-to; step numbers
   auto-renumber. Steps header carries the live scenario name.

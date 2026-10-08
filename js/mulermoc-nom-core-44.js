@@ -2051,7 +2051,27 @@ function fSpeakGreek(text) {
 // ── fSpeakNameWithPauses ──────────────────────────────────────────────────
 
 function fSpeakNameWithPauses() {
-    const parts = nameComponentsList.filter(c => c && c !== '')
+    // Narration follows component visibility: hidden (dash) boxes are
+    // skipped. Rendered boxes (any naming mode) drive the parts; the data
+    // list is the fallback when no boxes are in the DOM.
+    var _hidden = (typeof window !== "undefined" && Array.isArray(window.nameHiddenComps)) ? window.nameHiddenComps : []
+    var parts = null
+    try {
+        var _boxes = (typeof document !== "undefined") ? document.querySelectorAll(".nameCompContainer .nameCompBox") : null
+        if (_boxes && _boxes.length) {
+            parts = []
+            for (var _bi = 0; _bi < _boxes.length; _bi++) {
+                var _b = _boxes[_bi]
+                if (_b.classList && _b.classList.contains("comp-hidden")) continue
+                var _t = ((_b.textContent || "").replace(/-/g, ' ').replace(/\s+/g, ' ').trim())
+                if (_t) parts.push(_t)
+            }
+        }
+    } catch (e) { parts = null }
+    if (!parts) {
+        parts = nameComponentsList.filter(function (c, i) { return c && c !== '' && _hidden.indexOf("comp" + i) < 0 })
+            .map(function (c) { return String(c).replace(/<[^>]*>/g, '') })
+    }
     if (!parts.length) return
     window.speechSynthesis.cancel()
     const voices = window.speechSynthesis.getVoices()
