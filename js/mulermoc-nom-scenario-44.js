@@ -2066,10 +2066,14 @@ function fScenarioRenderOne(scen) {
     // presentation; none → flat fallback. Pure molecule steps (no menu)
     // show no trace of this block.
     if (Array.isArray(st.menuSubset) && st.menuSubset.length > 1) {
+    // Single-line set: title + 3 checkboxes share a nowrap wrapper so the
+    // wrapping row can never split them across lines.
+    var menuGroupsRow = document.createElement("div");
+    menuGroupsRow.className = "scMenuGroupsRow";
     var menuGroupTitle = document.createElement("span");
     menuGroupTitle.className = "sshow scMenuGroupsTitle";
     menuGroupTitle.appendChild(document.createTextNode("Ταξινομήσεις Μένου:"));
-    row.appendChild(menuGroupTitle);
+    menuGroupsRow.appendChild(menuGroupTitle);
     [["Μόρια", "molecules"], ["Χημικές Τάξεις", "chemclass"], ["Ομόλογες Σειρές", "series"]].forEach(function (pair) {
       var gLabel = document.createElement("label");
       gLabel.className = "sshow scMenuGroup";
@@ -2092,8 +2096,9 @@ function fScenarioRenderOne(scen) {
       };
       gLabel.appendChild(gCheck);
       gLabel.appendChild(document.createTextNode(" " + pair[0]));
-      row.appendChild(gLabel);
+      menuGroupsRow.appendChild(gLabel);
     });
+    row.appendChild(menuGroupsRow);
     }
     var btns = row.querySelectorAll("button");
     (function (scenId, idx) {

@@ -415,6 +415,16 @@
    opacity: .5
 }
 
+/* Menu-grouping set (Ταξινομήσεις Μένου): title + 3 checkboxes share one
+   nowrap line of their own inside the wrapping step row. */
+.scenarioDrawer .scMenuGroupsRow {
+   display: flex;
+   align-items: center;
+   gap: 6px;
+   flex-wrap: nowrap;
+   flex-basis: 100%;
+}
+
 .scenarioDrawer .scMolBadge {
    font-size: .7rem;
    color: #fff;
