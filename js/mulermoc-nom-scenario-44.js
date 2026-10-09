@@ -1239,6 +1239,14 @@ function showTextOn(step) {
   return !!(step && (step.title || step.note));
 }
 
+function showNoteOn(step) {
+  // The text card shows iff the note carries real text: strip the allowed
+  // simple-HTML tags + whitespace, so tag-only or blank notes count as
+  // empty and the card stays hidden (no empty bordered box).
+  if (!step || !step.note) return false;
+  return step.note.replace(/<[^>]*>/g, "").trim() !== "";
+}
+
 // Simple note formatting: escape everything, then re-allow only
 // <b>, <sup>, <sub> (no attributes). Anything else stays escaped,
 // so there is no markup/script injection surface.
@@ -1423,7 +1431,7 @@ function fScenarioChrome(show) {
   // per-step heading (page h1) + text div below it (title/note, plain text)
   var _txtStep = fScenarioPresent().steps[fScenarioPresent().index];
   fScenarioFillStepPanel(_txtStep);
-  fScenarioHide("scStepText", !present || !showTextOn(_txtStep));
+  fScenarioHide("scStepText", !present || !showNoteOn(_txtStep));
   // own UI: author bar + drawer follow authoring mode; the edge tab
   // hides only in presentation (see fScenarioSyncAuthorUi)
   fScenarioSyncAuthorUi();
