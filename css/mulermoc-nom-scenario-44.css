@@ -523,15 +523,6 @@
    opacity: 1
 }
 
-.scStepsTitle {
-	color: var(--baseColor);
-	font-weight: bold;
-	font-size: 1rem;
-	border-bottom: 2px dotted var(--lightBlue);
-	padding-bottom: 5px;
-	margin-bottom: 20px;
-}
-
 .scenarioDrawer .scSteps {
    background: var(--veryLightBlue);
 }
@@ -542,11 +533,11 @@
     font-size: 1.125rem;
     margin: -10px auto 20px auto;
     white-space: pre-wrap;
-    max-width: 600px;
+    max-width: 980px;
     background: var(--bgColor);
     padding: 15px;
     border-radius: 5px;
-    border: 1px solid var(--lightBlue);
+    border: 1px solid var(--baseColor);
     text-align: justify;
 }
 
@@ -940,7 +931,119 @@
 	width: 40px;
 	height: 40px;
 	line-height: 40px;
-	border: 1px solid var(--lightBlue);
+	border: 1px solid var(--baseColor);
+}
+
+/* Icon-only buttons (see js/ui-icons.js): uniform 16px currentColor art,
+   title tooltip + aria-label keep the meaning. */
+#scenarioAuthorBar .scIconBtn,
+#scenarioGlobalBar .scIconBtn,
+.scenarioDrawer .srow .scIconBtn {
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   gap: 4px;
+   min-width: 28px;
+   min-height: 24px;
+   padding: 3px 5px;
+}
+#scenarioAuthorBar .scIconBtn svg,
+.scenarioDrawer .srow .scIconBtn svg {
+   width: 16px;
+   height: 16px;
+   flex: none;
+}
+/* Bar buttons: icon + text (primary actions). Step rows stay icon-only. */
+#scenarioAuthorBar .scIconTextBtn {
+   gap: 6px;
+}
+/* Steps-button live count next to the list icon. */
+#scenarioAuthorBar .scList .scCountInline {
+   font-size: .75rem;
+   font-weight: bold;
+   background: var(--guiColor);
+   color: #fff;
+   border-radius: 10px;
+   padding: 0 7px;
+   line-height: 18px;
+   white-space: nowrap;
+}
+
+/* T1 note toolbar (authoring): inline formatting over the allowed subset. */
+.scenarioDrawer .scNoteToolbar {
+   display: flex;
+   gap: 4px;
+   flex-wrap: wrap;
+   flex-basis: 100%;
+   align-items: center;
+   margin: 2px 0 -2px 0;
+}
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar button.scNoteBtn {
+	width: 20px;
+	font-size: .75rem;
+	line-height: 0;
+	height: 20px;
+	background: var(--veryLightBlue);
+	border-color: var(--lightBlue);
+	/* text-align: center; */
+	border-radius: 2px;
+   padding: 0;
+}
+
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar button.scNoteBtn:hover {
+   background: var(--lightBlue);
+   color: #fff;
+}
+
+/* Unbalanced-tag hint on the note field (see fScenarioCheckNoteTags). */
+.scenarioDrawer .snote.tag-warn {
+   outline: 2px solid #c0392b;
+   outline-offset: 1px;
+}
+/* Whole-text size input inside the note toolbar. */
+.scenarioDrawer .scNoteToolbar .scTextSizeInput {
+   width: 64px;
+   font-size: .8rem;
+   padding: 1px 4px;
+}
+/* Present text: two-column mode (per-step toggle, default 1 column). */
+#scStepText.scCols2 {
+   column-count: 2;
+   column-gap: 2em;
+}
+/* Lists never fracture across columns (whole item stays in one column). */
+#scStepText li,
+#scStepText ul,
+#scStepText ol {
+   break-inside: avoid;
+}
+/* Small screens collapse back to one column (class, not inline, so this wins). */
+@media (max-width: 700px) {
+   #scStepText.scCols2 {
+      column-count: 1;
+   }
+}
+/* Toolbar toggle active state (2-column on). */
+.scenarioDrawer .scNoteToolbar .scNoteBtn.active {
+   background: var(--lightBlue);
+   color: #fff;
+   border-color: var(--lightBlue);
+}
+/* Present text: lists + font sizes from the note subset. */
+#scStepText ul,
+#scStepText ol {
+   margin: 8px 0 8px 20px;
+   padding: 0;
+   text-align: left;
+}
+#scStepText li {
+   margin: 2px 0;
+}
+#scStepText small {
+   font-size: .85em;
+}
+#scStepText big {
+   font-size: 1.2em;
 }
 
 

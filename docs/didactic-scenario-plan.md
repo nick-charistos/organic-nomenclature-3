@@ -202,7 +202,9 @@ Visibility rules:
   (no space inside the span); on exit the app title is
   restored. `note` is the educational paragraph in `#scStepText`
   directly below the title (simple-HTML subset: everything escaped
-  except attributeless `<b>`, `<sup>`, `<sub>`;
+  except attributeless `<b>`, `<i>`, `<u>`, `<sup>`, `<sub>`,
+  `<ul>`, `<ol>`, `<li>`, `<small>`, `<big>`; drawer toolbar wraps
+  selection / builds lists from selected lines;
   `noteFormat: "text"` reserved for further rich text). Heading +
   text show automatically iff the step carries a title or note;
   clear both for a silent visual step (app title kept). Author
@@ -233,7 +235,15 @@ Visibility rules:
   stacked in `.scStepNumberWrap`, step title (`Τίτλος βήματος` label
   above the field, defaults to the live Greek IUPAC name at Save —
   key fallback, `"menu"` for menu-only), per-step educational text
-  (`note` textarea, `<b>`/`<sup>`/`<sub>` allowed), per-step chrome
+  (`note` textarea with formatting toolbar: `B I sup sub` buttons, 1↔2
+  column toggle icon + clean icon, whole-text size/width via per-step
+  `Size (px)` input `styleText.fontSizePx`
+  (12–28, empty = 18px) and `Width (px)` input `styleText.textWidthPx`
+  (320–1200, empty = 980px card max-width); 1↔2 column toggle
+  `styleText.columns` (default 1; lists never split via `break-inside`,
+  small screens collapse to 1); `<ul>`/`<ol>`/`<small>`/`<big>` still
+  render in saved notes but are no longer inserted),
+  per-step chrome
    checkboxes (`2D controls`, `3D controls`, `Name controls`,
    `Name interact`, `Ορατότητα συνθετικών`, plus `Ταξινομήσεις Μένου` (`Μόρια` default-checked,
   `Χημικές Τάξεις`, `Ομόλογες Σειρές` — presentation-only menu views,
@@ -245,9 +255,10 @@ Visibility rules:
    camera, pick → Update; preserves `title`/`note` + the 4 chrome
    checkboxes + `show.nameEye` + `menuGroups`, refreshes everything visual incl. `nameAnalysisMode`,
    `styleName.hidden` (from the live eye toggles),
-  `menuSubset`/`show.menu`/`show.viewers`; toasts kind/subset changes),
+   `menuSubset`/`show.menu`/`show.viewers`; toasts kind/subset changes),
+  `⧉` duplicate (deep-clone after, title + ` (αντίγραφο)`),
   reorder up/down, delete, jump-to; step numbers
-  auto-renumber. Steps header carries the live scenario name.
+  auto-renumber.
    Headers lead with a positional counter (`S1`, `S2`, …); empty
    scenarios (0 steps) flag `.is-empty` on card, count, and Steps button,
    disable Steps/Export/Play (`disabled`, dimmed 0.7, no hover — Save step
@@ -390,3 +401,8 @@ LEARN is layer 1 of the twofold+1 vision (see `README.md`, `docs/LAYERS-PLAN.md`
 * **Two-level `note` convention:** `note` carries the teacher narrative; authoring guidance is EPAL-simple first line(s) / Lyceum-full extension (P3 authors, P5 uses for EPAL-vs-Lyceum comparison). Schema unchanged — convention only.
 * **`moveto` curation:** capture with `rotate off`; prefer curated per-step cameras for the library over ad-hoc capture.
 * **Authoring docs:** Save → Export → Present → Exit flow (Exit restores menu + both viewers + all bars; in-memory steps kept).
+
+## 10. Future states (2026-10-09, docs-only, no code change)
+
+* Current states: default (`!authoring && !present`), authoring (`authoring && !present`), presentation (`present == true`, wins over authoring; `showBar = authoring && !present`; `#pageContainer.presenting` is the CSS hook).
+* Agreed direction: derived `fScenarioGetState()` getter as single authority; booleans stay as storage. No quiz planning now — quiz question as step + `itemType`/prompt/feedback reuse left open for PRACTICE/PLAY.

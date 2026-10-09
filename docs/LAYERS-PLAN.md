@@ -71,6 +71,7 @@ Total to 4-layer pilot: ~6–9 months with this team. LEARN-pilot usable this se
 * PRACTICE normalization tolerance (accents, euphony variants) — P3 spec + P1.
 * First `scenarios/` titles — P3 proposal (recommend starting from ethers/esters).
 * Engine de-dup (`*-42`/`*-43` copies, `state.js`, `eval` removal) before PRACTICE to avoid building on fragile globals.
+* AppMode state handling (2026-10-09, docs-only, no code change): current truth is `MuLERMoCScenario.authoring / present` booleans; agreed direction is a derived `fScenarioGetState() -> default|authoring|present` getter as single authority (no third stored flag, no schema bump). Reserved for later: `quiz-author / quiz-present` enum values for PRACTICE/PLAY (levels/time/lives). Play HUD ownership (static thick client vs Drupal-driven thin client) deferred to next phase — after scenarios are done.
 
 ## 8. Phase 5 — English upgrade (conditional, after the Greek pilot)
 

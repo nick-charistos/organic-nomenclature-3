@@ -326,6 +326,7 @@ function fScenarioCapture() {
       bondAtoms: fScenarioCheck("bondAtomsCheck", false),
       numberingAtoms: fScenarioCheck("highlightNumberingCheck", true),
     },
+    styleText: { fontSizePx: null, textWidthPx: null, columns: null }, // whole-text size/width/columns; null = theme defaults (18px / 980px / 1 col)
     audio: { narrate: !!fScenarioG("narrateAnalysisFlag", false) },
     view3D: {
       style: fScenarioG("vis3D", "ballnstick"),
@@ -361,8 +362,53 @@ function fScenarioCapture() {
 // Menu grouping selection (Ταξινομήσεις Μένου drawer checkboxes): subset of
 // molecules|chemclass|series; empty/unknown → ["molecules"] flat fallback.
 var SCENARIO_MENU_GROUPS = ["molecules", "chemclass", "series"];
-function fScenarioValidMenuGroups(g) {
-  var out = [];
+// Whole-text size (px): additive optional styleText.fontSizePx, null = theme
+// default 18px. Clamp 12–28; invalid → null (no warning text here — the
+// validate path adds it so capture stays toast-quiet).
+function fScenarioValidFontSizePx(v) {
+  if (v === null || typeof v === "undefined" || v === "") return null;
+  var n = parseInt(v, 10);
+  if (isNaN(n)) return null;
+  if (n < 12) return 12;
+  if (n > 28) return 28;
+  return n;
+}
+// Whole-text width (px): additive optional styleText.textWidthPx,
+// null = theme default 980px. Clamp 320–1200; invalid → null.
+function fScenarioValidTextWidthPx(v) {
+  if (v === null || typeof v === "undefined" || v === "") return null;
+  var n = parseInt(v, 10);
+  if (isNaN(n)) return null;
+  if (n < 320) return 320;
+  if (n > 1200) return 1200;
+  return n;
+}
+// Text columns: additive optional styleText.columns (2 = two columns,
+// null = default one column). Only 1|2 stored; 1 collapses to null so
+// exports stay minimal. Anything else non-empty is invalid → null.
+function fScenarioValidColumns(v) {
+  if (v === null || typeof v === "undefined" || v === "") return null;
+  var n = parseInt(v, 10);
+  if (isNaN(n)) return null;
+  if (n >= 2) return 2;
+  return null;
+}
+function fScenarioApplyStepFontSize(step) {
+  var p = null;
+  try { p = document.getElementById("scStepText"); } catch (e) { /* no DOM */ }
+  if (!p) return;
+  var px = step && step.styleText ? fScenarioValidFontSizePx(step.styleText.fontSizePx) : null;
+  p.style.fontSize = px ? px + "px" : "";
+  var w = step && step.styleText ? fScenarioValidTextWidthPx(step.styleText.textWidthPx) : null;
+  p.style.maxWidth = w ? w + "px" : "";
+  // Columns via class (not inline): the small-screen collapse lives in CSS
+  // media queries, which cannot beat an inline column-count.
+  var two = !!(step && step.styleText && fScenarioValidColumns(step.styleText.columns) === 2);
+  try {
+    if (p.classList) p.classList.toggle("scCols2", two);
+  } catch (e) { /* no DOM */ }
+}
+function fScenarioValidMenuGroups(g) {  var out = [];
   (Array.isArray(g) ? g : []).forEach(function (m) {
     if (SCENARIO_MENU_GROUPS.indexOf(m) >= 0 && out.indexOf(m) < 0) out.push(m);
   });
@@ -381,6 +427,7 @@ function fScenarioDefaults(step, i) {
     style2D: { atomColors: false, colorMode: "atom", zigzag: false },
     styleName: { box: true, cross: false, etherNaming: "iupac", panelOpen: true, hidden: [] },
     styleHighlight: { bondAtoms: false, numberingAtoms: true },
+    styleText: { fontSizePx: null, textWidthPx: null, columns: null },
     audio: { narrate: false },
     menuSubset: [],
     menuGroups: ["molecules"],
@@ -394,7 +441,7 @@ function fScenarioDefaults(step, i) {
     },
   };
   var out = Object.assign({}, d, step);
-  ["style2D", "styleName", "styleHighlight", "audio", "view3D", "show"].forEach(function (k) {
+  ["style2D", "styleName", "styleHighlight", "styleText", "audio", "view3D", "show"].forEach(function (k) {
     out[k] = Object.assign({}, d[k], step[k] || {});
   });
   out.show.viewers = Object.assign({}, d.show.viewers, (step.show || {}).viewers || {});
@@ -408,6 +455,14 @@ function fScenarioDefaults(step, i) {
   out.menuSubset = Array.isArray(step.menuSubset) ? step.menuSubset.slice() : [];
   out.styleName.hidden = Array.isArray(step.styleName && step.styleName.hidden) ? step.styleName.hidden.slice() : [];
   out.menuGroups = fScenarioValidMenuGroups(step.menuGroups);
+  // Whole-text size/width/columns: normalize silently (font 12–28, width
+  // 320–1200, columns 1|2 → 2 else null). The validate path warns on
+  // non-empty invalid input.
+  out.styleText = {
+    fontSizePx: fScenarioValidFontSizePx(out.styleText ? out.styleText.fontSizePx : null),
+    textWidthPx: fScenarioValidTextWidthPx(out.styleText ? out.styleText.textWidthPx : null),
+    columns: fScenarioValidColumns(out.styleText ? out.styleText.columns : null)
+  };
   out.n = i + 1;
   return out;
 }
@@ -432,6 +487,18 @@ function fScenarioValidate(obj) {
       return;
     }
     var st = fScenarioDefaults(s, steps.length);
+    var _rawPx = s && s.styleText ? s.styleText.fontSizePx : null;
+    if (_rawPx !== null && typeof _rawPx !== "undefined" && String(_rawPx) !== "" && fScenarioValidFontSizePx(_rawPx) === null) {
+      warnings.push("Step " + (i + 1) + ": invalid text size discarded (default 18px used).");
+    }
+    var _rawW = s && s.styleText ? s.styleText.textWidthPx : null;
+    if (_rawW !== null && typeof _rawW !== "undefined" && String(_rawW) !== "" && fScenarioValidTextWidthPx(_rawW) === null) {
+      warnings.push("Step " + (i + 1) + ": invalid text width discarded (default 980px used).");
+    }
+    var _rawC = s && s.styleText ? s.styleText.columns : null;
+    if (_rawC !== null && typeof _rawC !== "undefined" && String(_rawC) !== "" && fScenarioValidColumns(_rawC) === null && String(_rawC) !== "1") {
+      warnings.push("Step " + (i + 1) + ": invalid column count discarded (default 1 column used).");
+    }
     var rawMoveto = st.view3D && st.view3D.moveto ? st.view3D.moveto : null;
     st.view3D.moveto = fScenarioValidMoveto(st.view3D.moveto);
     if (rawMoveto && !st.view3D.moveto) {
@@ -1248,16 +1315,100 @@ function showNoteOn(step) {
 }
 
 // Simple note formatting: escape everything, then re-allow only
-// <b>, <sup>, <sub> (no attributes). Anything else stays escaped,
+// <b>, <i>, <u>, <sup>, <sub>, <ul>, <ol>, <li>, <small>, <big>
+// (no attributes). Anything else stays escaped,
 // so there is no markup/script injection surface.
 function fScenarioRenderNote(el, note) {
   if (!el) return;
   var div = document.createElement("div");
   div.textContent = note || "";
   el.innerHTML = div.innerHTML.replace(
-    /&lt;(\/?)(b|sup|sub)&gt;/gi,
+    /&lt;(\/?)(b|i|u|sup|sub|ul|ol|li|small|big)&gt;/gi,
     function (m, slash, tag) { return "<" + slash + tag.toLowerCase() + ">"; }
   );
+}
+
+// Note toolbar helpers (authoring only, display-level): wrap the textarea
+// selection with an allowed tag pair, or build a list from selected lines.
+// Writes back to st.note via the same path as onchange; render stays safe
+// through fScenarioRenderNote (escape-first, attributeless allowlist).
+function fScenarioWrapNoteSelection(noteInput, st, open, close) {
+  if (!noteInput) return;
+  try { noteInput.focus(); } catch (e) { /* no DOM */ }
+  var val = noteInput.value || "";
+  var s = 0, e = val.length;
+  try { s = noteInput.selectionStart || 0; e = noteInput.selectionEnd || 0; } catch (err) { /* no selection API */ }
+  if (e < s) { var t = s; s = e; e = t; }
+  var sel = val.slice(s, e) || "";
+  var next = val.slice(0, s) + open + sel + close + val.slice(e);
+  noteInput.value = next;
+  st.note = next;
+  try {
+    var pos = s + open.length + sel.length + close.length;
+    noteInput.setSelectionRange(pos, pos);
+  } catch (err2) { /* no selection API */ }
+  fScenarioCheckNoteTags(noteInput);
+}
+function fScenarioMakeNoteList(noteInput, st, listTag) {
+  if (!noteInput) return;
+  try { noteInput.focus(); } catch (e) { /* no DOM */ }
+  var val = noteInput.value || "";
+  var s = 0, e = val.length;
+  try { s = noteInput.selectionStart || 0; e = noteInput.selectionEnd || 0; } catch (err) { /* no selection API */ }
+  if (e < s) { var t = s; s = e; e = t; }
+  var sel = val.slice(s, e) || "";
+  var lines = sel.split(/\r?\n/).map(function (ln) { return ln.trim(); }).filter(function (ln) { return ln !== ""; });
+  if (!lines.length) lines = [sel || "Στοιχείο λίστας"];
+  // Strip a pre-existing single wrap so re-clicking toggles instead of nesting.
+  var items = lines.map(function (ln) {
+    return "<li>" + ln.replace(/^<li>|<\/li>$/g, "") + "</li>";
+  }).join("");
+  var block = "<" + listTag + ">" + items + "</" + listTag + ">";
+  var next = val.slice(0, s) + block + val.slice(e);
+  noteInput.value = next;
+  st.note = next;
+  try {
+    var pos = (val.slice(0, s) + block).length;
+    noteInput.setSelectionRange(pos, pos);
+  } catch (err2) { /* no selection API */ }
+  fScenarioCheckNoteTags(noteInput);
+}
+function fScenarioCleanNote(noteInput, st) {
+  if (!noteInput) return;
+  var next = String(noteInput.value || "").replace(/<\/?[^>]*>/g, "");
+  noteInput.value = next;
+  st.note = next;
+  fScenarioCheckNoteTags(noteInput);
+}
+function fScenarioCheckNoteTags(noteInput) {
+  if (!noteInput || !noteInput.classList) return;
+  var val = noteInput.value || "";
+  var tags = ["b", "i", "u", "sup", "sub", "ul", "ol", "li", "small", "big"];
+  var bad = false;
+  for (var k = 0; k < tags.length; k++) {
+    var open = (val.match(new RegExp("<" + tags[k] + ">", "gi")) || []).length;
+    var shut = (val.match(new RegExp("</" + tags[k] + ">", "gi")) || []).length;
+    if (open !== shut) { bad = true; break; }
+  }
+  noteInput.classList.toggle("tag-warn", bad);
+  noteInput.title = bad ? "Μη κλεισμένη ετικέτα — ελέγξτε τα <...>." : "";
+}
+// Duplicate a step: deep-clone, insert right after, title gains
+// " (αντίγραφο)". No schema change; renumber keeps n gap-free.
+function fScenarioDuplicateStep(scenId, idx) {
+  var s = (scenId && fScenarioGet(scenId)) || fScenarioActive();
+  if (!s || !s.steps || idx < 0 || idx >= s.steps.length) return;
+  var src = s.steps[idx];
+  var copy;
+  try {
+    copy = JSON.parse(JSON.stringify(src));
+  } catch (e) {
+    return;
+  }
+  copy.title = (src.title || "step") + " (αντίγραφο)";
+  s.steps.splice(idx + 1, 0, copy);
+  fScenarioRenumber(scenId);
+  fScenarioToast("Duplicated step " + src.n + " as step " + (idx + 2) + ".");
 }
 
 function fScenarioFillStepPanel(step) {
@@ -1278,9 +1429,11 @@ function fScenarioFillStepPanel(step) {
       h1.textContent = appTitle;
     }
     fScenarioRenderNote(p, step.note);
+    fScenarioApplyStepFontSize(step);
   } else {
     h1.textContent = appTitle;
     p.textContent = "";
+    fScenarioApplyStepFontSize(null);
   }
 }
 
@@ -1735,9 +1888,6 @@ function fScenarioBuildUi() {
       if (s) {
         s.title = this.value || s.title;
         fScenarioSyncLegacy();
-        var panel = id && fScenarioPanelFor(id);
-        var nm = panel && panel.querySelector(".scStepsName");
-        if (nm) nm.textContent = s.title || "";
       }
     });
   }
@@ -1756,6 +1906,8 @@ function fScenarioBuildUi() {
       "</div>" +
     "<div id='scenarioPanels'></div>";
     document.body.appendChild(bar);
+    fScenarioPaintIconTextBtn(document.getElementById("scNew"), "libraryNew", "+ New");
+    fScenarioPaintIconTextBtn(document.getElementById("scImport"), "upload", "Import");
     document.getElementById("scNew").onclick = function () {
       if (fScenarioEmptyCount() >= MuLERMoCScenario.maxEmptyScenarios) {
         fScenarioToast("Fill an empty scenario first (max " + MuLERMoCScenario.maxEmptyScenarios + " empty).");
@@ -1863,6 +2015,37 @@ function fScenarioBuildUi() {
 // #scenarioAuthorBar (singleton: title + New/Import) owns #scenarioPanels.
 // Each .scenarioPanel[data-scenario-id] has its own button panel (no Import)
 // and its own in-flow .scenarioDrawer (down/up via .open).
+// Icon helper: icon-only buttons keep title tooltip + aria-label text.
+// Falls back to the text label when ui-icons.js is unavailable.
+function fScenarioPaintIconBtn(btn, key, label) {
+  if (!btn) return;
+  var icon = (window.MuLERIcons && window.MuLERIcons[key]) || null;
+  if (icon) {
+    // Steps button keeps its live count badge (see fScenarioRenderOne).
+    if (key === "list" && btn.classList && btn.classList.contains("scList")) return;
+    btn.innerHTML = icon;
+    if (btn.classList) btn.classList.add("scIconBtn");
+    if (label) btn.setAttribute("aria-label", label);
+  } else if (label && !btn.textContent) {
+    btn.textContent = label;
+  }
+}
+// Bar buttons: icon + text (primary actions; labels teach meaning).
+// Step-row buttons stay icon-only (see step wiring below).
+function fScenarioPaintIconTextBtn(btn, key, text) {
+  if (!btn) return;
+  var icon = (window.MuLERIcons && window.MuLERIcons[key]) || null;
+  if (icon) {
+    var span = document.createElement("span");
+    span.textContent = text;
+    btn.innerHTML = icon;
+    btn.appendChild(span);
+    if (btn.classList) { btn.classList.add("scIconBtn"); btn.classList.add("scIconTextBtn"); }
+    btn.setAttribute("aria-label", text);
+  } else if (text) {
+    btn.textContent = text;
+  }
+}
 function fScenarioBuildPanels() {
   var host = document.getElementById("scenarioPanels");
   if (!host) return;
@@ -1886,11 +2069,13 @@ function fScenarioBuildPanels() {
         "<button class='scPresent' title='Open presentation at step 1'>Play ▶</button>" +
       "</div>" +
       "<div class='scenarioDrawer'>" +
-        "<div class='scStepsTitle'><b><span class='scStepsName'></span> Steps</b> <span style='opacity:.6'></span></div>" +
         "<div class='scSteps'></div>" +
       "</div>";
     var ti = panel.querySelector(".scenarioTitle");
     if (ti) ti.value = scen.title || "";
+    fScenarioPaintIconTextBtn(panel.querySelector(".scSave"), "addTask", "Save step");
+    fScenarioPaintIconTextBtn(panel.querySelector(".scExport"), "downloadList", "Export");
+    fScenarioPaintIconTextBtn(panel.querySelector(".scPresent"), "screen", "Play");
     host.appendChild(panel);
   });
   fScenarioRenderList();
@@ -1957,7 +2142,22 @@ function fScenarioRenderOne(scen) {
     _no.title = "Scenario " + (_pos + 1);
   }
   if (listBtn) {
-    listBtn.innerHTML = "Steps (" + scen.steps.length + ")";
+    var _licon = (window.MuLERIcons && window.MuLERIcons.list) || null;
+    if (_licon) {
+      listBtn.innerHTML = _licon;
+      var _ltxt = document.createElement("span");
+      _ltxt.textContent = "Steps";
+      listBtn.appendChild(_ltxt);
+      var _lbadge = document.createElement("span");
+      _lbadge.className = "scCountInline";
+      _lbadge.textContent = String(scen.steps.length);
+      listBtn.appendChild(_lbadge);
+      if (listBtn.classList) { listBtn.classList.add("scIconBtn"); listBtn.classList.add("scIconTextBtn"); }
+      listBtn.setAttribute("aria-label", "Steps (" + scen.steps.length + ")");
+    } else {
+      listBtn.innerHTML = "";
+      listBtn.textContent = "Steps (" + scen.steps.length + ")";
+    }
     if (listBtn.classList) listBtn.classList.toggle("is-empty", _empty);
     listBtn.disabled = _empty;
   }
@@ -1971,8 +2171,6 @@ function fScenarioRenderOne(scen) {
     var b = panel.querySelector("." + cls);
     if (b) b.disabled = _empty;
   });
-  var nm = panel.querySelector(".scStepsName");
-  if (nm) nm.textContent = scen.title || "";
   var ti = panel.querySelector(".scenarioTitle");
   if (ti && document.activeElement !== ti && ti.value !== scen.title) ti.value = scen.title || "";
   box.innerHTML = "";
@@ -1982,8 +2180,24 @@ function fScenarioRenderOne(scen) {
     row.innerHTML =
       "<span id='scStep" + i + "' class='scStepNumberWrap'>" +
       "<span class='stepNumber'>" + st.n + "</span></span><span class='scStepTitleWrap'><span class='scStepTitleLabel'>Τίτλος βήματος</span><input type='text' class='scStepTitle' placeholder='Τίτλος βήματος' value=''></span>" +
-      "<button title='Jump'>Go</button><button class='scUpdate' title='Update this step from current view'>Update</button><button title='Up'>↑</button><button title='Down'>↓</button>" +
+      "<button title='Jump'>Go</button><button class='scUpdate' title='Update this step from current view'>Update</button><button class='scDupe' title='Duplicate this step'>⧉</button><button title='Up'>↑</button><button title='Down'>↓</button>" +
       "<button title='Delete'>✕</button>";
+    // Icon-only step actions (title tooltip + aria-label keep the meaning).
+    (function () {
+      var ab = row.querySelectorAll("button");
+      var defs = [
+        ["play", "Go"], ["reset", "Update"], ["copy", "Duplicate"],
+        ["arrowUp", "Up"], ["arrowDown", "Down"], ["closeSmall", "Delete"]
+      ];
+      for (var k = 0; k < defs.length && k < ab.length; k++) {
+        var ic = (window.MuLERIcons && window.MuLERIcons[defs[k][0]]) || null;
+        if (ic) {
+          ab[k].innerHTML = ic;
+          if (ab[k].classList) ab[k].classList.add("scIconBtn");
+          ab[k].setAttribute("aria-label", defs[k][1]);
+        }
+      }
+    })();
     // Step type at a glance: "menu" when the step carries a browsable
     // menu (menu-only or molecule+menu subset), else "molecule".
     // Detail (molecule key / subset size) lives in the tooltip.
@@ -2005,12 +2219,148 @@ function fScenarioRenderOne(scen) {
     };
     var noteInput = document.createElement("textarea");
     noteInput.className = "snote";
-    noteInput.placeholder = "Κείμενο βήματος (υποστηρίζει <b>, <sup>, <sub>)";
+    noteInput.placeholder = "Κείμενο βήματος (B I U, λίστες, <sup>, <sub>)";
     noteInput.value = st.note || "";
     noteInput.onchange = function () {
       st.note = noteInput.value;
+      fScenarioCheckNoteTags(noteInput);
     };
+    noteInput.oninput = function () {
+      fScenarioCheckNoteTags(noteInput);
+    };
+    // T1 toolbar: inline formatting over the allowed subset (B I sup sub,
+    // clean strips all tags) + whole-text px size input.
+    // Display-only: st.note / st.styleText.fontSizePx are the single sources.
+    var noteBar = document.createElement("div");
+    noteBar.className = "scNoteToolbar";
+    var noteBtns = [
+      ["B", "<b>", "</b>", "Έντονα"],
+      ["I", "<i>", "</i>", "Πλάγια"],
+      ["x²", "<sup>", "</sup>", "Εκθέτης"],
+      ["x₂", "<sub>", "</sub>", "Δείκτης"],
+      ["✕", null, null, "Καθαρισμός μορφοποίησης"]
+    ];
+    noteBtns.forEach(function (def) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "scNoteBtn";
+      if (def[0] === "✕" && window.MuLERIcons && window.MuLERIcons.formatClear) {
+        b.innerHTML = window.MuLERIcons.formatClear;
+        b.setAttribute("aria-label", def[3]);
+      } else {
+        b.textContent = def[0];
+      }
+      b.title = def[3];
+      b.onclick = function (ev) {
+        if (ev && ev.preventDefault) ev.preventDefault();
+        if (def[0] === "✕") { fScenarioCleanNote(noteInput, st); return; }
+        fScenarioWrapNoteSelection(noteInput, st, def[1], def[2]);
+      };
+      noteBar.appendChild(b);
+    });
+    // Column toggle (1↔2, default 1): icon button before clean, shows the
+    // current state + .active highlight when 2-column. Writes
+    // st.styleText.columns live (1 collapses to null/default); Update preserves it.
+    (function () {
+      var tog = document.createElement("button");
+      tog.type = "button";
+      tog.className = "scNoteBtn scColsToggle";
+      tog.title = "Στήλες κειμένου: 1/2 (εναλλαγή)";
+      function paintTog() {
+        var two = !!(st.styleText && fScenarioValidColumns(st.styleText.columns) === 2);
+        var ic = (window.MuLERIcons && (two ? window.MuLERIcons.columns2 : window.MuLERIcons.columns1)) || null;
+        if (ic) tog.innerHTML = ic;
+        else tog.textContent = two ? "2" : "1";
+        if (tog.classList) tog.classList.toggle("active", two);
+        tog.setAttribute("aria-pressed", two ? "true" : "false");
+        tog.setAttribute("aria-label", two ? "Κείμενο σε 2 στήλες (εναλλαγή σε 1)" : "Κείμενο σε 1 στήλη (εναλλαγή σε 2)");
+      }
+      tog.onclick = function (ev) {
+        if (ev && ev.preventDefault) ev.preventDefault();
+        st.styleText = st.styleText || {};
+        var two = !!(st.styleText && fScenarioValidColumns(st.styleText.columns) === 2);
+        st.styleText.columns = two ? null : 2;
+        paintTog();
+      };
+      paintTog();
+      var cleanBtn = noteBar.lastChild;
+      if (cleanBtn) noteBar.insertBefore(tog, cleanBtn);
+      else noteBar.appendChild(tog);
+    })();
+    // Whole-text size/width (px): number inputs alone (size 12–28 default
+    // 18px; width 320–1200 default 980px). Empty = default. Writes
+    // st.styleText live; Update preserves both.
+    (function () {
+      var sizeLabel = document.createElement("span");
+      sizeLabel.className = "sshow";
+      sizeLabel.appendChild(document.createTextNode("Font Size:"));
+      var sizeInput = document.createElement("input");
+      sizeInput.type = "number";
+      sizeInput.min = "12";
+      sizeInput.max = "28";
+      sizeInput.step = "1";
+      sizeInput.className = "scTextSizeInput";
+      sizeInput.title = "Μέγεθος γραμματοσειράς (px) (12–28)";
+      var curPx = st.styleText ? fScenarioValidFontSizePx(st.styleText.fontSizePx) : null;
+      sizeInput.value = curPx === null ? "" : String(curPx);
+      sizeInput.placeholder = "18";
+      sizeInput.onchange = function () {
+        var raw = sizeInput.value;
+        if (String(raw) === "") {
+          st.styleText = st.styleText || {};
+          st.styleText.fontSizePx = null;
+          return;
+        }
+        var n = fScenarioValidFontSizePx(raw);
+        if (n === null) {
+          st.styleText = st.styleText || {};
+          st.styleText.fontSizePx = null;
+          sizeInput.value = "";
+          return;
+        }
+        st.styleText = st.styleText || {};
+        st.styleText.fontSizePx = n;
+        sizeInput.value = String(n);
+      };
+      noteBar.appendChild(sizeLabel);
+      noteBar.appendChild(sizeInput);
+      var wLabel = document.createElement("span");
+      wLabel.className = "sshow";
+      wLabel.appendChild(document.createTextNode("Πλάτος Κειμένου:"));
+      var wInput = document.createElement("input");
+      wInput.type = "number";
+      wInput.min = "320";
+      wInput.max = "1200";
+      wInput.step = "10";
+      wInput.className = "scTextSizeInput scTextWidthInput";
+      wInput.title = "Πλάτος κειμένου στην παρουσίαση (px) (320–1200)";
+      var curW = st.styleText ? fScenarioValidTextWidthPx(st.styleText.textWidthPx) : null;
+      wInput.value = curW === null ? "" : String(curW);
+      wInput.placeholder = "980";
+      wInput.onchange = function () {
+        var raw = wInput.value;
+        if (String(raw) === "") {
+          st.styleText = st.styleText || {};
+          st.styleText.textWidthPx = null;
+          return;
+        }
+        var n = fScenarioValidTextWidthPx(raw);
+        if (n === null) {
+          st.styleText = st.styleText || {};
+          st.styleText.textWidthPx = null;
+          wInput.value = "";
+          return;
+        }
+        st.styleText = st.styleText || {};
+        st.styleText.textWidthPx = n;
+        wInput.value = String(n);
+      };
+      noteBar.appendChild(wLabel);
+      noteBar.appendChild(wInput);
+    })();
+    row.appendChild(noteBar);
     row.appendChild(noteInput);
+    fScenarioCheckNoteTags(noteInput);
     // No Text checkbox: heading + text show automatically iff the step
     // carries a title or note (see showTextOn); clear both for silence.
     // No Menu checkbox: the menu follows picks + selection (derived at
@@ -2132,7 +2482,9 @@ function fScenarioRenderOne(scen) {
     });
     row.appendChild(menuGroupsRow);
     }
-    var btns = row.querySelectorAll("button");
+    var btns = row.querySelectorAll("button:not(.scNoteBtn)");
+    // Order in row.innerHTML: Go, Update, Duplicate, Up, Down, Delete.
+    // .scNoteBtn toolbar buttons are excluded by the selector above.
     (function (scenId, idx) {
       btns[0].onclick = function () {
         fScenarioGo(idx);
@@ -2141,18 +2493,21 @@ function fScenarioRenderOne(scen) {
         fScenarioUpdateStep(scenId, idx);
       };
       btns[2].onclick = function () {
+        fScenarioDuplicateStep(scenId, idx);
+      };
+      btns[3].onclick = function () {
         if (idx === 0) return;
         var s = fScenarioGet(scenId) || fScenarioActive();
         s.steps.splice(idx - 1, 0, s.steps.splice(idx, 1)[0]);
         fScenarioRenumber(scenId);
       };
-      btns[3].onclick = function () {
+      btns[4].onclick = function () {
         var s = fScenarioGet(scenId) || fScenarioActive();
         if (idx >= s.steps.length - 1) return;
         s.steps.splice(idx + 1, 0, s.steps.splice(idx, 1)[0]);
         fScenarioRenumber(scenId);
       };
-      btns[4].onclick = function () {
+      btns[5].onclick = function () {
         var s = fScenarioGet(scenId) || fScenarioActive();
         s.steps.splice(idx, 1);
         fScenarioRenumber(scenId);
@@ -2228,8 +2583,8 @@ function fScenarioGo(i) {
 // ── per-step Update (authoring): Go → tweak live view → Update ───────────
 // Captures the current live view via fScenarioCapture() and overwrites the
 // stored view snapshot at scen.steps[idx]. Authored layer is preserved:
-// title, note, and the 4 drawer chrome checkboxes (show.controls.2D/3D,
-// show.nameSettings, show.nameClick). Everything visual is refreshed:
+// title, note, styleText.fontSizePx/textWidthPx/columns, and the 4 drawer chrome checkboxes
+// (show.controls.2D/3D, show.nameSettings, show.nameClick). Everything visual is refreshed:
 // selectedMol, mode2D, mainChainMode, etherNamingMode, nameAnalysisMode
 // (clicked name-box highlight), selectedRule, style2D (atom colors, color
 // mode, zigzag), styleName (box/cross/etherNaming/panelOpen), styleHighlight,
@@ -2247,11 +2602,17 @@ function fScenarioUpdateStep(scenId, idx) {
   var newKind = !fresh.selectedMol ? "menu" : "mol";
   var oldSub = Array.isArray(old.menuSubset) ? old.menuSubset.slice().sort().join("|") : "";
   var newSub = Array.isArray(fresh.menuSubset) ? fresh.menuSubset.slice().sort().join("|") : "";
-  // Preserve the authored layer: step identity, heading + text, per-step
-  // chrome permissions. These are edited directly in the drawer at any time.
+  // Preserve the authored layer: step identity, heading + text (+ text
+  // size), per-step chrome permissions. These are edited directly in the
+  // drawer at any time.
   fresh.n = old.n;
   fresh.title = old.title;
   fresh.note = old.note;
+  fresh.styleText = {
+    fontSizePx: fScenarioValidFontSizePx(old.styleText ? old.styleText.fontSizePx : null),
+    textWidthPx: fScenarioValidTextWidthPx(old.styleText ? old.styleText.textWidthPx : null),
+    columns: fScenarioValidColumns(old.styleText ? old.styleText.columns : null)
+  };
   fresh.show = fresh.show || {};
   var oldShow = old.show || {};
   fresh.show.controls = oldShow.controls
