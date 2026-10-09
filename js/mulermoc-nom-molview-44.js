@@ -350,6 +350,20 @@ function fToggleViewer3D() {
   } else {
     if (btn) btn.classList.add("active");
     $("#nomeclature3D").slideDown(200, function () {
+      // Re-sync the applet viewport first: after display:none the cached
+      // size stays tiny and refresh/center/zoom/load all render into it
+      // (tiny molecule, upper-left; only write IMAGE looks right).
+      try {
+        var _ap = document.getElementById("nomeclature3D");
+        var _w = (_ap && _ap.clientWidth) || 480;
+        var _h = (_ap && _ap.clientHeight) || 240;
+        if (typeof Jmol !== "undefined" && Jmol.resizeApplet &&
+            typeof jmolAppletNomeclature !== "undefined") {
+          Jmol.resizeApplet(jmolAppletNomeclature, { width: _w, height: _h });
+        }
+      } catch (eSize) {
+        /* measure best-effort */
+      }
       // One-shot reload after a no-3D presentation exit (flag set by
       // fScenarioExitPresent; the exit zapped the applet). Ordinary toggles
       // keep no model change and stay refresh-only/instant.
@@ -373,6 +387,16 @@ function fToggleViewer3D() {
         } catch (eLoad) {
           /* fall through to refresh */
         }
+        // Delayed refresh: the SDF load above is async, so an immediate
+        // refresh fires before the model lands. Re-render once settled.
+        setTimeout(function () {
+          try {
+            Jmol.script(jmolAppletNomeclature, "refresh");
+          } catch (eLate) {
+            /* 3D unavailable */
+          }
+        }, 600);
+        return;
       }
       Jmol.script(jmolAppletNomeclature, "refresh");
     });

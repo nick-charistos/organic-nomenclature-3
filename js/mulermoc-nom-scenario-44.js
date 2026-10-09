@@ -1324,6 +1324,14 @@ function fScenarioRestoreChrome(viewers) {
     }
     if (show3D && typeof Jmol !== "undefined") {
       try {
+        // Same stuck-viewport guard as fToggleViewer3D: re-sync the applet
+        // to the now-visible pane before re-rendering.
+        var _ap3 = document.getElementById("nomeclature3D");
+        var _w3 = (_ap3 && _ap3.clientWidth) || 480;
+        var _h3 = (_ap3 && _ap3.clientHeight) || 240;
+        if (Jmol.resizeApplet && typeof jmolAppletNomeclature !== "undefined") {
+          Jmol.resizeApplet(jmolAppletNomeclature, { width: _w3, height: _h3 });
+        }
         Jmol.script(jmolAppletNomeclature, "refresh");
       } catch (e3) {
         /* 3D unavailable */
