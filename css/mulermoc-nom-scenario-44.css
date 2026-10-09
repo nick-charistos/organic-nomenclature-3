@@ -169,14 +169,14 @@
 
 .scenarioPanel {
    background: var(--lightGrayNick);
-   border: 3px solid var(--lightGrayNick);
+   border: 2px solid var(--lightGrayNick);
    border-radius: 4px;
    overflow: hidden;
    flex: 0 0 auto;
 }
 
 .scenarioPanel.active {
-   border-color: var(--lightEarth);
+   border-color: var(--baseColor);
 
 }
 
@@ -335,12 +335,13 @@
 .scenarioDrawer.open {
    max-height: 50vh;
    overflow: auto;
-   padding: 12px;
+   /* padding: 12px; */
    transform: none;
    opacity: 1;
    visibility: visible;
    pointer-events: auto;
    transition: max-height .25s ease, transform .25s ease .06s, opacity .2s ease .06s;
+   background: var(--veryLightBlue);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -355,15 +356,15 @@
    display: flex;
    gap: 5px;
    align-items: flex-end;
-   margin: 4px 0;
+   margin: 10px 0;
    flex-wrap: wrap;
+   background: var(--lightGrayNick);
+   padding: 10px 10px;
+   border-radius: 4px;
+   border: 1px solid var(--lightBlue);
 }
 
-.scenarioDrawer .srow:not(:first-child) {
-   border-top: 2px solid var(--lightBlue);
-   margin-top: 10px;
-   padding-top: 10px;
-}
+
 
 .scenarioDrawer .srow input[type=text] {
    flex: 1;
@@ -523,13 +524,19 @@
 }
 
 .scStepsTitle {
-	color: var(--lightBlue);
+	color: var(--baseColor);
 	font-weight: bold;
 	font-size: 1rem;
 	border-bottom: 2px dotted var(--lightBlue);
 	padding-bottom: 5px;
 	margin-bottom: 20px;
 }
+
+.scenarioDrawer .scSteps {
+   background: var(--veryLightBlue);
+}
+
+
 
 #scStepText {
     font-size: 1.125rem;
