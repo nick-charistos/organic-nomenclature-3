@@ -64,6 +64,17 @@ js/*___.js
 css/jsme-nick-[0-9].css
 css/jsme-nick-2[0-9].css
 
+# Not needed to run the project
+RDKit/
+imgs/*
+!imgs/image-svgrepo-Industrial-Sharp.svg
+docs/*.pdf
+mols/branched/
+
+# Stale docs
+docs/RESEARCH-PLAN.md
+docs/flowchart-mermaid.md
+
 # Analysis / dev notes
 Code-Analysis/
 
