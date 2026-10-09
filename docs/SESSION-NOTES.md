@@ -540,3 +540,21 @@ new last row (6+ steps); empty-card Steps/Play hover stay dark, Export
 stays light, no text change; drag a middle step up/down → numbering,
 count, scroll and focus follow; exit a no-3D step → authoring stays
 no-3D, re-show 3D reloads once then toggles instant.
+
+## v44 working copy — methane startup patch 2026-10-09 (uncommitted)
+
+* No-3D external-scenario bug: cold boot with no molecule ever loaded +
+  2D-only first step (`?scenario=…&present=1`) corrupted JSmol for the rest
+  of the session (applet never established a viewport before its first
+  load-then-`zap`+hide). Reverted two ineffective working-copy attempts
+  (scenario unhide-before-load + `resizeApplet` passes; scenario-scoped
+  methane warm-up) — committed `2d6c2a4` attempt kept as-is.
+* Adopted workaround: methane loads on page load again (`jsmeOnLoad` in
+  `js/mulermoc-nom-molview-44.js`, direct `fSelectMol()` + best-effort menu
+  marking instead of the old synthesized clicks). Landing page opens with
+  methane selected.
+
+Browser checklist for owner: cold load (empty profile) shows methane;
+`?scenario=scenarios/ethene.scenario.json&present=1` from empty state →
+step 1 2D-only → Next to 3D step renders intact; plain-load regression
+(methane selected, both viewers live).

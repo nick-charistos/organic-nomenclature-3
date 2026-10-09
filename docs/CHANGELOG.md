@@ -30,6 +30,7 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 - Add scrolls to the new step: after Save, the drawer scroller pins to the last `.srow` (rAF + 280ms delayed pass for the `.open` transition; scroll-only, no focus steal).
 - Disabled button freeze (`css/mulermoc-nom-scenario-44.css`): all `button:disabled(+:hover)` keep base text (no white-on-hover); Steps/Play disabled stay dark `baseColor` with white text (shared appearance, no hover change); empty-panel Export disabled stays light (`bgColor`, dimmed). Fixes the disabled Play flashing `guiColor`/`bgColor` via `.scPresent.scIconBtn:hover`.
 - Exit-viewer alignment: `fScenarioRestoreChrome(viewers)` + exit keeps the exit step's stored viewers (a no-3D exit returns to a no-3D authoring view); one-shot 3D reload (`MuLERMoCScenario.reload3DOnce`) after a no-3D exit zaps the applet — ordinary toggles stay refresh-only.
+- Methane on startup (no-3D external-scenario bug patch): `jsmeOnLoad` (`js/mulermoc-nom-molview-44.js`) loads methane on page load again (direct `fSelectMol()`, menu marking best-effort). A cold boot with no molecule ever loaded left the JSmol applet without a valid viewport, so an external scenario with a 2D-only first step (`?scenario=…&present=1`) corrupted all later 3D; one visible startup load primes it. Landing page opens with methane selected.
 
 ## [v44] — 2026-10-07 (index →44; v43 frozen at tag `v43`)
 

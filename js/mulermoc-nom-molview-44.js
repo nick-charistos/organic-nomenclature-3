@@ -224,18 +224,33 @@ function jsmeOnLoad() {
 
   // carbonHydrogens = Array(jsmeNomeclatureAppletORGNL.totalNumberOfAtoms())
 
-  // Select methane on startup and open its group.
-  // let $startupMol = $("#methane");
-  // if (!$startupMol.length) {
-  //   $startupMol = $(".menuLi").first();
-  // }
-  // if ($startupMol.length) {
-  //   $startupMol
-  //     .closest(".exmplContainer")
-  //     .prev(".crossMenuLi")
-  //     .trigger("click");
-  //   $startupMol.trigger("click");
-  // }
+  // Methane on startup (JSmol viewport workaround): a cold boot with no
+  // molecule ever loaded leaves the applet without a valid viewport, so a
+  // 2D-only scenario step 1 (load-then-zap+hide as its first lifecycle)
+  // corrupts all later 3D. One visible startup load primes it. Direct
+  // fSelectMol (not synthesized clicks: teaching-layer handlers may not be
+  // bound yet when JSME fires jsmeOnLoad); menu marking is best-effort.
+  try {
+    if (typeof nameExamples !== "undefined" && nameExamples.methane) {
+      selectedMol = "methane";
+      fSelectMol();
+      try {
+        var $startupRow = $("#methane");
+        if ($startupRow && $startupRow.length) {
+          $(".menuLi").removeClass("selectedLi");
+          $startupRow.addClass("selectedLi");
+          var $startupHdr = $startupRow.closest(".exmplContainer").prev(".crossMenuLi");
+          if ($startupHdr && $startupHdr.length && !$startupHdr.hasClass("open")) {
+            $startupHdr.trigger("click");
+          }
+        }
+      } catch (eMenu) {
+        /* viewers primed; menu marking best-effort */
+      }
+    }
+  } catch (e) {
+    /* startup selection best-effort */
+  }
 }
 
 function fClassifyAllMolecules() {
