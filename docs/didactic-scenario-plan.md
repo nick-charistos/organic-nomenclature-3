@@ -228,9 +228,11 @@ Visibility rules:
   and empty (a sole filled card keeps delete-then-autocreate).
 * Scenario cards (`.scenarioPanel[data-scenario-id]`, explicit active
   card): per-card title rename, step count, delete; button panel
-  (`Save step`, `Steps`, `Export`, `Play ▶` — no Import); in-flow
+  (`Add step`, `Steps`, `Export`, `Play ▶` — no Import); in-flow
   drawer (down/up via `.open`, accordion: one open at a time,
-  drawer follows the active card — panel click or Save opens it).
+  drawer follows the active card — Steps button or bar-gap click
+  toggles it; Add opens-only, Export/Play leave the panel untouched;
+  Add also pins the drawer to the new last row).
 * Step rows: number + type badge (`molecule`/`menu`, key in tooltip)
   stacked in `.scStepNumberWrap`, step title (`Τίτλος βήματος` label
   above the field, defaults to the live Greek IUPAC name at Save —
@@ -261,7 +263,8 @@ Visibility rules:
   auto-renumber.
    Headers lead with a positional counter (`S1`, `S2`, …); empty
    scenarios (0 steps) flag `.is-empty` on card, count, and Steps button,
-   disable Steps/Export/Play (`disabled`, dimmed 0.7, no hover — Save step
+   disable Steps/Export/Play (`disabled`, dimmed, no hover or text change —
+   Steps/Play dark `baseColor`, Export light `bgColor`; Add step
    stays live, Delete stays live except on the last remaining empty card,
    first save re-enables), and never drop the drawer
    (the clicked card still activates, other drawers still collapse).

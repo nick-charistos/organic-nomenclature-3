@@ -512,3 +512,31 @@ number pill; settings-on step → master lit iff visibility checked, click
 toggles eyes live; narrate button highlights when on; hide the highlighted
 box → 2D clears instantly; Present `scenarios/ethene.scenario.json`
 via `?scenario=scenarios/ethene.scenario.json&present=1`.
+
+## v44 working copy — follow-ups 2026-10-09 (uncommitted)
+
+* Drawer toggle: Steps button toggles via `fScenarioToggleDrawer`
+  (open → close + drop `.active`, else open-only accordion); button-bar
+  gaps toggle too (action buttons excluded: Add opens-only, Export/Play
+  inert). `e.stopPropagation` keeps the generic panel handler from
+  force-reopening.
+* Add scrolls to the new step: drawer pins to the last `.srow`
+  (`scrollTop = scrollHeight`, rAF + 280ms pass for the `.open`
+  transition; scroll-only, no focus steal).
+* Disabled button freeze: generic `button:disabled(+:hover)` keeps base
+  text; Steps/Play disabled share dark `baseColor`/white (no hover
+  change); empty-panel Export disabled stays light `bgColor`, dimmed.
+* Step drag reorder (`⠿` grip, HTML5 DnD; Up/Down fallback; scroll
+  restore + grip focus); exit-viewer alignment (`fScenarioRestoreChrome(viewers)`
+  + one-shot 3D reload after no-3D exits).
+* Cleanup (staged): `.gitignore` + remove `RDKit/`, `imgs/*` (icons now
+  inlined), `docs/*.pdf`, `mols/branched/`, `RESEARCH-PLAN.md`,
+  `flowchart-mermaid.md`; `README.md` link + `README.pdf` dropped.
+  No live references (verified via search).
+
+Browser checklist for owner: bar-gap click toggles open/shut; Steps
+toggles with `.active` sync; Add from open + closed drawer ends on the
+new last row (6+ steps); empty-card Steps/Play hover stay dark, Export
+stays light, no text change; drag a middle step up/down → numbering,
+count, scroll and focus follow; exit a no-3D step → authoring stays
+no-3D, re-show 3D reloads once then toggles instant.

@@ -1271,12 +1271,17 @@ function fScenarioSyncPresentClass() {
 // fScenarioHide and the `hide` class set by the app's own viewer toggles
 // (fToggleViewer2D/3D add it to the control bars; `.hide` is
 // `display:none !important`, so inline restore alone cannot bring those bars
-// back). Re-activates the viewer buttons to match the forced both-visible
-// state, so the next snapshot capture reads them truthfully.
-function fScenarioRestoreChrome() {
+// back). Settings chrome (save buttons, menu, viewer buttons, viewer
+// settings, naming container) always comes back so all settings buttons are
+// available in authoring. Viewer panes + their bars + view buttons instead
+// follow the optional `viewers` arg (exit step's show.viewers; null/missing
+// defaults both-visible), mirroring fToggleViewer2D/3D scope — so exiting a
+// no-3D step leaves 3D hidden with view3DBtn inactive. Capture reads the
+// buttons truthfully via fScenarioViewerOn.
+function fScenarioRestoreChrome(viewers) {
   var ids = [
-    "radio2DMode", "controls3D", "save2DBtn", "save3DBtn",
-    "jsmeNomeclatureDIV", "jsmeNomeclatureSVG", "nomeclature3D",
+    "save2DBtn", "save3DBtn",
+    "jsmeNomeclatureDIV",
     "menuCol", "viewerVisBtns", "viewerSettingsBtnDiv",
     "nameAnalysisContainer",
   ];
@@ -1290,14 +1295,43 @@ function fScenarioRestoreChrome() {
       /* no DOM */
     }
   });
-  ["view2DBtn", "view3DBtn"].forEach(function (id) {
-    try {
-      var btn = document.getElementById(id);
-      if (btn && btn.classList) btn.classList.add("active");
-    } catch (e) {
-      /* no DOM */
+  var show2D = !viewers || viewers["2D"] !== false;
+  var show3D = !viewers || viewers["3D"] !== false;
+  // 2D pane + bar (mirrors fToggleViewer2D: SVG + radio bar; DIV wrapper stays).
+  try {
+    var b2 = document.getElementById("view2DBtn");
+    if (b2 && b2.classList) b2.classList.toggle("active", !!show2D);
+    var svg = document.getElementById("jsmeNomeclatureSVG");
+    if (svg) svg.style.display = show2D ? "" : "none";
+    var r2 = document.getElementById("radio2DMode");
+    if (r2) {
+      r2.style.display = "";
+      if (r2.classList) r2.classList.toggle("hide", !show2D);
     }
-  });
+  } catch (e) {
+    /* no 2D DOM */
+  }
+  // 3D pane + bar (mirrors fToggleViewer3D: applet + controls3D).
+  try {
+    var b3 = document.getElementById("view3DBtn");
+    if (b3 && b3.classList) b3.classList.toggle("active", !!show3D);
+    var ap = document.getElementById("nomeclature3D");
+    if (ap) ap.style.display = show3D ? "" : "none";
+    var c3 = document.getElementById("controls3D");
+    if (c3) {
+      c3.style.display = "";
+      if (c3.classList) c3.classList.toggle("hide", !show3D);
+    }
+    if (show3D && typeof Jmol !== "undefined") {
+      try {
+        Jmol.script(jmolAppletNomeclature, "refresh");
+      } catch (e3) {
+        /* 3D unavailable */
+      }
+    }
+  } catch (e4) {
+    /* no 3D DOM */
+  }
 }
 
 function showTextOn(step) {
@@ -1734,11 +1768,27 @@ function fScenarioExitPresent() {
       s = st;
     }
     s.show = s.show || {};
-    s.show.viewers = { "2D": true, "3D": true };
+    // Exit aligns with the exit step: keep its stored viewers (a no-3D exit
+    // step returns to a no-3D authoring view). Missing/legacy → both visible.
+    var _vw = (st.show && st.show.viewers) || null;
+    s.show.viewers = {
+      "2D": !_vw || _vw["2D"] !== false,
+      "3D": !_vw || _vw["3D"] !== false,
+    };
     fScenarioApply(s);
-    // exit restores full chrome (bars beaten by `hide` class or inline
-    // display all come back; viewer buttons re-activated) ...
-    fScenarioRestoreChrome();
+    // exit restores settings chrome (all settings buttons available) while
+    // viewer panes + bars + view buttons follow the exit step ...
+    fScenarioRestoreChrome(s.show.viewers);
+    // One-shot 3D reload: a no-3D exit zaps the applet (via fScenarioChrome),
+    // so the next 3D re-display must reload the exit molecule once. Toggles
+    // otherwise stay refresh-only (see fToggleViewer3D).
+    try {
+      MuLERMoCScenario.reload3DOnce =
+        (s.show.viewers["3D"] === false && !!s.selectedMol &&
+         !!((typeof nameExamples !== "undefined" && nameExamples[s.selectedMol])));
+    } catch (eFlag) {
+      /* flag best-effort */
+    }
     // ... the pristine author menu (present replaced it with the flat
     // subset list, so rebuild; the render hook repaints pick UI) ...
     fScenarioRestoreAuthorMenu();
@@ -1815,6 +1865,8 @@ function fScenarioBuildUi() {
   }
   // Drawer follows the card: open this panel's drawer (accordion —
   // all others shut), mark its Steps button. Safe if the panel is gone.
+  // Toggle helper below closes an open drawer (+ drops Steps .active),
+  // otherwise delegates to this open-only path (accordion + empty guard).
   function fScenarioOpenDrawer(id) {
     var panel = id && fScenarioPanelFor(id);
     var all = document.querySelectorAll(".scenarioDrawer");
@@ -1832,6 +1884,19 @@ function fScenarioBuildUi() {
     if (d) d.classList.add("open");
     if (lb) lb.classList.add("active");
   }
+  // Toggle helper: open drawer closes it (+ drops Steps .active),
+  // otherwise delegates to the open-only path above.
+  function fScenarioToggleDrawer(id) {
+    var panel = id && fScenarioPanelFor(id);
+    var d = panel && panel.querySelector(".scenarioDrawer");
+    if (d && d.classList.contains("open")) {
+      d.classList.remove("open");
+      var lb = panel.querySelector(".scList");
+      if (lb && lb.classList) lb.classList.remove("active");
+    } else {
+      fScenarioOpenDrawer(id);
+    }
+  }
   if (!window._scMultiHook) {
     window._scMultiHook = true;
     $(document).on("click", ".scenarioPanel .scSave", function () {
@@ -1844,22 +1909,43 @@ function fScenarioBuildUi() {
       fScenarioSyncLegacy();
       fScenarioRenderList(act.id);
       fScenarioOpenDrawer(act.id);
+      // New step visible: pin the drawer scroller to the last row.
+      // Two passes — rAF for the fresh layout + delayed pass once the
+      // .25s .open transition has released max-height (else scroll clamps).
+      try {
+        var _panel = act && fScenarioPanelFor(act.id);
+        var _drawer = _panel && _panel.querySelector(".scenarioDrawer");
+        var _box = _panel && _panel.querySelector(".scSteps");
+        var _rows = _box && _box.querySelectorAll(".srow");
+        if (_drawer && _rows && _rows.length) {
+          var _scrollLast = function () {
+            try { _drawer.scrollTop = _drawer.scrollHeight; } catch (e) { /* best-effort */ }
+          };
+          if (window.requestAnimationFrame) window.requestAnimationFrame(_scrollLast);
+          else _scrollLast();
+          setTimeout(_scrollLast, 280);
+        }
+      } catch (e) { /* scroll best-effort */ }
       var _note = MuLERMoCScenario.lastCaptureNote;
       MuLERMoCScenario.lastCaptureNote = null;
       fScenarioToast(!st.selectedMol ? "Saved menu-only step " + st.n + " (no molecule selected)." : "Saved step " + st.n + "." + (_note ? " " + _note : ""));
     });
-    $(document).on("click", ".scenarioPanel .scList", function () {
+    $(document).on("click", ".scenarioPanel .scList", function (e) {
       var id = fScenarioPanelIdFromEl(this);
       if (id) fScenarioSetActive(id);
-      var panel = id && fScenarioPanelFor(id);
-      var d = panel && panel.querySelector(".scenarioDrawer");
-      if (d && d.classList.contains("open")) {
-        // Toggle-off: shut everything.
-        d.classList.remove("open");
-        if (this.classList) this.classList.remove("active");
-      } else {
-        fScenarioOpenDrawer(id);
-      }
+      fScenarioToggleDrawer(id);
+      if (e && e.stopPropagation) e.stopPropagation();
+    });
+    // Button-bar gaps toggle the drawer; action buttons keep their own
+    // clicks (Add opens-only, Export/Play inert — see their handlers).
+    // The closest() guard avoids double-toggling Steps clicks bubbling up.
+    $(document).on("click", ".scenarioPanel .scenarioButtonPanel", function (e) {
+      if (e && e.target && e.target.closest &&
+          e.target.closest("button,input,textarea,select,label,a")) return;
+      var id = fScenarioPanelIdFromEl(this);
+      if (id) fScenarioSetActive(id);
+      fScenarioToggleDrawer(id);
+      if (e && e.stopPropagation) e.stopPropagation();
     });
     $(document).on("click", ".scenarioPanel .scExport", function () {
       var id = fScenarioPanelIdFromEl(this);
@@ -2063,7 +2149,7 @@ function fScenarioBuildPanels() {
         "<button class='scDelete' title='Delete scenario'>✕</button>" +
       "</div>" +
       "<div class='scenarioButtonPanel'>" +
-        "<button class='scSave' title='Save current view as step'>Save step</button>" +
+        "<button class='scSave' title='Save current view as step'>Add step</button>" +
         "<button class='scList' title='Show/hide step list'>Steps</button>" +
         "<button class='scExport' title='Download scenario JSON'>Export</button>" +
         "<button class='scPresent' title='Open presentation at step 1'>Play ▶</button>" +
@@ -2073,7 +2159,7 @@ function fScenarioBuildPanels() {
       "</div>";
     var ti = panel.querySelector(".scenarioTitle");
     if (ti) ti.value = scen.title || "";
-    fScenarioPaintIconTextBtn(panel.querySelector(".scSave"), "addTask", "Save step");
+    fScenarioPaintIconTextBtn(panel.querySelector(".scSave"), "addTask", "Add step");
     fScenarioPaintIconTextBtn(panel.querySelector(".scExport"), "downloadList", "Export");
     fScenarioPaintIconTextBtn(panel.querySelector(".scPresent"), "screen", "Play");
     host.appendChild(panel);
@@ -2161,7 +2247,7 @@ function fScenarioRenderOne(scen) {
     if (listBtn.classList) listBtn.classList.toggle("is-empty", _empty);
     listBtn.disabled = _empty;
   }
-  // Empty scenario (0 steps): gate every button except Save step + Delete.
+  // Empty scenario (0 steps): gate every button except Add step + Delete.
   // Steps/Export/Play are meaningless with no steps; Save stays live so the
   // author can add the first step. Delete stays live except on the last
   // remaining empty card (locked by fScenarioSyncNewDeleteUi — one empty
@@ -2177,11 +2263,31 @@ function fScenarioRenderOne(scen) {
   scen.steps.forEach(function (st, i) {
     var row = document.createElement("div");
     row.className = "srow";
+    row.setAttribute("data-idx", String(i));
+    row.setAttribute("draggable", "false");
+    // Dedicated drag grip (span, not button: keeps the
+    // button:not(.scNoteBtn) Go/Update/Dupe/Up/Down/Delete index stable).
+    var grip = document.createElement("span");
+    grip.className = "scDragHandle";
+    grip.textContent = "⠿";
+    grip.title = "Drag to reorder step " + st.n;
+    grip.setAttribute("aria-label", "Drag to reorder step " + st.n);
+    grip.setAttribute("tabindex", "0");
     row.innerHTML =
       "<span id='scStep" + i + "' class='scStepNumberWrap'>" +
       "<span class='stepNumber'>" + st.n + "</span></span><span class='scStepTitleWrap'><span class='scStepTitleLabel'>Τίτλος βήματος</span><input type='text' class='scStepTitle' placeholder='Τίτλος βήματος' value=''></span>" +
       "<button title='Jump'>Go</button><button class='scUpdate' title='Update this step from current view'>Update</button><button class='scDupe' title='Duplicate this step'>⧉</button><button title='Up'>↑</button><button title='Down'>↓</button>" +
       "<button title='Delete'>✕</button>";
+    // Grip first so it leads the row; mousedown on it arms HTML5 drag
+    // (row stays non-draggable otherwise so inputs/textareas keep working).
+    if (row.firstChild) row.insertBefore(grip, row.firstChild);
+    else row.appendChild(grip);
+    grip.addEventListener("mousedown", function () {
+      row.setAttribute("draggable", "true");
+    });
+    grip.addEventListener("mouseup", function () {
+      if (!row.classList.contains("dragging")) row.setAttribute("draggable", "false");
+    });
     // Icon-only step actions (title tooltip + aria-label keep the meaning).
     (function () {
       var ab = row.querySelectorAll("button");
@@ -2513,10 +2619,131 @@ function fScenarioRenderOne(scen) {
         fScenarioRenumber(scenId);
       };
     })(scen.id, i);
+    row.addEventListener("dragstart", function (ev) { fScenarioStepDragStart(ev, scen.id); });
+    row.addEventListener("dragover", function (ev) { fScenarioStepDragOver(ev); });
+    row.addEventListener("dragleave", function () {
+      row.classList.remove("drag-over-before", "drag-over-after");
+    });
+    row.addEventListener("drop", function (ev) { fScenarioStepDrop(ev, scen.id); });
+    row.addEventListener("dragend", function () { fScenarioStepDragEnd(scen.id); });
     box.appendChild(row);
   });
   // empty-cap states (scNew + per-panel Delete) follow every render
   fScenarioSyncNewDeleteUi();
+}
+
+// ── per-step drag reorder (authoring, desktop HTML5 DnD) ───────────────────
+// Dedicated ⠿ grip arms the row drag (see grip mousedown above); Up/Down
+// buttons remain the touch/keyboard fallback. Drop reuses the splice +
+// fScenarioRenumber path so numbering/count/legacy stay single-sourced.
+function fScenarioStepDragStart(ev, scenId) {
+  var row = ev && ev.currentTarget;
+  // Only allow drags initiated from the grip handle.
+  if (!row || (ev.target && ev.target.closest && !ev.target.closest(".scDragHandle") &&
+      ev.target !== row)) {
+    if (ev.preventDefault) ev.preventDefault();
+    return;
+  }
+  var idx = row.getAttribute("data-idx");
+  try {
+    if (ev.dataTransfer) {
+      ev.dataTransfer.setData("text/plain", String(idx));
+      ev.dataTransfer.effectAllowed = "move";
+    }
+  } catch (e) { /* Firefox requires setData; ignore failures */ }
+  window._scDragFrom = { scenId: scenId, idx: parseInt(idx, 10) };
+  if (row.classList) row.classList.add("dragging");
+}
+
+function fScenarioStepDragOver(ev) {
+  if (ev.preventDefault) ev.preventDefault();
+  try {
+    if (ev.dataTransfer) ev.dataTransfer.dropEffect = "move";
+  } catch (e) { /* noop */ }
+  var row = ev && ev.currentTarget;
+  if (!row || !row.parentNode) return false;
+  var kids = row.parentNode.querySelectorAll(".srow");
+  for (var k = 0; k < kids.length; k++) {
+    if (kids[k] !== row && kids[k].classList) {
+      kids[k].classList.remove("drag-over-before", "drag-over-after");
+    }
+  }
+  var rect = null;
+  try {
+    rect = row.getBoundingClientRect();
+  } catch (e) { rect = null; }
+  var after = false;
+  if (rect && ev.clientY) after = (ev.clientY - rect.top) > (rect.height / 2);
+  if (row.classList) {
+    row.classList.toggle("drag-over-before", !after);
+    row.classList.toggle("drag-over-after", after);
+  }
+  return false;
+}
+
+function fScenarioStepDrop(ev, scenId) {
+  if (ev.preventDefault) ev.preventDefault();
+  if (ev.stopPropagation) ev.stopPropagation();
+  var from = window._scDragFrom && window._scDragFrom.scenId === scenId
+    ? window._scDragFrom.idx : NaN;
+  if (isNaN(from)) {
+    try {
+      from = parseInt(ev.dataTransfer && ev.dataTransfer.getData("text/plain"), 10);
+    } catch (e) { from = NaN; }
+  }
+  var row = ev && ev.currentTarget;
+  var toRow = row ? parseInt(row.getAttribute("data-idx"), 10) : NaN;
+  fScenarioStepDragEnd(scenId, true);
+  if (isNaN(from) || isNaN(toRow)) return false;
+  var after = row.classList && row.classList.contains("drag-over-after");
+  // Fallback when classes were cleared: use pointer midpoint.
+  if (!row.classList.contains("drag-over-before") && !after) {
+    try {
+      var r = row.getBoundingClientRect();
+      after = ev.clientY && (ev.clientY - r.top) > (r.height / 2);
+    } catch (e) { after = false; }
+  }
+  if (from === toRow) return false;
+  var s = (scenId && fScenarioGet(scenId)) || fScenarioActive();
+  if (!s || !s.steps || from < 0 || from >= s.steps.length) return false;
+  var to = toRow + (after ? 1 : 0);
+  // Remember scroll + focus: Renumber does a full .scSteps rebuild.
+  var panel = scenId && fScenarioPanelFor(scenId);
+  var drawer = panel && panel.querySelector(".scenarioDrawer");
+  var scTop = drawer ? drawer.scrollTop : null;
+  var moved = s.steps.splice(from, 1)[0];
+  if (from < to) to--;
+  if (to < 0) to = 0;
+  if (to > s.steps.length) to = s.steps.length;
+  s.steps.splice(to, 0, moved);
+  fScenarioRenumber(scenId);
+  // Restore scroll, focus the moved grip, announce.
+  try {
+    var p2 = scenId && fScenarioPanelFor(scenId);
+    var d2 = p2 && p2.querySelector(".scenarioDrawer");
+    if (d2 && scTop !== null) d2.scrollTop = scTop;
+    var box2 = p2 && p2.querySelector(".scSteps");
+    var newRow = box2 && box2.querySelectorAll(".srow")[to];
+    var g2 = newRow && newRow.querySelector(".scDragHandle");
+    if (g2 && g2.focus) g2.focus();
+  } catch (e) { /* focus/scroll best-effort */ }
+  if (typeof fScenarioToast === "function") {
+    fScenarioToast("Step moved to position " + (to + 1) + ".");
+  }
+  window._scDragFrom = null;
+  return false;
+}
+
+function fScenarioStepDragEnd(scenId, keepData) {
+  var rows = document.querySelectorAll(
+    (scenId ? ".scenarioPanel[data-scenario-id='" + scenId + "'] " : "") + ".srow");
+  for (var i = 0; i < rows.length; i++) {
+    if (rows[i].classList) {
+      rows[i].classList.remove("dragging", "drag-over-before", "drag-over-after");
+    }
+    rows[i].setAttribute("draggable", "false");
+  }
+  if (!keepData) window._scDragFrom = null;
 }
 
 function fScenarioRenderList(id) {

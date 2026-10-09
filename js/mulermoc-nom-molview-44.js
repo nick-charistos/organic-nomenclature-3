@@ -350,6 +350,30 @@ function fToggleViewer3D() {
   } else {
     if (btn) btn.classList.add("active");
     $("#nomeclature3D").slideDown(200, function () {
+      // One-shot reload after a no-3D presentation exit (flag set by
+      // fScenarioExitPresent; the exit zapped the applet). Ordinary toggles
+      // keep no model change and stay refresh-only/instant.
+      var once = false;
+      try {
+        once = (typeof MuLERMoCScenario !== "undefined" &&
+          MuLERMoCScenario.reload3DOnce === true);
+        if (typeof MuLERMoCScenario !== "undefined") MuLERMoCScenario.reload3DOnce = false;
+      } catch (eFlag) {
+        once = false;
+      }
+      if (once) {
+        try {
+          if (typeof selectedMol !== "undefined" && selectedMol &&
+              typeof nameExamples !== "undefined" && nameExamples[selectedMol]) {
+            fLoadMol3D();
+            if (typeof showAtomSymbols3D === "function") showAtomSymbols3D();
+            if (typeof showHydrogens3D === "function") showHydrogens3D();
+            if (typeof rotate3D === "function") rotate3D();
+          }
+        } catch (eLoad) {
+          /* fall through to refresh */
+        }
+      }
       Jmol.script(jmolAppletNomeclature, "refresh");
     });
     $("#controls3D").removeClass("hide");
@@ -588,6 +612,11 @@ function fDeselectMol() {
 
   myMol3D = null;
   Jmol.script(jmolAppletNomeclature, "zap");
+  try {
+    if (typeof MuLERMoCScenario !== "undefined") MuLERMoCScenario.reload3DOnce = false;
+  } catch (eFlag) {
+    /* flag best-effort */
+  }
 
   myMol2D = null;
   if (jsmeNomeclatureApplet) jsmeNomeclatureApplet.reset();
@@ -2508,6 +2537,13 @@ function fLoadMol3D() {
       "script spt/init-3.spt;",
   );
   fSetMolVis3D();
+  // A fresh load satisfies any pending one-shot exit reload (e.g. molecule
+  // picked while 3D hidden after a no-3D exit: already loaded, reopen is instant).
+  try {
+    if (typeof MuLERMoCScenario !== "undefined") MuLERMoCScenario.reload3DOnce = false;
+  } catch (eFlag) {
+    /* flag best-effort */
+  }
 }
 
 // ── fFetchAndParse3D ──────────────────────────────────────────────────────

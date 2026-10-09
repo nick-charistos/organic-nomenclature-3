@@ -22,7 +22,7 @@
    flex-wrap: nowrap;
    background: var(--lightGrayNick);
    border: 2px solid #fff;
-     border-right: 0;
+   border-right: 0;
    /* border-top-left-radius: 4px; */
    border-bottom-left-radius: 4px;
    /* padding: 10px 10px; */
@@ -60,11 +60,11 @@
    transition: transform .25s ease, visibility 0s linear .25s;
 }
 
-#scenarioPlayBar  #scExit {
+#scenarioPlayBar #scExit {
    position: absolute;
    right: 10px;
-   
-   
+
+
 }
 
 
@@ -88,7 +88,7 @@
    position: relative;
 }
 
-#scenarioPlayBarTitle > span {
+#scenarioPlayBarTitle>span {
    flex: 1;
 }
 
@@ -109,7 +109,7 @@
    cursor: pointer;
    flex: none;
    position: absolute;
-  right: 20px;
+   right: 20px;
 }
 
 #scCloseBar:hover {
@@ -188,20 +188,37 @@
 .scenarioPanel .scenarioHeader .scCount.is-empty {
    opacity: .5;
 }
-.scenarioPanel.is-empty .scScenarioNo,.scenarioPanel.is-empty .scenarioTitle {
+
+.scenarioPanel.is-empty .scScenarioNo,
+.scenarioPanel.is-empty .scenarioTitle {
    opacity: .6;
-   
+
 }
 
-.scenarioPanel .scList.is-empty {
-   /* opacity: .5; */
-}
+
 
 /* Empty scenario: every button except Save step + Delete is disabled
-   (see fScenarioRenderOne); dim the gated ones. Save + Delete stay live. */
-.scenarioPanel.is-empty .scList:disabled,
-.scenarioPanel.is-empty .scExport:disabled,
-.scenarioPanel.is-empty .scPresent:disabled {
+   (see fScenarioRenderOne); dim the gated ones. Save + Delete stay live.
+   Dark block is scList/scPresent only (see unified rule below); scExport
+   keeps the light chrome via the explicit rule right after.
+   ID prefix keeps this above the generic button:disabled guard below. */
+#scenarioAuthorBar .scenarioPanel.is-empty .scList:disabled,
+#scenarioAuthorBar .scenarioPanel.is-empty .scList:disabled:hover,
+#scenarioAuthorBar .scenarioPanel.is-empty .scPresent:disabled,
+#scenarioAuthorBar .scenarioPanel.is-empty .scPresent:disabled:hover {
+   background: var(--baseColor);
+   border-color: var(--baseColor);
+   color: #fff;
+   opacity: .5;
+   cursor: not-allowed;
+}
+
+/* Empty-panel Export stays light (bgColor), dimmed, no hover change. */
+#scenarioAuthorBar .scenarioPanel.is-empty .scExport:disabled,
+#scenarioAuthorBar .scenarioPanel.is-empty .scExport:disabled:hover {
+   background: var(--bgColor);
+   border-color: var(--darkEarth);
+   color: var(--baseColor);
    opacity: .5;
    cursor: not-allowed;
 }
@@ -237,20 +254,20 @@
 }
 
 .scenarioPanel .scenarioHeader .scScenarioNo {
-	font-size: 1rem;
-	font-weight: bold;
-	background: var(--baseColor);
-	color: #fff;
-	border-radius: 4px;
-	padding: 2px 7px;
-	line-height: 20px;
-	white-space: nowrap;
-	flex: none;
+   font-size: 1rem;
+   font-weight: bold;
+   background: var(--baseColor);
+   color: #fff;
+   border-radius: 4px;
+   padding: 2px 7px;
+   line-height: 20px;
+   white-space: nowrap;
+   flex: none;
    font-family: "Roboto Condensed", sans-serif;
 }
 
-.scenarioPanel .scenarioButtonPanel {
-   padding-right: 8px;
+.scenarioButtonPanel {
+   border-bottom: 1px dashed var(--lightBlue);
 }
 
 #scenarioAuthorBar input[type=text] {
@@ -277,32 +294,35 @@
    color: #fff;
 }
 
-  /* Disabled buttons (empty-panel gating) never hover: keep base chrome. */
-  #scenarioAuthorBar button:disabled:hover,
-  #scenarioPlayBar button:disabled:hover {
-     background: var(--bgColor);
-     color: var(--baseColor);
-     cursor: not-allowed;
-  }
+/* Disabled buttons (empty-panel gating) never hover: keep base chrome + text. */
+#scenarioAuthorBar button:disabled,
+#scenarioAuthorBar button:disabled:hover,
+#scenarioPlayBar button:disabled,
+#scenarioPlayBar button:disabled:hover {
+   background: var(--bgColor);
+   color: var(--baseColor);
+   border-color: var(--darkEarth);
+    cursor: not-allowed !important;
+}
 
-  /* Empty-cap gating (see fScenarioSyncNewDeleteUi): dim locked New/Delete. */
-  #scenarioGlobalBar #scNew:disabled,
-  .scenarioPanel .scDelete:disabled {
-     opacity: .5;
-     cursor: not-allowed;
-  }
+/* Empty-cap gating (see fScenarioSyncNewDeleteUi): dim locked New/Delete. */
+#scenarioGlobalBar #scNew:disabled,
+.scenarioPanel .scDelete:disabled {
+   opacity: .5;
+   cursor: not-allowed !important;
+}
 
 /* Steps is stateful: selected while the drawer is open */
-#scenarioAuthorBar button#scList.active,
-#scenarioAuthorBar button.scList.active {
-   background: var(--guiColor);
-   border-color: var(--guiColor);
+
+#scenarioAuthorBar .scenarioButtonPanel button.scList {
+   background: var(--baseColor);
+   border-color: var(--darkEarth);
    color: #fff;
 }
 
-#scenarioAuthorBar .scenarioButtonPanel button.scList {
+#scenarioAuthorBar .scenarioButtonPanel button.scList:hover {
    background: var(--guiColor);
-   border-color: var(--guiColor);
+   border-color: var(--darkEarth);
    color: #fff;
 }
 
@@ -310,6 +330,22 @@
    background: var(--guiColor);
    border-color: var(--baseColor);
    color: #fff;
+}
+
+/* scList + scPresent share the same appearance, including disabled:
+   no hover background/text change — stay --baseColor. Must come after
+   the enabled :hover rules so disabled wins over them. */
+#scenarioAuthorBar .scenarioButtonPanel button.scList:disabled,
+#scenarioAuthorBar .scenarioButtonPanel button.scList:disabled:hover,
+#scenarioAuthorBar .scenarioButtonPanel button.scPresent:disabled,
+#scenarioAuthorBar .scenarioButtonPanel button.scPresent:disabled:hover,
+#scenarioAuthorBar .scPresent.scIconBtn:disabled,
+#scenarioAuthorBar .scPresent.scIconBtn:disabled:hover {
+   background: var(--baseColor);
+   border-color: var(--baseColor);
+   color: #fff;
+   opacity: .5;
+   cursor: not-allowed;
 }
 
 
@@ -353,6 +389,7 @@
 }
 
 .scenarioDrawer .srow {
+   position: relative;
    display: flex;
    gap: 5px;
    align-items: flex-end;
@@ -362,6 +399,54 @@
    padding: 10px 10px;
    border-radius: 4px;
    border: 1px solid var(--lightBlue);
+}
+
+/* Drag-reorder grip (authoring): dedicated ⠿ handle, desktop HTML5 DnD.
+   Span (not button) so the button:not(.scNoteBtn) action index is stable. */
+.scenarioDrawer .srow .scDragHandle {
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   min-width: 24px;
+   min-height: 24px;
+   cursor: grab;
+   touch-action: none;
+   user-select: none;
+   -webkit-user-select: none;
+   color: var(--lightBlue);
+   border-radius: 4px;
+   font-size: 1.0rem;
+   align-self: center;
+   position: absolute;
+   left: -4px;
+   top: -2px;
+   transition: all .2s ease;
+}
+
+.scenarioDrawer .srow .scDragHandle:hover {
+   color: var(--baseColor);
+}
+
+.scenarioDrawer .srow .scDragHandle:active {
+   cursor: grabbing;
+}
+
+.scenarioDrawer .srow .scDragHandle:focus-visible {
+   outline: 2px solid var(--baseColor);
+   outline-offset: 1px;
+}
+
+/* Drop feedback (see fScenarioStepDragOver): dragging ghost + before/after line. */
+.scenarioDrawer .srow.dragging {
+   opacity: .5;
+}
+
+.scenarioDrawer .srow.drag-over-before {
+   box-shadow: 0 -3px 0 var(--baseColor);
+}
+
+.scenarioDrawer .srow.drag-over-after {
+   box-shadow: 0 3px 0 var(--baseColor);
 }
 
 
@@ -380,11 +465,11 @@
 }
 
 .scenarioDrawer .srow .scStepTitleWrap .scStepTitleLabel {
-	font-size: .7rem;
-	color: var(--lightBlue);
-	opacity: .8;
-	line-height: 1.2;
-	font-weight: bold;
+   font-size: .7rem;
+   color: var(--lightBlue);
+   opacity: .8;
+   line-height: 1.2;
+   font-weight: bold;
 }
 
 .scenarioDrawer .srow .scStepTitleWrap input.scStepTitle {
@@ -454,16 +539,16 @@
 
 .scenarioDrawer .stepNumber {
    font-family: "Roboto Condensed", sans-serif;
-	font-size: 1.0rem;
-	color: var(--lightGrayNick);
-	font-weight: bold;
-	background: var(--guiColor);
-	/* padding: 10px; */
-	border-radius: 50%;
-	width: 22px;
-	height: 22px;
-	text-align: center;
-	line-height: 22px;
+   font-size: 1.0rem;
+   color: var(--lightGrayNick);
+   font-weight: bold;
+   background: var(--guiColor);
+   /* padding: 10px; */
+   border-radius: 50%;
+   width: 22px;
+   height: 22px;
+   text-align: center;
+   line-height: 22px;
 }
 
 #nameAnalysisContainer.locked .nameCompBox {
@@ -471,19 +556,19 @@
 }
 
 #scenarioPlayBar {
-	position: fixed;
-	top: 0px;
-	left: 0;
-	right: 0;
-	z-index: 500;
-	background: var(--lightBlue);
-	color: #fff;
-	display: flex;
-	gap: 10px;
-	align-items: center;
-	padding: 6px 12px;
-	font-size: 1rem;
-	justify-content: center;
+   position: fixed;
+   top: 0px;
+   left: 0;
+   right: 0;
+   z-index: 500;
+   background: var(--lightBlue);
+   color: #fff;
+   display: flex;
+   gap: 10px;
+   align-items: center;
+   padding: 6px 12px;
+   font-size: 1rem;
+   justify-content: center;
    font-family: "Roboto Condensed", sans-serif;
    font-weight: bold;
 }
@@ -530,15 +615,15 @@
 
 
 #scStepText {
-    font-size: 1.125rem;
-    margin: -10px auto 20px auto;
-    white-space: pre-wrap;
-    max-width: 980px;
-    background: var(--bgColor);
-    padding: 15px;
-    border-radius: 5px;
-    border: 1px solid var(--baseColor);
-    text-align: justify;
+   font-size: 1.125rem;
+   margin: -10px auto 20px auto;
+   white-space: pre-wrap;
+   max-width: 980px;
+   background: var(--bgColor);
+   padding: 15px;
+   border-radius: 5px;
+   border: 1px solid var(--baseColor);
+   text-align: left;
 }
 
 /* authoring handle: child of the bar docked flush to its top-left corner.
@@ -582,8 +667,8 @@
 }
 
 #scenarioAuthorTab.active {
-    background: var(--lightBlue) !important;
-    /* color: var(--baseColor) !important; */
+   background: var(--lightBlue) !important;
+   /* color: var(--baseColor) !important; */
 }
 
 #scenarioAuthorTab:focus-visible {
@@ -832,15 +917,7 @@
    background-color: var(--bgColor);
 }
 
-/* Empty-panel Steps button: always dark chrome while disabled — no hover response. */
-#scenarioAuthorBar .scenarioPanel.is-empty .scList:disabled,
-#scenarioAuthorBar .scenarioPanel.is-empty .scList:disabled:hover {
-   background: var(--guiColor);
-   border-color: var(--guiColor);
-   color: #fff;
-   opacity: .5;
-   cursor: not-allowed;
-}
+
 
 /* Presentation-only overrides (JS flips #pageContainer.presenting; display
    authority stays here so present styling survives menu/name rebuilds). */
@@ -860,6 +937,7 @@
    border: 1px solid var(--baseColor);
    border-top: 0;
 }
+
 .scPresentGrouping .radioCheckContainer {
    cursor: pointer;
    display: block;
@@ -876,6 +954,7 @@
    transition: all 0.3s;
    color: #333;
 }
+
 .scPresentGroup::before {
    content: "\203A";
    position: absolute;
@@ -889,19 +968,23 @@
    line-height: 1;
    background-color: transparent;
 }
+
 .scPresentGroup:hover {
    cursor: pointer;
    background-color: var(--bgColor);
    color: #111;
 }
+
 .scPresentGroup:hover::before {
    color: var(--baseColor);
 }
+
 .scPresentGroup.open::before {
    transform: translateY(-50%) rotate(90deg);
    color: #fff;
    background-color: transparent !important;
 }
+
 /* Open header takes the main-app submenu chrome (.crossMenuLi.selectedLi). */
 .scPresentGroup.open {
    background-color: var(--baseColor) !important;
@@ -912,26 +995,28 @@
    border-bottom: 0;
    font-size: 1rem;
 }
+
 .scPresentGroups.closed {
    display: none;
 }
+
 /* Open submenu body carries the main-app border (.exmplContainer). */
 .scPresentGroups {
    border: 1px solid var(--baseColor);
 }
 
 .scStepNumberTitle {
-	background: var(--bgColor);
-	display: inline-block;
-	/* padding: 0px 5px; */
-	border-radius: 50%;
-	margin-right: 5px;
-	color: var(--baseColor);
-	font-size: 1.25rem;
-	width: 40px;
-	height: 40px;
-	line-height: 40px;
-	border: 1px solid var(--baseColor);
+   background: var(--bgColor);
+   display: inline-block;
+   /* padding: 0px 5px; */
+   border-radius: 50%;
+   margin-right: 5px;
+   color: var(--baseColor);
+   font-size: 1.25rem;
+   width: 40px;
+   height: 40px;
+   line-height: 40px;
+   border: 1px solid var(--baseColor);
 }
 
 /* Icon-only buttons (see js/ui-icons.js): uniform 16px currentColor art,
@@ -947,16 +1032,36 @@
    min-height: 24px;
    padding: 3px 5px;
 }
+
+#scenarioAuthorBar .scenarioDrawer .srow .scIconBtn {
+   min-width: 22px;
+   min-height: 22px;
+   padding: 0;
+
+}
+
+#scenarioAuthorBar .scPresent.scIconBtn {
+   background: var(--baseColor);
+   color: #fff;
+}
+
+#scenarioAuthorBar .scPresent.scIconBtn:hover {
+   background: var(--guiColor);
+   color: #fff;
+}
+
 #scenarioAuthorBar .scIconBtn svg,
 .scenarioDrawer .srow .scIconBtn svg {
    width: 16px;
    height: 16px;
    flex: none;
 }
+
 /* Bar buttons: icon + text (primary actions). Step rows stay icon-only. */
 #scenarioAuthorBar .scIconTextBtn {
    gap: 6px;
 }
+
 /* Steps-button live count next to the list icon. */
 #scenarioAuthorBar .scList .scCountInline {
    font-size: .75rem;
@@ -978,15 +1083,16 @@
    align-items: center;
    margin: 2px 0 -2px 0;
 }
+
 #scenarioAuthorBar .scenarioDrawer .scNoteToolbar button.scNoteBtn {
-	width: 20px;
-	font-size: .75rem;
-	line-height: 0;
-	height: 20px;
-	background: var(--veryLightBlue);
-	border-color: var(--lightBlue);
-	/* text-align: center; */
-	border-radius: 2px;
+   width: 20px;
+   font-size: .75rem;
+   line-height: 0;
+   height: 20px;
+   background: var(--veryLightBlue);
+   border-color: var(--lightBlue);
+   /* text-align: center; */
+   border-radius: 2px;
    padding: 0;
 }
 
@@ -1000,35 +1106,41 @@
    outline: 2px solid #c0392b;
    outline-offset: 1px;
 }
+
 /* Whole-text size input inside the note toolbar. */
 .scenarioDrawer .scNoteToolbar .scTextSizeInput {
    width: 64px;
    font-size: .8rem;
    padding: 1px 4px;
 }
+
 /* Present text: two-column mode (per-step toggle, default 1 column). */
 #scStepText.scCols2 {
    column-count: 2;
    column-gap: 2em;
 }
+
 /* Lists never fracture across columns (whole item stays in one column). */
 #scStepText li,
 #scStepText ul,
 #scStepText ol {
    break-inside: avoid;
 }
+
 /* Small screens collapse back to one column (class, not inline, so this wins). */
 @media (max-width: 700px) {
    #scStepText.scCols2 {
       column-count: 1;
    }
 }
+
 /* Toolbar toggle active state (2-column on). */
 .scenarioDrawer .scNoteToolbar .scNoteBtn.active {
    background: var(--lightBlue);
    color: #fff;
    border-color: var(--lightBlue);
 }
+
 /* Present text: lists + font sizes from the note subset. */
 #scStepText ul,
 #scStepText ol {
@@ -1036,14 +1148,15 @@
    padding: 0;
    text-align: left;
 }
+
 #scStepText li {
    margin: 2px 0;
 }
+
 #scStepText small {
    font-size: .85em;
 }
+
 #scStepText big {
    font-size: 1.2em;
 }
-
-
