@@ -60,7 +60,8 @@ h1 {
 
 header {
   height: 30px;
-  background-color: var(--veryLightBlue);
+  background-color:#fff;
+  border-bottom: 1px solid var(--veryLightBlue);
   width: 100%;
 }
 

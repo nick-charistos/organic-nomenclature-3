@@ -334,12 +334,18 @@
         "atomSymbols": true,
         "moveto": null
       },
-      "menuSubset": [],
+      "menuSubset": [
+        "methane",
+        "ethane",
+        "propane",
+        "butane",
+        "pentane"
+      ],
       "menuGroups": [
         "molecules"
       ],
       "show": {
-        "menu": false,
+        "menu": true,
         "viewerButtons": false,
         "viewerSettings": false,
         "viewers": {
@@ -349,6 +355,82 @@
         "controls": {
           "2D": true,
           "3D": false
+        },
+        "save": {
+          "2D": false,
+          "3D": false
+        },
+        "naming": true,
+        "nameSettings": true,
+        "nameClick": true,
+        "nameEye": false,
+        "audio": false,
+        "rule": false,
+        "text": true
+      }
+    },
+    {
+      "n": 6,
+      "title": "3D Mόρια",
+      "note": "Διάλεξε τα μόρια στο αριστερό μενού και δες τα 3D μοντέλα.\nΕπίλεξε κάθε συνθετικό και δες σε ποιό χαρακτηριστικό του μορίου αντιστοιχεί.",
+      "selectedMol": "ethane",
+      "mode2D": "expanded",
+      "mainChainMode": "algorithmic",
+      "etherNamingMode": "iupac",
+      "nameAnalysisMode": "none",
+      "selectedRule": null,
+      "style2D": {
+        "atomColors": true,
+        "colorMode": "atom",
+        "zigzag": false
+      },
+      "styleName": {
+        "box": true,
+        "cross": false,
+        "etherNaming": "iupac",
+        "panelOpen": false,
+        "hidden": []
+      },
+      "styleHighlight": {
+        "bondAtoms": false,
+        "numberingAtoms": true
+      },
+      "styleText": {
+        "fontSizePx": null,
+        "textWidthPx": null,
+        "columns": 2
+      },
+      "audio": {
+        "narrate": false
+      },
+      "view3D": {
+        "style": "ballnstick",
+        "spin": false,
+        "showH": true,
+        "atomSymbols": true,
+        "moveto": null
+      },
+      "menuSubset": [
+        "methane",
+        "ethane",
+        "propane",
+        "butane",
+        "pentane"
+      ],
+      "menuGroups": [
+        "molecules"
+      ],
+      "show": {
+        "menu": true,
+        "viewerButtons": false,
+        "viewerSettings": false,
+        "viewers": {
+          "2D": true,
+          "3D": true
+        },
+        "controls": {
+          "2D": true,
+          "3D": true
         },
         "save": {
           "2D": false,
