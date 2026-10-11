@@ -103,9 +103,9 @@
 /* Dark-bg variant for the header action buttons (close button keeps its own rules). */
 #scenarioPlayBarTitle button#scNew,
 #scenarioPlayBarTitle button#scImport {
-background: var(--bgColor);
-  border-color: var(--darkEarth);
-  color: var(--baseColor);
+   background: var(--bgColor);
+   border: 2px solid var(--veryLightBlue);
+   color: var(--baseColor);
 }
 
 #scenarioPlayBarTitle button#scNew:hover,
@@ -788,9 +788,10 @@ background: var(--bgColor);
 #nomeclature2Menu .panelTitle #scPickToggle {
    appearance: none;
    -webkit-appearance: none;
-   background: transparent;
-   border: 0;
-   padding: 0 0 0 27px;
+   background: var(--bgColor);
+   border: 2px solid var(--veryLightBlue);
+   border-radius: 4px;
+   padding: 2px 6px 2px 29px;
    margin: 0;
    position: absolute;
    left: 12px;
@@ -799,18 +800,29 @@ background: var(--bgColor);
    display: flex;
    align-items: center;
    gap: 0px;
-   min-height: 20px;
-   height: 20px;
+   box-sizing: border-box;
+   min-height: 28px;
+   height: 28px;
    width: auto;
    cursor: pointer;
    z-index: 1;
    color: #fff;
    font-size: .75rem;
    font-family: "Roboto Condensed", sans-serif;
+   transition: all 0.2s;
+}
+
+#nomeclature2Menu .panelTitle #scPickToggle:hover {
+   background: var(--darkEarth);
+   color: #fff;
+}
+
+#nomeclature2Menu .panelTitle #scPickToggle.selectedCheck:hover {
+   background: var(--bgColor);
 }
 
 #nomeclature2Menu .panelTitle #scPickToggle:focus-visible {
-   outline: 2px solid var(--darkEarth);
+   outline: 2px solid #fff;
    outline-offset: 2px;
 }
 
@@ -819,8 +831,9 @@ background: var(--bgColor);
 #nomeclature2Menu .panelTitle #scPickToggle .checkBox::after {
    content: "\2713";
    position: absolute;
-   top: 0;
+   top: 50%;
    left: 0;
+   transform: translateY(-50%);
    font-size: 16px;
    font-family: "Roboto Condensed", "Roboto", sans-serif;
    font-weight: bold;
@@ -842,17 +855,25 @@ background: var(--bgColor);
 #nomeclature2Menu .panelTitle #scPickToggle.selectedCheck .checkBox::after {
    color: #fff;
    background-color: var(--baseColor);
-   border: 1px solid var(--darkEarth);
+   border: 2px solid var(--veryLightBlue);
 }
 
-/* 22px box geometry (scoped, no side effects) */
+/* 22px box geometry (scoped, no side effects; border on ::after only —
+   the .checkBox span itself stays borderless so no double frame) */
 #nomeclature2Menu .panelTitle #scPickToggle .checkBox,
 #nomeclature2Menu .panelTitle #scPickToggle .checkBox::after {
    width: 22px;
    height: 22px;
    line-height: 20px;
-   /* border: 1px solid var(--darkEarth); */
    box-sizing: border-box;
+}
+
+#nomeclature2Menu .panelTitle #scPickToggle .checkBox {
+   border: 0;
+}
+
+#nomeclature2Menu .panelTitle #scPickToggle .checkBox::after {
+   border: 2px solid var(--veryLightBlue);
 }
 
 /* styled tooltip below the box — same look as the other tooltips;
@@ -867,7 +888,7 @@ background: var(--bgColor);
    height: auto;
    line-height: normal;
    border: 0;
-   background: var(--lightBlue);
+   background: var(--darkEarth);
    color: #fff;
    font-size: 0.72rem;
    font-weight: bold;
@@ -894,7 +915,7 @@ background: var(--bgColor);
    top: 100%;
    left: 10px;
    border: 6px solid transparent;
-   border-bottom-color: var(--lightBlue);
+   border-bottom-color: var(--darkEarth);
    pointer-events: none;
    z-index: 200;
    opacity: 0;
