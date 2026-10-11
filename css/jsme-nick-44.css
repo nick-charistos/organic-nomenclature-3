@@ -113,7 +113,7 @@ header {
   text-align: center;
   padding: 10px 0;
   /* border-bottom: 1px solid #ccc; */
-  background-color: var(--baseColor);
+  background-color: var(--lightBlue);
   color: #fff;
   font-size: 1rem;
   min-height: 22px;
@@ -149,8 +149,14 @@ header {
 
 
 .settingsBtn.active {
-  background: var(--lightBlue);
+  background: var(--baseColor);
+  border-color: #fff;
   color: #fff;
+}
+
+.settingsBtn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
 }
 /* Viewer title-bar button row: [2D][3D][gear]. Buttons lay out in a row;
    .settingsBtn absolute positioning is neutralized inside the container. */
@@ -185,7 +191,7 @@ font-size: 1rem;
   right: 0px;
   z-index: 50;
   background: #fff;
-  border: 1px solid var(--baseColor);
+  border: 1px solid var(--lightBlue);
   border-top: 0;
   max-height: 0;
   overflow: hidden;
@@ -197,6 +203,8 @@ font-size: 1rem;
   background-color: #f3f3f3;
   border-left: 0;
   border-right: 0;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
 }
 
 #viewerSettingsPanel.open {
@@ -295,17 +303,18 @@ font-size: 1rem;
     max-height 0.25s ease,
     padding 0.25s ease;
   padding: 0 8px;
-  background: #f3f3f3;
-  border-bottom: 0;
-  border-top: 0;
+  background: var(--veryLightBlue);
   will-change: max-height;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  border: 1px solid var(--lightBlue);
 }
 
 #nameSettingsPanel.open {
   max-height: 260px; /* tweak if your content needs more space */
   padding: 6px 8px;
   overflow: visible;
-  border: 1px solid var(--baseColor);
+ 
 }
 
 .nameContainer {
@@ -372,7 +381,7 @@ font-size: 1rem;
   top: calc(100% + 10px);
   left: 50%;
   transform: translateX(-50%);
-  background: var(--lightBlue);
+  background: var(--darkEarth);
   color: #fff;
   font-size: 0.72rem;
   line-height: normal;
@@ -413,7 +422,7 @@ font-size: 1rem;
   left: 50%;
   transform: translateX(-50%);
   border: 6px solid transparent;
-  border-bottom-color: var(--lightBlue);
+  border-bottom-color: var(--darkEarth);
   pointer-events: none;
   z-index: 200;
   opacity: 0;
@@ -473,9 +482,8 @@ font-size: 1rem;
   right: auto;
   transform: translateX(-50%);
   border: 6px solid transparent;
-  border-bottom-color: var(--lightBlue);
+  border-bottom-color: var(--darkEarth);
 }
-
 .panelTitleSpan {
   font-family: "Roboto Condensed", sans-serif;
   font-weight: normal;
@@ -504,7 +512,7 @@ font-size: 1rem;
 } */
 
 #nomeclature2Menu {
-	border: 1px solid var(--baseColor);
+	border: 1px solid var(--lightBlue);
 	max-height: 596px;
 	border-radius: 5px;
 }
@@ -521,8 +529,8 @@ font-size: 1rem;
 }
 
 .groupingMode {
-  background: var(--lightGrayNick);
-  border-bottom: 1px solid var(--baseColor);
+  background: var(--veryLightBlue);
+  border-bottom: 1px solid var(--lightBlue);
   border-top: 0;
   padding: 5px 0;
 }
@@ -556,7 +564,7 @@ font-size: 1rem;
 }
 
 .selectedLi {
-  background-color: var(--lightBlue) !important;
+  background-color: var(--baseColor) !important;
   /* padding-left: 20px; */
   color: #fff;
   transition: all 0.2s;
@@ -666,12 +674,12 @@ font-size: 1rem;
 }
 
 .crossMenuLi.selectedLi {
-  background-color: var(--baseColor) !important;
+  background-color: var(--lightBlue) !important;
   /* padding-left: 10px; */
   color: #fff;
   transition: all 0.2s;
   font-weight: 600;
-  border: 1px solid var(--baseColor);
+  border: 1px solid var(--lightBlue);
   border-bottom: 0;
   font-size: 1rem;
 }
@@ -1368,7 +1376,7 @@ font-size: 1rem;
   font-size: 1rem;
   color: #fff;
   background-color: var(--guiColor);
-  /* border-radius: 2px; */
+  border-radius: 4px;
   /* box-shadow: 1px 1px 3px 0px rgba(0,0,0,0.5); */
 }
 
@@ -1807,7 +1815,7 @@ font-size: 1rem;
   /* overrides flex default min-width:auto */
   overflow: visible;
   width: 620px;
-  border: 1px solid var(--baseColor);
+  border: 1px solid var(--lightBlue);
   border-radius: 5px;
   overflow: hidden;
 }

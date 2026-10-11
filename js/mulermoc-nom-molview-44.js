@@ -2920,7 +2920,7 @@ function fShowNameAnalysis() {
   const _iupacCls = etherNamingMode === "iupac" ? "selectedRadio" : "unselectedRadio";
   const _commonCls = etherNamingMode === "common" ? "selectedRadio" : "unselectedRadio";
   const etherNamingToggle = _isEtherNaming
-    ? `<div id='radioEtherNaming' class='HFlex' style='align-items:center;gap:0;margin-right:8px'><span class='radioLabel'>Ονομασία:</span><div class='radioCheckContainer etherNamingRadio ${_iupacCls}' data-naming-mode='iupac'>IUPAC<span class='radioCheck'></span></div><div class='radioCheckContainer etherNamingRadio ${_commonCls}' data-naming-mode='common'>Κοινή<span class='radioCheck'></span></div></div>`
+    ? `<div id='radioEtherNaming' class='HFlex' style='align-items:center;gap:0;margin-right:8px'><div class='radioCheckContainer etherNamingRadio ${_iupacCls}' data-naming-mode='iupac'>IUPAC<span class='radioCheck'></span></div><div class='radioCheckContainer etherNamingRadio ${_commonCls}' data-naming-mode='common'>Κοινή<span class='radioCheck'></span></div></div>`
     : "";
 
   nameCompContainer =
