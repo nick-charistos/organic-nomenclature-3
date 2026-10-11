@@ -103,9 +103,9 @@
 /* Dark-bg variant for the header action buttons (close button keeps its own rules). */
 #scenarioPlayBarTitle button#scNew,
 #scenarioPlayBarTitle button#scImport {
-   background: var(--bgColor);
-   border: 2px solid var(--veryLightBlue);
-   color: var(--baseColor);
+background: var(--bgColor);
+border: 2px solid var(--veryLightBlue);
+  color: var(--baseColor);
 }
 
 #scenarioPlayBarTitle button#scNew:hover,
@@ -690,7 +690,7 @@
 }
 
 #scenarioAuthorTab.active {
-   background: var(--lightBlue) !important;
+   background: var(--baseColor) !important;
    /* color: var(--baseColor) !important; */
 }
 
@@ -800,9 +800,8 @@
    display: flex;
    align-items: center;
    gap: 0px;
-   box-sizing: border-box;
-   min-height: 28px;
-   height: 28px;
+   min-height: 20px;
+   height: 20px;
    width: auto;
    cursor: pointer;
    z-index: 1;
@@ -822,9 +821,8 @@
 #nomeclature2Menu .panelTitle #scPickToggle .checkBox::after {
    content: "\2713";
    position: absolute;
-   top: 50%;
+   top: 0;
    left: 0;
-   transform: translateY(-50%);
    font-size: 16px;
    font-family: "Roboto Condensed", "Roboto", sans-serif;
    font-weight: bold;
