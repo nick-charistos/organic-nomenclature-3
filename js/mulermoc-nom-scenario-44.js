@@ -1282,8 +1282,8 @@ function fScenarioRestoreChrome(viewers) {
   var ids = [
     "save2DBtn", "save3DBtn",
     "jsmeNomeclatureDIV",
-    "menuCol", "viewerVisBtns", "viewerSettingsBtnDiv",
-    "nameAnalysisContainer",
+    "menuCol", "viewerVisBtns", "viewerSettingsBtnDiv", "viewerSettingsPanel",
+    "nameAnalysisContainer", "nameSettingsPanel",
   ];
   ids.forEach(function (id) {
     try {
