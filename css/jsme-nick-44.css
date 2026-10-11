@@ -1808,8 +1808,8 @@ font-size: 1rem;
   overflow: visible;
   width: 620px;
   border: 1px solid var(--baseColor);
-  border-top-left-radius: 5px;
-  border-top-right-radius: 5px;
+  border-radius: 5px;
+  overflow: hidden;
 }
 
 #analysisCol {

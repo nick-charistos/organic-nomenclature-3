@@ -8,7 +8,8 @@
       "n": 1,
       "title": "Πώς ονομάζεται ένα μόριο;",
       "note": "Το όνομα μιας άκυκλης οργανικής ένωσης που έχει συνεχή ευθύγραμμη ανθρακική αλυσίδα προκύπτει από τον συνδυασμό τριών συνθετικών.",
-      "mode2D": "expanded",
+      "selectedMol": "ethane",
+      "mode2D": "condensed",
       "mainChainMode": "algorithmic",
       "etherNamingMode": "iupac",
       "nameAnalysisMode": "none",
@@ -41,10 +42,6 @@
       "audio": {
         "narrate": false
       },
-      "menuSubset": [],
-      "menuGroups": [
-        "molecules"
-      ],
       "view3D": {
         "style": "ballnstick",
         "spin": false,
@@ -52,6 +49,10 @@
         "atomSymbols": true,
         "moveto": null
       },
+      "menuSubset": [],
+      "menuGroups": [
+        "molecules"
+      ],
       "show": {
         "menu": false,
         "viewerButtons": false,
@@ -61,7 +62,7 @@
           "3D": false
         },
         "controls": {
-          "2D": true,
+          "2D": false,
           "3D": false
         },
         "save": {
@@ -70,19 +71,19 @@
         },
         "naming": true,
         "nameSettings": false,
+        "nameClick": false,
         "nameEye": false,
         "audio": false,
         "rule": false,
-        "text": true,
-        "nameClick": false
-      },
-      "selectedMol": "ethane"
+        "text": true
+      }
     },
     {
       "n": 2,
       "title": "Πρώτο Συνθετικό",
       "note": "Το <b>1<sup>o</sup> Συνθετικό</b> δείχνει τον αριθμό των ατόμων άνθρακα της ανθρακικής αλυσίδας.",
-      "mode2D": "expanded",
+      "selectedMol": "ethane",
+      "mode2D": "condensed",
       "mainChainMode": "algorithmic",
       "etherNamingMode": "iupac",
       "nameAnalysisMode": "compCarbonsCount",
@@ -114,10 +115,6 @@
       "audio": {
         "narrate": false
       },
-      "menuSubset": [],
-      "menuGroups": [
-        "molecules"
-      ],
       "view3D": {
         "style": "ballnstick",
         "spin": false,
@@ -125,6 +122,10 @@
         "atomSymbols": true,
         "moveto": null
       },
+      "menuSubset": [],
+      "menuGroups": [
+        "molecules"
+      ],
       "show": {
         "menu": false,
         "viewerButtons": false,
@@ -143,19 +144,19 @@
         },
         "naming": true,
         "nameSettings": false,
+        "nameClick": false,
         "nameEye": false,
         "audio": false,
         "rule": false,
-        "text": true,
-        "nameClick": false
-      },
-      "selectedMol": "ethane"
+        "text": true
+      }
     },
     {
       "n": 3,
       "title": "Δεύτερο Συνθετικό",
       "note": "Το <b>2<sup>o</sup> Συνθετικό</b>  δείχνει το είδος των δεσμών που υπάρχουν μεταξύ των ατόμων του άνθρακα.",
-      "mode2D": "expanded",
+      "selectedMol": "ethane",
+      "mode2D": "condensed",
       "mainChainMode": "algorithmic",
       "etherNamingMode": "iupac",
       "nameAnalysisMode": "compBondType",
@@ -186,10 +187,6 @@
       "audio": {
         "narrate": false
       },
-      "menuSubset": [],
-      "menuGroups": [
-        "molecules"
-      ],
       "view3D": {
         "style": "ballnstick",
         "spin": false,
@@ -197,6 +194,10 @@
         "atomSymbols": true,
         "moveto": null
       },
+      "menuSubset": [],
+      "menuGroups": [
+        "molecules"
+      ],
       "show": {
         "menu": false,
         "viewerButtons": false,
@@ -215,19 +216,19 @@
         },
         "naming": true,
         "nameSettings": false,
+        "nameClick": false,
         "nameEye": false,
         "audio": false,
         "rule": false,
-        "text": true,
-        "nameClick": false
-      },
-      "selectedMol": "ethane"
+        "text": true
+      }
     },
     {
       "n": 4,
       "title": "Τρίτο Συνθετικό",
       "note": "Το <b>3<sup>o</sup> Συνθετικό</b> δηλώνει την χημική τάξη που ανήκει.",
-      "mode2D": "expanded",
+      "selectedMol": "ethane",
+      "mode2D": "condensed",
       "mainChainMode": "algorithmic",
       "etherNamingMode": "iupac",
       "nameAnalysisMode": "compSuffix",
@@ -256,10 +257,6 @@
       "audio": {
         "narrate": false
       },
-      "menuSubset": [],
-      "menuGroups": [
-        "molecules"
-      ],
       "view3D": {
         "style": "ballnstick",
         "spin": false,
@@ -267,6 +264,10 @@
         "atomSymbols": true,
         "moveto": null
       },
+      "menuSubset": [],
+      "menuGroups": [
+        "molecules"
+      ],
       "show": {
         "menu": false,
         "viewerButtons": false,
@@ -285,20 +286,19 @@
         },
         "naming": true,
         "nameSettings": false,
+        "nameClick": false,
         "nameEye": false,
         "audio": false,
         "rule": false,
-        "text": true,
-        "nameClick": false
-      },
-      "selectedMol": "ethane"
+        "text": true
+      }
     },
     {
       "n": 5,
       "title": "Έτσι ονομάζεται ένα μόριο.",
       "note": "Διάλεξε τα μόρια στο αριστερό μενού και δες την ονομασία τους.\nΕπίλεξε κάθε συνθετικό και δες σε ποιό χαρακτηριστικό του μορίου αντιστοιχεί.",
       "selectedMol": "ethane",
-      "mode2D": "expanded",
+      "mode2D": "condensed",
       "mainChainMode": "algorithmic",
       "etherNamingMode": "iupac",
       "nameAnalysisMode": "none",
@@ -335,8 +335,8 @@
         "moveto": null
       },
       "menuSubset": [
-        "methane",
         "ethane",
+        "methane",
         "propane",
         "butane",
         "pentane"
@@ -374,7 +374,7 @@
       "title": "3D Mόρια",
       "note": "Διάλεξε τα μόρια στο αριστερό μενού και δες τα 3D μοντέλα.\nΕπίλεξε κάθε συνθετικό και δες σε ποιό χαρακτηριστικό του μορίου αντιστοιχεί.",
       "selectedMol": "ethane",
-      "mode2D": "expanded",
+      "mode2D": "condensed",
       "mainChainMode": "algorithmic",
       "etherNamingMode": "iupac",
       "nameAnalysisMode": "none",
@@ -411,8 +411,8 @@
         "moveto": null
       },
       "menuSubset": [
-        "methane",
         "ethane",
+        "methane",
         "propane",
         "butane",
         "pentane"
