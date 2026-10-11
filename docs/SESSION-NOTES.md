@@ -558,3 +558,55 @@ Browser checklist for owner: cold load (empty profile) shows methane;
 `?scenario=scenarios/ethene.scenario.json&present=1` from empty state →
 step 1 2D-only → Next to 3D step renders intact; plain-load regression
 (methane selected, both viewers live).
+
+## 2026-10-11 — UI pass + Go alignment + doc sweep (committed)
+
+UI restyle (owner-driven, assistant-reviewed; all `*44*`-only):
+
+* Dead-color cleanup (`jsme-nick-44.css`): 8 unused `:root` vars + dead
+  commented palette deleted; `darkBlue` → `baseColor`; dead `medBlue` ref
+  removed; `--bodyBg: #faf7f5` page bg added. Palette now 9 live vars.
+* Light-blue framing: `.panelTitle`/scenario title/menu + viewer frames →
+  `lightBlue`; row `.selectedLi` → dark `baseColor`, group
+  `.crossMenuLi.selectedLi` → `lightBlue`; tooltips (+arrows) → `darkEarth`;
+  settings dropdowns → `veryLightBlue` + bottom rounding; `#viewerCol` full
+  radius + `overflow: hidden` (gear/tooltip clipping watch).
+* Title-button contract: single 2px `veryLightBlue` rim; active navy keeps
+  the light rim (owner dropped the white-override); `:focus-visible` white
+  ring. `#scPickToggle` aligned to the tokens (cream check, navy on-box,
+  white focus, earth tooltip) but stays borderless — a chip border nested
+  a second rectangle around the check box (introduced + fixed same day).
+  Header New/Import take the same 2px rims; author-tab active → `baseColor`.
+* Content tweaks: `explainText` hint `#fff → transparent`; `#scStepText`
+  cream → `#fff`; step-number pill append commented out (title-only
+  headings; span + pill CSS kept for revert). `ethene-2.scenario.json`:
+  6 steps, all condensed, ethane-first menus.
+* Known drift: `.scPresentGroup.open` still dark while
+  `.crossMenuLi.selectedLi` went light — re-mirror in the UI pass.
+
+Behavior fixes (`scenario-44.js`):
+
+* Exit restores `viewerSettingsPanel` + `nameSettingsPanel` (gear dropdown
+  stayed `display:none` after Exit; static HTML never rebuilds it).
+* `fScenarioGoAlignPick`: authoring Go mirrors the step's menu into the
+  live pick (subset steps restore + pick mode on; menu-less clears
+  silently) — Go → tweak → Update keeps the menu. Present nav untouched.
+* Row Go activates its card first (cross-card Go stepped the wrong card).
+* Authoring Go reuses `fScenarioRestoreChrome(step.show.viewers)` — chrome
+  hid nothing while `!present`, so panes/buttons/bars kept live states.
+* Reported "3D without 3D settings in authoring" not reproduced on HEAD;
+  audit shows the three bar-visibility writers pair correctly. Exit aligns
+  with the exit step's viewers (not pre-Present state) — confirmed design.
+
+Docs (this sweep): CHANGELOG `[Unreleased]` extended; didactic §§2/3/9
+(schema `styleText`, Go alignment, merged header, pill note, exit
+semantics); README/LAYERS-PLAN/PROJECT-PLAN(-GR)/DEVELOPMENT-PLAN counts
+64 → 63 (verified: 63 `nameExamples` keys = 63 registry entries);
+`scenarios/` lists `ethene` + `ethene-2`; ethene-selects-ethane recorded as
+a content gap. Historical notes (SESSION-NOTES ≤2026-10-10, handoff,
+v43 CHANGELOG section) left as written.
+
+Browser checklist for owner: pick off/on/hover/focus beside 2D/3D/gear
+chips (one family); Go menu/molecule-no-menu/molecule+menu steps (picks +
+viewers follow); Go → Update keeps menu; Exit → gear opens; viewer-column
+rounding vs dropdown/tooltip clipping; present Prev/Next untouched.

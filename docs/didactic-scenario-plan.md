@@ -32,7 +32,10 @@ progress tracking, server storage.
 > and `styleHighlight` is additive (`bondAtoms`, `numberingAtoms`).
 > `menuGroups` is additive (`molecules` default = flat list, `chemclass` /
 > `series` classify the picked subset; unknown values coerce out, missing or
-> empty falls back to flat — no version bump).
+> empty falls back to flat — no version bump). `styleText` is additive
+> (`fontSizePx` 12–28/null, `textWidthPx` 320–1200/null, `columns` 1|2/null;
+> null = theme defaults). `styleName.hidden` + `show.nameEye` carry
+> per-component visibility (see §2 visibility rules).
 
 ```json
 {
@@ -54,6 +57,7 @@ progress tracking, server storage.
       "style2D": {"atomColors": true, "colorMode": "atom", "zigzag": false},
       "styleName": {"box": true, "cross": false, "etherNaming": "iupac", "panelOpen": true, "hidden": ["comp5"]},
       "styleHighlight": {"bondAtoms": false, "numberingAtoms": true},
+      "styleText": {"fontSizePx": null, "textWidthPx": null, "columns": null},
       "menuSubset": ["methane", "ethane"],
       "menuGroups": ["molecules"],
       "audio": {"narrate": false},
@@ -198,8 +202,10 @@ Visibility rules:
   + edit mode. Eye-hiding the highlighted box also repaints the 2D SVG
   so its highlight vanishes at once.
 * `title` is the step heading: in presentation it replaces the
-  page `#pageTitle` as `<span class="scStepNumberTitle">N.</span> Title`
-  (no space inside the span); on exit the app title is
+  page `#pageTitle` (number pill `<span class="scStepNumberTitle">N.</span>`
+  currently disabled — append commented out 2026-10-11, headings render
+  title-only; span construction + pill CSS kept for revert); on exit the
+  app title is
   restored. `note` is the educational paragraph in `#scStepText`
   directly below the title (simple-HTML subset: everything escaped
   except attributeless `<b>`, `<i>`, `<u>`, `<sup>`, `<sub>`,
@@ -220,8 +226,8 @@ Visibility rules:
   bar, or ESC (never while typing or presenting); hiding disengages
   pick mode but keeps picks and steps. The Pick checkbox appears only
   while authoring. Presentation hides the whole unit.
-* Global shell (`#scenarioAuthorBar`): title + `+ New` (empty scenario
-  card; locks with a toast while `maxEmptyScenarios = 3` empties exist) +
+* Global shell (`#scenarioAuthorBar`): single merged header row (`#scenarioPlayBarTitle`: `+ New` + `Import` left, title center, `✕` in-flow right; `#scenarioGlobalBar` retired 2026-10-11, ids preserved). `+ New` makes an empty scenario
+  card (locks with a toast while `maxEmptyScenarios = 3` empties exist);
   `Import` (each import adds a card, always lands untouched). Single column,
   panels scroll under the `85vh` cap, never shrink. One empty card is
   always kept: a panel's Delete locks when it is the last remaining card
@@ -251,11 +257,17 @@ Visibility rules:
   `Χημικές Τάξεις`, `Ομόλογες Σειρές` — presentation-only menu views,
   shown only on menu-carrying steps, all-off valid → flat fallback;
   see §2) — see §2; no `Text`/`Menu`: text is automatic, menu
-  is derived), `Go` (preview/apply the step in authoring), `Update`
+   is derived), `Go` (preview/apply the step in authoring — also activates
+   the row's card first, then aligns the live pick to the step via
+   `fScenarioGoAlignPick` (subset steps restore picks + pick mode on,
+   menu-less molecule steps clear silently; unknown keys filtered) and the
+   viewer chrome to the step's viewers via `fScenarioRestoreChrome`, the
+   same helper Exit uses — panes + `[2D][3D]` actives + control bars follow
+   the step; present navigation never touches picks), `Update`
   (rewrite the step's stored view snapshot from the current live view:
   Go → tweak molecule, 2D/3D modes + styles, naming clicks/toggles,
    camera, pick → Update; preserves `title`/`note` + the 4 chrome
-   checkboxes + `show.nameEye` + `menuGroups`, refreshes everything visual incl. `nameAnalysisMode`,
+   checkboxes + `show.nameEye` + `menuGroups` + `styleText` (size/width/columns), refreshes everything visual incl. `nameAnalysisMode`,
    `styleName.hidden` (from the live eye toggles),
    `menuSubset`/`show.menu`/`show.viewers`; toasts kind/subset changes),
   `⧉` duplicate (deep-clone after, title + ` (αντίγραφο)`),
@@ -399,11 +411,11 @@ Many issues will surface during development; adjust there.
 LEARN is layer 1 of the twofold+1 vision (see `README.md`, `docs/LAYERS-PLAN.md`). v44 provides the player (v43 frozen at tag `v43`); v1.1 adds the library:
 
 * **Stored scenarios** under `scenarios/*.json` (same-origin, validated v1 schema), listed by Drupal; URL shape unchanged (`?scenario=scenarios/<name>.json&present=1#step=N`); Import remains the offline/`file://` path.
-* **First library (P3):** 3–5 scenarios (alkanes → alcohols → ethers → esters); each step keeps `selectedMol + show.*`; exit forces full chrome restore (menu `menu-open` + both viewers visible).
-* **Per-step menu subsets (EXPLORE-lite enforcement):** steps may carry a browsable `menuSubset` (tri-state group pick in authoring; menu derived — 2+ picks show it, single pick collapses to the step molecule); a scenario can walk students through an expanding universe (3 alkanes → +alcohols → +ether) instead of the full 64-molecule menu.
+* **First library (P3):** 3–5 scenarios (alkanes → alcohols → ethers → esters); each step keeps `selectedMol + show.*`; exit forces full chrome restore (menu `menu-open` + viewers/bars per the exit step — a no-3D exit leaves 3D hidden; settings panels + save buttons always come back).
+* **Per-step menu subsets (EXPLORE-lite enforcement):** steps may carry a browsable `menuSubset` (tri-state group pick in authoring; menu derived — 2+ picks show it, single pick collapses to the step molecule); a scenario can walk students through an expanding universe (3 alkanes → +alcohols → +ether) instead of the full 63-molecule menu.
 * **Two-level `note` convention:** `note` carries the teacher narrative; authoring guidance is EPAL-simple first line(s) / Lyceum-full extension (P3 authors, P5 uses for EPAL-vs-Lyceum comparison). Schema unchanged — convention only.
 * **`moveto` curation:** capture with `rotate off`; prefer curated per-step cameras for the library over ad-hoc capture.
-* **Authoring docs:** Save → Export → Present → Exit flow (Exit restores menu + both viewers + all bars; in-memory steps kept).
+* **Authoring docs:** Save → Export → Present → Exit flow (Exit restores menu + exit-step viewers + all bars/panels; in-memory steps kept). `Go` previews align picks + viewer chrome to the step, so Go → tweak → Update round-trips keep the menu.
 
 ## 10. Future states (2026-10-09, docs-only, no code change)
 

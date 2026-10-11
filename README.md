@@ -14,9 +14,9 @@ Desinged and developed by Nickolas Charistos
 | Teaching (rules, narration, UI wiring) | [js/mulermoc-nom-teaching-44.js](js/mulermoc-nom-teaching-44.js) |
 | Scenario module (LEARN authoring + presentation) | [js/mulermoc-nom-scenario-44.js](js/mulermoc-nom-scenario-44.js) |
 | Shared icon helper | [js/ui-icons.js](js/ui-icons.js) |
-| Molecule data (64 molecules) | [js/jsme-nick-nomeclature-moc2-data_44.js](js/jsme-nick-nomeclature-moc2-data_44.js) |
+| Molecule data (63 molecules) | [js/jsme-nick-nomeclature-moc2-data_44.js](js/jsme-nick-nomeclature-moc2-data_44.js) |
 | Styles | [css/jsme-nick-44.css](css/jsme-nick-44.css), [css/mulermoc-nom-scenario-44.css](css/mulermoc-nom-scenario-44.css) |
-| Stored scenarios | [scenarios/](scenarios/) (`ethene.scenario.json`) |
+| Stored scenarios | [scenarios/](scenarios/) (`ethene.scenario.json`, `ethene-2.scenario.json`) |
 
 ---
 
@@ -47,13 +47,15 @@ Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (o
 
 ### LEARN layer: didactic scenarios
 - Authoring behind the `Σενάρια` handle: up to 3 scenarios, steps per scenario with per-step molecule/menu/chrome settings, rich step text (`B I sup sub`, size/width/columns), icon buttons, drag-reorder, step drawer, Import/Export JSON.
+- `Go` previews align picks + viewer chrome to the step, so Go → tweak → `Update` round-trips keep the menu; Exit restores the full app chrome (viewers/bars per the exit step).
 - Presentation mode (`#pageContainer.presenting`) walks the steps; Exit restores the full app chrome.
 - Details: [docs/didactic-scenario-plan.md](docs/didactic-scenario-plan.md).
 
 ### Known gaps
 - Unsaturated ethers/esters and wider ester coverage; rings and aromatics not supported.
 - v44 engine fixes pending browser verification (see CHANGELOG).
-- Scenario library (beyond `ethene`) and EPAL/Lyceum two-level notes still to be written.
+- Stored `ethene*.scenario.json` walkthroughs currently select ethane throughout (titles/content say ethene) — content to be curated; wider scenario library and EPAL/Lyceum two-level notes still to be written.
+- Present grouped menus (`.scPresentGroup.open`) still carry the old dark fill while app group headers went light blue — re-mirror in the UI pass.
 
 ---
 
@@ -63,8 +65,8 @@ All layers reuse the same v44 engine, embedded as a static app in Drupal:
 
 | # | Layer | Contract | State |
 |---|---|---|---|
-| 1 | **LEARN** | teacher-authored linear scenarios; presentation + self-paced learning | working scaffold (authoring + presentation); first stored scenario `ethene` |
-| 2 | **EXPLORE** | free browsing of all molecules (left menu) | working (64 molecules); next: bounded EXPLORE-lite (~15 mols) + menu search |
+| 1 | **LEARN** | teacher-authored linear scenarios; presentation + self-paced learning | working scaffold (authoring + presentation); stored scenarios `ethene`, `ethene-2` |
+| 2 | **EXPLORE** | free browsing of all molecules (left menu) | working (63 molecules); next: bounded EXPLORE-lite (~15 mols) + menu search |
 | 3 | **PRACTICE** | exercises with corrective feedback (3 types v1) | not started — see [LAYERS-PLAN](docs/LAYERS-PLAN.md) |
 | 4 | **PLAY** | gamified quizzes; responses + times logged for research statistics | not started — Drupal owns auth/session/logging; see [LAYERS-PLAN](docs/LAYERS-PLAN.md) |
 
