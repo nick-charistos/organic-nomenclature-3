@@ -3292,7 +3292,7 @@ function fExplainNameComp() {
       myText =
         "Κάνε κλικ σε ένα συνθετικό του ονόματος για να δεις την εξήγηση";
       nStyle =
-        "color:#666; font-style:italic; font-weight:normal; border:0;background-color:#fff;font-size:1rem;box-shadow:0 0 #fff;";
+        "color:#666; font-style:italic; font-weight:normal; border:0;background-color:transparent;font-size:1rem;box-shadow:0 0 #fff;";
       myClass = "";
       ruleFlag = false;
       numberingFlag = false;

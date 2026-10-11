@@ -74,8 +74,8 @@
    color: #fff;
    font-weight: bold;
    background: var(--baseColor);
-   padding: 10px 0px;
-   padding-right: 30px;
+   padding: 10px 20px 10px 10px;
+   /* padding-right: 30px; */
    width: 100%;
    max-width: 100%;
    align-self: stretch;
@@ -90,6 +90,38 @@
 
 #scenarioPlayBarTitle>span {
    flex: 1;
+}
+
+/* Merged header (GlobalBar retired): New/Import live left in the dark title row. */
+#scenarioPlayBarTitle .scTitleBtns {
+   flex: none;
+   display: flex;
+   gap: 8px;
+   align-items: center;
+}
+
+/* Dark-bg variant for the header action buttons (close button keeps its own rules). */
+#scenarioPlayBarTitle button#scNew,
+#scenarioPlayBarTitle button#scImport {
+background: var(--bgColor);
+  border-color: var(--darkEarth);
+  color: var(--baseColor);
+}
+
+#scenarioPlayBarTitle button#scNew:hover,
+#scenarioPlayBarTitle button#scImport:hover {
+   background: var(--darkEarth);
+   border-color: #fff;
+   color: #fff;
+}
+
+#scenarioPlayBarTitle button#scNew:disabled,
+#scenarioPlayBarTitle button#scNew:disabled:hover {
+   background: transparent;
+   border-color: #fff;
+   color: #fff;
+   opacity: .5;
+   cursor: not-allowed !important;
 }
 
 
@@ -108,8 +140,8 @@
    margin-right: 8px;
    cursor: pointer;
    flex: none;
-   position: absolute;
-   right: 20px;
+   /* position: absolute;
+   right: 20px; */
 }
 
 #scCloseBar:hover {
@@ -123,8 +155,7 @@
 }
 
 #scenarioPlayBarButtonPanel,
-.scenarioButtonPanel,
-#scenarioGlobalBar {
+.scenarioButtonPanel {
    display: flex;
    gap: 10px;
    align-items: center;
@@ -141,16 +172,9 @@
 }
 
 #scenarioPlayBarTitle,
-#scenarioGlobalBar,
 #scenarioPanels {
    flex: 0 0 auto;
    width: 100%;
-}
-
-#scenarioGlobalBar {
-   background: var(--lightBlue);
-   padding-bottom: 0;
-   padding-left: 30px;
 }
 
 #scenarioPanels {
@@ -306,7 +330,7 @@
 }
 
 /* Empty-cap gating (see fScenarioSyncNewDeleteUi): dim locked New/Delete. */
-#scenarioGlobalBar #scNew:disabled,
+#scenarioPlayBarTitle #scNew:disabled,
 .scenarioPanel .scDelete:disabled {
    opacity: .5;
    cursor: not-allowed !important;
@@ -619,7 +643,7 @@
    margin: -10px auto 20px auto;
    white-space: pre-wrap;
    max-width: 980px;
-   background: var(--bgColor);
+   background: #fff;
    padding: 15px;
    border-radius: 5px;
    border: 1px solid var(--baseColor);
@@ -1022,7 +1046,6 @@
 /* Icon-only buttons (see js/ui-icons.js): uniform 16px currentColor art,
    title tooltip + aria-label keep the meaning. */
 #scenarioAuthorBar .scIconBtn,
-#scenarioGlobalBar .scIconBtn,
 .scenarioDrawer .srow .scIconBtn {
    display: inline-flex;
    align-items: center;

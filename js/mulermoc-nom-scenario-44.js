@@ -1465,7 +1465,7 @@ function fScenarioFillStepPanel(step) {
       var numSpan = document.createElement("span");
       numSpan.className = "scStepNumberTitle";
       numSpan.textContent = step.n + ".";
-      h1.appendChild(numSpan);
+      // h1.appendChild(numSpan);
       h1.appendChild(document.createTextNode(" " + step.title));
     } else {
       h1.textContent = appTitle;
@@ -1992,12 +1992,10 @@ function fScenarioBuildUi() {
     // Inline display is never used here: it would beat the animation classes.
     bar.style.display = "";
     bar.innerHTML =
-    "<div id='scenarioPlayBarTitle'><span>Σενάρια Παρουσίασης</span><button id='scCloseBar' title='Κλείσιμο (ESC)'>✕</button></div>" +
-    "<div id='scenarioGlobalBar'>" +
-      "<button id='scNew' title='New empty scenario'>+ New</button>" +
+    "<div id='scenarioPlayBarTitle'><span class='scTitleBtns'><button id='scNew' title='New empty scenario'>+ New</button>" +
       "<button id='scImport' title='Import scenario JSON (adds a panel)'>Import</button>" +
-      "<input type='file' id='scFile' accept='.json,application/json' style='display:none'>" +
-      "</div>" +
+      "<input type='file' id='scFile' accept='.json,application/json' style='display:none'></span>" +
+      "<span>Σενάρια Παρουσίασης</span><button id='scCloseBar' title='Κλείσιμο (ESC)'>✕</button></div>" +
     "<div id='scenarioPanels'></div>";
     document.body.appendChild(bar);
     fScenarioPaintIconTextBtn(document.getElementById("scNew"), "libraryNew", "+ New");
