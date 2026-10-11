@@ -788,8 +788,8 @@
 #nomeclature2Menu .panelTitle #scPickToggle {
    appearance: none;
    -webkit-appearance: none;
-   background: var(--bgColor);
-   border: 2px solid var(--veryLightBlue);
+   background: transparent;
+   border: 0;
    border-radius: 4px;
    padding: 2px 6px 2px 29px;
    margin: 0;
@@ -810,15 +810,6 @@
    font-size: .75rem;
    font-family: "Roboto Condensed", sans-serif;
    transition: all 0.2s;
-}
-
-#nomeclature2Menu .panelTitle #scPickToggle:hover {
-   background: var(--darkEarth);
-   color: #fff;
-}
-
-#nomeclature2Menu .panelTitle #scPickToggle.selectedCheck:hover {
-   background: var(--bgColor);
 }
 
 #nomeclature2Menu .panelTitle #scPickToggle:focus-visible {
