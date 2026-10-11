@@ -2599,6 +2599,7 @@ function fScenarioRenderOne(scen) {
     // .scNoteBtn toolbar buttons are excluded by the selector above.
     (function (scenId, idx) {
       btns[0].onclick = function () {
+        if (scenId && scenId !== MuLERMoCScenario.activeId) fScenarioSetActive(scenId);
         fScenarioGo(idx);
       };
       btns[1].onclick = function () {
@@ -2786,6 +2787,36 @@ function fScenarioPlayUi() {
   fScenarioRenderNote(no, st && st.note);
 }
 
+// ── Go/Jump pick alignment (authoring) ───────────────────────────────────
+// After a successful authoring preview the live pick mirrors the step, so a
+// Go → tweak → Update round-trip keeps the menu: steps carrying a subset
+// (menu-only, or molecule+menu) restore picks with pick mode on; menu-less
+// molecule steps clear picks with pick mode off. Silent by design (unlike
+// the pick-toggle path, which toasts on clear). Presentation navigation
+// (Prev/Next/Play/deep links) never touches picks.
+function fScenarioGoAlignPick(step) {
+  if (MuLERMoCScenario.present || !MuLERMoCScenario.authoring || !step) return;
+  var act = fScenarioActive();
+  if (!act) return;
+  var subset = Array.isArray(step.menuSubset) ? step.menuSubset : [];
+  var known = [];
+  var dropped = 0;
+  for (var k = 0; k < subset.length; k++) {
+    var mol = subset[k];
+    if (mol && typeof nameExamples !== "undefined" && nameExamples[mol]) {
+      if (known.indexOf(mol) < 0) known.push(mol);
+    } else if (mol) {
+      dropped++;
+    }
+  }
+  var wantPick = known.length > 1;
+  act.menuPick = wantPick ? known : [];
+  MuLERMoCScenario.menuPickMode = wantPick;
+  fScenarioSyncLegacy();
+  fScenarioPaintPickUi();
+  if (dropped > 0) fScenarioToast("Dropped " + dropped + " unknown molecule(s) from the step menu.");
+}
+
 function fScenarioGo(i) {
   var ps = fScenarioPresent();
   if (!ps.steps.length) return;
@@ -2808,6 +2839,11 @@ function fScenarioGo(i) {
   if (!ok) {
     fScenarioToast("Could not apply step " + (i + 1) + ".");
     return;
+  }
+  try {
+    fScenarioGoAlignPick(ps.steps[i]);
+  } catch (e) {
+    /* pick alignment best-effort */
   }
   fScenarioPlayUi();
   fScenarioRenderPresentMenu();
