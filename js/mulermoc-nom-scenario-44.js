@@ -2845,6 +2845,18 @@ function fScenarioGo(i) {
   } catch (e) {
     /* pick alignment best-effort */
   }
+  // Authoring preview: fScenarioChrome hides nothing while !present, so the
+  // viewer buttons/bars would keep the live states. Mirror the step's
+  // viewers onto the chrome (panes + [2D][3D] actives + control bars), the
+  // same helper Exit uses. Presentation navigation skips this (chrome path).
+  try {
+    if (!MuLERMoCScenario.present && MuLERMoCScenario.authoring) {
+      var _st = ps.steps[i];
+      fScenarioRestoreChrome(_st && _st.show ? _st.show.viewers : null);
+    }
+  } catch (e) {
+    /* viewer alignment best-effort */
+  }
   fScenarioPlayUi();
   fScenarioRenderPresentMenu();
 }
