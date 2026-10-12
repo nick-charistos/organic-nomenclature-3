@@ -1,14 +1,13 @@
 {
   "scenarioVersion": 1,
   "app": "mulermoc-nom-44",
-  "scenario": "ethene-2",
-  "title": "ethene-2",
+  "scenario": "Αλκάνια-Αιθάνιο",
+  "title": "Αλκάνια-Αιθάνιο",
   "steps": [
     {
       "n": 1,
-      "title": "Πώς ονομάζεται ένα μόριο;",
+      "title": "Πώς ονομάζεται ένα οργανικό μόριο;",
       "note": "Το όνομα μιας άκυκλης οργανικής ένωσης που έχει συνεχή ευθύγραμμη ανθρακική αλυσίδα προκύπτει από τον συνδυασμό τριών συνθετικών.",
-      "selectedMol": "ethane",
       "mode2D": "condensed",
       "mainChainMode": "algorithmic",
       "etherNamingMode": "iupac",
@@ -42,6 +41,10 @@
       "audio": {
         "narrate": false
       },
+      "menuSubset": [],
+      "menuGroups": [
+        "molecules"
+      ],
       "view3D": {
         "style": "ballnstick",
         "spin": false,
@@ -49,10 +52,6 @@
         "atomSymbols": true,
         "moveto": null
       },
-      "menuSubset": [],
-      "menuGroups": [
-        "molecules"
-      ],
       "show": {
         "menu": false,
         "viewerButtons": false,
@@ -71,18 +70,18 @@
         },
         "naming": true,
         "nameSettings": false,
-        "nameClick": false,
         "nameEye": false,
         "audio": false,
         "rule": false,
-        "text": true
-      }
+        "text": true,
+        "nameClick": false
+      },
+      "selectedMol": "ethane"
     },
     {
       "n": 2,
       "title": "Πρώτο Συνθετικό",
       "note": "Το <b>1<sup>o</sup> Συνθετικό</b> δείχνει τον αριθμό των ατόμων άνθρακα της ανθρακικής αλυσίδας.",
-      "selectedMol": "ethane",
       "mode2D": "condensed",
       "mainChainMode": "algorithmic",
       "etherNamingMode": "iupac",
@@ -115,6 +114,10 @@
       "audio": {
         "narrate": false
       },
+      "menuSubset": [],
+      "menuGroups": [
+        "molecules"
+      ],
       "view3D": {
         "style": "ballnstick",
         "spin": false,
@@ -122,10 +125,6 @@
         "atomSymbols": true,
         "moveto": null
       },
-      "menuSubset": [],
-      "menuGroups": [
-        "molecules"
-      ],
       "show": {
         "menu": false,
         "viewerButtons": false,
@@ -144,18 +143,18 @@
         },
         "naming": true,
         "nameSettings": false,
-        "nameClick": false,
         "nameEye": false,
         "audio": false,
         "rule": false,
-        "text": true
-      }
+        "text": true,
+        "nameClick": false
+      },
+      "selectedMol": "ethane"
     },
     {
       "n": 3,
       "title": "Δεύτερο Συνθετικό",
       "note": "Το <b>2<sup>o</sup> Συνθετικό</b>  δείχνει το είδος των δεσμών που υπάρχουν μεταξύ των ατόμων του άνθρακα.",
-      "selectedMol": "ethane",
       "mode2D": "condensed",
       "mainChainMode": "algorithmic",
       "etherNamingMode": "iupac",
@@ -187,6 +186,10 @@
       "audio": {
         "narrate": false
       },
+      "menuSubset": [],
+      "menuGroups": [
+        "molecules"
+      ],
       "view3D": {
         "style": "ballnstick",
         "spin": false,
@@ -194,10 +197,6 @@
         "atomSymbols": true,
         "moveto": null
       },
-      "menuSubset": [],
-      "menuGroups": [
-        "molecules"
-      ],
       "show": {
         "menu": false,
         "viewerButtons": false,
@@ -216,18 +215,18 @@
         },
         "naming": true,
         "nameSettings": false,
-        "nameClick": false,
         "nameEye": false,
         "audio": false,
         "rule": false,
-        "text": true
-      }
+        "text": true,
+        "nameClick": false
+      },
+      "selectedMol": "ethane"
     },
     {
       "n": 4,
       "title": "Τρίτο Συνθετικό",
       "note": "Το <b>3<sup>o</sup> Συνθετικό</b> δηλώνει την χημική τάξη που ανήκει.",
-      "selectedMol": "ethane",
       "mode2D": "condensed",
       "mainChainMode": "algorithmic",
       "etherNamingMode": "iupac",
@@ -257,6 +256,77 @@
       "audio": {
         "narrate": false
       },
+      "menuSubset": [],
+      "menuGroups": [
+        "molecules"
+      ],
+      "view3D": {
+        "style": "ballnstick",
+        "spin": false,
+        "showH": true,
+        "atomSymbols": true,
+        "moveto": null
+      },
+      "show": {
+        "menu": false,
+        "viewerButtons": false,
+        "viewerSettings": false,
+        "viewers": {
+          "2D": true,
+          "3D": false
+        },
+        "controls": {
+          "2D": false,
+          "3D": false
+        },
+        "save": {
+          "2D": false,
+          "3D": false
+        },
+        "naming": true,
+        "nameSettings": false,
+        "nameEye": false,
+        "audio": false,
+        "rule": false,
+        "text": true,
+        "nameClick": false
+      },
+      "selectedMol": "ethane"
+    },
+    {
+      "n": 5,
+      "title": "Διαφορετικές Αναπαραστάσεις Μορίων",
+      "note": "Ένα μόριο μπορεί να αναπαρίσταται με διαφορετικές μορφές 2D συντακτικών τύπων: \n<b>α) συνεπτυγμένη, </b>\n<b>β) ανεπτυγμένη,</b>\n<b>γ) σκελετική μορφή.</b>\nΕπίλεξε τις διαφορετικές αναπαραστάσεις για το αιθάνιο και επίλεξε κάθε συνθετικό της ονομασίας για να δεις σε ποιό χαρακτηριστικό του μορίου αντιστοιχεί.\n",
+      "selectedMol": "ethane",
+      "mode2D": "condensed",
+      "mainChainMode": "algorithmic",
+      "etherNamingMode": "iupac",
+      "nameAnalysisMode": "none",
+      "selectedRule": null,
+      "style2D": {
+        "atomColors": true,
+        "colorMode": "atom",
+        "zigzag": false
+      },
+      "styleName": {
+        "box": true,
+        "cross": false,
+        "etherNaming": "iupac",
+        "panelOpen": true,
+        "hidden": []
+      },
+      "styleHighlight": {
+        "bondAtoms": false,
+        "numberingAtoms": true
+      },
+      "styleText": {
+        "fontSizePx": null,
+        "textWidthPx": null,
+        "columns": 2
+      },
+      "audio": {
+        "narrate": false
+      },
       "view3D": {
         "style": "ballnstick",
         "spin": false,
@@ -277,7 +347,7 @@
           "3D": false
         },
         "controls": {
-          "2D": false,
+          "2D": true,
           "3D": false
         },
         "save": {
@@ -285,8 +355,8 @@
           "3D": false
         },
         "naming": true,
-        "nameSettings": false,
-        "nameClick": false,
+        "nameSettings": true,
+        "nameClick": true,
         "nameEye": false,
         "audio": false,
         "rule": false,
@@ -294,10 +364,10 @@
       }
     },
     {
-      "n": 5,
-      "title": "Έτσι ονομάζεται ένα μόριο.",
-      "note": "Διάλεξε τα μόρια στο αριστερό μενού και δες την ονομασία τους.\nΕπίλεξε κάθε συνθετικό και δες σε ποιό χαρακτηριστικό του μορίου αντιστοιχεί.",
-      "selectedMol": "ethane",
+      "n": 6,
+      "title": "Διερεύνησε τα μόρια των Αλκανίων",
+      "note": "Διάλεξε τα μόρια στο αριστερό μενού και δες την ονομασία τους.\nΔοκίμασε τις διαφορετικές μορφές των αναπαραστάσεων των μορίων.\nΕπίλεξε κάθε συνθετικό και δες σε ποιό χαρακτηριστικό του μορίου αντιστοιχεί.\n\n",
+      "selectedMol": null,
       "mode2D": "condensed",
       "mainChainMode": "algorithmic",
       "etherNamingMode": "iupac",
@@ -310,7 +380,7 @@
       },
       "styleName": {
         "box": true,
-        "cross": false,
+        "cross": true,
         "etherNaming": "iupac",
         "panelOpen": false,
         "hidden": []
@@ -335,8 +405,8 @@
         "moveto": null
       },
       "menuSubset": [
-        "ethane",
         "methane",
+        "ethane",
         "propane",
         "butane",
         "pentane"
@@ -370,10 +440,10 @@
       }
     },
     {
-      "n": 6,
-      "title": "3D Mόρια",
-      "note": "Διάλεξε τα μόρια στο αριστερό μενού και δες τα 3D μοντέλα.\nΕπίλεξε κάθε συνθετικό και δες σε ποιό χαρακτηριστικό του μορίου αντιστοιχεί.",
-      "selectedMol": "ethane",
+      "n": 7,
+      "title": "Τριδσιάστατα Mοριακά μοντέλα Αλκανίων",
+      "note": "Τα μόρια απεικονίζονται και με τρισδιάστατα μοριακά μοντέλα.\nΔιάλεξε τα μόρια στο αριστερό μενού για να δεις και να διαδράσεις με τα 3D μοντέλα.\n\nΕπίλεξε κάθε συνθετικό και δες σε ποιό χαρακτηριστικό του μοριακού μοντέλου και του συντακτικού τύπου αντιστοιχεί.",
+      "selectedMol": null,
       "mode2D": "condensed",
       "mainChainMode": "algorithmic",
       "etherNamingMode": "iupac",
@@ -386,7 +456,7 @@
       },
       "styleName": {
         "box": true,
-        "cross": false,
+        "cross": true,
         "etherNaming": "iupac",
         "panelOpen": false,
         "hidden": []
@@ -411,8 +481,8 @@
         "moveto": null
       },
       "menuSubset": [
-        "ethane",
         "methane",
+        "ethane",
         "propane",
         "butane",
         "pentane"

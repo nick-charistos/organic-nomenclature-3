@@ -24,7 +24,7 @@ Scenario schema and log events reserve an optional `lang` field (`gr` default; n
 
 ## 2. LEARN v1.1 — stored library (first)
 
-* 3–5 scenarios (alkanes → alcohols → ethers → esters) under `scenarios/*.json` (2 stored so far: `ethene`, `ethene-2`).
+* 3–5 scenarios (alkanes → alcohols → ethers → esters) under `scenarios/*.json` (1 stored so far: `Αλκάνια-Αιθάνιο`, 7 steps).
 * Two-level `note` convention: EPAL-simple first / Lyceum-full extension (P3 authors; P5 compares).
 * Curated `moveto` per step (captured with rotate off).
 * Authoring flow: Save → Export → Present → Exit (Exit = full restore).
@@ -78,7 +78,7 @@ Total to 4-layer pilot: ~6–9 months with this team. LEARN-pilot usable this se
 Greek first this year (Phases 1–4 above). If accomplished, upgrade to a full English version for teachers and learners — same otterbein-style play: the best-in-class answer to one hard topic (multirepresentational nomenclature), spread via the submitted paper as launch vehicle.
 
 * **E1 — `?lang=` infrastructure (~1 wk):** central `STRINGS` table (`gr` default, per-key fallback to GR so partial EN never blanks the UI); `?lang=en` flag persisted in scenario URLs (`?scenario=…&lang=en&present=1#step=N`); TTS voice pick per lang. One codebase — no `*-en.html` copy. No chemistry changes.
-* **E2 — English name assembly (2–4 wk, the real work):** parallel `fGuessNameEN` path (no Greek euphony connector, English substituent conventions, common-name handling); validated molecule-by-molecule against the same 63-set; Greek output byte-identical after (regression gate). P1 + P4.
+* **E2 — English name assembly (2–4 wk, the real work):** parallel `fGuessNameEN` path (no Greek euphony connector, English substituent conventions, common-name handling); validated molecule-by-molecule against the same 64-set (64 `nameExamples` keys); Greek output byte-identical after (regression gate). P1 + P4.
 * **E3 — EN scenario library (parallel, P3):** 3–5 EN-authored scenarios (English classroom narratives, not translations), same schema + two-level notes.
 * **E4 — Release as companion:** stable EN entry link + short teacher guide + citation to the submitted paper.
 * **Entry criteria:** Greek LEARN pilot done + paper submitted + engine frozen. **Estimate:** ~6–10 weeks. **Owner:** P1 + P3 + P4; P2 aligns the paper to cite the EN link.

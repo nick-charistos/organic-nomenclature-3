@@ -610,3 +610,24 @@ Browser checklist for owner: pick off/on/hover/focus beside 2D/3D/gear
 chips (one family); Go menu/molecule-no-menu/molecule+menu steps (picks +
 viewers follow); Go → Update keeps menu; Exit → gear opens; viewer-column
 rounding vs dropdown/tooltip clipping; present Prev/Next untouched.
+
+## 2026-10-12 — count correction 64, Greek scenario kept, Ottawa committed
+
+* Molecule count corrected 63 → 64 in live docs (README, LAYERS-PLAN §8,
+  PROJECT-PLAN(-GR) status + Module 1, DEVELOPMENT-PLAN banner, didactic §9).
+  Verified: 64 top-level `nameExamples` keys in
+  `js/jsme-nick-nomeclature-moc2-data_44.js` (methane … propanoic_methyl_ester).
+  Counting rule: one molecule = one `nameExamples` key. The "63" in the
+  2026-10-11 sweep note above was a miscount; left as written.
+* Stored scenarios: `scenarios/ethene.scenario.json` + `scenarios/ethene-2.scenario.json`
+  removed; `scenarios/Αλκάνια-Αιθάνιο.scenario.json` kept (7 steps, schema v1,
+  `app: mulermoc-nom-44`: ethane walkthrough steps 1–5 + alkane menu browsing
+  step 6 + 3D alkane models step 7; menu subsets methane→pentane; all
+  `selectedMol`/`menuSubset` keys resolve against the 64-set; `moveto: null`
+  throughout). Greek filenames stay URL-encoded in `?scenario=` links.
+  README + LAYERS-PLAN §2 updated; CHANGELOG/handoff notes above left as written.
+* `docs/PROJECT-PLAN.md` + `docs/PROJECT-PLAN-GR.md`: Ottawa (OrgChem101)
+  comparison column committed as written (owner decision 2026-10-12).
+* `docs/RESEARCH-PLAN.md` stays deleted (assets cleanup 2026-10-09); live
+  research design is `docs/LAYERS-PLAN.md` §5 + `docs/SESSION-HANDOFF-2026-10-10.md`.
+  Remaining `RESEARCH-PLAN.md` mentions are in historical notes only.
