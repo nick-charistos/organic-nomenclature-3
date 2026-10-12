@@ -966,9 +966,9 @@ border: 2px solid var(--veryLightBlue);
    flex-direction: column;
    gap: 2px;
    padding: 6px 8px;
-   background: var(--lightGrayNick, #f3f3f3);
-   border: 1px solid var(--baseColor);
-   border-top: 0;
+   background: var(--veryLightBlue);
+   border-bottom: 1px solid var(--veryLightBlue);
+  
 }
 
 .scPresentGrouping .radioCheckContainer {
@@ -1020,11 +1020,11 @@ border: 2px solid var(--veryLightBlue);
 
 /* Open header takes the main-app submenu chrome (.crossMenuLi.selectedLi). */
 .scPresentGroup.open {
-   background-color: var(--baseColor) !important;
+   background-color: var(--lightBlue) !important;
    color: #fff;
    transition: all 0.2s;
    font-weight: 600;
-   border: 1px solid var(--baseColor);
+   border: 1px solid var(--lightBlue);
    border-bottom: 0;
    font-size: 1rem;
 }
@@ -1035,7 +1035,7 @@ border: 2px solid var(--veryLightBlue);
 
 /* Open submenu body carries the main-app border (.exmplContainer). */
 .scPresentGroups {
-   border: 1px solid var(--baseColor);
+   border-bottom: 1px solid var(--lightBlue);
 }
 
 .scStepNumberTitle {

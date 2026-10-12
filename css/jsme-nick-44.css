@@ -520,8 +520,9 @@ header {
 
 #nomeclature2Menu {
   border: 1px solid var(--lightBlue);
-  max-height: 596px;
+  max-height: 600px;
   border-radius: 5px;
+  overflow: hidden;
 }
 
 .menuNomeclature2Container {
