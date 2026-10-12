@@ -967,7 +967,7 @@ border: 2px solid var(--veryLightBlue);
    gap: 2px;
    padding: 6px 8px;
    background: var(--veryLightBlue);
-   border-bottom: 1px solid var(--veryLightBlue);
+   border-bottom: 1px solid var(--lightBlue);
   
 }
 
