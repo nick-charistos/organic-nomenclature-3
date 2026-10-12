@@ -647,3 +647,20 @@ Browser checklist for owner: http(s) boot → tab shows S1 `Αλκάνια-Αι�
 (7 steps, active) + S2 empty, `+ New` unlocked; Present S1 → 7 steps → Exit
 restores; `?scenario=…&present=1#step=3` loads once (no duplicate card);
 `file://` boot → single empty card, no toast; Export S1 → Import round-trip.
+
+## 2026-10-12 — present control bars survive a no-viewer exit
+
+* Bug (owner report): 3D settings missing in presentation despite a checked
+  `3D ρυθμίσεις` box, after exiting from a no-3D step and Playing again.
+  Cause: dual hiding — toggles/`fScenarioRestoreChrome` add the `hide`
+  class (`!important`) while `fScenarioChrome` cleared only inline display.
+* Fix: `fScenarioShowBar(id, show)` helper (inline + class); used for
+  `radio2DMode` + `controls3D` in `fScenarioChrome` (2D mirror fixed too).
+  `node --check` clean; all authoring `fScenarioChrome` callers are followed
+  by `fScenarioRestoreChrome(viewers)`, so author-hidden bars stay hidden.
+* Docs: CHANGELOG `[Unreleased]` entry (this note).
+
+Browser checklist for owner: the exact repro (3D-checked step → Exit from a
+no-3D step → Play → `controls3D` visible); unchecked stays hidden; 2D mirror
+(exit no-2D → replay 2D-checked step); authoring `[2D][3D]` toggles unaffected;
+one full Save → Present → Next → Exit round-trip.

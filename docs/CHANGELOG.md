@@ -10,6 +10,11 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 - Authoring boots with two cards: S1 preloaded from `scenarios/Αλκάνια-Αιθάνιο.scenario.json` (`MuLERMoCScenario.defaultScenarioUrl`, fetched + `fScenarioValidate`d, warnings toasted; the empty boot card is reused as S1 so ids stay stable) and S2 a fresh empty `untitled-scenario` (1 filled + 1 empty keeps `+ New` unlocked under `maxEmptyScenarios = 3`). S1 is the active card. `?scenario=` deep links skip the preload; `file://` fetch failure falls back silently to today's single empty card (Import remains the offline path); bare `?present=1` presents the preloaded S1, else keeps the "needs ?scenario=" toast. No schema change (`scenarioVersion` stays 1).
 
+### Present control bars survive a no-viewer exit (stale `hide` class)
+
+- Bug: exiting from a step with no 3D viewer, then Playing again, lost the `controls3D` bar even when the step's `3D ρυθμίσεις` checkbox was checked (same latent issue for `radio2DMode` after a no-2D exit). Cause: two hiding mechanisms — the viewer toggles / `fScenarioRestoreChrome` add the `hide` class (`display:none !important`) while `fScenarioChrome` (via `fScenarioHide`) cleared only inline `display`, so the stale class survived step entry and `!important` won.
+- Fix (`js/mulermoc-nom-scenario-44.js`): new `fScenarioShowBar(id, show)` helper drives both inline display and the `hide` class; `fScenarioChrome` uses it for `radio2DMode` + `controls3D`, so a checked bar is always available in presentation. Authoring callers are all followed by `fScenarioRestoreChrome(viewers)`, which re-applies viewer-based hiding — author-toggled bars stay as left.
+
 ### Per-component name visibility (eye toggles)
 
 - Master eye-edit switch in `#nameSettingsPanel` (`#nameStyleEyeToggle`, live-only `window.nameEyeEdit`, never stored; single `eye-state-button` icon + `.active` highlight): reveals a small eye button above each name component (`js/mulermoc-nom-molview-44.js`, `js/mulermoc-nom-teaching-44.js`, `css/jsme-nick-44.css`). Eye artwork from the Industrial-Sharp set (`imgs/eye-*.svg`, inlined as consts with `currentColor` fills; uniform `-9 -244 800 800` viewBox).

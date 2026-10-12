@@ -1256,6 +1256,20 @@ function fScenarioHide(id, hide) {
   if (el) el.style.display = hide ? "none" : "";
 }
 
+// Class-aware twin of fScenarioHide for the 2D/3D control bars, which both
+// hiding mechanisms touch: the app's viewer toggles add the `hide` class
+// (`display:none !important`) while present-chrome sets inline display only.
+// Clearing inline display alone cannot revive a bar carrying a stale `hide`
+// class (e.g. left by fScenarioRestoreChrome after a no-3D exit), so both
+// are driven here. Every authoring caller of fScenarioChrome is followed by
+// fScenarioRestoreChrome(viewers), which re-applies viewer-based hiding.
+function fScenarioShowBar(id, show) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.style.display = show ? "" : "none";
+  if (el.classList) el.classList.toggle("hide", !show);
+}
+
 // Presentation CSS hook: #pageContainer.presenting scopes all present-only
 // overrides (scenario stylesheet). Display authority stays in CSS; JS only
 // flips this one class, so present styling survives menu/name rebuilds.
@@ -1593,11 +1607,13 @@ function fScenarioChrome(show) {
       /* 3D unavailable */
     }
   }
-  // control bars + save buttons
+  // control bars + save buttons (bars go through the class-aware helper:
+  // a stale `hide` class from a no-viewer exit would otherwise survive the
+  // inline-display restore and keep a checked bar invisible in presentation)
   var c2 = show.controls && show.controls["2D"] === true && show2D;
   var c3 = show.controls && show.controls["3D"] === true && show3D;
-  fScenarioHide("radio2DMode", present && !c2);
-  fScenarioHide("controls3D", present && !c3);
+  fScenarioShowBar("radio2DMode", !(present && !c2));
+  fScenarioShowBar("controls3D", !(present && !c3));
   fScenarioHide("save2DBtn", present && !(show.save && show.save["2D"] === true && show2D));
   fScenarioHide("save3DBtn", present && !(show.save && show.save["3D"] === true && show3D));
   // title-bar chrome: always hidden in presentation
