@@ -631,3 +631,19 @@ rounding vs dropdown/tooltip clipping; present Prev/Next untouched.
 * `docs/RESEARCH-PLAN.md` stays deleted (assets cleanup 2026-10-09); live
   research design is `docs/LAYERS-PLAN.md` §5 + `docs/SESSION-HANDOFF-2026-10-10.md`.
   Remaining `RESEARCH-PLAN.md` mentions are in historical notes only.
+
+## 2026-10-12 — default authoring preload S1 + empty S2
+
+* `js/mulermoc-nom-scenario-44.js`: `MuLERMoCScenario.defaultScenarioUrl`
+  (`scenarios/Αλκάνια-Αιθάνιο.scenario.json`); `fScenarioBoot` fetches +
+  validates it when no `?scenario=` param — boot card reused as S1 (title +
+  7 steps), `fScenarioNew("untitled-scenario", true)` added as S2, S1 set
+  active, panels rebuilt. Deep links skip it; `file://`/404/invalid falls
+  back silently to one empty card; bare `?present=1` presents preloaded S1.
+  `node --check` clean; scenario JSON re-validated (7 steps, v1).
+* Docs: CHANGELOG `[Unreleased]` preload section, didactic §9 preload line.
+
+Browser checklist for owner: http(s) boot → tab shows S1 `Αλκάνια-Αιθάνιο`
+(7 steps, active) + S2 empty, `+ New` unlocked; Present S1 → 7 steps → Exit
+restores; `?scenario=…&present=1#step=3` loads once (no duplicate card);
+`file://` boot → single empty card, no toast; Export S1 → Import round-trip.

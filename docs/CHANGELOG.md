@@ -6,6 +6,10 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ## [Unreleased] (v44 working copy)
 
+### Default authoring preload (S1 + empty S2)
+
+- Authoring boots with two cards: S1 preloaded from `scenarios/Αλκάνια-Αιθάνιο.scenario.json` (`MuLERMoCScenario.defaultScenarioUrl`, fetched + `fScenarioValidate`d, warnings toasted; the empty boot card is reused as S1 so ids stay stable) and S2 a fresh empty `untitled-scenario` (1 filled + 1 empty keeps `+ New` unlocked under `maxEmptyScenarios = 3`). S1 is the active card. `?scenario=` deep links skip the preload; `file://` fetch failure falls back silently to today's single empty card (Import remains the offline path); bare `?present=1` presents the preloaded S1, else keeps the "needs ?scenario=" toast. No schema change (`scenarioVersion` stays 1).
+
 ### Per-component name visibility (eye toggles)
 
 - Master eye-edit switch in `#nameSettingsPanel` (`#nameStyleEyeToggle`, live-only `window.nameEyeEdit`, never stored; single `eye-state-button` icon + `.active` highlight): reveals a small eye button above each name component (`js/mulermoc-nom-molview-44.js`, `js/mulermoc-nom-teaching-44.js`, `css/jsme-nick-44.css`). Eye artwork from the Industrial-Sharp set (`imgs/eye-*.svg`, inlined as consts with `currentColor` fills; uniform `-9 -244 800 800` viewBox).

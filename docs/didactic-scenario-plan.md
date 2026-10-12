@@ -416,6 +416,7 @@ LEARN is layer 1 of the twofold+1 vision (see `README.md`, `docs/LAYERS-PLAN.md`
 * **Two-level `note` convention:** `note` carries the teacher narrative; authoring guidance is EPAL-simple first line(s) / Lyceum-full extension (P3 authors, P5 uses for EPAL-vs-Lyceum comparison). Schema unchanged — convention only.
 * **`moveto` curation:** capture with `rotate off`; prefer curated per-step cameras for the library over ad-hoc capture.
 * **Authoring docs:** Save → Export → Present → Exit flow (Exit restores menu + exit-step viewers + all bars/panels; in-memory steps kept). `Go` previews align picks + viewer chrome to the step, so Go → tweak → Update round-trips keep the menu.
+* **Default preload:** authoring boots with S1 = `scenarios/Αλκάνια-Αιθάνιο.scenario.json` (fetched + validated; `?scenario=` deep links skip it, `file://` falls back to one empty card) and S2 = empty `untitled-scenario`, S1 active.
 
 ## 10. Future states (2026-10-09, docs-only, no code change)
 

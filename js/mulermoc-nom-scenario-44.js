@@ -23,6 +23,7 @@ var MuLERMoCScenario = {
   menuPickMode: false, // authoring: show pick checkboxes in the left menu
   authoring: false, // authoring mode: bar + panels + pick UI (off by default)
   maxEmptyScenarios: 3, // adjustable cap on step-less cards (scNew locks at cap)
+  defaultScenarioUrl: "scenarios/Αλκάνια-Αιθάνιο.scenario.json", // preloaded as S1 at boot (S2 stays empty); ?scenario= deep links skip this
 };
 
 // ── multi-scenario state manager ─────────────────────────────────────
@@ -3007,8 +3008,44 @@ function fScenarioBoot() {
         .catch(function (e) {
           fScenarioToast("Could not load scenario (needs http(s); use Import on file://).");
         });
-    } else if (url.present) {
-      fScenarioToast("Present mode needs ?scenario=… or imported steps.");
+    } else {
+      // Default library preload: the empty boot card becomes S1 (stored Greek
+      // alkane scenario) and a second empty card is added as S2. Deep links
+      // (?scenario=) skip this. file:// fetch failure falls back silently to
+      // the single empty boot card (Import remains the offline path).
+      fetch(MuLERMoCScenario.defaultScenarioUrl)
+        .then(function (r) {
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          return r.json();
+        })
+        .then(function (obj) {
+          var res = fScenarioValidate(obj);
+          res.warnings.forEach(fScenarioToast);
+          if (!res.ok) {
+            if (url.present) fScenarioToast("Present mode needs ?scenario=… or imported steps.");
+            return;
+          }
+          var s1 = fScenarioActive();
+          s1.title = res.title;
+          s1.steps = res.steps;
+          s1.index = 0;
+          s1.menuPick = [];
+          fScenarioSyncLegacy();
+          fScenarioNew("untitled-scenario", true);
+          fScenarioSetActive(s1.id);
+          fScenarioBuildPanels();
+          if (url.present) {
+            MuLERMoCScenario.presentId = s1.id;
+            fScenarioWhenJSmolReady(function () {
+              fScenarioStashAuthorSettings();
+              fScenarioGo(Math.min(url.step, res.steps.length) - 1);
+            });
+          }
+        })
+        .catch(function (e) {
+          /* file:// or missing default: keep the single empty boot card */
+          if (url.present) fScenarioToast("Present mode needs ?scenario=… or imported steps.");
+        });
     }
   });
   window.addEventListener("hashchange", function () {
