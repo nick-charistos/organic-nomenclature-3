@@ -3,8 +3,8 @@
 ### Organic Chemistry Interactive Learning & Research Platform
 
 **Principal Investigator:** N. Charistos, Department of Chemistry, ΑΠΘ
-**Status:** Active development | v44 baseline (64 molecules — 64 `nameExamples` keys, scenario scaffold; v43 frozen at tag `v43`, v42 frozen in repo2)
-**Last updated:** 2026-10-07
+**Status:** Active development | v45 baseline (64 molecules — 64 `nameExamples` keys, scenario scaffold; v44 runnable at root, v43 frozen at tag `v43`, v42 frozen in repo2)
+**Last updated:** 2026-10-13
 
 > **2026-10 update:** vision is now twofold+1 (community tool + research publications + platform for isomerism/reactions) with four layers in LEARN-first order — LEARN → EXPLORE-lite → PRACTICE → PLAY. The static chemistry app is embedded in Drupal; logging is research-primary. Source of truth for layers: `docs/LAYERS-PLAN.md`. Team P1–P6 roles and timeline are defined there and in `README.md`. What follows below is the original plan text, kept for theory and history; version/count claims predating v44 are superseded.
 

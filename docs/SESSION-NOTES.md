@@ -687,10 +687,11 @@ Scaffold: `*44*` copied to `*45*` (`mulermoc-nom-45.html` + `js/*-45.js` +
 * Menu-only validation note silenced: valid menu-only steps no longer toast
   at boot/import (owner-verified on reload); genuinely-broken steps still warn.
 * Tooltips: one shared navy skin (single copy, `baseColor`/`Roboto
-  Condensed`/`0.875rem`/normal — owner restyle); scenario bar/panel/step/
+  Condensed`/`0.75rem`/normal — owner restyle); scenario bar/panel/step/
   toolbar buttons + badge + drag handle converted from native `title`;
   `#scNew` unlock path restores (not strips) its hint; geometry variants
-  (button-panel bubbles above, save buttons left, `[2D]` left-aligned) for
+  (button-panel bubbles above, save buttons left, `[2D]` left-aligned,
+  edge buttons Save-left-aligned/Delete-right-aligned) for
   `overflow:hidden` parents; all 14 tooltip/`aria-label` texts Greek.
 * Docs: README/CHANGELOG baselines → v45; didactic §§ state notes + `mode2D`
   values + build status; DEVELOPMENT-PLAN pipeline/field names; LAYERS-PLAN

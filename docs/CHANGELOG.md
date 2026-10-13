@@ -21,7 +21,7 @@ Earlier entries below were written against `*44*` paths; the same behaviors now 
 
 ### Shared tooltip skin + scenario-bar coverage + Greek tooltips
 
-- One shared skin (single copy in `css/jsme-nick-45.css`): navy `baseColor` bubble (owner restyle), white `Roboto Condensed` `0.875rem` normal text; arrows follow the skin (eye/author-tab/pick arrows fixed to match). Geometry stays per family: button-panel bubbles above (panel `overflow:hidden` clips below-bubbles when the drawer is shut), save buttons left (`#viewerCol` clipping), `[2D]` left-aligned; `position: relative` anchors added (no visual change).
+- One shared skin (single copy in `css/jsme-nick-45.css`): navy `baseColor` bubble (owner restyle), white `Roboto Condensed` `0.75rem` normal text; arrows follow the skin (eye/author-tab/pick arrows fixed to match). Geometry stays per family: button-panel bubbles above (panel `overflow:hidden` clips below-bubbles when the drawer is shut), save buttons left (`#viewerCol` clipping), `[2D]` left-aligned, edge buttons Save-left-aligned/Delete-right-aligned (panel-side clipping); `position: relative` anchors added (no visual change).
 - Scenario buttons converted from native `title` to `data-tooltip`: title row, play bar, panel, step rows (Go=`Προεπισκόπηση`/Update/Duplicate/Up/Down/Delete), note toolbar, type badge, drag handle; `#scNew` unlock path restores (not strips) its hint. Inputs keep native `title` (`::after` cannot render on form controls).
 - All tooltip/`aria-label` texts Greek (14 strings; molecule keys stay Latin identifiers; visible button labels out of scope). Owner hover checks pending.
 
