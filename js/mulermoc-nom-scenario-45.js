@@ -2017,7 +2017,7 @@ function fScenarioBuildUi() {
     "<div id='scenarioPlayBarTitle'><span class='scTitleBtns'><button id='scNew' title='New empty scenario'>+ New</button>" +
       "<button id='scImport' title='Import scenario JSON (adds a panel)'>Import</button>" +
       "<input type='file' id='scFile' accept='.json,application/json' style='display:none'></span>" +
-      "<span>Σενάρια Παρουσίασης</span><button id='scCloseBar' title='Κλείσιμο (ESC)'>✕</button></div>" +
+      "<span class='scTitleText'>Σενάρια Παρουσίασης</span><button id='scCloseBar' title='Κλείσιμο (ESC)'>✕</button></div>" +
     "<div id='scenarioPanels'></div>";
     document.body.appendChild(bar);
     fScenarioPaintIconTextBtn(document.getElementById("scNew"), "libraryNew", "+ New");
