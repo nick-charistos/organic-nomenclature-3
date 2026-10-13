@@ -664,3 +664,42 @@ Browser checklist for owner: the exact repro (3D-checked step → Exit from a
 no-3D step → Play → `controls3D` visible); unchecked stays hidden; 2D mirror
 (exit no-2D → replay 2D-checked step); authoring `[2D][3D]` toggles unaffected;
 one full Save → Present → Next → Exit round-trip.
+
+## 2026-10-13 — v45 file set + 2D naming rename + tooltip program
+
+Scaffold: `*44*` copied to `*45*` (`mulermoc-nom-45.html` + `js/*-45.js` +
+`css/*-45.css`, `index.html` → 45; `*44*` runnable at root). `*43*`/`*42*`/
+`archive/` untouched.
+
+* 2D naming rename (code-only, behavior-identical): `<mol>_2D` →
+  `<mol>_2D_Condensed`, `<mol>_2D_E` → `<mol>_2D_Expanded`, `<mol>_diagr2D` →
+  `<mol>_2D_Skeletal`; `MOL2D` `{std,exp,diagr}` → `{condensed,expanded,
+  skeletal}`; `structure2D[_E|_D]` / `mainChain[_E|_diagr]` /
+  `modeSuffix` values renamed to match; `mode2D "diagramatic"` → `"skeletal"`
+  (`condensedZigZag` kept); new `fMainChainKeySuffix()` helper (molview);
+  legacy `diagramatic` coerces on scenario import (warning, in-memory).
+  Exports still stamp `"app": "mulermoc-nom-44"` (informational — validation
+  ignores it).
+* Static audit: braces balanced 44→45 on all five JS files; zero legacy
+  identifiers outside the intentional coercion lines. Review caught 2 real
+  bugs (double-prefixed `"mainChain_Condensed" + suffix` in
+  `fHighLightMainChain`/`fUpdateChainModeButton`) — fixed before commit.
+* Menu-only validation note silenced: valid menu-only steps no longer toast
+  at boot/import (owner-verified on reload); genuinely-broken steps still warn.
+* Tooltips: one shared navy skin (single copy, `baseColor`/`Roboto
+  Condensed`/`0.875rem`/normal — owner restyle); scenario bar/panel/step/
+  toolbar buttons + badge + drag handle converted from native `title`;
+  `#scNew` unlock path restores (not strips) its hint; geometry variants
+  (button-panel bubbles above, save buttons left, `[2D]` left-aligned) for
+  `overflow:hidden` parents; all 14 tooltip/`aria-label` texts Greek.
+* Docs: README/CHANGELOG baselines → v45; didactic §§ state notes + `mode2D`
+  values + build status; DEVELOPMENT-PLAN pipeline/field names; LAYERS-PLAN
+  baseline + layer entries.
+
+Browser checklist for owner (extends all previous lists): cold boot shows
+methane, no toast; all 3 modes per molecule incl. a skeletal-less one
+(fallback); zigzag toggle; hover one tooltip per family (panel, eye, author
+tab, pick, title row, panel, step row, toolbar, play bar, badge, grip, save,
+[2D]/[3D]) for identical navy skin, no clipping, no double native tooltip;
+`#scNew` bubble unlocked + locked; Import a v44 file with a skeletal step
+(`diagramatic→skeletal` toast); one full Save → Present → Next → Exit.

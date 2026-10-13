@@ -4,18 +4,18 @@ A Greek-first interactive learning platform for organic nomenclature, built arou
 
 Desinged and developed by Nickolas Charistos
 
-**Current baseline:** v44 (released 2026-10-07; ongoing work is the *v44 working copy* — see [CHANGELOG](docs/CHANGELOG.md) `[Unreleased]`)
-**Entry point:** [index.html](index.html) → [mulermoc-nom-44.html](mulermoc-nom-44.html)
+**Current baseline:** v45 (scaffolded from v44; `index.html` → v45; ongoing work is the *v45 working copy* — see [CHANGELOG](docs/CHANGELOG.md) `[Unreleased]`)
+**Entry point:** [index.html](index.html) → [mulermoc-nom-45.html](mulermoc-nom-45.html)
 
 | Layer | File |
 |---|---|
-| Core engine (analysis + naming) | [js/mulermoc-nom-core-44.js](js/mulermoc-nom-core-44.js) |
-| Viewer (JSME / JSmol / Snap.svg) | [js/mulermoc-nom-molview-44.js](js/mulermoc-nom-molview-44.js) |
-| Teaching (rules, narration, UI wiring) | [js/mulermoc-nom-teaching-44.js](js/mulermoc-nom-teaching-44.js) |
-| Scenario module (LEARN authoring + presentation) | [js/mulermoc-nom-scenario-44.js](js/mulermoc-nom-scenario-44.js) |
+| Core engine (analysis + naming) | [js/mulermoc-nom-core-45.js](js/mulermoc-nom-core-45.js) |
+| Viewer (JSME / JSmol / Snap.svg) | [js/mulermoc-nom-molview-45.js](js/mulermoc-nom-molview-45.js) |
+| Teaching (rules, narration, UI wiring) | [js/mulermoc-nom-teaching-45.js](js/mulermoc-nom-teaching-45.js) |
+| Scenario module (LEARN authoring + presentation) | [js/mulermoc-nom-scenario-45.js](js/mulermoc-nom-scenario-45.js) |
 | Shared icon helper | [js/ui-icons.js](js/ui-icons.js) |
-| Molecule data (64 molecules — 64 `nameExamples` keys) | [js/jsme-nick-nomeclature-moc2-data_44.js](js/jsme-nick-nomeclature-moc2-data_44.js) |
-| Styles | [css/jsme-nick-44.css](css/jsme-nick-44.css), [css/mulermoc-nom-scenario-44.css](css/mulermoc-nom-scenario-44.css) |
+| Molecule data (64 molecules — 64 `nameExamples` keys) | [js/jsme-nick-nomeclature-moc2-data_45.js](js/jsme-nick-nomeclature-moc2-data_45.js) |
+| Styles | [css/jsme-nick-45.css](css/jsme-nick-45.css), [css/mulermoc-nom-scenario-45.css](css/mulermoc-nom-scenario-45.css) |
 | Stored scenarios | [scenarios/](scenarios/) (`Αλκάνια-Αιθάνιο.scenario.json`; Greek filenames stay URL-encoded in `?scenario=` links) |
 
 ---
@@ -25,25 +25,27 @@ Desinged and developed by Nickolas Charistos
 | Site | Serves | Status |
 |---|---|---|
 | [organic-nomenclature-2](https://nick-charistos.github.io/organic-nomenclature-2/) | v42 | frozen — emergency hotfixes only |
-| [organic-nomenclature-3](https://nick-charistos.github.io/organic-nomenclature-3/) | v44 | active — all new work happens here |
+| [organic-nomenclature-3](https://nick-charistos.github.io/organic-nomenclature-3/) | v45 | active — all new work happens here |
 
-Root holds the files of the current release (`*44*`; `mulermoc-nom-42/43.html` are kept alongside). Older file sets live in [archive/](archive/README.md) (non-runnable museum). Runnable history via git tags `v41`–`v44`.
+Root holds the files of the current release (`*45*`; `mulermoc-nom-42/43/44.html` are kept alongside). Older file sets live in [archive/](archive/README.md) (non-runnable museum). Runnable history via git tags `v41`–`v44`.
 
 Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (only `image-svgrepo-Industrial-Sharp.svg` is kept; other icons are inlined/served by `js/ui-icons.js`), PDFs, `mols/branched/`, third-party libs served via CDN (see [.gitignore](.gitignore)).
 
 ---
 
-## What works now (v44)
+## What works now (v45)
 
 ### Chemistry engine
 - Greek IUPAC naming for alkanes/alkenes/alkynes, branched chains, halides, alcohols, aldehydes/ketones, carboxylic acids (incl. hydroxy/amino/oxo/keto), nitriles, amines, ethers (systematic + common names), esters (two-word names).
-- v44 hardening: bond-order N-table (tertiary R3N fixed), principal-functional-group rank, halogen N-way handling.
+- v44 hardening (carried into v45): bond-order N-table (tertiary R3N fixed), principal-functional-group rank, halogen N-way handling.
+- v45 2D naming rename (code-only, behavior-identical): MOL variables `<mol>_2D_Condensed/_2D_Expanded/_2D_Skeletal`, `mode2D` value `skeletal` (was misspelled `diagramatic`; legacy scenario files coerce on import), stored chain keys `mainChain_Condensed/_Expanded/_Skeletal`.
 - Name analysis: per-fragment highlight and numbering in 2D and 3D, branch highlighting (incl. expanded hydrogens), rule-theory panel.
 
 ### Viewer and UI
 - 2D (JSME) and 3D (JSmol) views; condensed, expanded, skeletal and annotated-skeletal modes; `[2D][3D]` visibility toggles; PNG export.
 - Menu groups: homologous series (default sort by carbon count), chemical classes, rules, flat `Όλα τα μόρια`.
 - Name panel: IUPAC/COMMON toggle, per-component eye toggles (hide name parts), Greek TTS narration that follows visibility.
+- Tooltips share one navy skin (single copy in `css/jsme-nick-45.css`); scenario-bar/panel/step/toolbar buttons, type badge and drag handle converted from native `title`; all-Greek tooltip texts; geometry variants (button-panel bubbles above, save buttons left, `[2D]` left-aligned) for `overflow:hidden` parents.
 
 ### LEARN layer: didactic scenarios
 - Authoring behind the `Σενάρια` handle: up to 3 scenarios, steps per scenario with per-step molecule/menu/chrome settings, rich step text (`B I sup sub`, size/width/columns), icon buttons, drag-reorder, step drawer, Import/Export JSON.
@@ -53,7 +55,7 @@ Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (o
 
 ### Known gaps
 - Unsaturated ethers/esters and wider ester coverage; rings and aromatics not supported.
-- v44 engine fixes pending browser verification (see CHANGELOG).
+- v45 working copy: 2D rename static-audited (braces balanced, zero legacy refs; two composite-key bugs caught and fixed in review); tooltip hover checks pending (owner); scenario exports still stamp `"app": "mulermoc-nom-44"` (informational only — validation ignores it).
 - Stored scenario `Αλκάνια-Αιθάνιο.scenario.json` (7 steps: ethane walkthrough + alkane menu browsing + 3D alkane models) replaces the earlier `ethene*.scenario.json` drafts (which selected ethane while titled ethene); wider scenario library and EPAL/Lyceum two-level notes still to be written.
 - Present grouped menus (`.scPresentGroup.open`) still carry the old dark fill while app group headers went light blue — re-mirror in the UI pass.
 
@@ -61,7 +63,7 @@ Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (o
 
 ## Four layers (LEARN-first)
 
-All layers reuse the same v44 engine, embedded as a static app in Drupal:
+All layers reuse the same v45 engine, embedded as a static app in Drupal:
 
 | # | Layer | Contract | State |
 |---|---|---|---|
@@ -100,7 +102,7 @@ Out of scope for now: quiz SPA, participant logging, CSV export, server-side cla
 
 ## Documents
 
-- [CHANGELOG.md](docs/CHANGELOG.md) — authoritative history, incl. `[Unreleased]` v44 working copy
+- [CHANGELOG.md](docs/CHANGELOG.md) — authoritative history, incl. `[Unreleased]` v45 working copy
 - [didactic-scenario-plan.md](docs/didactic-scenario-plan.md) — scenario schema and authoring flow
 - [LAYERS-PLAN.md](docs/LAYERS-PLAN.md) — layer contracts, exercise types, research logging schema
 - [DEVELOPMENT-PLAN.md](docs/DEVELOPMENT-PLAN.md), [PROJECT-PLAN.md](docs/PROJECT-PLAN.md), [PROJECT-PLAN-GR.md](docs/PROJECT-PLAN-GR.md) — product/research plans (may lag the code)
@@ -110,8 +112,8 @@ Out of scope for now: quiz SPA, participant logging, CSV export, server-side cla
 
 ## Status summary
 
-- Baseline: **v44** (+ working copy); v43 frozen at tag `v43`, v42 frozen in repo2
+- Baseline: **v45** (+ working copy); v44 runnable at root (`mulermoc-nom-44.html`), v43 frozen at tag `v43`, v42 frozen in repo2
 - Focus: **LEARN pilot (stored scenarios) + bounded EXPLORE-lite**
-- Near-term: **scenario library verification on v44**
+- Near-term: **scenario library verification on v45**
 - Rules: secondary explanatory layer; homologous series = database order
 - Research layer: active design (schema v1 in LAYERS-PLAN)

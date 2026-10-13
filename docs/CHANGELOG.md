@@ -4,7 +4,26 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ---
 
-## [Unreleased] (v44 working copy)
+## [Unreleased] (v45 working copy)
+
+Earlier entries below were written against `*44*` paths; the same behaviors now ship in the `*45*` set (mechanical copy + the rename below).
+
+### v45 file set + 2D naming rename (code-only, behavior-identical)
+
+- New parallel file set `mulermoc-nom-45.html` + `js/*-45.js` + `css/*-45.css`, copied from v44 (`index.html` → v45; `*44*` runnable at root, `*42*`/`*43*`/archive untouched).
+- Meaningful 2D representation names: MOL variables `<mol>_2D` → `<mol>_2D_Condensed`, `<mol>_2D_E` → `<mol>_2D_Expanded`, `<mol>_diagr2D` → `<mol>_2D_Skeletal`; `MOL2D` registry `{std, exp, diagr}` → `{condensed, expanded, skeletal}`; `nameExamples` fields `structure2D[_E|_D]` → `structure2D_[Condensed|Expanded|Skeletal]`, `mainChain[_E|_diagr]` → `mainChain_[Condensed|Expanded|Skeletal]`; `modeSuffix` values `""`/`"_E"`/`"_diagr2D"` → `"_2D_Condensed"`/`"_2D_Expanded"`/`"_2D_Skeletal"`; new `fMainChainKeySuffix()` helper for chain lookups (molview).
+- Misspelled `mode2D` value `diagramatic` → `skeletal` (core/molview/teaching/scenario); `condensedZigZag` kept as-is. Legacy scenario files with `diagramatic` coerce on import (`fScenarioValidate`, warning + in-memory migration, same pattern as the `moveto` quarantine). No schema change (`scenarioVersion` stays 1).
+- Static audit: braces balanced 44→45 on all five JS files; zero legacy identifiers outside the intentional coercion lines; two composite-key bugs (`"mainChain_Condensed" + suffix` double-prefix in `fHighLightMainChain`/`fUpdateChainModeButton`) caught and fixed in review. Known nit: scenario exports still stamp `"app": "mulermoc-nom-44"` (informational only — validation ignores it).
+
+### Menu-only validation note silenced (boot/import)
+
+- Valid menu-only steps no longer push the informational `"Step N: menu-only step (no molecule)."` warning, so the default S1 preload boots silently; the genuinely-broken case (no molecule *and* no subset → step skipped) still warns, and the save-time `"Saved menu-only step"` confirmation is unchanged. Owner-verified on reload.
+
+### Shared tooltip skin + scenario-bar coverage + Greek tooltips
+
+- One shared skin (single copy in `css/jsme-nick-45.css`): navy `baseColor` bubble (owner restyle), white `Roboto Condensed` `0.875rem` normal text; arrows follow the skin (eye/author-tab/pick arrows fixed to match). Geometry stays per family: button-panel bubbles above (panel `overflow:hidden` clips below-bubbles when the drawer is shut), save buttons left (`#viewerCol` clipping), `[2D]` left-aligned; `position: relative` anchors added (no visual change).
+- Scenario buttons converted from native `title` to `data-tooltip`: title row, play bar, panel, step rows (Go=`Προεπισκόπηση`/Update/Duplicate/Up/Down/Delete), note toolbar, type badge, drag handle; `#scNew` unlock path restores (not strips) its hint. Inputs keep native `title` (`::after` cannot render on form controls).
+- All tooltip/`aria-label` texts Greek (14 strings; molecule keys stay Latin identifiers; visible button labels out of scope). Owner hover checks pending.
 
 ### Default authoring preload (S1 + empty S2)
 

@@ -209,9 +209,9 @@ Authoring pipeline — adding one molecule costs: **1 SMILES string + 1 offline 
        ↓
 2. jsmeApplet.readSmiles(smi)          → auto-layout geometry in JSME
        ↓
-3. jsmeApplet.molFile()                → pure skeletal MOL  →  store as _diagr2D
-       ↓
-4. fMakeAnnotatedSkeletal(molStr)      → [C] substitution   →  store as _diagr2D_C  (new field)
+3. jsmeApplet.molFile()                → pure skeletal MOL  →  store as _2D_Skeletal
+        ↓
+4. fMakeAnnotatedSkeletal(molStr)      → [C] substitution   →  runtime-derived (annotated skeletal is computed at display time, not stored)
        ↓  (fAddHydrogens2SVG runs at display time — not stored)
 5. 3D SDF: pre-generated offline via RDKit Python script → saved to mols/ folder
 6. Condensed MOL: JSME horizontal layout acceptable for quiz-only molecules
@@ -222,12 +222,12 @@ Authoring pipeline — adding one molecule costs: **1 SMILES string + 1 offline 
 ```javascript
 mol_XXX: {
     smiles:       'CC(=O)CCC',   // canonical identifier (all molecules)
-    structure2D:  '...',          // condensed MOL   — existing 59: hand-crafted
-    structure2D_E:'...',          // expanded MOL    — existing 59: hand-crafted
-    structure2D_D:'...',          // pure skeletal   — existing 59: hand-crafted (some)
-    structure2D_C:'...',          // annotated skeletal — NEW: derived from _D via fMakeAnnotatedSkeletal
-    file3D:       'mols/...sdf',  // path to pre-generated SDF
+    structure2D_Condensed:'...', // condensed MOL   — hand-crafted
+    structure2D_Expanded: '...', // expanded MOL    — hand-crafted
+    structure2D_Skeletal: '...', // pure skeletal   — hand-crafted (some; missing reps disable that mode radio)
+    file3D:       'mols/...sdf', // path to pre-generated SDF
 }
+(v45 names; pre-v45 docs called these `structure2D` / `structure2D_E` / `structure2D_D`.)
 ```
 
 ### Python Authoring Tool (tools/gen_3d.py)

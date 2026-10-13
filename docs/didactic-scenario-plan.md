@@ -40,7 +40,7 @@ progress tracking, server storage.
 ```json
 {
   "scenarioVersion": 1,
-  "app": "mulermoc-nom-44",
+  "app": "mulermoc-nom-45",
   "scenario": "esters-intro",
   "title": "...",
   "steps": [
@@ -83,13 +83,20 @@ progress tracking, server storage.
 }
 ```
 
-State notes (grounded in v44; v42–v43 identical unless noted):
+State notes (grounded in v45; v42–v44 identical unless noted):
 
 * `selectedMol`, `mode2D/modeSuffix`, `mainChainMode`,
   `etherNamingMode`, `nameAnalysisMode`, `selectedRule` mirror
-  `js/mulermoc-nom-molview-44.js` (`fSelectMol`, `fShowNameAnalysis`,
+  `js/mulermoc-nom-molview-45.js` (`fSelectMol`, `fShowNameAnalysis`,
   `fExplainNameComp`). (Older revisions cited `molview-42.js` line numbers;
   line refs are fragile — prefer function names.)
+* `mode2D` ∈ `condensed` / `expanded` / `skeletal` / `condensedZigZag`;
+  `modeSuffix` ∈ `"_2D_Condensed"` / `"_2D_Expanded"` / `"_2D_Skeletal"`;
+  stored chain keys `mainChain_Condensed` / `mainChain_Expanded` /
+  `mainChain_Skeletal` (pre-v45 names `diagramatic`, `""`/`"_E"`/`"_diagr2D"`,
+  `mainChain[_E|_diagr]`). Legacy files carrying `mode2D: "diagramatic"`
+  coerce to `skeletal` on import with a warning (in-memory migration, no
+  version bump).
 * 2D style: `svgAtomColors2DFlag`, `atomColorMode2D`,
   `zigzagCheck` are stored; menu grouping mode is not (menu is
   hidden in playback). The legacy original-JSME pane toggle is not
@@ -126,7 +133,7 @@ Visibility rules:
   `fLoadMol2D` / `fLoadMol3D`, `display:none`), reusing the
   scope of `fToggleViewer2D` and `fToggleViewer3D`.
 * `show.controls.2D` toggles `#radio2DMode`
-  (`mulermoc-nom-44.html`: `Έγχρωμα Σύμβολα`,
+  (`mulermoc-nom-45.html`: `Έγχρωμα Σύμβολα`,
   `Συνεπτυγμένος/Ανεπτυγμένος/Σκελετικός`, `Σύμβολα CHn`).
   Per-step drawer checkbox `2D controls` (default unchecked; disabled
   unless the step's 2D viewer is visible). On apply the bar visuals
@@ -288,7 +295,7 @@ Visibility rules:
 ## 4. Playback UX + URL shape (frozen)
 
 * Canonical URL:
-  `mulermoc-nom-44.html?scenario=scenarios/esters-intro.json&present=1#step=3`
+  `mulermoc-nom-45.html?scenario=scenarios/esters-intro.json&present=1#step=3`
 * `?scenario=path.json`: which file. v1 allows same-origin
   `scenarios/*.json` only (reject `..`, non-`.json`,
   cross-origin). Fetched over `http(s)`; `file://` users must
@@ -354,7 +361,7 @@ Visibility rules:
 
 ## 6. molInfo / PubChem removal (done 2026-10-06 — not in this phase)
 
-Removed from the v43 set (carried into v44): `molInfoBtn` / `molInfoPanel` dead code
+Removed from the v43 set (carried through v44 into v45): `molInfoBtn` / `molInfoPanel` dead code
 (`molInfoEnabled = false`) in `js/mulermoc-nom-molview-43.js`
 (`fToggleMolInfo`, `svgInfo`, panel/button builders) + molInfo CSS in
 `css/jsme-nick-43.css` + `molInfoPanelSlot` host + `externalLinks` /
@@ -368,9 +375,9 @@ Kept untouched: v42 copies (`molview-42.js`, `jsme-nick-42.css` — frozen),
 * Legacy `#molInfo` in `functional-groups.html:80` is a
   different page and stays untouched (now in `archive/html/`).
 
-## 7. v1 build status (v43 done, v44 current)
+## 7. v1 build status (v43 done, v44 released, v45 current)
 
-Done in v43 (`mulermoc-nom-43.html`, last suffixed copy; carried into v44 unchanged unless noted in `CHANGELOG.md [v44]`):
+Done in v43 (`mulermoc-nom-43.html`, last suffixed copy; carried through v44 into v45 unchanged unless noted in `CHANGELOG.md [v44]`):
 
 1. ✅ `js/mulermoc-nom-scenario-43.js`:
    capture / validate / apply / export / import.
@@ -385,7 +392,7 @@ Done in v43 (`mulermoc-nom-43.html`, last suffixed copy; carried into v44 unchan
    assertions (manual click-through pending).
 6. ✅ CHANGELOG v43 entry (`index.html` → 43 in repo3 only).
 
-Remaining: v44 is the current file set (`*44*` copy of v43 + engine/viewer hardening, see `CHANGELOG.md [v44]`; `index.html` → 44; scenario exports write `"app": "mulermoc-nom-44"` and import accepts `"mulermoc-nom-43"` legacy files); then quizzes/games on the
+Remaining: v45 is the current file set (`*45*` = `*44*` copy + 2D naming rename + tooltip program, see `CHANGELOG.md [Unreleased]`; `index.html` → 45; `*44*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced); then quizzes/games on the
 same reuse contract.
 
 ## 8. Open questions for development (moveto timing closed 2026-10-04)
@@ -408,7 +415,7 @@ Many issues will surface during development; adjust there.
 
 ## 9. LEARN v1.1 — stored library (2026-10-03)
 
-LEARN is layer 1 of the twofold+1 vision (see `README.md`, `docs/LAYERS-PLAN.md`). v44 provides the player (v43 frozen at tag `v43`); v1.1 adds the library:
+LEARN is layer 1 of the twofold+1 vision (see `README.md`, `docs/LAYERS-PLAN.md`). v45 provides the player (v44 runnable at root, v43 frozen at tag `v43`); v1.1 adds the library:
 
 * **Stored scenarios** under `scenarios/*.json` (same-origin, validated v1 schema), listed by Drupal; URL shape unchanged (`?scenario=scenarios/<name>.json&present=1#step=N`); Import remains the offline/`file://` path.
 * **First library (P3):** 3–5 scenarios (alkanes → alcohols → ethers → esters); each step keeps `selectedMol + show.*`; exit forces full chrome restore (menu `menu-open` + viewers/bars per the exit step — a no-3D exit leaves 3D hidden; settings panels + save buttons always come back).
