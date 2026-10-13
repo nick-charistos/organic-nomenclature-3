@@ -305,7 +305,7 @@ border: 2px solid var(--veryLightBlue);
 }
 
 .scenarioButtonPanel {
-   /* border-bottom: 1px dashed var(--lightBlue); */
+   background: var(--lightGrayNick);
 }
 
 #scenarioAuthorBar input[type=text] {
