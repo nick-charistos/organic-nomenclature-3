@@ -924,6 +924,34 @@ border: 2px solid var(--veryLightBlue);
    border-top-color: var(--baseColor);
 }
 
+/* Edge buttons: centered bubbles would spill past the panel's side edges
+   (.scenarioPanel{overflow:hidden} clips them). #scSave is leftmost, so its
+   bubble aligns left (shifts right into the panel); #scDelete is rightmost,
+   so its bubble aligns right (shifts left). Vertical placement inherited. */
+#scenarioAuthorBar .scenarioPanel button.scSave[data-tooltip]::after {
+   left: 0;
+   right: auto;
+   transform: none;
+}
+
+#scenarioAuthorBar .scenarioPanel button.scSave[data-tooltip]::before {
+   left: 12px;
+   right: auto;
+   transform: none;
+}
+
+#scenarioAuthorBar .scenarioPanel button.scDelete[data-tooltip]::after {
+   left: auto;
+   right: 0;
+   transform: none;
+}
+
+#scenarioAuthorBar .scenarioPanel button.scDelete[data-tooltip]::before {
+   left: auto;
+   right: 12px;
+   transform: none;
+}
+
 #nomeclature2Menu .panelTitle #scPickToggle .scPickCount {
    background: var(--lightEarth);
    color: var(--baseColor);
