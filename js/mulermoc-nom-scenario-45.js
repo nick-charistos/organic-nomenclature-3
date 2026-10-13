@@ -540,7 +540,8 @@ function fScenarioValidate(obj) {
         warnings.push("Step " + (i + 1) + ": no molecule and no menu subset — skipped.");
         return;
       }
-      warnings.push("Step " + (i + 1) + ": menu-only step (no molecule).");
+      // Valid menu-only step: no warning (boot/import stay silent; the
+      // save-time "Saved menu-only step" confirmation already informed the author).
     }
     st.menuSubset = kept;
     steps.push(st);
