@@ -748,58 +748,26 @@ border: 2px solid var(--veryLightBlue);
    line-height: 1.2;
 }
 
-/* tooltip to the left of the tab (mirrors .settingsBtn logic) */
+/* tooltip to the left of the tab (skin: shared rule in css/jsme-nick-45.css;
+   mirrors .settingsBtn logic) */
 #scenarioAuthorTab[data-tooltip]::after {
-   content: attr(data-tooltip);
    position: absolute;
    top: 50%;
    right: calc(100% + 10px);
    transform: translateY(-50%);
-   background: var(--darkEarth);
-   color: #fff;
-   font-size: 0.72rem;
-   font-weight: bold;
-   padding: 5px 8px;
-   border-radius: 4px;
-   white-space: nowrap;
-   pointer-events: none;
    z-index: 200;
-   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-   opacity: 0;
-   transition: opacity 0.15s ease 0s;
-}
-
-#scenarioAuthorTab[data-tooltip]:hover::after {
-   opacity: 1;
-   transition: opacity 0.15s ease 0.5s;
 }
 
 #scenarioAuthorTab[data-tooltip]::before {
-   content: "";
-   position: absolute;
    top: 50%;
    right: 100%;
    transform: translateY(-50%);
-   border: 6px solid transparent;
-   border-left-color: var(--darkEarth);
-   pointer-events: none;
+   border-left-color: var(--baseColor);
    z-index: 200;
-   opacity: 0;
-   transition: opacity 0.15s ease 0s;
-}
-
-#scenarioAuthorTab[data-tooltip]:hover::before {
-   opacity: 1;
-   transition: opacity 0.15s ease 0.5s;
 }
 
 /* menu-subset pick UI (author mode only; stripped in presentation) */
-#nomeclature2Menu .panelTitle {
-   /* keep centered title stable: Pick toggle is absolutely positioned */
-   padding-right: 76px;
-   padding-left: 76px;
-   box-sizing: border-box;
-}
+
 
 #nomeclature2Menu .panelTitle #scPickToggle {
    appearance: none;
@@ -881,55 +849,79 @@ border: 2px solid var(--veryLightBlue);
    border: 2px solid var(--veryLightBlue);
 }
 
-/* styled tooltip below the box — same look as the other tooltips;
+/* styled tooltip below the box (skin: shared rule in css/jsme-nick-45.css);
    left-anchored so it never clips past the menu's left edge */
 #nomeclature2Menu .panelTitle #scPickToggle.unselectedCheck[data-tooltip]::after,
 #nomeclature2Menu .panelTitle #scPickToggle.selectedCheck[data-tooltip]::after {
-   content: attr(data-tooltip);
    position: absolute;
    top: calc(100% + 10px);
    left: 0;
    width: auto;
    height: auto;
-   line-height: normal;
    border: 0;
-   background: var(--darkEarth);
-   color: #fff;
-   font-size: 0.72rem;
-   font-weight: bold;
-   font-family: "Roboto", sans-serif;
-   padding: 5px 8px;
-   border-radius: 4px;
-   white-space: nowrap;
-   pointer-events: none;
    z-index: 200;
-   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-   opacity: 0;
-   transition: opacity 0.15s ease 0s;
-}
-
-#nomeclature2Menu .panelTitle #scPickToggle.unselectedCheck[data-tooltip]:hover::after,
-#nomeclature2Menu .panelTitle #scPickToggle.selectedCheck[data-tooltip]:hover::after {
-   opacity: 1;
-   transition: opacity 0.15s ease 0.5s;
 }
 
 #nomeclature2Menu .panelTitle #scPickToggle[data-tooltip]::before {
-   content: "";
-   position: absolute;
    top: 100%;
    left: 10px;
-   border: 6px solid transparent;
-   border-bottom-color: var(--darkEarth);
-   pointer-events: none;
+   border-bottom-color: var(--baseColor);
    z-index: 200;
-   opacity: 0;
-   transition: opacity 0.15s ease 0s;
 }
 
-#nomeclature2Menu .panelTitle #scPickToggle[data-tooltip]:hover::before {
-   opacity: 1;
-   transition: opacity 0.15s ease 0.5s;
+/* Styled bubbles for scenario bar/panel/step/toolbar buttons, type badge
+   and drag handle (skin: shared rule in css/jsme-nick-45.css). Below-centered
+   like the main app; #scenarioAuthorBar/#scenarioPlayBar buttons and the
+   badge/handle gain position:relative as the ::after anchor (no visual change). */
+#scenarioPlayBarTitle button[data-tooltip],
+#scenarioPlayBar button[data-tooltip],
+.scenarioPanel button[data-tooltip],
+.scMolBadge[data-tooltip],
+.scDragHandle[data-tooltip] {
+   position: relative;
+}
+
+#scenarioPlayBarTitle button[data-tooltip]::after,
+#scenarioPlayBar button[data-tooltip]::after,
+.scenarioPanel button[data-tooltip]::after,
+.scMolBadge[data-tooltip]::after,
+.scDragHandle[data-tooltip]::after {
+   position: absolute;
+   top: calc(100% + 10px);
+   left: 50%;
+   transform: translateX(-50%);
+   z-index: 200;
+}
+
+#scenarioPlayBarTitle button[data-tooltip]::before,
+#scenarioPlayBar button[data-tooltip]::before,
+.scenarioPanel button[data-tooltip]::before,
+.scMolBadge[data-tooltip]::before,
+.scDragHandle[data-tooltip]::before {
+   top: 100%;
+   left: 50%;
+   transform: translateX(-50%);
+   border-bottom-color: var(--baseColor);
+   z-index: 200;
+}
+
+/* Button-panel bubbles render ABOVE the buttons: when the drawer is shut the
+   panel ends right under the button panel and .scenarioPanel{overflow:hidden}
+   would clip below-positioned bubbles. Header above always has room. */
+#scenarioAuthorBar .scenarioButtonPanel button[data-tooltip]::after {
+   top: auto;
+   bottom: calc(100% + 10px);
+   left: 50%;
+   transform: translateX(-50%);
+}
+
+#scenarioAuthorBar .scenarioButtonPanel button[data-tooltip]::before {
+   top: auto;
+   bottom: 100%;
+   left: 50%;
+   transform: translateX(-50%);
+   border-bottom-color: transparent;
+   border-top-color: var(--baseColor);
 }
 
 #nomeclature2Menu .panelTitle #scPickToggle .scPickCount {

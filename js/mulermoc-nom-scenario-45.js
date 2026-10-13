@@ -2014,10 +2014,10 @@ function fScenarioBuildUi() {
     // Inline display is never used here: it would beat the animation classes.
     bar.style.display = "";
     bar.innerHTML =
-    "<div id='scenarioPlayBarTitle'><span class='scTitleBtns'><button id='scNew' title='New empty scenario'>+ New</button>" +
-      "<button id='scImport' title='Import scenario JSON (adds a panel)'>Import</button>" +
+    "<div id='scenarioPlayBarTitle'><span class='scTitleBtns'><button id='scNew' data-tooltip='Νέο κενό σενάριο'>+ New</button>" +
+      "<button id='scImport' data-tooltip='Φόρτωση σεναρίου (JSON)'>Import</button>" +
       "<input type='file' id='scFile' accept='.json,application/json' style='display:none'></span>" +
-      "<span class='scTitleText'>Σενάρια Παρουσίασης</span><button id='scCloseBar' title='Κλείσιμο (ESC)'>✕</button></div>" +
+      "<span class='scTitleText'>Σενάρια Παρουσίασης</span><button id='scCloseBar' data-tooltip='Κλείσιμο (ESC)'>✕</button></div>" +
     "<div id='scenarioPanels'></div>";
     document.body.appendChild(bar);
     fScenarioPaintIconTextBtn(document.getElementById("scNew"), "libraryNew", "+ New");
@@ -2110,10 +2110,10 @@ function fScenarioBuildUi() {
     pb.style.display = "none";
     pb.innerHTML =
       "<div id='scenarioPlayBarNextPrevContainer'>" +
-      "<button id='scPrev' title='Προηγούμενο (←)'>◀</button><span id='scPos'>1/1</span><button id='scNext' title='Επόμενο (→)'>▶</button>" +
+      "<button id='scPrev' data-tooltip='Προηγούμενο (←)'>◀</button><span id='scPos'>1/1</span><button id='scNext' data-tooltip='Επόμενο (→)'>▶</button>" +
       "</div>" +
       // "<b id='scStepTitle'></b><span class='snote' id='scStepNote'></span>" +
-      "<button id='scExit' title='Έξοδος (ESC)'>Exit ✕</button>";
+      "<button id='scExit' data-tooltip='Έξοδος (ESC)'>Exit ✕</button>";
     document.body.appendChild(pb);
     document.getElementById("scPrev").onclick = function () {
       fScenarioGo(fScenarioPresent().index - 1);
@@ -2129,7 +2129,7 @@ function fScenarioBuildUi() {
 // #scenarioAuthorBar (singleton: title + New/Import) owns #scenarioPanels.
 // Each .scenarioPanel[data-scenario-id] has its own button panel (no Import)
 // and its own in-flow .scenarioDrawer (down/up via .open).
-// Icon helper: icon-only buttons keep title tooltip + aria-label text.
+// Icon helper: icon-only buttons keep data-tooltip + aria-label text.
 // Falls back to the text label when ui-icons.js is unavailable.
 function fScenarioPaintIconBtn(btn, key, label) {
   if (!btn) return;
@@ -2171,16 +2171,16 @@ function fScenarioBuildPanels() {
     panel.setAttribute("data-scenario-id", scen.id);
     panel.innerHTML =
       "<div class='scenarioHeader'>" +
-        "<span class='scScenarioNo' title=''>S1</span>" +
-        "<input type='text' class='scenarioTitle' value='' title='Scenario title'>" +
+        "<span class='scScenarioNo'>S1</span>" +
+        "<input type='text' class='scenarioTitle' value='' title='Τίτλος σεναρίου'>" +
         "<span class='scCount'>0</span>" +
-        "<button class='scDelete' title='Delete scenario'>✕</button>" +
+        "<button class='scDelete' data-tooltip='Διαγραφή σεναρίου'>✕</button>" +
       "</div>" +
       "<div class='scenarioButtonPanel'>" +
-        "<button class='scSave' title='Save current view as step'>Add step</button>" +
-        "<button class='scList' title='Show/hide step list'>Steps</button>" +
-        "<button class='scExport' title='Download scenario JSON'>Export</button>" +
-        "<button class='scPresent' title='Open presentation at step 1'>Play ▶</button>" +
+        "<button class='scSave' data-tooltip='Αποθήκευση προβολής ως βήμα'>Add step</button>" +
+        "<button class='scList' data-tooltip='Εμφάνιση/Απόκρυψη βημάτων'>Steps</button>" +
+        "<button class='scExport' data-tooltip='Λήψη σεναρίου (JSON)'>Export</button>" +
+        "<button class='scPresent' data-tooltip='Έναρξη παρουσίασης από το βήμα 1'>Play ▶</button>" +
       "</div>" +
       "<div class='scenarioDrawer'>" +
         "<div class='scSteps'></div>" +
@@ -2217,8 +2217,8 @@ function fScenarioSyncNewDeleteUi() {
     if (nb) {
       nb.disabled = locked;
       if (nb.setAttribute) {
-        if (locked) nb.setAttribute("data-tooltip", "Fill an empty scenario first (max " + cap + " empty)");
-        else nb.removeAttribute("data-tooltip");
+        if (locked) nb.setAttribute("data-tooltip", "Συμπληρώστε πρώτα ένα κενό σενάριο (μέχρι " + cap + " κενά)");
+        else nb.setAttribute("data-tooltip", "Νέο κενό σενάριο");
       }
     }
     var panels = document.querySelectorAll(".scenarioPanel");
@@ -2253,7 +2253,7 @@ function fScenarioRenderOne(scen) {
   var _no = panel.querySelector(".scScenarioNo");
   if (_no) {
     _no.textContent = "S" + (_pos + 1);
-    _no.title = "Scenario " + (_pos + 1);
+    _no.title = "Σενάριο " + (_pos + 1);
   }
   if (listBtn) {
     var _licon = (window.MuLERIcons && window.MuLERIcons.list) || null;
@@ -2267,7 +2267,7 @@ function fScenarioRenderOne(scen) {
       _lbadge.textContent = String(scen.steps.length);
       listBtn.appendChild(_lbadge);
       if (listBtn.classList) { listBtn.classList.add("scIconBtn"); listBtn.classList.add("scIconTextBtn"); }
-      listBtn.setAttribute("aria-label", "Steps (" + scen.steps.length + ")");
+      listBtn.setAttribute("aria-label", "Βήματα (" + scen.steps.length + ")");
     } else {
       listBtn.innerHTML = "";
       listBtn.textContent = "Steps (" + scen.steps.length + ")";
@@ -2298,14 +2298,14 @@ function fScenarioRenderOne(scen) {
     var grip = document.createElement("span");
     grip.className = "scDragHandle";
     grip.textContent = "⠿";
-    grip.title = "Drag to reorder step " + st.n;
-    grip.setAttribute("aria-label", "Drag to reorder step " + st.n);
+    grip.setAttribute("data-tooltip", "Σύρετε για αναδιάταξη του βήματος " + st.n);
+    grip.setAttribute("aria-label", "Σύρετε για αναδιάταξη του βήματος " + st.n);
     grip.setAttribute("tabindex", "0");
     row.innerHTML =
       "<span id='scStep" + i + "' class='scStepNumberWrap'>" +
       "<span class='stepNumber'>" + st.n + "</span></span><span class='scStepTitleWrap'><span class='scStepTitleLabel'>Τίτλος βήματος</span><input type='text' class='scStepTitle' placeholder='Τίτλος βήματος' value=''></span>" +
-      "<button title='Jump'>Go</button><button class='scUpdate' title='Update this step from current view'>Update</button><button class='scDupe' title='Duplicate this step'>⧉</button><button title='Up'>↑</button><button title='Down'>↓</button>" +
-      "<button title='Delete'>✕</button>";
+      "<button data-tooltip='Προεπισκόπηση'>Go</button><button class='scUpdate' data-tooltip='Ενημέρωση βήματος από την τρέχουσα προβολή'>Update</button><button class='scDupe' data-tooltip='Διπλασιασμός βήματος'>⧉</button><button data-tooltip='Επάνω'>↑</button><button data-tooltip='Κάτω'>↓</button>" +
+      "<button data-tooltip='Διαγραφή'>✕</button>";
     // Grip first so it leads the row; mousedown on it arms HTML5 drag
     // (row stays non-draggable otherwise so inputs/textareas keep working).
     if (row.firstChild) row.insertBefore(grip, row.firstChild);
@@ -2316,12 +2316,12 @@ function fScenarioRenderOne(scen) {
     grip.addEventListener("mouseup", function () {
       if (!row.classList.contains("dragging")) row.setAttribute("draggable", "false");
     });
-    // Icon-only step actions (title tooltip + aria-label keep the meaning).
+    // Icon-only step actions (data-tooltip + aria-label keep the meaning).
     (function () {
       var ab = row.querySelectorAll("button");
       var defs = [
-        ["play", "Go"], ["reset", "Update"], ["copy", "Duplicate"],
-        ["arrowUp", "Up"], ["arrowDown", "Down"], ["closeSmall", "Delete"]
+        ["play", "Προεπισκόπηση"], ["reset", "Ενημέρωση βήματος από την τρέχουσα προβολή"], ["copy", "Διπλασιασμός βήματος"],
+        ["arrowUp", "Επάνω"], ["arrowDown", "Κάτω"], ["closeSmall", "Διαγραφή"]
       ];
       for (var k = 0; k < defs.length && k < ab.length; k++) {
         var ic = (window.MuLERIcons && window.MuLERIcons[defs[k][0]]) || null;
@@ -2339,9 +2339,9 @@ function fScenarioRenderOne(scen) {
     var _isMenu = !!(st.show && st.show.menu === true);
     molBadge.className = "scMolBadge" + (_isMenu ? " is-menu" : " is-mol");
     var _subN = Array.isArray(st.menuSubset) ? st.menuSubset.length : 0;
-    molBadge.title = st.selectedMol
-      ? st.selectedMol + (_isMenu ? " + menu (" + _subN + ")" : "")
-      : "menu-only (" + _subN + ")";
+    molBadge.setAttribute("data-tooltip", st.selectedMol
+      ? st.selectedMol + (_isMenu ? " + μενού (" + _subN + ")" : "")
+      : "μόνο μενού (" + _subN + ")");
     molBadge.textContent = _isMenu ? "Μενού" : "Μόριο";
     var numWrap = row.querySelector(".scStepNumberWrap");
     if (numWrap) numWrap.appendChild(molBadge);
@@ -2380,11 +2380,11 @@ function fScenarioRenderOne(scen) {
       b.className = "scNoteBtn";
       if (def[0] === "✕" && window.MuLERIcons && window.MuLERIcons.formatClear) {
         b.innerHTML = window.MuLERIcons.formatClear;
-        b.setAttribute("aria-label", def[3]);
       } else {
         b.textContent = def[0];
       }
-      b.title = def[3];
+      b.setAttribute("data-tooltip", def[3]);
+      b.setAttribute("aria-label", def[3]);
       b.onclick = function (ev) {
         if (ev && ev.preventDefault) ev.preventDefault();
         if (def[0] === "✕") { fScenarioCleanNote(noteInput, st); return; }
@@ -2399,7 +2399,7 @@ function fScenarioRenderOne(scen) {
       var tog = document.createElement("button");
       tog.type = "button";
       tog.className = "scNoteBtn scColsToggle";
-      tog.title = "Στήλες κειμένου: 1/2 (εναλλαγή)";
+      tog.setAttribute("data-tooltip", "Στήλες κειμένου: 1/2 (εναλλαγή)");
       function paintTog() {
         var two = !!(st.styleText && fScenarioValidColumns(st.styleText.columns) === 2);
         var ic = (window.MuLERIcons && (two ? window.MuLERIcons.columns2 : window.MuLERIcons.columns1)) || null;
