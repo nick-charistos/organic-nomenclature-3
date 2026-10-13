@@ -305,7 +305,7 @@ border: 2px solid var(--veryLightBlue);
 }
 
 .scenarioButtonPanel {
-   border-bottom: 1px dashed var(--lightBlue);
+   /* border-bottom: 1px dashed var(--lightBlue); */
 }
 
 #scenarioAuthorBar input[type=text] {
@@ -407,6 +407,7 @@ border: 2px solid var(--veryLightBlue);
 }
 
 .scenarioDrawer.open {
+   border-top: 1px solid var(--lightBlue);
    max-height: 50vh;
    overflow: auto;
    /* padding: 12px; */
