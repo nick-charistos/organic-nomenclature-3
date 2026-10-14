@@ -3,7 +3,7 @@
 ### Organic Chemistry Interactive Learning & Research Platform
 
 **Principal Investigator:** N. Charistos, Department of Chemistry, ΑΠΘ
-**Status:** Active development | v45 baseline (64 molecules — 64 `nameExamples` keys, scenario scaffold; v44 runnable at root, v43 frozen at tag `v43`, v42 frozen in repo2)
+**Status:** Active development | v45 baseline (65 molecules — 65 `nameExamples` keys, scenario scaffold; v44 runnable at root, v43 frozen at tag `v43`, v42 frozen in repo2)
 **Last updated:** 2026-10-13
 
 > **2026-10 update:** vision is now twofold+1 (community tool + research publications + platform for isomerism/reactions) with four layers in LEARN-first order — LEARN → EXPLORE-lite → PRACTICE → PLAY. The static chemistry app is embedded in Drupal; logging is research-primary. Source of truth for layers: `docs/LAYERS-PLAN.md`. Team P1–P6 roles and timeline are defined there and in `README.md`. What follows below is the original plan text, kept for theory and history; version/count claims predating v44 are superseded.
@@ -58,7 +58,7 @@ Each step removes one scaffolding layer. Familiar representations constrain inte
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  MODULE 1: Organic Nomenclature          [ACTIVE — v37 stable]  │
+│  MODULE 1: Organic Nomenclature          [ACTIVE — v45]         │
 ├─────────────────────────────────────────────────────────────────┤
 │  MODULE 2: Isomerism                     [PLANNED — Phase 3]    │
 ├─────────────────────────────────────────────────────────────────┤
@@ -69,16 +69,16 @@ Each step removes one scaffolding layer. Familiar representations constrain inte
 
 ---
 
-## Module 1: Organic Nomenclature — Current State (v44; v37 text below kept for history)
+## Module 1: Organic Nomenclature — Current State (v45; v37 text below kept for history)
 
 ### What exists
-- **64 curated molecules** (v44; 64 `nameExamples` keys, incl. 2 ethers + 2 esters) covering homologous-series menu groups (series-first, rules secondary)
+- **65 curated molecules** (v45; 65 `nameExamples` keys, incl. 2 ethers + 2 esters + branched `dimethyl_2_3_butane`) covering homologous-series menu groups (series-first, rules secondary)
 - **Algorithmic IUPAC engine** — DFS main chain determination, 3-tier locant rules, Greek euphony; ester two-word naming + ether systematic/common toggle since v40/v41
 - **5 representation modes** — condensed, expanded, annotated skeletal (partial), skeletal, 3D
 - **Synchronized highlighting** — same atom/bond highlighted simultaneously in 2D and 3D
 - **Teaching layer** — rule-based explanations, component name boxes, TTS narration in Greek
-- **Didactic scenarios (v44; scaffold since v43)** — additive `scenario-44.js`: snapshot capture/validate/apply/export/import, `?scenario=&present=#step=` playback, exit restores full chrome
-- **Technical validation** — algorithm verified against the curated set; tertiary-amine R3N classification fixed in v44 via the bond-order N-table (browser verification pending)
+- **Didactic scenarios (v45; scaffold since v43)** — additive `js/mulermoc-nom-scenario-45.js`: snapshot capture/validate/apply/export/import, `?scenario=&present=#step=` playback, exit restores full chrome
+- **Technical validation** — algorithm verified against the curated set; tertiary-amine R3N classification fixed in v44 via the bond-order N-table; multi-substituent alkane naming (`2,3-διμεθυλοβουτάνιο`) fixed in v45 (browser verification pending)
 
 ### Known gaps to fill (immediate work)
 - Annotated skeletal representation: `fMakeAnnotatedSkeletal()` — completes the fading sequence
@@ -235,20 +235,20 @@ RQ4: Learner strategies                    detection                    adaptive
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    DATA LAYER                               │
-│  jsme-nick-nomeclature-moc2-data_37.js                      │
-│  58 molecules: MOL strings, main chain, 3D SDF paths        │
+│  jsme-nick-nomeclature-moc2-data_45.js                      │
+│  65 molecules: MOL strings, main chain, 3D SDF paths        │
 └────────────────────────┬────────────────────────────────────┘
                          ↓
 ┌─────────────────────────────────────────────────────────────┐
 │                    CORE ENGINE                              │
-│  mulermoc-nom-core-37.js  (pure JS, no DOM)                 │
+│  mulermoc-nom-core-45.js  (pure JS, no DOM)                 │
 │  fAnalyseStructure → fDetectMolType → fCalcMainChain        │
 │  → fGuessName → Greek IUPAC name + component list          │
 └────────────────────────┬────────────────────────────────────┘
                          ↓
 ┌──────────────────┬──────────────────┬───────────────────────┐
 │   VIEWER LAYER   │  TEACHING LAYER  │     QUIZ LAYER        │
-│  molview-37.js   │  teaching-37.js  │  (quiz-nom-1.js)      │
+│  molview-45.js   │  teaching-45.js  │  (quiz-nom-1.js)      │
 │  JSME (2D)       │  Rule text/tables│  5 scenarios          │
 │  JSmol (3D)      │  TTS narration   │  Session logging      │
 │  Snap.svg        │  Name boxes      │  Research mode        │

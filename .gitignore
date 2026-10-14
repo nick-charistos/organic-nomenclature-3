@@ -71,10 +71,6 @@ imgs/*
 docs/*.pdf
 mols/branched/
 
-# Stale docs
-docs/RESEARCH-PLAN.md
-docs/flowchart-mermaid.md
-
 # Analysis / dev notes
 Code-Analysis/
 

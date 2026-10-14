@@ -1,5 +1,13 @@
 # Session handoff — MuLERMoCs-Anastasia
 
+> **SUPERSEDED 2026-10-14:** frozen at the v44 baseline (`index.html` → v44,
+> `js/*-44.js`). Current baseline is **v45** (`index.html` →
+> `mulermoc-nom-45.html`, `js/*-45.js`, 65 molecules incl.
+> `dimethyl_2_3_butane`). Open items below resolved since: ethene-scenario
+> fix → files removed, replaced by `scenarios/Αλκάνια-Αιθάνιο.scenario.json`;
+> 64-vs-63 count → 64, now 65. Body kept as written for history; source of
+> truth: `README.md` + `docs/CHANGELOG.md` + `docs/SESSION-NOTES.md`.
+
 **Date:** 2026-10-10  
 **Purpose:** Resume project evaluation and research planning in a later session.  
 **Session scope:** Read-only code/document review and strategic discussion; no application code was changed.

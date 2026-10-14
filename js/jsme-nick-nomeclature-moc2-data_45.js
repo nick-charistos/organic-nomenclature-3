@@ -585,6 +585,14 @@ let nameExamples = {
     moveto: "moveto 0.0 { -993 107 40 170.04} 69.57 0.0 0.0 {0.018154999999999945 0.015150000000000045 0.04406499999999999} 4.830360556026081 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
+  dimethyl_2_3_butane: {
+    formula: "CH3CH(CH3)CH(CH3)CH3",
+    mainChain_Condensed: [],
+    mainChain_Expanded: [],
+    mainChain_Skeletal: [],
+    mainChain3D: [],
+  },
+
   //Ethers
   ethyl_methyl_ether: {
     formula: "CH3OCH2CH3",
@@ -4593,6 +4601,88 @@ let methyl_2_pentane_2D_Skeletal =
   "  5  6  1  0      \n" +
   "M  END\n";
 
+let dimethyl_2_3_butane_2D_Condensed =
+  "KingDraw KingDraw.mol\n" +
+  "KingDraw2D\n" +
+  "\n" +
+  "  6  5  0  0  0  0  0  0  0  0999 V2000\n" +
+  "    2.5819   -4.7612    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    3.7275   -4.8048    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    4.7328   -4.8107    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    4.7321   -5.4811    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    3.7195   -5.4859    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    5.6562   -4.8306    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0\n" +
+  "  2  3  1  0\n" +
+  "  3  4  1  0\n" +
+  "  2  5  1  0\n" +
+  "  3  6  1  0\n" +
+  "M  END\n";
+
+let dimethyl_2_3_butane_2D_Expanded =
+  "KingDraw KingDraw.mol\n" +
+  "KingDraw2D\n" +
+  "\n" +
+  " 20 19  0  0  0  0  0  0  0  0999 V2000\n" +
+  "    3.9931   -5.4890    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    5.4741   -5.5223    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    6.9055   -5.5309    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    8.1473   -5.5394    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    6.8972   -6.3108    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    5.4740   -4.7519    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    9.1499   -5.5562    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    8.1390   -6.3194    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    8.1556   -4.7595    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    6.9138   -4.7509    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    5.4577   -6.2021    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    5.4739   -3.9719    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    6.2540   -4.7516    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    4.6940   -4.7522    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    6.8889   -7.0908    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    7.6772   -6.3189    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    6.0430   -6.2863    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    3.2133   -5.4715    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    4.0104   -4.7092    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    3.9758   -6.2689    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0\n" +
+  "  2  3  1  0\n" +
+  "  3  4  1  0\n" +
+  "  3  5  1  0\n" +
+  "  2  6  1  0\n" +
+  "  4  7  1  0\n" +
+  "  4  8  1  0\n" +
+  "  4  9  1  0\n" +
+  "  3 10  1  0\n" +
+  "  2 11  1  0\n" +
+  "  6 12  1  0\n" +
+  "  6 13  1  0\n" +
+  "  6 14  1  0\n" +
+  "  5 15  1  0\n" +
+  "  5 16  1  0\n" +
+  "  5 17  1  0\n" +
+  "  1 18  1  0\n" +
+  "  1 19  1  0\n" +
+  "  1 20  1  0\n" +
+  "M  END\n";
+
+let dimethyl_2_3_butane_2D_Skeletal =
+  "KingDraw KingDraw.mol\n" +
+  "KingDraw2D\n" +
+  "\n" +
+  "  6  5  0  0  0  0  0  0  0  0999 V2000\n" +
+  "    0.8533   -3.1443    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.5288   -3.5343    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    2.2043   -3.1443    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    2.8798   -3.5343    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.5291   -4.3143    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    2.2040   -2.3643    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0\n" +
+  "  2  3  1  0\n" +
+  "  3  4  1  0\n" +
+  "  2  5  1  0\n" +
+  "  3  6  1  0\n" +
+  "M  END\n";
+
 let ethyl_methyl_ether_2D_Condensed = 
   "CCOC\n" +
 	"  ChemDraw09292618412D\n" +
@@ -4893,6 +4983,7 @@ window.MOL2D = window.MOL2D || {};
   reg("nitroethane", (typeof nitroethane_2D_Condensed !== "undefined" ? nitroethane_2D_Condensed : null), (typeof nitroethane_2D_Expanded !== "undefined" ? nitroethane_2D_Expanded : null), (typeof nitroethane_2D_Skeletal !== "undefined" ? nitroethane_2D_Skeletal : null));
   reg("nitropropane_2", (typeof nitropropane_2_2D_Condensed !== "undefined" ? nitropropane_2_2D_Condensed : null), (typeof nitropropane_2_2D_Expanded !== "undefined" ? nitropropane_2_2D_Expanded : null), (typeof nitropropane_2_2D_Skeletal !== "undefined" ? nitropropane_2_2D_Skeletal : null));
   reg("methyl_2_pentane", (typeof methyl_2_pentane_2D_Condensed !== "undefined" ? methyl_2_pentane_2D_Condensed : null), (typeof methyl_2_pentane_2D_Expanded !== "undefined" ? methyl_2_pentane_2D_Expanded : null), (typeof methyl_2_pentane_2D_Skeletal !== "undefined" ? methyl_2_pentane_2D_Skeletal : null));
+  reg("dimethyl_2_3_butane", (typeof dimethyl_2_3_butane_2D_Condensed !== "undefined" ? dimethyl_2_3_butane_2D_Condensed : null), (typeof dimethyl_2_3_butane_2D_Expanded !== "undefined" ? dimethyl_2_3_butane_2D_Expanded : null), (typeof dimethyl_2_3_butane_2D_Skeletal !== "undefined" ? dimethyl_2_3_butane_2D_Skeletal : null));
   reg("ethyl_methyl_ether", (typeof ethyl_methyl_ether_2D_Condensed !== "undefined" ? ethyl_methyl_ether_2D_Condensed : null), (typeof ethyl_methyl_ether_2D_Expanded !== "undefined" ? ethyl_methyl_ether_2D_Expanded : null), (typeof ethyl_methyl_ether_2D_Skeletal !== "undefined" ? ethyl_methyl_ether_2D_Skeletal : null));
   reg("dimethylether", (typeof dimethylether_2D_Condensed !== "undefined" ? dimethylether_2D_Condensed : null), (typeof dimethylether_2D_Expanded !== "undefined" ? dimethylether_2D_Expanded : null), (typeof dimethylether_2D_Skeletal !== "undefined" ? dimethylether_2D_Skeletal : null));
   reg("ethanoic_methyl_ester", (typeof ethanoic_methyl_ester_2D_Condensed !== "undefined" ? ethanoic_methyl_ester_2D_Condensed : null), (typeof ethanoic_methyl_ester_2D_Expanded !== "undefined" ? ethanoic_methyl_ester_2D_Expanded : null), (typeof ethanoic_methyl_ester_2D_Skeletal !== "undefined" ? ethanoic_methyl_ester_2D_Skeletal : null));

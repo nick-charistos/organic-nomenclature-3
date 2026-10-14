@@ -1749,9 +1749,28 @@ function fGuessName() {
     if (functionalGroupsList[0] === "hydrocarbon") {
         const sideBranches = fGetHydrocarbonSubstituentInfo()
         if (sideBranches.length > 0) {
-            const branch = sideBranches[0]
-            comp0 = branch.locant + "-"
-            comp0Text = branch.name
+            // Group identical alkyl substituents (e.g. two methyls): comma-joined
+            // locants + δι-/τρι- count prefix, groups in Greek-alphabetical order
+            // of substituent name (same convention as the halogen path below).
+            // comp0/comp0b assignment happens in the fusion block below.
+            const _branchGroups = {}
+            for (let i = 0; i < sideBranches.length; i++) {
+                const _b = sideBranches[i]
+                if (!Object.prototype.hasOwnProperty.call(_branchGroups, _b.name)) {
+                    _branchGroups[_b.name] = []
+                }
+                _branchGroups[_b.name].push(_b.locant)
+            }
+            const _sortedBranchNames = Object.keys(_branchGroups).sort(function (a, b) {
+                return a < b ? -1 : (a > b ? 1 : 0);
+            });
+            for (let i = 0; i < _sortedBranchNames.length; i++) {
+                const _bName = _sortedBranchNames[i]
+                const _locants = _branchGroups[_bName].sort(function (a, b) { return a - b; });
+                const _countPrefix = nameMultiPrefix[_locants.length - 1]
+                comp0NumberList.push(_locants.join(","))
+                comp0TextList.push(_countPrefix + _bName)
+            }
         }
     }
 

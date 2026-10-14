@@ -623,14 +623,16 @@ rounding vs dropdown/tooltip clipping; present Prev/Next untouched.
   removed; `scenarios/Αλκάνια-Αιθάνιο.scenario.json` kept (7 steps, schema v1,
   `app: mulermoc-nom-44`: ethane walkthrough steps 1–5 + alkane menu browsing
   step 6 + 3D alkane models step 7; menu subsets methane→pentane; all
-  `selectedMol`/`menuSubset` keys resolve against the 64-set; `moveto: null`
+  `selectedMol`/`menuSubset` keys resolve against the 64-set (now 65 with
+  `dimethyl_2_3_butane`); `moveto: null`
   throughout). Greek filenames stay URL-encoded in `?scenario=` links.
   README + LAYERS-PLAN §2 updated; CHANGELOG/handoff notes above left as written.
 * `docs/PROJECT-PLAN.md` + `docs/PROJECT-PLAN-GR.md`: Ottawa (OrgChem101)
   comparison column committed as written (owner decision 2026-10-12).
-* `docs/RESEARCH-PLAN.md` stays deleted (assets cleanup 2026-10-09); live
-  research design is `docs/LAYERS-PLAN.md` §5 + `docs/SESSION-HANDOFF-2026-10-10.md`.
-  Remaining `RESEARCH-PLAN.md` mentions are in historical notes only.
+* `docs/RESEARCH-PLAN.md` retained (2026-10-14 correction: the 2026-10-09
+  deletion never landed — file exists, re-anchored to `docs/LAYERS-PLAN.md`
+  §5, theory + RQ history); live research design is `docs/LAYERS-PLAN.md` §5
+  + `docs/SESSION-HANDOFF-2026-10-10.md`.
 
 ## 2026-10-12 — default authoring preload S1 + empty S2
 
@@ -704,3 +706,35 @@ tab, pick, title row, panel, step row, toolbar, play bar, badge, grip, save,
 [2D]/[3D]) for identical navy skin, no clipping, no double native tooltip;
 `#scNew` bubble unlocked + locked; Import a v44 file with a skeletal step
 (`diagramatic→skeletal` toast); one full Save → Present → Next → Exit.
+
+## 2026-10-14 — 65th molecule (dimethyl_2_3_butane) + branched naming fix
+
+* P4 inbox `mols/new_molecules/` (2,3-dimethylbutane, C6 branched alkane):
+  filenames normalized to v45 case (`_Condensed/_Expanded/_Skeletal`);
+  SDF copied to canonical `mols/nomeclature-moc2/dimethyl_2_3_butane_3D.sdf`
+  (PubChem CID 6589, inbox original kept; loader `molview-45.js:491`
+  unchanged). Data `data_45.js`: `nameExamples` entry (formula
+  `CH3CH(CH3)CH(CH3)CH3`, empty `mainChain_*`/`mainChain3D` → algorithmic,
+  no `moveto`) + 3 MOL vars + `reg()` line. 64 → 65 keys (VM-verified).
+* MOL header strictness: first attempt prepended a SMILES title line on top
+  of both KingDraw header lines (4 headers, counts at index 4 — breaks
+  `fMakeAnnotatedSkeletal` `lines[3]` + risks `readMolFile`). Fixed to exact
+  file bytes (V2000: exactly 3 header lines; SMILES deferred to a JSME
+  extraction phase). Bonus find in the same edit: dropped `\n` after the
+  Expanded first header line (would have fused two headers) — fixed.
+* Engine fix (v45-only, `core-45.js` `fGuessName` hydrocarbon branch):
+  `sideBranches[0]` single-slot dropped the second methyl
+  (`2-μεθυλοβουτάνιο`; highlighting already found both via the v39.1 union
+  path). Now groups branches by substituent name — comma-joined locants +
+  `δι-/τρι-` prefix, Greek-alphabetical group order (halogen-path
+  convention) through `comp0NumberList/TextList` fusion. Result
+  `2,3-διμεθυλοβουτάνιο`; single-branch output byte-identical.
+  Headless-verified (dimethyl_2_3_butane, methyl_2_pentane, butane, pentane,
+  propane); `core-44.js` untouched by scope decision.
+* Docs: README/LAYERS-PLAN-E2/PROJECT-PLAN(-GR)/didactic counts → 65;
+  CHANGELOG `[Unreleased]` entries for molecule + fix.
+
+Browser checklist for owner (delta): select `dimethyl_2_3_butane` in
+Condensed/Expanded/Skeletal + 3D (SDF loads, viewport healthy); name boxes
+show `2,3-διμεθυλοβουτάνιο`, highlight replay hits both methyls, narration
+follows; one Save → Present → Next → Exit round-trip.

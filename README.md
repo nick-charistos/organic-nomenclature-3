@@ -14,7 +14,7 @@ Desinged and developed by Nickolas Charistos
 | Teaching (rules, narration, UI wiring) | [js/mulermoc-nom-teaching-45.js](js/mulermoc-nom-teaching-45.js) |
 | Scenario module (LEARN authoring + presentation) | [js/mulermoc-nom-scenario-45.js](js/mulermoc-nom-scenario-45.js) |
 | Shared icon helper | [js/ui-icons.js](js/ui-icons.js) |
-| Molecule data (64 molecules — 64 `nameExamples` keys) | [js/jsme-nick-nomeclature-moc2-data_45.js](js/jsme-nick-nomeclature-moc2-data_45.js) |
+| Molecule data (65 molecules — 65 `nameExamples` keys) | [js/jsme-nick-nomeclature-moc2-data_45.js](js/jsme-nick-nomeclature-moc2-data_45.js) |
 | Styles | [css/jsme-nick-45.css](css/jsme-nick-45.css), [css/mulermoc-nom-scenario-45.css](css/mulermoc-nom-scenario-45.css) |
 | Stored scenarios | [scenarios/](scenarios/) (`Αλκάνια-Αιθάνιο.scenario.json`; Greek filenames stay URL-encoded in `?scenario=` links) |
 
@@ -68,7 +68,7 @@ All layers reuse the same v45 engine, embedded as a static app in Drupal:
 | # | Layer | Contract | State |
 |---|---|---|---|
 | 1 | **LEARN** | teacher-authored linear scenarios; presentation + self-paced learning | working scaffold (authoring + presentation); stored scenario `Αλκάνια-Αιθάνιο` |
-| 2 | **EXPLORE** | free browsing of all molecules (left menu) | working (64 molecules); next: bounded EXPLORE-lite (~15 mols) + menu search |
+| 2 | **EXPLORE** | free browsing of all molecules (left menu) | working (65 molecules); next: bounded EXPLORE-lite (~15 mols) + menu search |
 | 3 | **PRACTICE** | exercises with corrective feedback (3 types v1) | not started — see [LAYERS-PLAN](docs/LAYERS-PLAN.md) |
 | 4 | **PLAY** | gamified quizzes; responses + times logged for research statistics | not started — Drupal owns auth/session/logging; see [LAYERS-PLAN](docs/LAYERS-PLAN.md) |
 
