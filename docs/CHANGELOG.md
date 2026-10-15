@@ -44,6 +44,10 @@ Earlier entries below were written against `*44*` paths; the same behaviors now 
 
 - 2D zoom pair + save share one `#view2DTools` container and one `.viewerToolBtn` class (3D: `#view3DTools` + reclassed save); the hand-synced `right:36px` offset and duplicated CSS are gone, zoom buttons join the save-button tooltip clip-avoidance geometry. Pixel-identical layout.
 
+### Per-molecule SMILES at boot (v46-only, storage-only)
+
+- `fClassifyAllMolecules()` now also reads `getSmiles()` (with `smiles()` fallback) off the already-loaded condensed structure and stores it on `nameExamples[key].smiles` — no new loop, no extra `readMolFile`, no perf cost, miss → `null` (never a boot failure). No UI and no logging changes yet; reserved as a future canonical molecule id (research logging, menu search, mol-info display).
+
 ### Four new molecules (66th–69th: 2 ethers + 2 esters)
 
 - New `nameExamples` keys `diethyl_ether` (`CH3CH2OCH2CH3`), `isopropyl_methyl_ether` (`CH3OCH(CH3)2`), `methyl_methanoate` (`HCOOCH3`), `isopropyl_ethanoate` (`CH3COOCH(CH3)2`) — all `mainChain_*`/`mainChain3D` empty → algorithmic chain, no `moveto` yet — in `js/jsme-nick-nomeclature-moc2-data_46.js` (65 → 69 keys).

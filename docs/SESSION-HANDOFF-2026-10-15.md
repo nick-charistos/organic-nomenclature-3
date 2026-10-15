@@ -52,6 +52,8 @@ environment). Pre-batch-2 HEAD = `441be87`.
   - Tool-button merge: `#view2DTools`/`#view3DTools` + `.viewerToolBtn`
     replace `.saveImgBtn`/`.zoomBtn`; zoom buttons join tooltip
     clip-avoidance geometry. Layout pixel-identical.
+  - Per-molecule SMILES at boot into `nameExamples[key].smiles`
+    (storage-only; `getSmiles()` + `smiles()` fallback, condensed source).
 - Stale fallback: `C:\Users\nick\AppData\Local\Temp\opencode\v46-embed-work.patch`
   predates the fork — live tree is truth.
 
@@ -76,7 +78,8 @@ environment). Pre-batch-2 HEAD = `441be87`.
   narrate/read, box/cross/eye, comp eyes, save ×2, zoom ×4); 2D zoom steps +
   clamp ends + reset-on-load + mode-switch keeps zoom + Save→Present→Exit
   zoom round-trip; 3D zoom steps + framing reset + console watch on `zoomTo`;
-  one Save → Present → Exit round-trip on v46.
+  one Save → Present → Exit round-trip on v46; SMILES console check (69/69
+  non-null, methane `C` spot-check).
 
 ## Resume tooling (`C:\Users\nick\AppData\Local\Temp\opencode\`)
 

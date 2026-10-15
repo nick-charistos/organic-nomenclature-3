@@ -270,6 +270,22 @@ function fClassifyAllMolecules() {
       fAnalyseStructure();
       fDetectMolType();
       nameExamples[prop].classification = fGetMoleculeClassification();
+      // Canonical SMILES per molecule (storage-only for now; future use as a
+      // molecule id in logging/search/display). Condensed source matches the
+      // historical title-line convention; in-memory conversion on the already
+      // loaded structure, so no extra loop or perf cost. Miss → null, never
+      // a boot failure.
+      try {
+        var _smiles = null;
+        if (typeof jsmeNomeclatureApplet.getSmiles === "function") {
+          _smiles = jsmeNomeclatureApplet.getSmiles();
+        } else if (typeof jsmeNomeclatureApplet.smiles === "function") {
+          _smiles = jsmeNomeclatureApplet.smiles();
+        }
+        nameExamples[prop].smiles = _smiles || null;
+      } catch (eSmiles) {
+        nameExamples[prop].smiles = null;
+      }
     }
   } finally {
     // Direct rebinding: these are `let` globals (not globalThis props),

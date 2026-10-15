@@ -912,3 +912,16 @@ follows; one Save → Present → Next → Exit round-trip.
   `αιθ-`/`-αν-` + ethanoic regression; full Save→Present→Exit.
 * Not committed in this batch: `docs/flowchart-mermaid.md` shows M for a
   zero-line binary/metadata difference (untouched by this work) — left out.
+
+## 2026-10-15 (later) — per-molecule SMILES at boot
+
+* `fClassifyAllMolecules()` (`molview-46.js`) captures JSME SMILES for all 69
+  molecules at page load into `nameExamples[key].smiles` (storage-only, no UI).
+  Condensed source (matches historical title-line convention, avoids
+  expanded explicit-H `[H]` artifacts); `getSmiles()` primary with
+  `smiles()` fallback across JSME builds, try/catch → `null` (never a boot
+  failure); zero marginal cost (in-memory conversion on the already-loaded
+  structure inside the existing classification loop). Reserved as future
+  canonical id (logging/search/display); consumers later.
+* Browser checklist for owner: console shows 69/69 non-null (only
+  condensed-less molecules may read null); spot-check methane `C` + one ester.
