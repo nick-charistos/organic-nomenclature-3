@@ -4,9 +4,55 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ---
 
-## [Unreleased] (v45 working copy)
+## [Unreleased] (v46 working copy)
 
-Earlier entries below were written against `*44*` paths; the same behaviors now ship in the `*45*` set (mechanical copy + the rename below).
+Earlier entries below were written against `*44*` paths; the same behaviors now ship in the `*45*` set (mechanical copy + the rename below). v45 is frozen at 65 keys with its pre-formate core; v46 is a mechanical `*45*` → `*46*` copy carrying the 4 molecules + formate fix below.
+
+### MOL re-embed round: redrawn geometry + title-line fix (v46-only data)
+
+- Owner redrew the 2D MOLs in ChemDraw (alignment + new geometry): all 12 new-molecule blocks (`diethyl_ether`, `isopropyl_methyl_ether`, `methyl_methanoate`, `isopropyl_ethanoate` × Condensed/Expanded/Skeletal) plus `dimethyl_2_3_butane` Condensed/Expanded re-embedded in `js/jsme-nick-nomeclature-moc2-data_46.js` (LF-normalized; `*45*` files and `data_45.js` untouched).
+- Root-cause fix (2026-10-15): the first import had dropped the filename title line, shifting the V2000 counts line from index 3 → 2 — JSME parsed 0 atoms (empty viewer + `fCalcMainChain: cyclic molecule` console fallback). Titles restored; full 195-block audit passes (counts at index 3 everywhere). CORRECTION to the earlier "no SMILES title" note below: V2000's 3 header lines *include* the title — dropping it was a mistake, not a rule.
+- Two redraws landed short on hydrogens and were fixed at source before import: `dimethyl_2_3_butane_2D_Expanded` (18→20 atoms, the two methine H's) and `isopropyl_methyl_ether_2D_Expanded` (14→15 atoms, the central CH hydrogen). Per-carbon H/valence gates pass (`[3,1,1,3,3,3]` and `[1,3,3,3]`).
+- ChemDraw re-exports write CRLF; the embed normalizes to LF (asserted no-CR in `data_46.js`). Working-copy `.mol` files keep CRLF on disk; `* text=auto eol=lf` normalizes them on commit.
+- Owner browser-verified: both esters load (`μεθανικός μεθυλεστέρας`, `αιθανικός ισοπροπυλεστέρας`), warning gone.
+
+### Grey C–H bonds in expanded mode (v46-only viewer)
+
+- New `fApplyCHBondColors2D()` (`js/mulermoc-nom-molview-46.js`, called from `fUpdateSVG()` after the atom-color pass): when `Έγχρωμα Σύμβολα` is on and `mode2D === "expanded"`, C–H bond lines take `atomColors2D.H` (`#909090`, same as the H labels). Fresh JSME SVG is black each rebuild so toggle-off needs no reset; green highlight backgrounds are separate attributes and win where applied. Condensed/skeletal untouched (no explicit H lines). Browser check pending.
+
+### 3D default zoom 80 → 50 (`spt/init-3.spt`)
+
+- Shared JSmol init script now opens at `zoom 50` (was 80). Applies to all versions loading 3D (owner change, committed with this batch).
+
+### Four new molecules (66th–69th: 2 ethers + 2 esters)
+
+- New `nameExamples` keys `diethyl_ether` (`CH3CH2OCH2CH3`), `isopropyl_methyl_ether` (`CH3OCH(CH3)2`), `methyl_methanoate` (`HCOOCH3`), `isopropyl_ethanoate` (`CH3COOCH(CH3)2`) — all `mainChain_*`/`mainChain3D` empty → algorithmic chain, no `moveto` yet — in `js/jsme-nick-nomeclature-moc2-data_46.js` (65 → 69 keys).
+- New 2D MOLs `<key>_2D_Condensed/_Expanded/_Skeletal` (exact `mols/new_molecules/` file bytes, v45 case; V2000 3-header rule, no SMILES title) + 4 `reg()` lines; 3D `mols/nomeclature-moc2/<key>_3D.sdf` (PubChem CIDs 3283/11721/7865/7915, inbox copies kept). Menu grouping automatic via engine.
+- Headless-verified all 3 modes: `αιθοξυαιθάνιο` / `διαιθυλαιθέρας`, `2-μεθοξυπροπάνιο` / `μεθυλπροπυλαιθέρας`, `μεθανικός μεθυλεστέρας`, `αιθανικός προπυλεστέρας`; full 69×3 regression: 0 name changes among the 195 pre-existing combos. Browser name-box/highlight check pending.
+
+### Formate-ester engine fix (v46 carries it; v45 core untouched)
+
+- Bug: `methyl_methanoate` named `1-αλκοξυμεθάνάλη` — the formyl carbonyl C (explicit H in KingDraw MOLs is skipped in `atomValenceList`, so valence 3) was classified `aldehyde`, and the ester reclassification only consumed `ketone` O. Same latent issue in 3D (`fDetectMolType3D`).
+- Fix (`js/mulermoc-nom-core-46.js`): new ether+aldehyde → ester pass in `fDetectMolType`/`fDetectMolType3D`, mirroring the HCOOH alcohol+aldehyde acid check — an aldehyde O whose C neighbors the ether O (`O=C(H)-O`) is by definition a formate ester. Now `μεθανικός μεθυλεστέρας`. No false positives possible (a free aldehyde C never bonds an ether O); real aldehydes (e.g. ethanal) verified unchanged.
+- Known nit carried: `isopropyl_methyl_ether_2D_Expanded.mol` counts `17 14` vs PubChem 3D `15 14` (C4H10O = 15 atoms correct) — embedded as-is, 2D review pending.
+
+### Iso-alkyl prefix upgrade (v46-only engine + COMMON labels)
+
+- Bug: branched alkyl fragments were named by carbon count only — isopropyl rendered `προπυλ` (`αιθανικός προπυλεστέρας`, common `μεθυλπροπυλαιθέρας`).
+- Fix (`js/mulermoc-nom-core-46.js`): new `isoAlkylNames` table + `fAlkylGroupName(len, attachC, kind)` shape check (attachment C with 2+ carbon neighbors → branched; straight output byte-identical), wired into all four alkyl slots — ether systematic prefix, ether common stems, ester alcohol part, hydrocarbon branch names. COMMON box labels (`js/mulermoc-nom-molview-46.js` `fGetEtherCommonParts`, which carries its own stem copy) routed through the same helper; `alkylBranchNouns` gains `ισοπροπυλο: "ισοπροπύλιο"`. Table extensible to iso-/sec-/tert-butyl (no molecules yet).
+- Now `αιθανικός ισοπροπυλεστέρας`, common boxes `ισοπροπυλ + μεθυλ + αιθέρας` (existing alphabetical sort puts `ισοπροπυλ` first); systematic `2-μεθοξυπροπάνιο` and symmetric `διαιθυλαιθέρας` unchanged. Names-only change — 3D highlight sets untouched. Headless 69×3 gate: exactly 6 changed lines (2 isopropyl molecules × 3 modes), COMMON boxes verified for all 3 ethers, 3D classification snapshot identical. Browser name-box/highlight check pending.
+
+### Common-ether euphony: connecting ο on consonant+consonant joints
+
+- Bug: the fused common name concatenated alkyl stems raw — `αιθυλμεθυλαιθέρας`, `ισοπροπυλμεθυλαιθέρας` — while the systematic assembler (`_joinEuphony`) has always inserted connecting `ο` on C+C joints (e.g. `αιθαν+νιτρίλιο → αιθανονιτρίλιο`).
+- Fix (`js/mulermoc-nom-core-46.js`): hoisted `_gkVowels`/`_isGkConsonant`/`_joinEuphony` to `fGuessName` top (same scope/values, pure move) and routed the asymmetric common fusion (`_pair + αιθέρας`) through it; the symmetric `δι-` path is vowel-led and provably unaffected. COMMON chips stay bare stems (morpheme boxes); only the fused "Κοινή ονομασία" string gains the vowel.
+- Now `αιθυλομεθυλαιθέρας`, `ισοπροπυλομεθυλαιθέρας`; `διαιθυλαιθέρας` and every systematic name unchanged. Headless 69×3 gate: exactly 6 changed lines (2 asymmetric ethers × 3 modes, common slot only), COMMON boxes + 3D snapshot identical. Browser check pending.
+
+### Ester highlight override: acid fragment for αιθ-/−αν− clicks (v46-only)
+
+- Bug: on `αιθανικός ισοπροπυλεστέρας`, the `αιθ-` box highlighted the isopropyl group and `-αν-` lit every C–C single bond. Root causes: the main-chain scorer is length-primary, so the 3-C alcohol fragment beat the 2-C acid fragment (`terminalFgCarbons` only orients); and `fHighlightSingleBondsCC/3D` is molecule-wide by design. Older esters masked both (acid fragment happened to be longest / sole C–C bond).
+- Fix (`js/mulermoc-nom-molview-46.js`, `mainChainAtomsList` untouched): new `fGetEsterAcidChain[3D]()` + `fIsSingleEster()` guard (sole-FG esters only). `αιθ-` click now reports acid length (`r1-c{acidLen}`), highlights + numbers the acid chain; `-αν-` lights only acid C–C singles via an optional atom-set filter on the existing highlight functions (default stays molecule-wide). Formyl esters correctly light zero C–C bonds.
+- Headless-verified derivations (2D + 3D, all 3 modes × 3 esters); naming output byte-identical (core untouched). Browser click-through pending.
 
 ### New molecule: dimethyl_2_3_butane (65th, branched alkane)
 

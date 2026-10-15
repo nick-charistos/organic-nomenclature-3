@@ -83,7 +83,7 @@ progress tracking, server storage.
 }
 ```
 
-State notes (grounded in v45; v42–v44 identical unless noted):
+State notes (grounded in v46; v42–v45 identical unless noted):
 
 * `selectedMol`, `mode2D/modeSuffix`, `mainChainMode`,
   `etherNamingMode`, `nameAnalysisMode`, `selectedRule` mirror
@@ -392,7 +392,7 @@ Done in v43 (`mulermoc-nom-43.html`, last suffixed copy; carried through v44 int
    assertions (manual click-through pending).
 6. ✅ CHANGELOG v43 entry (`index.html` → 43 in repo3 only).
 
-Remaining: v45 is the current file set (`*45*` = `*44*` copy + 2D naming rename + tooltip program, see `CHANGELOG.md [Unreleased]`; `index.html` → 45; `*44*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced); then quizzes/games on the
+Remaining: v46 is the current file set (`*46*` = `*45*` copy + 4 molecules + formate-ester fix, see `CHANGELOG.md [Unreleased]`; `index.html` → 46; `*45*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced); then quizzes/games on the
 same reuse contract.
 
 ## 8. Open questions for development (moveto timing closed 2026-10-04)
@@ -419,7 +419,7 @@ LEARN is layer 1 of the twofold+1 vision (see `README.md`, `docs/LAYERS-PLAN.md`
 
 * **Stored scenarios** under `scenarios/*.json` (same-origin, validated v1 schema), listed by Drupal; URL shape unchanged (`?scenario=scenarios/<name>.json&present=1#step=N`); Import remains the offline/`file://` path.
 * **First library (P3):** 3–5 scenarios (alkanes → alcohols → ethers → esters); each step keeps `selectedMol + show.*`; exit forces full chrome restore (menu `menu-open` + viewers/bars per the exit step — a no-3D exit leaves 3D hidden; settings panels + save buttons always come back).
-* **Per-step menu subsets (EXPLORE-lite enforcement):** steps may carry a browsable `menuSubset` (tri-state group pick in authoring; menu derived — 2+ picks show it, single pick collapses to the step molecule); a scenario can walk students through an expanding universe (3 alkanes → +alcohols → +ether) instead of the full 65-molecule menu.
+* **Per-step menu subsets (EXPLORE-lite enforcement):** steps may carry a browsable `menuSubset` (tri-state group pick in authoring; menu derived — 2+ picks show it, single pick collapses to the step molecule); a scenario can walk students through an expanding universe (3 alkanes → +alcohols → +ether) instead of the full 69-molecule menu.
 * **Two-level `note` convention:** `note` carries the teacher narrative; authoring guidance is EPAL-simple first line(s) / Lyceum-full extension (P3 authors, P5 uses for EPAL-vs-Lyceum comparison). Schema unchanged — convention only.
 * **`moveto` curation:** capture with `rotate off`; prefer curated per-step cameras for the library over ad-hoc capture.
 * **Authoring docs:** Save → Export → Present → Exit flow (Exit restores menu + exit-step viewers + all bars/panels; in-memory steps kept). `Go` previews align picks + viewer chrome to the step, so Go → tweak → Update round-trips keep the menu.

@@ -738,3 +738,118 @@ Browser checklist for owner (delta): select `dimethyl_2_3_butane` in
 Condensed/Expanded/Skeletal + 3D (SDF loads, viewport healthy); name boxes
 show `2,3-διμεθυλοβουτάνιο`, highlight replay hits both methyls, narration
 follows; one Save → Present → Next → Exit round-trip.
+
+## 2026-10-15 — 66th–69th molecules + formate-ester fix (v46 working copy)
+
+* Embedded `diethyl_ether` (CID 3283), `isopropyl_methyl_ether` (CID 11721),
+  `methyl_methanoate` (CID 7865), `isopropyl_ethanoate` (CID 7915):
+  `nameExamples` (consistent formulas, algorithmic empty chains) + 12 MOL
+  `let` blocks (byte-exact vs `mols/new_molecules/`, VM round-trip verified)
+  + 4 `reg()` lines → 65 → 69 keys, data diff purely additive.
+  3D SDFs in both `mols/new_molecules/` and `mols/nomeclature-moc2/`
+  (hash-matched).
+* Engine fix (`core-46.js` 2D + 3D): formate esters mis-named as
+  alkoxy-aldehydes (explicit formyl H skipped in valence → aldehyde bucket;
+  ester pass only ate ketone O). New ether+aldehyde → ester pass (HCOOH
+  precedent). `μεθανικός μεθυλεστέρας` all modes, 2D + 3D verified;
+  full 69×3 headless regression: 0 changes in 195 pre-existing combos.
+* Version move: v45 reverted to HEAD state (65 keys, pre-formate core —
+  patch backup kept, no commit); v46 forked as mechanical `*45*` → `*46*`
+  copy carrying the 69 keys + fix (`index.html` → 46, `*45*` runnable).
+  Docs re-applied with v46 baseline. Next: iso-/sec- alkyl prefix upgrade
+  on v46 (`προπυλ` → `ισοπροπυλ` slots).
+* Browser checklist for owner (delta): the 4 new molecules in
+  Condensed/Expanded/Skeletal + 3D; ester highlight/narration on
+  `methyl_methanoate`; one Save → Present → Exit round-trip.
+
+## 2026-10-15 (cont.) — iso prefixes + common euphony + ester highlight override (v46)
+
+* Iso-alkyl upgrade (`core-46.js` + `molview-46.js`): branched fragments were
+  named by carbon count only (`προπυλ` for isopropyl). New `isoAlkylNames`
+  table + `fAlkylGroupName(len, attachC, kind)` shape check (attachment C with
+  2+ carbon neighbors → branched; straight output byte-identical), wired into
+  all four alkyl slots (ether systematic prefix, ether common stems, ester
+  alcohol part, hydrocarbon branch names). COMMON box labels
+  (`fGetEtherCommonParts`, own stem copy) routed through the same helper;
+  `alkylBranchNouns` += `ισοπροπυλο: "ισοπροπύλιο"`. Result:
+  `αιθανικός ισοπροπυλεστέρας`, common `Ισοπροπυλομεθυλαιθέρας`
+  (existing alphabetical sort puts `ισοπροπυλ` first); `2-μεθοξυπροπάνιο`
+  and `διαιθυλαιθέρας` unchanged. Table extensible to iso-/sec-/tert-butyl
+  (no molecules yet). No 3D changes (names-only; highlight sets index-based).
+* Common-ether euphony (`core-46.js` only): fused common name concatenated
+  stems raw (`αιθυλμεθυλαιθέρας`). The systematic assembler already had the
+  C+C → `ο` rule (`_joinEuphony`, with the `π/τ+δ → α` exception) — hoisted
+  it to `fGuessName` top (pure move) and routed the asymmetric pair fusion
+  through it; symmetric `δι-` path vowel-led, untouched. Result:
+  `αιθυλομεθυλαιθέρας`, `Ισοπροπυλομεθυλαιθέρας`; COMMON chips stay bare
+  stems; fused string only in "Κοινή ονομασία". Gate: exactly 6 changed
+  lines (2 asymmetric ethers × 3 modes, common slot), systematics identical.
+* Ester highlight override (`molview-46.js` only, `mainChainAtomsList`
+  untouched): on `αιθανικός ισοπροπυλεστέρας`, `αιθ-` lit the isopropyl
+  group (main-chain scorer is length-primary: 3-C alcohol beats 2-C acid;
+  terminal anchor only orients) and `-αν-` lit every C–C single
+  (`fHighlightSingleBondsCC/3D` molecule-wide; old esters masked both).
+  New `fGetEsterAcidChain[3D]()` + `fIsSingleEster()` guard (sole-FG esters
+  only): `αιθ-` reports acid length, highlights + numbers the acid chain;
+  `-αν-` lights only acid C–C singles via optional atom-set filter
+  (default stays wide). Formyl esters correctly light zero C–C bonds.
+  Derivations verified 2D + 3D (3 modes × 3 esters); naming byte-identical.
+* Gates this session: 69×3 naming vs baselines (only specified lines move),
+  COMMON boxes for all 3 ethers, 3D classification snapshots identical,
+  all `*-46.js` parse OK. `*-45*` files verified pristine (65/65, no fix).
+* Browser checklist for owner (cumulative, still pending): 4 new molecules
+  × Condensed/Expanded/Skeletal + 3D; iso/common names + narration;
+  `αιθ-`/`-αν-` acid scoping on `αιθανικός ισοπροπυλεστέρας` (+ `ethanoic`
+  regression); one Save → Present → Exit round-trip.
+* Housekeeping: Temp patch `v46-embed-work.patch` is a stale fallback
+  (predates fork) — live tree is truth. Baselines: `names_euph.txt` is the
+  current 69×3 naming truth. No commits made (owner instruction).
+
+## 2026-10-15 (later) — grey C–H bonds + MOL re-embed round + title-line fix
+
+* Grey C–H bonds (`molview-46.js` only): new `fApplyCHBondColors2D()`,
+  called from `fUpdateSVG()` right after `fApplyAtomColors2DToSVGLabels()`.
+  Gate `svgAtomColors2DFlag && mode2D === "expanded"`; C–H pairs found via
+  `bondList` + `allAtomsTypeList`, lines painted via `svgBondList` with
+  `atomColors2D.H` (`#909090`, same as H labels). Fresh JSME SVG is black
+  each rebuild (toggle-off needs no reset); green highlight backgrounds are
+  separate attributes and win where applied; C–C `-αν-` highlight path only
+  touches C–C, so no conflict. Static: braces/parens balanced.
+  Browser checklist for owner: expanded + colors on → C–H grey / C–C black;
+  toggle off → all black; condensed/skeletal unchanged; alkyl green still wins.
+* Owner redrew 2D MOLs in ChemDraw (alignment + geometry). Re-embedded with
+  the same convention as the first import: `dimethyl_2D_Condensed/_Expanded`
+  (2 blocks), all 12 new-molecule blocks, 3 ester redraws, 2 iPr-Me-ether
+  redraws — all in `data_46.js`; `*45*` + `data_45.js` untouched. Skeletal
+  blocks needed no action (content-identical; trailing blank added for
+  uniformity, inert).
+* Missing-title root cause (the "esters do not load" episode): the first
+  import dropped the filename title line, moving V2000 counts 3 → 2 — JSME
+  read the first atom line as counts (NaN → 0 atoms → empty viewer +
+  `fCalcMainChain: cyclic molecule` fallback, since `terminals == []`).
+  Evidence: full 195-block audit in `data_46.js` showed exactly the 12 new
+  blocks with atom lines at index 3; all old blocks (incl. dimethyl, whose
+  KingDraw file carries its own title) were fine. Fix: titles restored +
+  trailing blank after `M END`, mirroring working-block structure. Post-fix
+  audit: 195/195 counts-at-[3] OK. CORRECTION: the v45 "no SMILES title"
+  note misread V2000 — its 3 headers *include* the title; dropping it was a
+  bug, not a rule.
+* Two redraws landed short on H and were fixed at source pre-import:
+  `dimethyl_Expanded` 18→20 atoms (two methine H's; pattern `[3,1,1,3,3,3]`,
+  all valences 4) and `isopropyl_methyl_ether_Expanded` 14→15 atoms
+  (central CH hydrogen; `[1,3,3,3]`, 10 H). An early "corrected" save of the
+  ether file landed without the new H (stale buffer) — caught by recheck
+  before import, fixed on second save.
+* ChemDraw re-exports write CRLF (all redrawn files; masked at first by
+  Python universal-newline reads). Embed normalizes to LF (no-CR asserted
+  in `data_46.js`); working-copy `.mol` files keep CRLF on disk and
+  `* text=auto eol=lf` normalizes them on commit.
+* Owner browser-verified this round: both esters load with correct names,
+  cyclic warning gone (hard reload; the stale-bundle + title bug are both
+  closed by this). Remaining owner checks: dimethyl/ethers × 3 modes, C–H
+  grey, zoom-50 3D framing, one Save → Present → Exit round-trip.
+* Incidental find: `spt/init-3.spt` carries an owner 3D default `zoom 80→50`
+  (shared init, all versions) — committed with this batch + CHANGELOG entry.
+* Commit plan: single commit (docs + `index.html`→46 + v46 set + MOL/SDF data
+  + dimethyl inbox MOLs + spt zoom), explicit file list, zero `*45*` /
+  `data_45.js` paths; push `origin/main`.
