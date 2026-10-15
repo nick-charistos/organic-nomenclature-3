@@ -14,6 +14,15 @@ let svgAtomColors2DFlag = false;
 let atomColorMode2D = "atom";
 let mode2D = "condensed";
 let modeSuffix = "_2D_Condensed";
+// 2D zoom state: JSME molecular-area scale. Default 2.0 = the long-standing
+// hardcoded load value, so behavior is identical until the user zooms.
+// fInitProps resets it on every molecule load (mode switches keep zoom);
+// fLoadMol2D re-applies it on every load. Scenario steps capture it in
+// style2D.zoom (legacy default 2.0) and re-assert it after the step load.
+const MOL_ZOOM_DEFAULT = 2.0;
+const MOL_ZOOM_MIN = 0.5;
+const MOL_ZOOM_MAX = 6.0;
+let molZoom2D = MOL_ZOOM_DEFAULT;
 // B2 owned-shared viewer state: current MOL strings (fDeselectMol/fLoadMol2D).
 let myMol2D = null;
 let myMol3D = null;
@@ -78,35 +87,23 @@ const atomColors2D = {
   C: "#222222",
 };
 
-// ── SVG icon constants ────────────────────────────────────────────────────
-const svgSettings =
-  "<svg viewBox='0 0 22 22' width='18' height='18' fill='currentColor' > <path d='M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.02 7.02 0 0 0-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54a7.02 7.02 0 0 0-1.62.94l-2.39-.96a.47.47 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.36 1.04.67 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54a7.02 7.02 0 0 0 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 0 1 8.4 12 3.6 3.6 0 0 1 12 8.4a3.6 3.6 0 0 1 3.6 3.6 3.6 3.6 0 0 1-3.6 3.6z' transform='translate(-1 -1)' /> </svg>";
-
-const svgSpeaker =
-  "<svg viewBox='0 0 22 22' width='18' height='18' fill='currentColor' style='vertical-align:middle'><path d='M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/></svg>";
-const svgMute =
-  "<svg viewBox='0 0 22 22' width='18' height='18' fill='currentColor' style='vertical-align:middle'><path d='M16.5 12A4.5 4.5 0 0 0 14 7.97v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06A8.99 8.99 0 0 0 17.73 18l2 2L21 18.73l-1.27-1.27L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/></svg>";
-const svgStop =
-  "<svg viewBox='0 0 22 22' width='18' height='18' fill='currentColor' style='vertical-align:middle'><path d='M6 6h12v12H6z'/></svg>";
-const svgPlay =
-  "<svg viewBox='0 0 22 22' width='18' height='18' fill='currentColor' style='vertical-align:middle'><path d='M8 5v14l11-7z'/></svg>";
-const svgNameBox =
-  "<svg viewBox='0 0 22 22' width='18' height='18' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' style='vertical-align:middle' xmlns='http://www.w3.org/2000/svg'><path style='stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;paint-order:stroke markers fill' d='M4 4h16v16H4z' transform='translate(-1 -1)'/><path d='M9.62 12.91h4.76m-6.347 3.173 3.39-7.457c.183-.404.275-.606.402-.668a.397.397 0 0 1 .35 0c.127.062.22.264.403.668l3.39 7.457' stroke='currentColor' style='stroke-width:1.65;stroke-dasharray:none' transform='translate(-1 -1)'/></svg>";
-const svgNameBoxOff =
-  "<svg viewBox='0 0 22 22' width='18' height='18' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' style='vertical-align:middle'  id='svgNameBoxOff' xmlns='http://www.w3.org/2000/svg' xmlns:svg='http://www.w3.org/2000/svg'> <defs id='defs1' /> <rect x='3' y='3' width='16' height='16' id='rect1' style='stroke=currentColor; stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:none;paint-order:stroke markers fill;opacity:0.2' /> <path d='M 8.6195557,11.909077 H 13.380445 M 7.0325918,15.083004 10.422104,7.6260622 c 0.183613,-0.403896 0.27542,-0.6058446 0.402616,-0.6684983 0.110533,-0.054444 0.240026,-0.054444 0.350561,0 0.127194,0.062657 0.219001,0.2646023 0.40261,0.6684983 l 3.389517,7.4569418' stroke='currentColor' stroke-width='1.65' stroke-linecap='round' stroke-linejoin='round' id='pathA' style='stroke-width:2;stroke-dasharray:none' /> </svg> ";
-
-const svgNameCross =
-  "<svg viewBox='0 0 22 22' width='18' height='18' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' style='vertical-align:middle' xmlns='http://www.w3.org/2000/svg'><path d='M5.923 33.4v-2.8a.654.654 45 0 0-.654-.653H2.5a.654.654 45 0 1-.654-.654v-.409a.654.654 135 0 1 .654-.654h2.77a.654.654 135 0 0 .653-.653v-2.77a.654.654 135 0 1 .654-.653h.429a.654.654 45 0 1 .654.654v2.769a.654.654 45 0 0 .653.653h2.77a.654.654 45 0 1 .653.654v.409a.654.654 135 0 1-.654.654H8.313a.654.654 135 0 0-.653.654v2.8a.654.654 135 0 1-.654.653h-.43a.654.654 45 0 1-.653-.654Z' style='font-size:20.9238px;line-height:125%;font-family:Arial;letter-spacing:0;word-spacing:0;fill:currentColor;stroke:none;stroke-width:1.65;stroke-miterlimit:0;stroke-dasharray:none;paint-order:stroke markers fill' aria-label='+' transform='translate(4.209 -18.104)' stroke='none'/><path d='M-2.556 11.91h4.76m-6.347 3.173 3.39-7.457c.183-.404.275-.606.402-.668a.397.397 0 0 1 .35 0c.128.062.22.264.403.668l3.39 7.457M19.795 11.91h4.761m-6.348 3.173 3.39-7.457c.183-.404.275-.606.402-.668a.397.397 0 0 1 .351 0c.127.062.219.264.403.668l3.39 7.457' stroke='currentColor' style='opacity:0.6;stroke-width:1.65;stroke-dasharray:none'/></svg>";
-
-const svgNameCrossOff =
-  "<svg viewBox='0 0 22 22' width='18' height='18' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' style='vertical-align:middle' xmlns='http://www.w3.org/2000/svg'><path d='M3.494 11.91h4.76m-6.347 3.173 3.39-7.457c.183-.404.275-.606.402-.668a.397.397 0 0 1 .35 0c.128.062.22.264.403.668l3.39 7.457M13.745 11.91h4.761m-6.348 3.173 3.39-7.457c.183-.404.275-.606.402-.668a.397.397 0 0 1 .351 0c.127.062.219.264.403.668l3.39 7.457' stroke='currentColor' style='stroke-width:1.65;stroke-dasharray:none'/></svg>";
-const svgEye =
-  "<svg viewBox='-9 -244 800 800' width='14' height='14' fill='currentColor' style='vertical-align:middle' xmlns='http://www.w3.org/2000/svg'><g transform='translate(42.666667, 85.333333)'><path d='M348.3-196C115-196,15,70.7,15,70.7s100,266.7,333.3,266.7S681.7,70.7,681.7,70.7S581.7-196,348.3-196z M348.3,270.7 C201,270.7,116.2,128,88,70.7c28.2-57.5,113.1-200,260.3-200c147.3,0,232.2,142.7,260.3,200C580.4,128.1,495.6,270.7,348.3,270.7z M348.3-46C283.9-46,231.7,6.2,231.7,70.7s52.2,116.7,116.7,116.7S465,135.1,465,70.7S412.8-46,348.3-46z'/></g></svg>";
-const svgEyeOff =
-  "<svg viewBox='-9 -244 800 800' width='14' height='14' fill='currentColor' style='vertical-align:middle' xmlns='http://www.w3.org/2000/svg'><path d='M131.2-150.9l566.7,566.7l-47.1,47.1l-92.5-92.5c-45.5,30.8-101,52.3-167.3,52.3C157.7,422.7,57.7,156,57.7,156 S93.4,60.7,171.9-15.9l-87.9-87.9L131.2-150.9z M219.3,31.4c-44.9,43.5-74.2,95.2-88.6,124.6c28.2,57.3,113.1,200,260.3,200 c45.5,0,85-13.6,118.8-34.1L219.3,31.4z M391-110.7c233.3,0,333.3,266.7,333.3,266.7s-22.2,59.3-70.2,122l-47.8-47.8 c21-28.5,35.9-55.8,45-74.3C623.2,98.7,538.3-44,391-44c-18.5,0-36,2.2-52.5,6.3l-53.2-53.2C316.9-103.3,352.1-110.7,391-110.7z'/></svg>";
-// Master eye-edit switch icon (single icon + .active highlight; Industrial-Sharp set, imgs/).
-const svgEyeState =
-  "<svg viewBox='-9 -244 800 800' width='18' height='18' fill='currentColor' style='vertical-align:middle' xmlns='http://www.w3.org/2000/svg'><g><path d='M391-110.7c-38.9,0-74.1,7.4-105.7,19.8l0.7,0.7l52.5,52.5c16.5-4,34.1-6.3,52.5-6.3c147.3,0,232.2,142.7,260.3,200c-0.1,0.2-0.2,0.3-0.2,0.5c-9.1,18.5-24,45.5-44.8,73.8l0.4,0.4L654,278c45.5-59.4,67.8-115.7,70-121.5c0.1-0.3,0.2-0.5,0.2-0.5S624.3-110.7,391-110.7z'/><path d='M563.3,281.1L494,211.8l0,0l-12.7-12.7L441,158.8L389.3,107l-53-53c-6.2,3.3-12.2,7.2-17.7,11.6c5.5-4.4,11.4-8.3,17.7-11.6l-63.3-63.3l-48.5-48.5l-93.1-93.1l-47.1,47.1l87.9,87.9C93.4,60.7,57.7,156,57.7,156s0.1,0.2,0.2,0.5c-0.1,0.3-0.2,0.5-0.2,0.5s100,266.7,333.3,266.7c66.5,0,122.2-21.7,167.8-52.7l91.9,91.9l47.1-47.1l-87.4-87.4L563.3,281.1z M391,356c-146.9,0-231.7-141.8-260.1-199.5c14.6-29.6,44-81.2,88.9-124.6L285,97.2l-0.7,1.3c-9.8,17.8-15,38.1-15,58.6c0,67.1,54.6,121.7,121.7,121.7c20.5,0,40.7-5.2,58.6-15l1.3-0.7l58.9,58.9C476,342.4,436.5,356,391,356z'/></g></svg>";
+// ── SVG icon aliases (single source: js/ui-icons.js) ────────────────────────
+// ui-icons.js loads first (see mulermoc-nom-46.html); these lexical aliases
+// keep every use site below unchanged. Guarded so a missing icon file degrades
+// to empty buttons instead of breaking the module. Note: `playSm` is the
+// 22-viewBox narration triangle, distinct from the 512-viewBox scenario `play`.
+const svgSettings = (window.MuLERIcons && window.MuLERIcons.settings) || "";
+const svgSpeaker = (window.MuLERIcons && window.MuLERIcons.speaker) || "";
+const svgMute = (window.MuLERIcons && window.MuLERIcons.mute) || "";
+const svgStop = (window.MuLERIcons && window.MuLERIcons.stop) || "";
+const svgPlay = (window.MuLERIcons && window.MuLERIcons.playSm) || "";
+const svgNameBox = (window.MuLERIcons && window.MuLERIcons.nameBox) || "";
+const svgNameBoxOff = (window.MuLERIcons && window.MuLERIcons.nameBoxOff) || "";
+const svgNameCross = (window.MuLERIcons && window.MuLERIcons.nameCross) || "";
+const svgNameCrossOff = (window.MuLERIcons && window.MuLERIcons.nameCrossOff) || "";
+const svgEye = (window.MuLERIcons && window.MuLERIcons.eye) || "";
+const svgEyeOff = (window.MuLERIcons && window.MuLERIcons.eyeOff) || "";
+const svgEyeState = (window.MuLERIcons && window.MuLERIcons.eyeState) || "";
 
 // Per-component name visibility helpers (eye toggles). Masking is applied at
 // box-construction time in fShowNameAnalysis so every rebuild (mode switch,
@@ -323,6 +320,13 @@ function fInitViewerSettingsBtn() {
       if (bar && !document.getElementById("view2DBtn")) {
         bar.insertAdjacentHTML("afterbegin", visMarkup);
       }
+      // Static HTML icon placeholders (e.g. save-image buttons) hydrate here
+      // from the js/ui-icons.js registry — single source, no <img> files.
+      document.querySelectorAll("[data-icon]").forEach(function (el) {
+        const key = el.getAttribute("data-icon");
+        const icon = window.MuLERIcons && window.MuLERIcons[key];
+        if (icon && !el.innerHTML) el.innerHTML = icon;
+      });
     } catch (e) {
       // defensive - don't throw in init
       console.warn("viewerSettings init failed", e);
@@ -675,6 +679,11 @@ function fInitProps() {
   window.nameHiddenComps = [];
   carbons = 0;
   ruleTableHighlight = null;
+  // New-molecule reset: 2D zoom returns to default on every molecule load.
+  // Mode/chain switches call fLoadMol2D directly (teaching layer) and keep
+  // the live zoom for comparison. Scenario steps re-assert their stored zoom
+  // after fSelectMol returns.
+  molZoom2D = MOL_ZOOM_DEFAULT;
 }
 
 // ── fShowMolName ──────────────────────────────────────────────────────────
@@ -764,10 +773,10 @@ function fLoadMol2D() {
   }
 
   jsmeNomeclatureApplet.readMolFile(myMol2D);
-  jsmeNomeclatureApplet.setMolecularAreaScale(2.0);
+  jsmeNomeclatureApplet.setMolecularAreaScale(molZoom2D);
   if (jsmeNomeclatureAppletORGNL && rawMol2D) {
     jsmeNomeclatureAppletORGNL.readMolFile(rawMol2D);
-    jsmeNomeclatureAppletORGNL.setMolecularAreaScale(2.0);
+    jsmeNomeclatureAppletORGNL.setMolecularAreaScale(molZoom2D);
   }
 
   fAnalyseStructure();
@@ -775,6 +784,45 @@ function fLoadMol2D() {
   nameExamples[selectedMol].classification = fGetMoleculeClassification();
   fGuessName();
   fUpdateSVG();
+}
+
+// ── fZoom2D ─────────────────────────────────────────────────────────────────
+// Zoom in (dir > 0) / out (dir < 0) the 2D molecule view by one ×1.25 step,
+// clamped to 0.5–6.0. Scale is applet state: re-render the SVG afterwards and
+// replay numbering overlays (DOM-side, wiped by the rebuild) like the color
+// toggle does. Highlights are JSME background state and survive.
+function fZoom2D(dir) {
+  if (!jsmeNomeclatureApplet) return;
+  var next = molZoom2D * (dir > 0 ? 1.25 : 1 / 1.25);
+  next = Math.min(MOL_ZOOM_MAX, Math.max(MOL_ZOOM_MIN, next));
+  if (next === molZoom2D) return;
+  molZoom2D = next;
+  try {
+    jsmeNomeclatureApplet.setMolecularAreaScale(molZoom2D);
+    if (jsmeNomeclatureAppletORGNL) jsmeNomeclatureAppletORGNL.setMolecularAreaScale(molZoom2D);
+  } catch (e) {
+    /* applet unavailable */
+  }
+  fUpdateSVG();
+  if (numberingFlag) {
+    currNumberEl = 0;
+    fShowNumbering(0);
+  }
+}
+
+// ── fZoom3D ─────────────────────────────────────────────────────────────────
+// Zoom in (dir > 0) / out (dir < 0) the 3D molecule view. Live-only aid:
+// zoom is JSmol-side state (numbering echoes and selections survive), JSmol
+// `load` resets the framing on every molecule switch, and per-step cameras
+// remain moveto's job (capture/apply follow-up pending elsewhere).
+function fZoom3D(dir) {
+  try {
+    if (typeof Jmol !== "undefined" && typeof jmolAppletNomeclature !== "undefined") {
+      Jmol.script(jmolAppletNomeclature, dir > 0 ? "zoomTo IN;" : "zoomTo OUT;");
+    }
+  } catch (e) {
+    /* JSmol unavailable */
+  }
 }
 
 // ── fAddHydrogens2SVG ─────────────────────────────────────────────────────

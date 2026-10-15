@@ -853,3 +853,62 @@ follows; one Save → Present → Next → Exit round-trip.
 * Commit plan: single commit (docs + `index.html`→46 + v46 set + MOL/SDF data
   + dimethyl inbox MOLs + spt zoom), explicit file list, zero `*45*` /
   `data_45.js` paths; push `origin/main`.
+
+## 2026-10-15 (later) — icons, zoom controls, tool-button merge
+
+* Icon consolidation (`ui-icons.js` + `molview-46.js` only): 12 svg* consts →
+  registry keys (`settings/speaker/mute/stop/playSm/nameBox/…/eyeState`),
+  markup byte-identical (saved pre-image, compared post-move); molview keeps
+  guarded aliases (`… || ""`), so teaching/scenario use sites are untouched
+  (incl. teaching's single `svgStop` use). `playSm` avoids clobbering the
+  512-viewBox scenario `play`. `*42–45*` frozen with local copies; shared-file
+  addition inert for them. Static: no `const svg` left, balance clean.
+  Full-repo audit: v46 runtime icons all in registry; the `'<svg xmlns…'`
+  strings in molview are PNG-export machinery (not GUI icons); `imgs/` holds
+  21 files but only `image-svgrepo-Industrial-Sharp.svg` is tracked/loaded —
+  the other 20 are untracked source leftovers (zero references; owner keeps).
+* Save-image inline (v46 only): `saveImage` registry key (path data
+  byte-identical to file; ids/title stripped — renders twice per page);
+  both save buttons → `[data-icon]` placeholder spans filled by a generic
+  hydration in the viewer-settings init; CSS sizing extended to `svg`
+  (24px, pixel-identical). `.svg` file stays for frozen pages.
+* Zoom icons (`zoomIn`/`zoomOut`, Industrial-Sharp) added to registry for
+  later use — paths byte-identical, no consumers yet.
+* 2D zoom (`molview-46.js`): `molZoom2D` (default 2.0) applied by
+  `fLoadMol2D` on both applets (replaces hardcoded 2.0);
+  `fZoom2D(dir)` ×1.25, clamp 0.5–6.0, re-render + numbering replay
+  (highlights are applet state and survive). −/+ buttons left of the 2D save
+  button (registry icons, Greek tooltips). Reset-to-default on molecule load
+  via `fInitProps` (named `MOL_ZOOM_DEFAULT/MIN/MAX`); mode/chain/zigzag
+  switches call `fLoadMol2D` directly and keep zoom. `setMolecularAreaScale`
+  is the sanctioned API (getter exists); `setSize`/CSS-transform rejected
+  (viewport dims / Snap desync). JSME `zoom`-option default noted but
+  buttons give determinism + touch + storable values.
+* 2D zoom storage (`scenario-46.js`): additive `style2D.zoom` (legacy 2.0,
+  no bump) — capture + Update free via `fScenarioCapture`, new
+  `fScenarioValidZoom` (0.5–6.0 clamp) + `fScenarioG` whitelist case (without
+  it capture would silently read 2.0 — caught in review); apply re-asserts
+  after `fSelectMol` (pre-load assignment would be wiped by the reset) with
+  scale + re-render so the §5 highlight replay paints zoomed; Present stashes
+  / Exit restores author zoom (eye/hidden-stash pattern). Menu-only branch
+  order verified (deselect → assign).
+* 3D zoom (`molview-46.js` + `46.html` + CSS): `fZoom3D(dir)` sends
+  owner-provided `zoomTo IN;`/`zoomTo OUT;` (guarded; fallback to relative
+  `zoom` forms if console rejects). `#view3DTools` cluster mirrors 2D
+  (zoom pair + save moved inside). Live-only by owner decision: JSmol `load`
+  already resets framing per molecule; step cameras stay moveto's job —
+  moveto capture/apply follow-up recorded as separate future work.
+* Tool-button merge (v46 chrome): `#view2DTools`/`#view3DTools` + single
+  `.viewerToolBtn` class replace `.saveImgBtn`/`.zoomBtn`/`#zoom2DBtns` and the
+  hand-synced `right:36px`; `#save3DBtn` keeps own anchoring (stands alone);
+  6 tooltip selectors retargeted + zoom buttons added to the left-middle
+  clip-avoidance geometry (ID specificity wins, same pattern). Frozen CSS
+  untouched. Balance clean; scenario save-button ids verified intact.
+* Browser checklist for owner (cumulative v46): icon buttons everywhere
+  (gears, narrate/read, box/cross/eye, comp eyes, save ×2, zoom ×4);
+  2D zoom steps + clamp ends + reset-on-load + mode-switch keeps zoom +
+  Save→Present→Exit zoom round-trip; 3D zoom steps + framing reset +
+  console watch on `zoomTo`; dimethyl/ethers × modes; iso/common names;
+  `αιθ-`/`-αν-` + ethanoic regression; full Save→Present→Exit.
+* Not committed in this batch: `docs/flowchart-mermaid.md` shows M for a
+  zero-line binary/metadata difference (untouched by this work) — left out.

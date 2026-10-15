@@ -24,6 +24,26 @@ Earlier entries below were written against `*44*` paths; the same behaviors now 
 
 - Shared JSmol init script now opens at `zoom 50` (was 80). Applies to all versions loading 3D (owner change, committed with this batch).
 
+### Icon consolidation into `js/ui-icons.js` (v46-only consumers)
+
+- All 12 molview SVG consts (`settings/speaker/mute/stop/playSm/nameBox/…/eyeState`) moved to the shared registry, markup byte-identical; `molview-46.js` keeps guarded lexical aliases so every use site (`teaching-46`, `scenario-46` included) works unchanged. `playSm` naming avoids the existing 512-viewBox scenario `play` icon. `*42–45*` sets keep local copies (frozen).
+- Save-image icon (`saveImage`, from `imgs/image-svgrepo-Industrial-Sharp.svg`, ids stripped) inlined for v46: both save buttons use registry-filled placeholders + a generic `[data-icon]` hydration; the `.svg` file stays on disk for the frozen pages.
+- `zoomIn`/`zoomOut` (Industrial-Sharp) added to the registry for later use.
+
+### 2D zoom controls (v46-only)
+
+- New `molZoom2D` state (default 2.0, the long-standing load value) applied by `fLoadMol2D` on both JSME applets; `fZoom2D(dir)` steps ×1.25 clamped 0.5–6.0, then re-renders + replays numbering. −/+ buttons docked left of the 2D save button.
+- Zoom resets to default on every molecule load (`fInitProps`); mode/chain switches keep it for comparison.
+- Steps capture additive `style2D.zoom` (legacy → 2.0, no version bump): Save/Update carry it, apply re-asserts it after the step load, Present entry stashes / Exit restores the author's live zoom (same pattern as the eye/hidden stash).
+
+### 3D zoom controls (v46-only, live-only)
+
+- New `fZoom3D(dir)` sending owner-provided `zoomTo IN;` / `zoomTo OUT;` to JSmol (guarded); −/+ buttons in a `#view3DTools` cluster symmetric with 2D. No state, no capture: JSmol `load` resets framing per molecule, and per-step cameras remain moveto's job (capture/apply follow-up pending, out of scope here).
+
+### Viewer tool-button merge (v46-only chrome)
+
+- 2D zoom pair + save share one `#view2DTools` container and one `.viewerToolBtn` class (3D: `#view3DTools` + reclassed save); the hand-synced `right:36px` offset and duplicated CSS are gone, zoom buttons join the save-button tooltip clip-avoidance geometry. Pixel-identical layout.
+
 ### Four new molecules (66th–69th: 2 ethers + 2 esters)
 
 - New `nameExamples` keys `diethyl_ether` (`CH3CH2OCH2CH3`), `isopropyl_methyl_ether` (`CH3OCH(CH3)2`), `methyl_methanoate` (`HCOOCH3`), `isopropyl_ethanoate` (`CH3COOCH(CH3)2`) — all `mainChain_*`/`mainChain3D` empty → algorithmic chain, no `moveto` yet — in `js/jsme-nick-nomeclature-moc2-data_46.js` (65 → 69 keys).

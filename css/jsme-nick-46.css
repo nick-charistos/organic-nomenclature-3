@@ -379,7 +379,7 @@ header {
    covered here and not re-declared there. */
 .narrateBtn[data-tooltip]::after,
 .readNameBtn[data-tooltip]::after,
-.saveImgBtn[data-tooltip]::after,
+.viewerToolBtn[data-tooltip]::after,
 .settingsBtn[data-tooltip]::after,
 .nameStyleBox[data-tooltip]::after,
 .nameStyleCross[data-tooltip]::after,
@@ -412,7 +412,7 @@ header {
 
 .narrateBtn[data-tooltip]:hover::after,
 .readNameBtn[data-tooltip]:hover::after,
-.saveImgBtn[data-tooltip]:hover::after,
+.viewerToolBtn[data-tooltip]:hover::after,
 .settingsBtn[data-tooltip]:hover::after,
 .nameStyleBox[data-tooltip]:hover::after,
 .nameStyleCross[data-tooltip]:hover::after,
@@ -434,7 +434,7 @@ header {
 /* Geometry for the panel-button bubble: below, centered */
 .narrateBtn[data-tooltip]::after,
 .readNameBtn[data-tooltip]::after,
-.saveImgBtn[data-tooltip]::after,
+.viewerToolBtn[data-tooltip]::after,
 .settingsBtn[data-tooltip]::after,
 .nameStyleBox[data-tooltip]::after,
 .nameStyleCross[data-tooltip]::after,
@@ -451,7 +451,7 @@ header {
    direction color and placement stay in the per-family geometry rules. */
 .narrateBtn[data-tooltip]::before,
 .readNameBtn[data-tooltip]::before,
-.saveImgBtn[data-tooltip]::before,
+.viewerToolBtn[data-tooltip]::before,
 .settingsBtn[data-tooltip]::before,
 .nameStyleBox[data-tooltip]::before,
 .nameStyleCross[data-tooltip]::before,
@@ -475,7 +475,7 @@ header {
 
 .narrateBtn[data-tooltip]:hover::before,
 .readNameBtn[data-tooltip]:hover::before,
-.saveImgBtn[data-tooltip]:hover::before,
+.viewerToolBtn[data-tooltip]:hover::before,
 .settingsBtn[data-tooltip]:hover::before,
 .nameStyleBox[data-tooltip]:hover::before,
 .nameStyleCross[data-tooltip]:hover::before,
@@ -496,7 +496,7 @@ header {
 /* Geometry for the panel-button arrow: above the bubble, centered */
 .narrateBtn[data-tooltip]::before,
 .readNameBtn[data-tooltip]::before,
-.saveImgBtn[data-tooltip]::before,
+.viewerToolBtn[data-tooltip]::before,
 .settingsBtn[data-tooltip]::before,
 .nameStyleBox[data-tooltip]::before,
 .nameStyleCross[data-tooltip]::before,
@@ -532,11 +532,16 @@ header {
   z-index: 400;
 }
 
-/* Save-image buttons sit at the right end of their rows and #viewerCol is
-   overflow:hidden, so a centered bubble would clip past the column edge.
-   Their bubbles render to the left-middle instead (skin: shared rule above). */
+/* Save-image and zoom buttons sit at the right end of their rows and
+   #viewerCol is overflow:hidden, so a centered bubble would clip past the
+   column edge. Their bubbles render to the left-middle instead (skin:
+   shared rule above). */
 #save2DBtn[data-tooltip]::after,
-#save3DBtn[data-tooltip]::after {
+#save3DBtn[data-tooltip]::after,
+#zoomInBtn[data-tooltip]::after,
+#zoomOutBtn[data-tooltip]::after,
+#zoomIn3DBtn[data-tooltip]::after,
+#zoomOut3DBtn[data-tooltip]::after {
   top: 50%;
   bottom: auto;
   left: auto;
@@ -546,7 +551,11 @@ header {
 }
 
 #save2DBtn[data-tooltip]::before,
-#save3DBtn[data-tooltip]::before {
+#save3DBtn[data-tooltip]::before,
+#zoomInBtn[data-tooltip]::before,
+#zoomOutBtn[data-tooltip]::before,
+#zoomIn3DBtn[data-tooltip]::before,
+#zoomOut3DBtn[data-tooltip]::before {
   top: 50%;
   bottom: auto;
   left: auto;
@@ -1843,31 +1852,52 @@ header {
   height: 80px;
 }
 
-.saveImgBtn {
+/* Viewer tool buttons (2D zoom cluster + 2D/3D save buttons): one shared look.
+   The 2D trio shares a single absolutely-positioned container, so no
+   hand-synced offsets between neighbors. */
+#view2DTools {
   position: absolute;
   right: 5px;
   bottom: 41px;
-  background-color: var(--bgColor);
+  display: flex;
+  gap: 4px;
+}
+
+.viewerToolBtn {
+  background-color: transparent;
   cursor: pointer;
   padding: 0px;
-  opacity: 0.8;
-  border-radius: 2px;
+  opacity: 1.0;
+  border-radius: 3px;
   display: flex;
   align-items: center;
   transition: all 0.2s;
-  border: 1px solid var(--darkEarth);
+  border: 2px solid transparent;
+  color: var(--baseColor);
 }
 
-.saveImgBtn img {
+.viewerToolBtn img,
+.viewerToolBtn svg {
   width: 24px;
   height: 24px;
   display: block;
 }
 
-.saveImgBtn:hover {
+.viewerToolBtn:hover {
   opacity: 1;
-  background-color: var(--veryLightBlue);
-  border-color: var(--baseColor);
+  background-color: var(--lightBlue);
+  border-color: var(--lightBlue);
+  color: #fff;
+}
+
+/* The 3D trio (zoom pair + save) shares one anchored cluster, symmetric
+   with the 2D tools. */
+#view3DTools {
+  position: absolute;
+  right: 5px;
+  bottom: 41px;
+  display: flex;
+  gap: 4px;
 }
 
 /* ── Responsive layout ─────────────────────────────────────────────────── */

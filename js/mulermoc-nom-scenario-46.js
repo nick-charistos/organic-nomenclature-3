@@ -161,6 +161,7 @@ function fScenarioG(name, fallback) {
       case "nameAnalysisMode": return typeof nameAnalysisMode !== "undefined" ? nameAnalysisMode : fallback;
       case "svgAtomColors2DFlag": return typeof svgAtomColors2DFlag !== "undefined" ? svgAtomColors2DFlag : fallback;
       case "atomColorMode2D": return typeof atomColorMode2D !== "undefined" ? atomColorMode2D : fallback;
+      case "molZoom2D": return typeof molZoom2D !== "undefined" ? molZoom2D : fallback;
       case "nameSettingsFlag": return typeof nameSettingsFlag !== "undefined" ? nameSettingsFlag : fallback;
       case "narrateAnalysisFlag": return typeof narrateAnalysisFlag !== "undefined" ? narrateAnalysisFlag : fallback;
       case "vis3D": return typeof vis3D !== "undefined" ? vis3D : fallback;
@@ -315,6 +316,7 @@ function fScenarioCapture() {
       atomColors: !!fScenarioG("svgAtomColors2DFlag", false),
       colorMode: fScenarioG("atomColorMode2D", "atom"),
       zigzag: fScenarioG("mode2D", "") === "condensedZigZag",
+      zoom: fScenarioValidZoom(fScenarioG("molZoom2D", 2.0)),
     },
     styleName: {
       box: !!window.nameBoxFlag,
@@ -394,6 +396,16 @@ function fScenarioValidColumns(v) {
   if (n >= 2) return 2;
   return null;
 }
+// 2D zoom level: additive optional style2D.zoom (JSME molecular-area scale).
+// Default 2.0 = the long-standing load value. Clamped to the fZoom2D range
+// 0.5–6.0; invalid → 2.0. No schema change (scenarioVersion stays 1).
+function fScenarioValidZoom(v) {
+  var n = parseFloat(v);
+  if (isNaN(n)) return 2.0;
+  if (n < 0.5) return 0.5;
+  if (n > 6.0) return 6.0;
+  return n;
+}
 function fScenarioApplyStepFontSize(step) {
   var p = null;
   try { p = document.getElementById("scStepText"); } catch (e) { /* no DOM */ }
@@ -425,7 +437,7 @@ function fScenarioDefaults(step, i) {
     etherNamingMode: "iupac",
     nameAnalysisMode: "none",
     selectedRule: null,
-    style2D: { atomColors: false, colorMode: "atom", zigzag: false },
+    style2D: { atomColors: false, colorMode: "atom", zigzag: false, zoom: 2.0 },
     styleName: { box: true, cross: false, etherNaming: "iupac", panelOpen: true, hidden: [] },
     styleHighlight: { bondAtoms: false, numberingAtoms: true },
     styleText: { fontSizePx: null, textWidthPx: null, columns: null },
@@ -654,6 +666,7 @@ function fScenarioStashAuthorSettings() {
     numberingAtoms: fScenarioCheck("highlightNumberingCheck", true),
     nameHidden: Array.isArray(window.nameHiddenComps) ? window.nameHiddenComps.slice() : [],
     nameEyeEdit: window.nameEyeEdit === true,
+    zoom: (typeof molZoom2D !== "undefined" ? molZoom2D : 2.0),
   };
 }
 
@@ -664,6 +677,17 @@ function fScenarioRestoreAuthorSettings() {
   fScenarioSetCheck("highlightNumberingCheck", a.numberingAtoms !== false, "selectedCheck", "unselectedCheck");
   window.nameHiddenComps = Array.isArray(a.nameHidden) ? a.nameHidden.slice() : [];
   window.nameEyeEdit = a.nameEyeEdit === true;
+  // Author's live 2D zoom comes back too (step applies overwrote it);
+  // re-apply scale + re-render before the naming rebuild below.
+  try {
+    if (typeof molZoom2D !== "undefined") molZoom2D = fScenarioValidZoom(a.zoom);
+    if (typeof jsmeNomeclatureApplet !== "undefined" && jsmeNomeclatureApplet) {
+      jsmeNomeclatureApplet.setMolecularAreaScale(typeof molZoom2D !== "undefined" ? molZoom2D : 2.0);
+    }
+    if (typeof fUpdateSVG === "function") fUpdateSVG();
+  } catch (eZoom) {
+    /* applet unavailable */
+  }
   // Re-render the name boxes with the author's live hidden set (the last
   // present step's view lingers otherwise); the naming-chrome hook no-ops
   // outside presentation.
@@ -1112,6 +1136,7 @@ function fScenarioApply(step) {
     rotateFlag = !!step.view3D.spin;
     svgAtomColors2DFlag = !!step.style2D.atomColors;
     atomColorMode2D = step.style2D.colorMode;
+    molZoom2D = fScenarioValidZoom(step.style2D.zoom);
     fScenarioSyncControlUi();
     // author's live selectedRule untouched on menu-only steps
     fScenarioChrome(step.show);
@@ -1184,10 +1209,30 @@ function fScenarioApply(step) {
   // Master eye switch seeds from the step's visibility flag: with the naming
   // settings gear shown it stays live and toggles the eyes (fNameEyeVisible).
   window.nameEyeEdit = !!(step.show && step.show.nameEye === true);
+  // Per-step 2D zoom re-asserted after the load: fSelectMol resets zoom to
+  // default via fInitProps, then the step's stored level applies on top.
+  // Same synchronous task as the load render → single paint, no flash; the
+  // stored name-highlight replay (§5 below) paints onto the zoomed render.
+  molZoom2D = fScenarioValidZoom(step.style2D.zoom);
+  try {
+    if (typeof jsmeNomeclatureApplet !== "undefined" && jsmeNomeclatureApplet) {
+      jsmeNomeclatureApplet.setMolecularAreaScale(molZoom2D);
+      if (typeof jsmeNomeclatureAppletORGNL !== "undefined" && jsmeNomeclatureAppletORGNL) {
+        jsmeNomeclatureAppletORGNL.setMolecularAreaScale(molZoom2D);
+      }
+    }
+  } catch (eZoom) {
+    /* applet unavailable */
+  }
   try {
     if (typeof fShowNameAnalysis === "function") fShowNameAnalysis();
   } catch (e) {
     /* naming unavailable */
+  }
+  try {
+    if (typeof fUpdateSVG === "function") fUpdateSVG();
+  } catch (eZoomSvg) {
+    /* viewer unavailable */
   }
   rotate3D();
   // 3b. control bars mirror the restored globals (bars keep live states
@@ -2890,7 +2935,7 @@ function fScenarioGo(i) {
 // (show.controls.2D/3D, show.nameSettings, show.nameClick). Everything visual is refreshed:
 // selectedMol, mode2D, mainChainMode, etherNamingMode, nameAnalysisMode
 // (clicked name-box highlight), selectedRule, style2D (atom colors, color
-// mode, zigzag), styleName (box/cross/etherNaming/panelOpen), styleHighlight,
+// mode, zigzag, zoom), styleName (box/cross/etherNaming/panelOpen), styleHighlight,
 // audio, view3D (style/spin/showH/atomSymbols/moveto), menuSubset +
 // show.menu/show.viewers, menuGroups (Ταξινομήσεις Μένου). No schema change
 // (scenarioVersion stays 1).

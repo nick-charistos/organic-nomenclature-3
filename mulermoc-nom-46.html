@@ -239,13 +239,31 @@
                     Σύμβολα CH<sub>n</sub><span class="checkBox"></span>
                   </div>
                 </div>
-                <div
-                  id="save2DBtn"
-                  class="saveImgBtn"
-                  onclick="fSave2DPng()"
-                  data-tooltip="Αποθήκευση εικόνας 2D"
-                >
-                  <img src="imgs/image-svgrepo-Industrial-Sharp.svg" />
+                <div id="view2DTools" class="HFlex">
+                  <button
+                    id="zoomOutBtn"
+                    class="viewerToolBtn"
+                    onclick="fZoom2D(-1)"
+                    data-tooltip="Σμίκρυνση 2D"
+                  >
+                    <span class="zoomIcon" data-icon="zoomOut"></span>
+                  </button>
+                  <button
+                    id="zoomInBtn"
+                    class="viewerToolBtn"
+                    onclick="fZoom2D(1)"
+                    data-tooltip="Μεγέθυνση 2D"
+                  >
+                    <span class="zoomIcon" data-icon="zoomIn"></span>
+                  </button>
+                  <div
+                    id="save2DBtn"
+                    class="viewerToolBtn"
+                    onclick="fSave2DPng()"
+                    data-tooltip="Αποθήκευση εικόνας 2D"
+                  >
+                    <span class="saveImgIcon" data-icon="saveImage"></span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -284,13 +302,31 @@
                   Περιστροφή <span class="checkBox"></span>
                 </div>
               </div>
-              <div
-                id="save3DBtn"
-                class="saveImgBtn"
-                onclick="fSaveJmolPng()"
-                data-tooltip="Αποθήκευση εικόνας 3D"
-              >
-                <img src="imgs/image-svgrepo-Industrial-Sharp.svg" />
+              <div id="view3DTools" class="HFlex">
+                <button
+                  id="zoomOut3DBtn"
+                  class="viewerToolBtn"
+                  onclick="fZoom3D(-1)"
+                  data-tooltip="Σμίκρυνση 3D"
+                >
+                  <span class="zoomIcon" data-icon="zoomOut"></span>
+                </button>
+                <button
+                  id="zoomIn3DBtn"
+                  class="viewerToolBtn"
+                  onclick="fZoom3D(1)"
+                  data-tooltip="Μεγέθυνση 3D"
+                >
+                  <span class="zoomIcon" data-icon="zoomIn"></span>
+                </button>
+                <div
+                  id="save3DBtn"
+                  class="viewerToolBtn"
+                  onclick="fSaveJmolPng()"
+                  data-tooltip="Αποθήκευση εικόνας 3D"
+                >
+                  <span class="saveImgIcon" data-icon="saveImage"></span>
+                </div>
               </div>
             </div>
           </div>
