@@ -4,7 +4,19 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ---
 
-## [Unreleased] (v46 working copy)
+## [Unreleased] (v47 working copy — main-chain stepper major upgrade)
+
+New parallel file set `mulermoc-nom-47.html` + `js/*-47.js` + `css/*-47.css`, copied from v46 (`index.html` → `mulermoc-nom-47.html`; `*46*`/`*45*` runnable at root, untouched). All stepper work below is `*47*`-only.
+
+### Main-chain stepper (FG-aware longest-chain pool, rank-parallel 2D+3D)
+
+- Core (`core-47.js`): Rule A/B orientation extracted verbatim into `fOrientChainPath[/3D]` (shared with the pool builder); new `fTopFgAnchorSet` (top `gFunctionalGroupsOrder` FG's anchor carbons; halogen/hydrocarbon unranked, ether recorded without requirement) + `fRankChainPool` (FG-cover filter → max-length tier → legacy comparator, stable sort → per-entry orientation). Pools persisted as `mainChainPool[/3D]` (+3D owner key); Step 9 adopts the live walk index (fresh loads land on pool[0]; same-molecule rebuilds keep the stepped chain). All fallbacks seed single-entry pools; `terminalFgCarbons[/3D]` globalized.
+- Step index stored in step JSON: additive top-level `chainIdx` (default 0, no version bump) — silent capture on Save/Update, validated on import (invalid → 0 with warning, clamped to the live pool at apply), re-asserted after the step load with naming/boxes winner-based and highlight replay on the stored chain; 3D follows via the shared index at parse time (no separate hook needed). Exit keeps the exit step's chain (no author-chain stash, same contract as `selectedMol`).
+- Stepper UI (name-settings panel, `molview-47.js` + `jsme-nick-47.css`): `‹ n/N ›` group in one `#chainStepperBox` container div, interpolated into the panel template with live counter/disabled states (truthful across naming rebuilds); renders only with 2+ chains (algorithmic mode, molecule loaded). No reset button, no reason row (owner cut). Per step swaps the live chain globals, recomputes name/substituents, then refreshes only the selected component via the click sequence (`fClearHighlights` + rebuild + `fExplainNameComp`, no toggle, no narration); with nothing selected the counter alone updates. Validation bypassed while stepping; algorithmic mode only; walk index survives same-molecule rebuilds (mode switches, naming recomputes adopt the stepped chain — only fresh molecule loads reset to pool[0]); rank-parallel 3D only when the 3D pool is fresh (async parse), else 2D-only.
+
+---
+
+## [v46] — 2026-10-15 (`index.html` → 46; v45 frozen, runnable at root)
 
 Earlier entries below were written against `*44*` paths; the same behaviors now ship in the `*45*` set (mechanical copy + the rename below). v45 is frozen at 65 keys with its pre-formate core; v46 is a mechanical `*45*` → `*46*` copy carrying the 4 molecules + formate fix below.
 

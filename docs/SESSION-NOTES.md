@@ -925,3 +925,107 @@ follows; one Save → Present → Next → Exit round-trip.
   canonical id (logging/search/display); consumers later.
 * Browser checklist for owner: console shows 69/69 non-null (only
   condensed-less molecules may read null); spot-check methane `C` + one ester.
+
+## 2026-10-15 (later) — v47 fork (main-chain stepper major upgrade)
+
+* Mechanical `*46*` → `*47*` copy: `mulermoc-nom-47.html` + 5× `js/*-47.js`
+  + 2× `css/*-47.css`; only the 7 asset references in `47.html` differ
+  (14 diff lines; BOM + CRLF preserved via byte-level rewrite after a first
+  attempt normalized them — caught in review). All other fork files
+  byte-identical (diff 0). `index.html` → 46 stays (switch on owner
+  browser-approval); `*46*` runnable at root, `*45*` untouched.
+  `ui-icons.js`/`mols/`/`scenarios/` stay single shared copies.
+* Parse audit: braces balanced everywhere; paren-count deltas in
+  `core-47.js` (−4) / `teaching-47.js` (−1) are byte-identical to the `-46`
+  originals (naive-counter artifact from parens in strings/comments).
+* Docs baselines → v47 (README/LAYERS-PLAN/PROJECT-PLAN(-GR)/didactic/
+  CHANGELOG new `[Unreleased]` v47 section; committed v46 history folded
+  into a dated `[v46]` section).
+* Incident (recovered, no loss): an external GoodSync analysis job
+  (21:25 run) overwrote working-tree `README.md` with its state log.
+  Committed history was clean (clobber landed post-commit); restored via
+  `git checkout`, then applied the v47 baseline edit. No other tracked
+  file affected (signature sweep clean). Owner action: check the sync job
+  config so it stops writing into the repo.
+* Next: stepper core — FG-aware longest-chain pool (principal-FG inclusion
+  via `fgOrder`, halogens excluded, hydrocarbons fall back to longest tier),
+  ranked + oriented per load per mode (2D + `candidatePaths3D` mirror);
+  settings-panel `‹ n/N ›` stepper with reason line (length + FG coverage +
+  substituents + per-chain name); rank-parallel 2D+3D stepping; index 0 =
+  today's winner; validation bypassed while stepping; canonical restore on
+  exit/molecule change. Step index not captured in scenario steps (EXPLORE
+  aid). Substituent correctness per chain follows from the architecture:
+  `fGetHydrocarbonSubstituentInfo`, branch highlight, numbering and
+  `fGuessName` all derive live from `mainChainAtomsList`.
+
+## 2026-10-15 (later) — stepper core + settings-panel UI (v47)
+
+* Core (`core-47.js`, pure moves + additions, no logic edits to scoring/
+  orientation): Rule A/B extracted to `fOrientChainPath[/3D]` (verified by
+  diff: only the 4 intended rewrites differ, rest byte-identical moves);
+  `terminalFgCarbons[/3D]` globalized; `fTopFgAnchorSet` + `fRankChainPool`
+  added; Step 8d builds pools, Step 9 adopts pool[0]; all six fallback paths
+  seed single-entry pools (+3D owner key for async freshness).
+  Substitution/naming/highlight paths needed no changes (all chain-global
+  driven — owner's dimethylbutane question answered yes by construction).
+* UI (name-settings panel — moved there per owner, reset button + reason row
+  cut): `‹ n/N ›` group interpolated into the panel template
+  (`fChainStepperHTML`, live counter/disabled at build time so naming
+  rebuilds stay truthful); `fRenderChainStepper` slimmed to label + prev/next
+  (reset/reason/map deleted, zero dead refs). Generic `.stepBtn` CSS.
+  Per-step refresh replays only the selected component (click sequence, no
+  toggle, no narration); nothing selected → counter alone updates.
+* Fixes after first browser test (owner: stepper showed N>1 but clicks froze
+  everything, no errors): (1) brace slip in the orientation extraction left
+  `fCalcMainChain[/3D]` nested and undefined at top level — 4-line repair,
+  depth-trace verified (balance counters alone can't catch this class);
+  (2) stepper showed N>1 but clicks changed nothing: `fGuessName()`
+  internally re-runs `fCalcMainChain()`, silently rebuilding the pool and
+  resetting each step to the winner — new optional
+  `fGuessName(skipChainRecalc)` param (existing callers unchanged) used as
+  `fGuessName(true)` by the stepper so naming runs on the swapped chain
+  (also yields the per-chain name for the reason line and skips validation
+  while stepping). Non-issue found in passing: the render `algo` gate reads
+  correctly (`=== "undefined" ||` — no change needed).
+* Alkoxy live-rule fix (owner: diethyl ether prefix highlight stuck on chain
+  1 in 2D, swept correctly in 3D): `fGetEtherAlkoxyChain()` led with
+  load-time `etherInfo` (static) while the 3D mirror derives the side live
+  from the current chain. Rewrote 2D to lead with the same live rule (first
+  O-bonded C off the current chain + carbon BFS), `etherInfo` kept as
+  fallback. Winner-state parity verified by reading (naming untouched — core
+  reads `etherInfo` directly); also repairs COMMON chips staying
+  complementary while stepping.
+* Behavior change per owner (stepper paints nothing by itself): `fApplyChainStep`
+  no longer highlights the chain — it replays the *selected* component via
+  the click sequence (`fClearHighlights` + `fUpdateSVG` + `fExplainNameComp`,
+  no toggle, no narration), so explanation locants, highlight and numbering
+  follow the new chain; with nothing selected only counter + reason update.
+* Static: braces balanced (parens deltas match `-46` artifact); all refs
+  verified (whitelist untouched — stepper reads pools directly).
+* Browser checklist for owner (v47 only): dimethylbutane walk (expect 4+
+  longest chains; each step's reason line with substituents + name);
+  highlight/numbering follow every step in 2D; 3D follows when fresh;
+  mode switch rebuilds pool; reset ⟲ restores winner; console watch for
+  validation warnings (chemistry-vs-legacy disagreements = review signal);
+  regression: all previously-verified names/highlights unchanged at
+  index 0.
+
+## 2026-10-15 (later) — walk index stored in step JSON + preserved across rebuilds
+
+* `chainIdx` now stored per step (owner reversed the EXPLORE-only call):
+  top-level additive field (default 0, no version bump) — whitelist case +
+  silent capture on Save/Update (menu-only stores 0), `fScenarioValidChainIdx`
+  + import warning, clamped to the live pool at apply; re-asserted after the
+  step load with naming/boxes winner-based and highlight replay on the stored
+  chain. No drawer UI. Exit keeps the exit step's chain (no author-chain
+  stash — same contract as `selectedMol`).
+* No separate 3D hook was needed: Step 9 adopts `pool[clamped idx]` on every
+  rebuild, so the async 3D parse lands on the stored index by itself;
+  S2 click replay then paints onto it. Same mechanism keeps the stepped chain
+  across mode switches and naming recomputes (fresh loads via `fInitProps`
+  still reset to pool[0]); 3D clamps locally without touching the shared
+  index. Single-entry fallbacks collapse to 0.
+* Browser checklist for owner (v47): stepped Save → Present shows stored
+  chain + counter → per-step chains survive Next/Prev → 3D follows after
+  parse → Exit lands on exit-step chain; legacy files behave as 0;
+  Export/Import round-trip preserves `chainIdx`; invalid values warn + default.

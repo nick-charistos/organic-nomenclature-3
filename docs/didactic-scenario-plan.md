@@ -51,6 +51,7 @@ progress tracking, server storage.
       "selectedMol": "propanoic_methyl_ester",
       "mode2D": "condensed",
       "mainChainMode": "algorithmic",
+      "chainIdx": 0,
       "etherNamingMode": "iupac",
       "nameAnalysisMode": "esterAlkyl",
       "selectedRule": null,
@@ -83,7 +84,7 @@ progress tracking, server storage.
 }
 ```
 
-State notes (grounded in v46; v42–v45 identical unless noted):
+State notes (grounded in v47; v42–v46 identical unless noted):
 
 * `selectedMol`, `mode2D/modeSuffix`, `mainChainMode`,
   `etherNamingMode`, `nameAnalysisMode`, `selectedRule` mirror
@@ -97,6 +98,15 @@ State notes (grounded in v46; v42–v45 identical unless noted):
   `mainChain[_E|_diagr]`). Legacy files carrying `mode2D: "diagramatic"`
   coerce to `skeletal` on import with a warning (in-memory migration, no
   version bump).
+* `chainIdx` (v47, additive, no version bump): main-chain walk index into the
+  molecule's longest-chain pool (0 = adopted main chain). Captured silently
+  from live state on Save (menu-only steps store 0); re-asserted after the
+  step load (naming/boxes stay winner-based, highlight replay paints the
+  stored chain; 3D follows via the shared index when its parse lands).
+  Absent/invalid → 0 with an import warning when a value was present;
+  out-of-range for the molecule falls back to 0 at apply. Never covers
+  menu-only steps; Exit keeps the exit step's chain (no author-chain stash,
+  same contract as `selectedMol`).
 * 2D style: `svgAtomColors2DFlag`, `atomColorMode2D`,
   `zigzagCheck` are stored; menu grouping mode is not (menu is
   hidden in playback). The legacy original-JSME pane toggle is not
@@ -392,8 +402,8 @@ Done in v43 (`mulermoc-nom-43.html`, last suffixed copy; carried through v44 int
    assertions (manual click-through pending).
 6. ✅ CHANGELOG v43 entry (`index.html` → 43 in repo3 only).
 
-Remaining: v46 is the current file set (`*46*` = `*45*` copy + 4 molecules + formate-ester fix, see `CHANGELOG.md [Unreleased]`; `index.html` → 46; `*45*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced); then quizzes/games on the
-same reuse contract.
+Remaining: v47 is the current file set (`*47*` = `*46*` copy + main-chain stepper work, see `CHANGELOG.md [Unreleased]`; `index.html` → 47; `*46*`/`*45*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced); then quizzes/games on the
+same reuse contract. The stepper walk index is intentionally not captured in steps (EXPLORE aid, not step state).
 
 ## 8. Open questions for development (moveto timing closed 2026-10-04)
 

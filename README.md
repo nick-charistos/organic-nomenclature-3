@@ -4,18 +4,18 @@ A Greek-first interactive learning platform for organic nomenclature, built arou
 
 Desinged and developed by Nickolas Charistos
 
-**Current baseline:** v46 (scaffolded from v45; `index.html` → v46; ongoing work is the *v46 working copy* — see [CHANGELOG](docs/CHANGELOG.md) `[Unreleased]`)
-**Entry point:** [index.html](index.html) → [mulermoc-nom-46.html](mulermoc-nom-46.html)
+**Current baseline:** v47 (scaffolded from v46; `index.html` → v47; ongoing work is the *v47 working copy* — see [CHANGELOG](docs/CHANGELOG.md) `[Unreleased]`)
+**Entry point:** [index.html](index.html) → [mulermoc-nom-47.html](mulermoc-nom-47.html) (`mulermoc-nom-46.html`/`-45.html` runnable alongside)
 
 | Layer | File |
 |---|---|
-| Core engine (analysis + naming) | [js/mulermoc-nom-core-46.js](js/mulermoc-nom-core-46.js) |
-| Viewer (JSME / JSmol / Snap.svg) | [js/mulermoc-nom-molview-46.js](js/mulermoc-nom-molview-46.js) |
-| Teaching (rules, narration, UI wiring) | [js/mulermoc-nom-teaching-46.js](js/mulermoc-nom-teaching-46.js) |
-| Scenario module (LEARN authoring + presentation) | [js/mulermoc-nom-scenario-46.js](js/mulermoc-nom-scenario-46.js) |
+| Core engine (analysis + naming) | [js/mulermoc-nom-core-47.js](js/mulermoc-nom-core-47.js) |
+| Viewer (JSME / JSmol / Snap.svg) | [js/mulermoc-nom-molview-47.js](js/mulermoc-nom-molview-47.js) |
+| Teaching (rules, narration, UI wiring) | [js/mulermoc-nom-teaching-47.js](js/mulermoc-nom-teaching-47.js) |
+| Scenario module (LEARN authoring + presentation) | [js/mulermoc-nom-scenario-47.js](js/mulermoc-nom-scenario-47.js) |
 | Shared icon helper | [js/ui-icons.js](js/ui-icons.js) |
-| Molecule data (69 molecules — 69 `nameExamples` keys) | [js/jsme-nick-nomeclature-moc2-data_46.js](js/jsme-nick-nomeclature-moc2-data_46.js) |
-| Styles | [css/jsme-nick-46.css](css/jsme-nick-46.css), [css/mulermoc-nom-scenario-46.css](css/mulermoc-nom-scenario-46.css) |
+| Molecule data (69 molecules — 69 `nameExamples` keys) | [js/jsme-nick-nomeclature-moc2-data_47.js](js/jsme-nick-nomeclature-moc2-data_47.js) |
+| Styles | [css/jsme-nick-47.css](css/jsme-nick-47.css), [css/mulermoc-nom-scenario-47.css](css/mulermoc-nom-scenario-47.css) |
 | Stored scenarios | [scenarios/](scenarios/) (`Αλκάνια-Αιθάνιο.scenario.json`; Greek filenames stay URL-encoded in `?scenario=` links) |
 
 ---
@@ -27,13 +27,13 @@ Desinged and developed by Nickolas Charistos
 | [organic-nomenclature-2](https://nick-charistos.github.io/organic-nomenclature-2/) | v42 | frozen — emergency hotfixes only |
 | [organic-nomenclature-3](https://nick-charistos.github.io/organic-nomenclature-3/) | v46 | active — all new work happens here |
 
-Root holds the files of the current release (`*46*`; `mulermoc-nom-42/43/44/45.html` are kept alongside). Older file sets live in [archive/](archive/README.md) (non-runnable museum). Runnable history via git tags `v41`–`v44`.
+Root holds the files of the current working copy (`*47*`; `mulermoc-nom-42/43/44/45/46.html` are kept runnable alongside). Older file sets live in [archive/](archive/README.md) (non-runnable museum). Runnable history via git tags `v41`–`v44`.
 
 Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (only `image-svgrepo-Industrial-Sharp.svg` is kept; other icons are inlined/served by `js/ui-icons.js`), PDFs, `mols/branched/`, third-party libs served via CDN (see [.gitignore](.gitignore)).
 
 ---
 
-## What works now (v46)
+## What works now (v47 working copy; v46 stable at root)
 
 ### Chemistry engine
 - Greek IUPAC naming for alkanes/alkenes/alkynes, branched chains, halides, alcohols, aldehydes/ketones, carboxylic acids (incl. hydroxy/amino/oxo/keto), nitriles, amines, ethers (systematic + common names), esters (two-word names).
@@ -46,7 +46,7 @@ Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (o
 - 2D (JSME) and 3D (JSmol) views; condensed, expanded, skeletal and annotated-skeletal modes; `[2D][3D]` visibility toggles; PNG export.
 - Menu groups: homologous series (default sort by carbon count), chemical classes, rules, flat `Όλα τα μόρια`.
 - Name panel: IUPAC/COMMON toggle, per-component eye toggles (hide name parts), Greek TTS narration that follows visibility.
-- Tooltips share one navy skin (single copy in `css/jsme-nick-46.css`); scenario-bar/panel/step/toolbar buttons, type badge and drag handle converted from native `title`; all-Greek tooltip texts; geometry variants (button-panel bubbles above, save buttons left, `[2D]` left-aligned, edge buttons Save-left-aligned/Delete-right-aligned) for `overflow:hidden` parents.
+- Tooltips share one navy skin (single copy in `css/jsme-nick-47.css`); scenario-bar/panel/step/toolbar buttons, type badge and drag handle converted from native `title`; all-Greek tooltip texts; geometry variants (button-panel bubbles above, save buttons left, `[2D]` left-aligned, edge buttons Save-left-aligned/Delete-right-aligned) for `overflow:hidden` parents.
 
 ### LEARN layer: didactic scenarios
 - Authoring behind the `Σενάρια` handle: up to 3 scenarios, steps per scenario with per-step molecule/menu/chrome settings, rich step text (`B I sup sub`, size/width/columns), icon buttons, drag-reorder, step drawer, Import/Export JSON.
@@ -64,7 +64,7 @@ Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (o
 
 ## Four layers (LEARN-first)
 
-All layers reuse the same v46 engine, embedded as a static app in Drupal:
+All layers reuse the same v47 engine, embedded as a static app in Drupal:
 
 | # | Layer | Contract | State |
 |---|---|---|---|
@@ -103,7 +103,7 @@ Out of scope for now: quiz SPA, participant logging, CSV export, server-side cla
 
 ## Documents
 
-- [CHANGELOG.md](docs/CHANGELOG.md) — authoritative history, incl. `[Unreleased]` v46 working copy
+- [CHANGELOG.md](docs/CHANGELOG.md) — authoritative history, incl. `[Unreleased]` v47 working copy
 - [didactic-scenario-plan.md](docs/didactic-scenario-plan.md) — scenario schema and authoring flow
 - [LAYERS-PLAN.md](docs/LAYERS-PLAN.md) — layer contracts, exercise types, research logging schema
 - [DEVELOPMENT-PLAN.md](docs/DEVELOPMENT-PLAN.md), [PROJECT-PLAN.md](docs/PROJECT-PLAN.md), [PROJECT-PLAN-GR.md](docs/PROJECT-PLAN-GR.md) — product/research plans (may lag the code)
@@ -113,8 +113,8 @@ Out of scope for now: quiz SPA, participant logging, CSV export, server-side cla
 
 ## Status summary
 
-- Baseline: **v46** (+ working copy); v45 runnable at root (`mulermoc-nom-45.html`), v44 runnable at root (`mulermoc-nom-44.html`), v43 frozen at tag `v43`, v42 frozen in repo2
+- Baseline: **v47** (+ working copy, `index.html` → v47); v46 runnable at root (`mulermoc-nom-46.html`), v45 runnable at root (`mulermoc-nom-45.html`), v44 runnable at root (`mulermoc-nom-44.html`), v43 frozen at tag `v43`, v42 frozen in repo2
 - Focus: **LEARN pilot (stored scenarios) + bounded EXPLORE-lite**
-- Near-term: **iso-/sec- alkyl prefix upgrade + scenario library verification on v46**
+- Near-term: **main-chain stepper (v47 major upgrade: FG-aware longest-chain pool, settings-panel stepper, rank-parallel 2D+3D) + scenario library verification**
 - Rules: secondary explanatory layer; homologous series = database order
 - Research layer: active design (schema v1 in LAYERS-PLAN)

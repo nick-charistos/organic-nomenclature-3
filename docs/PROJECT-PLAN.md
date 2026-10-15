@@ -3,7 +3,7 @@
 ### Organic Chemistry Interactive Learning & Research Platform
 
 **Principal Investigator:** N. Charistos, Department of Chemistry, ΑΠΘ
-**Status:** Active development | v46 baseline (69 molecules — 69 `nameExamples` keys, scenario scaffold; v44 runnable at root, v43 frozen at tag `v43`, v42 frozen in repo2)
+**Status:** Active development | v47 working copy (69 molecules — 69 `nameExamples` keys, scenario scaffold + main-chain stepper; `index.html` → v47, v46/v45 runnable at root, v43 frozen at tag `v43`, v42 frozen in repo2)
 **Last updated:** 2026-10-13
 
 > **2026-10 update:** vision is now twofold+1 (community tool + research publications + platform for isomerism/reactions) with four layers in LEARN-first order — LEARN → EXPLORE-lite → PRACTICE → PLAY. The static chemistry app is embedded in Drupal; logging is research-primary. Source of truth for layers: `docs/LAYERS-PLAN.md`. Team P1–P6 roles and timeline are defined there and in `README.md`. What follows below is the original plan text, kept for theory and history; version/count claims predating v44 are superseded.
@@ -69,15 +69,16 @@ Each step removes one scaffolding layer. Familiar representations constrain inte
 
 ---
 
-## Module 1: Organic Nomenclature — Current State (v45; v37 text below kept for history)
+## Module 1: Organic Nomenclature — Current State (v47 working copy; v37 text below kept for history)
 
 ### What exists
-- **69 curated molecules** (v45; 69 `nameExamples` keys, incl. 4 ethers + 4 esters + branched `dimethyl_2_3_butane`) covering homologous-series menu groups (series-first, rules secondary)
+- **69 curated molecules** (69 `nameExamples` keys, incl. 4 ethers + 4 esters + branched `dimethyl_2_3_butane`) covering homologous-series menu groups (series-first, rules secondary)
 - **Algorithmic IUPAC engine** — DFS main chain determination, 3-tier locant rules, Greek euphony; ester two-word naming + ether systematic/common toggle since v40/v41
 - **5 representation modes** — condensed, expanded, annotated skeletal (partial), skeletal, 3D
 - **Synchronized highlighting** — same atom/bond highlighted simultaneously in 2D and 3D
 - **Teaching layer** — rule-based explanations, component name boxes, TTS narration in Greek
-- **Didactic scenarios (v45; scaffold since v43)** — additive `js/mulermoc-nom-scenario-45.js`: snapshot capture/validate/apply/export/import, `?scenario=&present=#step=` playback, exit restores full chrome
+- **Didactic scenarios (v46; scaffold since v43)** — additive `js/mulermoc-nom-scenario-46.js`: snapshot capture/validate/apply/export/import, `?scenario=&present=#step=` playback, exit restores full chrome
+- **Main-chain stepper (v47, in progress)** — FG-aware longest-chain pool with settings-panel `‹ n/N ›` stepper, rank-parallel 2D+3D
 - **Technical validation** — algorithm verified against the curated set; tertiary-amine R3N classification fixed in v44 via the bond-order N-table; multi-substituent alkane naming (`2,3-διμεθυλοβουτάνιο`) fixed in v45 (browser verification pending)
 
 ### Known gaps to fill (immediate work)

@@ -1,9 +1,10 @@
-# Session handoff — 2026-10-15 (v46 batches 1+2 — batch 2 pending commit)
+# Session handoff — 2026-10-15 (v47 working copy → commit batch)
 
-Owner instruction in force: **commit batch 2** (single commit, explicit file
-list, zero `*45*`/`data_45.js` paths) and push to `origin/main`.
-Batch 1 committed as `441be87` (push pending — no credentials in that
-environment). Pre-batch-2 HEAD = `441be87`.
+Owner instruction in force: **commit this batch** (single commit, explicit file
+list, zero `*45*`/`*46*`/`data_45`/`data_46` paths) and push to `origin/main`.
+Pre-commit HEAD = `12fb448` (3 commits ahead of `origin/main` — push needs
+owner credentials).
+This batch: v47 fork + stepper + chainIdx storage + `index.html` → 47.
 
 ## Version map
 
@@ -80,6 +81,12 @@ environment). Pre-batch-2 HEAD = `441be87`.
   zoom round-trip; 3D zoom steps + framing reset + console watch on `zoomTo`;
   one Save → Present → Exit round-trip on v46; SMILES console check (69/69
   non-null, methane `C` spot-check).
+- v47 stepper (settings panel → later name settings): dimethylbutane walk
+  (expect 4+ longest chains; reason line with substituents + name per step);
+  highlight/numbering follow every step in 2D; 3D follows when fresh;
+  mode switch rebuilds pool; ⟲ restores winner; console watch for
+  validation warnings (chemistry-vs-legacy disagreements = review signal);
+  regression: names/highlights unchanged at index 0.
 
 ## Resume tooling (`C:\Users\nick\AppData\Local\Temp\opencode\`)
 
