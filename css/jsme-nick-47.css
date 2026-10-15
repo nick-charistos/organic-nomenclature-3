@@ -2181,9 +2181,23 @@ header {
 
 /* Main-chain stepper (v47, in the name-settings panel). */
 #chainStepperBox {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+	display: inline-flex;
+	align-items: flex-start;
+	gap: 4px;
+	position: relative;
+  margin-right:5px; 
+}
+
+#chainStepperBox .settingLabel {
+	position: absolute;
+	bottom: -12px;
+	width: 80px;
+	text-align: center;
+	left: -17px;
+	color: var(--baseColor);
+	background: var(--veryLightBlue);
+	border: 1px solid var(--lightBlue);
+	border-top: 0;
 }
 
 #chainStepLabel {
