@@ -1224,3 +1224,31 @@ follows; one Save → Present → Next → Exit round-trip.
   and called it in `fResizeViewers` after `setSize` — initial load included.
   Checklist add: resize refits immediately with no zoom press; fresh load
   shows full-size methane; zoom on top still works; highlight re-check.
+* Follow-up (same day): pinned viewers shrink via `--viewerPinnedWidth`
+  (`:root`, default `400px`) as a `max-width` ceiling over the measured
+  lock (CSS-only, no JS; fluid pipeline follows automatically). Retune =
+  one line + hard refresh;   `min-width: 290px` floors absurd values.
+* Follow-up (same day): pinned drawer fills the bar (CSS-only, `:has()` on
+  the open drawer, no JS; open drawer scrolls internally; grow animation
+  instant-tall + fade when pinned). Checklist add: 1-step drawer fills to
+  bar bottom; 12-step drawer fills + scrolls internally; accordion follows;
+  unpin restores slide-down.
+* Correction (same day): owner rejected stretch — the bar must ALWAYS equal
+  the container's height (stretch let tall drawer content grow it
+  unboundedly). Fix: bar absolutely positioned (`top/bottom: 0` in a
+  `relative` authorLayout, `margin-right: 540px` band on the container), so
+  it can never drive layout height; drawer `:has()` fill rules compose
+  inside it unchanged. CSS has no sibling-height cap — absolute is the
+  deterministic mechanism. Checklist add: tall drawer → bar == container
+  height, internal scroll, page doesn't grow; short content → bar short.
+* Follow-up (same day): pinned bar now spans the FULL page height — docks
+  into `#pageContainer` (`scenario-48.js` host changed from `#authorLayout`),
+  absolute `top/bottom/right: 0`; `#pageContainer` pinned = centered
+  `1600px + 540px` unit with `min-height` (so tall content extends the bar
+  instead of stranding it); `#pageTitle` and `#creditsUs` (also
+  `width: auto`) take `margin-right: 540px`; `#authorLayout` is a plain
+  `relative` wrapper (scroll buttons/fade stay anchored; their 540/548px
+  offsets remain valid). Assumption recorded: the footer is inside the
+  span; drop the footer margin rule if the bar should stop above it.
+  Checklist add: bar runs title-to-footer; title/footer text clear of it;
+  tall content extends the bar; unpin pixel-identical.

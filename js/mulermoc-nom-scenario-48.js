@@ -1769,10 +1769,10 @@ function fScenarioSetAuthoring(on) {
 }
 
 // ── authoring pin-dock (v48) ────────────────────────────────────────────
-// Pinned: the bar leaves its fixed overlay and docks at the right end of
-// #authorLayout (sibling of #mainAppContainer, which holds exactly the
-// three app columns), so name settings stay reachable while authoring and
-// only the container scrolls. Unpinned: back to a body-level fixed overlay.
+// Pinned: the bar leaves its fixed overlay and docks at the right edge of
+// #pageContainer, spanning its full height (title zone through footer), so
+// name settings stay reachable while authoring and only the container
+// scrolls. Unpinned: back to a body-level fixed overlay.
 // Live-only flag, never captured in step JSON. Reparenting is safe: every
 // bar handler is document-delegated and all state lives in
 // MuLERMoCScenario/ids. The viewer is frozen at measured pixels while
@@ -1784,7 +1784,7 @@ function fScenarioSetPinned(on) {
   var pin = document.getElementById("scPin");
   var vc = document.getElementById("viewerCol");
   var row = document.querySelector("#mainAppContainer > .HFlex");
-  var host = document.getElementById("authorLayout");
+  var host = document.getElementById("pageContainer");
   if (on) {
     if (!row || !host || !bar) {
       MuLERMoCScenario.pinned = false;
@@ -1806,6 +1806,10 @@ function fScenarioSetPinned(on) {
     // with overflowing scroll content it traps the left edge out of reach.
     row.style.justifyContent = "flex-start";
     host.appendChild(bar);
+    // Scroll cues + keyboard target for the new scroller state; re-check
+    // after layout settles (flex + applet resizes land async).
+    try { fScenarioSyncScroller(); } catch (eSync) { /* cues best-effort */ }
+    try { setTimeout(function () { fScenarioSyncScroller(); }, 300); } catch (eSyncD) { /* cues best-effort */ }
   } else {
     MuLERMoCScenario.pinned = false;
     if (pin) pin.classList.remove("active");
@@ -1813,6 +1817,42 @@ function fScenarioSetPinned(on) {
     if (vc) vc.style.flex = "";
     if (row) row.style.justifyContent = "";
     if (bar && bar.parentNode !== document.body) document.body.appendChild(bar);
+    try {
+      var _sc = document.getElementById("mainAppContainer");
+      if (_sc) { _sc.classList.remove("scCanScroll"); _sc.removeAttribute("tabindex"); }
+    } catch (eSync2) { /* cues best-effort */ }
+  }
+}
+
+// ── pinned scroll cues (v48) ────────────────────────────────────────────
+// Edge buttons + fade show only while pinned AND the container overflows;
+// per-side buttons disable at the scroll ends. Called from pin toggles,
+// container scroll (passive), and layout settles.
+function fScenarioSyncScroller() {
+  var sc = document.getElementById("mainAppContainer");
+  if (!sc) return;
+  var on = !!(MuLERMoCScenario.pinned && sc.scrollWidth > sc.clientWidth + 1);
+  sc.classList.toggle("scCanScroll", on);
+  if (on) sc.setAttribute("tabindex", "0"); else sc.removeAttribute("tabindex");
+  var max = Math.max(sc.scrollWidth - sc.clientWidth, 0);
+  var atL = sc.scrollLeft <= 1;
+  var atR = sc.scrollLeft >= max - 1;
+  var bl = document.getElementById("scScrollLeft");
+  var br = document.getElementById("scScrollRight");
+  if (bl) bl.disabled = atL;
+  if (br) br.disabled = atR;
+}
+
+function fScenarioScrollStep(dir) {
+  var sc = document.getElementById("mainAppContainer");
+  if (!sc) return;
+  var reduce = false;
+  try { reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (eM) { /* motion unknown */ }
+  var step = Math.max(Math.round(sc.clientWidth * 0.8), 50);
+  try {
+    sc.scrollBy({ left: dir * step, behavior: reduce ? "auto" : "smooth" });
+  } catch (eS) {
+    sc.scrollLeft += dir * step; // ancient fallback
   }
 }
 
@@ -2174,6 +2214,31 @@ function fScenarioBuildUi() {
     document.getElementById("scPin").onclick = function () {
       fScenarioSetPinned(!MuLERMoCScenario.pinned);
     };
+    // Pinned scroll cues: registry chevrons replace the text fallbacks
+    // (kept in markup for no-registry resilience); passive scroll listener
+    // keeps the end-states truthful.
+    (function () {
+      var bl = document.getElementById("scScrollLeft");
+      var br = document.getElementById("scScrollRight");
+      try {
+        if (bl && window.MuLERIcons && window.MuLERIcons.chevronLeft) bl.innerHTML = window.MuLERIcons.chevronLeft;
+        if (br && window.MuLERIcons && window.MuLERIcons.chevronRight) br.innerHTML = window.MuLERIcons.chevronRight;
+      } catch (eI) { /* icon hydration best-effort */ }
+      if (bl) bl.onclick = function () { fScenarioScrollStep(-1); };
+      if (br) br.onclick = function () { fScenarioScrollStep(1); };
+      var sc = document.getElementById("mainAppContainer");
+      if (sc && sc.addEventListener) {
+        sc.addEventListener("scroll", function () { fScenarioSyncScroller(); }, { passive: true });
+      }
+      // Re-evaluate when the container geometry settles (applet resizes,
+      // drawer open/close, window drags): cheap measurement, direct call.
+      try {
+        if (sc && typeof ResizeObserver !== "undefined" && !sc._scRO) {
+          sc._scRO = new ResizeObserver(function () { fScenarioSyncScroller(); });
+          sc._scRO.observe(sc);
+        }
+      } catch (eRO) { /* observer unavailable */ }
+    })();
     document.getElementById("scImport").onclick = function () {
       document.getElementById("scFile").click();
     };

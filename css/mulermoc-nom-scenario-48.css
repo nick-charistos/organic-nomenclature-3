@@ -408,7 +408,7 @@ border: 2px solid var(--veryLightBlue);
 
 .scenarioDrawer.open {
    border-top: 1px solid var(--lightBlue);
-   max-height: 50vh;
+   max-height: 60vh;
    overflow: auto;
    /* padding: 12px; */
    transform: none;
@@ -1262,47 +1262,208 @@ border: 2px solid var(--veryLightBlue);
    border-color: #fff;
 }
 
-/* Authoring pin-dock (v48): the bar leaves its fixed overlay and docks at
-   the right end of #authorLayout, beside #mainAppContainer (which holds
-   exactly the three app columns and becomes the horizontal scroller).
-   Title h1 above and footer below keep full width and never scroll.
+/* Authoring pin-dock (v48): the bar leaves its fixed overlay and pins to
+   the right edge of #pageContainer, spanning its full height (title zone
+   through footer). #mainAppContainer holds exactly the three app columns
+   and becomes the horizontal scroller; h1 + footer yield the 540px band via
+   right margin so their text stays clear of the bar.
    body.scPinned outranks .open/.is-hidden by specificity and comes last in
    source order. The viewer keeps measured pixels via inline flex
-   (set/cleared in JS after a pre-dock read), so the applets never reflow. */
-body.scPinned #authorLayout {
-   display: flex;
-   flex-wrap: nowrap;
-   align-items: flex-start;
-   width: 100%;
+   (set/cleared in JS after a pre-dock read), so the applets never reflow.
+   The bar is absolutely positioned (out of flow) so it can never drive
+   layout height: it always equals the container's height, and tall
+   drawer content scrolls inside instead of growing the page. */
+body.scPinned #pageContainer {
+   position: relative;
    max-width: calc(1600px + 540px);
    margin: 0 auto;
+   height: auto;
+   min-height: calc(100% - 30px);
+}
+
+body.scPinned #pageTitle {
+   margin-right: 540px;
+}
+
+body.scPinned #creditsUs {
+   width: auto;
+   margin-right: 540px;
+}
+
+body.scPinned #authorLayout {
+   position: relative;
+   max-width: none;
+   margin: 0;
 }
 
 body.scPinned #mainAppContainer {
-   flex: 1 1 auto;
-   min-width: 0;
-   overflow-x: auto;
    max-width: none;
-   margin: 0;
+   margin: 0 540px 20px 0;
+   overflow-x: auto;
 }
 
 body.scPinned #mainAppContainer > .HFlex {
    flex-wrap: nowrap;
 }
 
+/* Pinned viewer width (manual tune via --viewerPinnedWidth, default 400px):
+   ceiling over the inline measured lock — shrinks wide viewers, never forces
+   narrow ones wider. The resize observer picks up the change, so JSME/JSmol
+   follow through the verified fluid path with no JS change. */
+body.scPinned #viewerCol {
+   max-width: var(--viewerPinnedWidth, 400px);
+}
+
 body.scPinned #scenarioAuthorBar {
-   position: relative;
-   right: auto;
-   top: auto;
+   position: absolute;
+   right: 0;
+   top: 0;
+   bottom: 0;
+   width: 540px;
+   max-width: 540px;
    transform: none;
    visibility: visible;
    pointer-events: auto;
    transition: none;
-   flex: 0 0 540px;
-   max-width: 540px;
-   align-self: flex-start;
+    /* Height is exact (top+bottom of pageContainer); the lifted 85vh cap must
+      not clamp it on tall pages — unpinned keeps the cap. Column flex from
+      the base rule lays out title + scrolling panels inside. */
+   max-height: none;
+   box-shadow: none;
+   border: 10px solid var(--darkBlue);
+   border-right: 0;
+   border-radius: 0;
 }
 
 body.scPinned #scenarioAuthorTab {
    display: none;
+}
+
+/* Pinned drawer fills the bar (v48): the open drawer's card becomes a flex
+   column claiming leftover bar height (bar itself stretches to
+   pageContainer's bottom), and the open drawer scrolls internally instead of
+   pushing the panels container. Only the accordion-open card grows (:has,
+   no JS change). Grow animation becomes instant-tall + fade (max-height
+   can't transition to none); unpinned keeps today's slide-down. */
+body.scPinned .scenarioPanel:has(.scenarioDrawer.open) {
+   flex: 1 1 auto;
+   min-height: 60vh;
+   display: flex;
+   flex-direction: column;
+}
+
+body.scPinned .scenarioDrawer.open {
+   flex: 1 1 auto;
+   min-height: 60vh;
+   overflow-y: auto;
+   max-height: none;
+}
+
+/* Pinned horizontal-scroll cues (v48): the scroller's own bottom bar sits
+   below the fold, so edge buttons + fade + branded thumb carry
+   discoverability. All hidden unless pinned AND overflowing (.scCanScroll
+   on #mainAppContainer, managed in JS). */
+
+/* Edge buttons: viewport-anchored (top:40vh), zero flow impact. */
+#scScrollLeft,
+#scScrollRight {
+   display: none;
+   position: absolute;
+   top: 40vh;
+   z-index: 60;
+   width: 34px;
+   height: 44px;
+   padding: 0;
+   box-sizing: border-box;
+   align-items: center;
+   justify-content: center;
+   font-size: 1.4rem;
+   line-height: 1;
+   cursor: pointer;
+   color: #fff;
+   background: var(--darkBlue);
+   border: 2px solid var(--veryLightBlue);
+   border-radius: 6px;
+   opacity: .85;
+}
+
+#scScrollLeft:hover:not(:disabled),
+#scScrollRight:hover:not(:disabled) {
+   opacity: 1;
+   background: var(--darkEarth);
+   border-color: #fff;
+}
+
+#scScrollLeft:focus-visible,
+#scScrollRight:focus-visible {
+   outline: 2px solid #fff;
+   outline-offset: 1px;
+}
+
+#scScrollLeft:disabled,
+#scScrollRight:disabled {
+   opacity: .3;
+   cursor: default;
+}
+
+body.scPinned #mainAppContainer.scCanScroll ~ #scScrollLeft,
+body.scPinned #mainAppContainer.scCanScroll ~ #scScrollRight {
+   display: inline-flex;
+}
+
+#scScrollLeft {
+   left: 8px;
+}
+
+#scScrollRight {
+   right: 548px;
+}
+
+#scScrollLeft svg,
+#scScrollRight svg {
+   width: 18px;
+   height: 18px;
+   flex: none;
+}
+
+/* Clipped-edge fade veil (paint only, never interactive). */
+#scScrollFade {
+   display: none;
+   position: absolute;
+   top: 0;
+   bottom: 0;
+   right: 540px;
+   width: 30px;
+   pointer-events: none;
+   z-index: 55;
+   background: linear-gradient(to left, rgba(0, 0, 0, .15), rgba(0, 0, 0, 0));
+}
+
+body.scPinned #mainAppContainer.scCanScroll ~ #scScrollFade {
+   /* display: block; */
+}
+
+/* Branded thumb on the scroller itself (native behavior untouched). */
+body.scPinned #mainAppContainer {
+   scrollbar-width: thin;
+   scrollbar-color: var(--darkBlue) var(--veryLightBlue);
+}
+
+body.scPinned #mainAppContainer::-webkit-scrollbar {
+   height: 10px;
+}
+
+body.scPinned #mainAppContainer::-webkit-scrollbar-track {
+   background: var(--veryLightBlue);
+}
+
+body.scPinned #mainAppContainer::-webkit-scrollbar-thumb {
+   background: var(--darkBlue);
+   border-radius: 5px;
+}
+
+/* Keyboard scroll target cue. */
+body.scPinned #mainAppContainer:focus-visible {
+   outline: 2px solid var(--darkBlue);
+   outline-offset: -2px;
 }
