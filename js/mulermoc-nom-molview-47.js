@@ -3031,9 +3031,26 @@ function fShowNameAnalysis() {
   const etherNamingToggle = _isEtherNaming
     ? `<div id='radioEtherNaming' class='HFlex' style='align-items:center;gap:0;margin-right:8px'><div class='radioCheckContainer etherNamingRadio ${_iupacCls}' data-naming-mode='iupac'>IUPAC<span class='radioCheck'></span></div><div class='radioCheckContainer etherNamingRadio ${_commonCls}' data-naming-mode='common'>Κοινή<span class='radioCheck'></span></div></div>`
     : "";
+  // Panel layout per molecule case (no empty half-rows):
+  // - ether + stepper: stepper on its own top row; radios left / buttons right below.
+  // - stepper only (non-ether): single row, stepper left / buttons right.
+  // - radios only (ether, no stepper): single row, radios left / buttons right.
+  // - neither: single row, buttons right (as in frozen versions).
+  const _stepperHTML = (typeof fChainStepperHTML === "function") ? fChainStepperHTML() : "";
+  const _buttonsHTML = `<button id='narrateAnalysisToggle' class='narrateBtn${narrateActiveClass}' data-tooltip='${toggleTitle}'>${toggleIcon}</button><button id='readNameBtn' class='readNameBtn' data-tooltip='Εκφώνηση ονόματος' >${svgPlay}</button><button id='nameStyleBoxToggle' class='nameStyleBox' data-tooltip='${boxTooltip}'>${toggleNameStyleBox}</button><button id='nameStyleCrossToggle' class='nameStyleCross' data-tooltip='${crossTooltip}'>${toggleNameStyleCross}</button><button id='nameStyleEyeToggle' class='nameStyleEye${eyeActiveClass}' data-tooltip='Ορατότητα συνθετικών'>${toggleNameStyleEye}</button>`;
+  var _panelInner = "";
+  if (_stepperHTML && etherNamingToggle) {
+    _panelInner = `<div id='nameSettingsRowTop'>${_stepperHTML}</div><div id='nameSettingsRowMain'><div class='nsLeft'>${etherNamingToggle}</div><div class='nsRight'>${_buttonsHTML}</div></div>`;
+  } else if (_stepperHTML) {
+    _panelInner = `<div id='nameSettingsRowMain'><div class='nsLeft'>${_stepperHTML}</div><div class='nsRight'>${_buttonsHTML}</div></div>`;
+  } else if (etherNamingToggle) {
+    _panelInner = `<div id='nameSettingsRowMain'><div class='nsLeft'>${etherNamingToggle}</div><div class='nsRight'>${_buttonsHTML}</div></div>`;
+  } else {
+    _panelInner = `<div id='nameSettingsRowMain'><div class='nsRight'>${_buttonsHTML}</div></div>`;
+  }
 
   nameCompContainer =
-    `<div class='panelTitle'><span>Ονομασία</span><div id='nameSettingsBtnDiv'><button  id='nameSettingsBtn'  class='settingsBtn ${namesSettingsBtnActiveClass}'  onclick='fToggleNameSettings()'  data-tooltip='Ρυθμίσεις Ονομασίας' >${svgSettings} </button></div></div><div id='nameSettingsPanel' class='${nameSettingClass}'>${etherNamingToggle}${(typeof fChainStepperHTML === "function") ? fChainStepperHTML() : ""}<button id='narrateAnalysisToggle' class='narrateBtn${narrateActiveClass}' data-tooltip='${toggleTitle}'>${toggleIcon}</button><button id='readNameBtn' class='readNameBtn' data-tooltip='Εκφώνηση ονόματος' >${svgPlay}</button><button id='nameStyleBoxToggle' class='nameStyleBox' data-tooltip='${boxTooltip}'>${toggleNameStyleBox}</button><button id='nameStyleCrossToggle' class='nameStyleCross' data-tooltip='${crossTooltip}'>${toggleNameStyleCross}</button><button id='nameStyleEyeToggle' class='nameStyleEye${eyeActiveClass}' data-tooltip='Ορατότητα συνθετικών'>${toggleNameStyleEye}</button></div><div class='HFlex nameContainer' style='justify-content:center;'><div class='nameCompContainer'>`;
+    `<div class='panelTitle'><span>Ονομασία</span><div id='nameSettingsBtnDiv'><button  id='nameSettingsBtn'  class='settingsBtn ${namesSettingsBtnActiveClass}'  onclick='fToggleNameSettings()'  data-tooltip='Ρυθμίσεις Ονομασίας' >${svgSettings} </button></div></div><div id='nameSettingsPanel' class='${nameSettingClass}'>${_panelInner}</div><div class='HFlex nameContainer' style='justify-content:center;'><div class='nameCompContainer'>`;
 
   // COMMON ether naming: render alkyl boxes + αιθέρας instead of IUPAC slots.
   const _commonParts = _isEtherNaming && etherNamingMode === "common" ? fGetEtherCommonParts() : null;
@@ -4164,8 +4181,16 @@ function fRenderChainStepper() {
       typeof nameExamples !== "undefined" && !!nameExamples[selectedMol]);
   } catch (eM) { /* no molecule */ }
   // Visible only with 2+ chains; otherwise the whole box hides.
+  // The dedicated top row follows the box (ether+stepper case) so no empty
+  // row reserves space; inline in the main row (stepper-only case) only the
+  // box hides — the button row must stay.
   var active = okMol && algo && pool.length > 1;
-  try { box.style.display = active ? "" : "none"; } catch (eS) { /* styling unavailable */ }
+  try {
+    box.style.display = active ? "" : "none";
+    var _row = box.parentNode;
+    if (_row && _row.id === "nameSettingsRowTop") _row.style.display = active ? "" : "none";
+    else if (_row && _row.className && ((" " + _row.className + " ").indexOf(" nsLeft ") !== -1)) _row.style.display = active ? "" : "none";
+  } catch (eS) { /* styling unavailable */ }
   if (!active || !label) return;
   if (idx < 0) idx = 0;
   if (idx > pool.length - 1) idx = pool.length - 1;

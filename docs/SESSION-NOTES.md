@@ -1027,5 +1027,30 @@ follows; one Save → Present → Next → Exit round-trip.
   index. Single-entry fallbacks collapse to 0.
 * Browser checklist for owner (v47): stepped Save → Present shows stored
   chain + counter → per-step chains survive Next/Prev → 3D follows after
-  parse → Exit lands on exit-step chain; legacy files behave as 0;
-  Export/Import round-trip preserves `chainIdx`; invalid values warn + default.
+   parse → Exit lands on exit-step chain; legacy files behave as 0;
+   Export/Import round-trip preserves `chainIdx`; invalid values warn + default.
+
+## 2026-10-16 — name-settings panel conditional rows + stepper tooltip fixes (v47)
+
+* Panel layout per molecule case (`molview-47.js` template + `jsme-nick-47.css`,
+  `*47*`-only): `#nameSettingsPanel` is now a column of `#nameSettingsRowTop`
+  (stepper alone, left) + `#nameSettingsRowMain` (`space-between`: `.nsLeft`
+  stepper-or-radios / `.nsRight` buttons). Ether+stepper → two rows; stepper-only
+  (non-ether) and radios-only (ether, no stepper) → single spread row; neither →
+  buttons right as in frozen versions. `fRenderChainStepper()` collapses the top
+  row or the inline left group when the stepper hides (button row never hides).
+  Template rebuilt on every `fShowNameAnalysis`, so mode/molecule switches stay
+  truthful. All ids preserved (ether handler + scenario chrome untouched).
+* Stepper tooltips: `.stepBtn[data-tooltip]` bubble + arrow to `z-index: 400`
+  (same level as save/zoom/settings bubbles) so the downward-opening bubble
+  paints above the row below; `.stepBtn:disabled` gains `pointer-events: none`
+  (`readNameBtn:disabled` precedent) — inactive `‹`/`›` shows no tooltip.
+* Bundled pre-existing owner CSS tweaks in the same file (`.stepBtn` 22→18px,
+  `#chainStepLabel` color → `#333`, `#chainStepperBox` background/padding
+  removed) — already in the working tree before this batch, committed together.
+* Static: braces balanced both files; frozen `*42–46*` untouched;
+  `docs/flowchart-mermaid.md` binary diff left out of the commit (standing rule).
+* Browser checklist for owner: stepper-only molecule (single row, stepper left);
+  ether without stepper (radios left); ether with stepper (two rows);
+  hover `‹`/`›` (bubble above the row below; none when disabled);
+  panel open/close; one Save → Present → Exit round-trip.
