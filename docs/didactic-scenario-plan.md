@@ -84,7 +84,7 @@ progress tracking, server storage.
 }
 ```
 
-State notes (grounded in v47; v42–v46 identical unless noted):
+State notes (grounded in v48; v42–v47 identical unless noted):
 
 * `selectedMol`, `mode2D/modeSuffix`, `mainChainMode`,
   `etherNamingMode`, `nameAnalysisMode`, `selectedRule` mirror
@@ -243,7 +243,11 @@ Visibility rules:
   reveals the panel stack. Closing: handle toggle, ✕ in the title
   bar, or ESC (never while typing or presenting); hiding disengages
   pick mode but keeps picks and steps. The Pick checkbox appears only
-  while authoring. Presentation hides the whole unit.
+  while authoring. Presentation hides the whole unit. The `📌` pin button
+  (title row, v48) docks the bar in-flow at the content row's right end
+  instead of overlaying it, so name settings stay reachable while authoring
+  (page scrolls horizontally; viewer widths frozen, applets untouched);
+  ✕/ESC and Present entry unpin (live-only flag, never stored in steps).
 * Global shell (`#scenarioAuthorBar`): single merged header row (`#scenarioPlayBarTitle`: `+ New` + `Import` left, title center, `✕` in-flow right; `#scenarioGlobalBar` retired 2026-10-11, ids preserved). `+ New` makes an empty scenario
   card (locks with a toast while `maxEmptyScenarios = 3` empties exist);
   `Import` (each import adds a card, always lands untouched). Single column,
@@ -403,7 +407,7 @@ Done in v43 (`mulermoc-nom-43.html`, last suffixed copy; carried through v44 int
    assertions (manual click-through pending).
 6. ✅ CHANGELOG v43 entry (`index.html` → 43 in repo3 only).
 
-Remaining: v47 is the current file set (`*47*` = `*46*` copy + main-chain stepper work, see `CHANGELOG.md [Unreleased]`; `index.html` → 47; `*46*`/`*45*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced); then quizzes/games on the
+Remaining: v48 is the current file set (`*48*` = `*47*` copy + authoring pin-dock work, see `CHANGELOG.md [Unreleased]`; `index.html` → 48; `*47*`/`*46*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced); then quizzes/games on the
 same reuse contract. The stepper walk index is intentionally not captured in steps (EXPLORE aid, not step state).
 
 ## 8. Open questions for development (moveto timing closed 2026-10-04)

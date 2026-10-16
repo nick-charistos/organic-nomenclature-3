@@ -4,7 +4,17 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ---
 
-## [Unreleased] (v47 working copy — main-chain stepper major upgrade)
+## [Unreleased] (v48 working copy — authoring pin-dock)
+
+New parallel file set `mulermoc-nom-48.html` + `js/*-48.js` + `css/*-48.css`, copied from v47 (`index.html` → `mulermoc-nom-48.html`; `*47*`/`*46*` runnable at root, untouched). All pin-dock work below is `*48*`-only. (Pre-fork owner tweak carried over: `body`/`html` `overflow-x: hidden` → `auto` in the v47 stylesheet, enabling horizontal scroll for the docked layout.)
+
+### Authoring pin-dock (scenario bar beside content)
+
+- Pin button `📌` (`#scPin`) in the scenario title row (`scenario-48.js` + `mulermoc-nom-scenario-48.css`): pinned, the bar leaves its fixed overlay and docks as a flex item at the right end of the content row (`#panelContainer > .HFlex`), so name settings stay reachable while authoring — the page scrolls horizontally instead of hiding the name panel. Reparent-based (all bar handlers are document-delegated, ids/state untouched); the viewer is frozen at measured pixels while docked so the applets never reflow (row runs `width: max-content`); edge tab hidden while pinned, pin button lit. Live-only `MuLERMoCScenario.pinned` flag (never in step JSON, session-only); authoring-off and Present entry force-unpin (Exit returns to the overlay bar).
+
+---
+
+## [v47] — 2026-10-16 (`index.html` → 47; v46 frozen, runnable at root)
 
 New parallel file set `mulermoc-nom-47.html` + `js/*-47.js` + `css/*-47.css`, copied from v46 (`index.html` → `mulermoc-nom-47.html`; `*46*`/`*45*` runnable at root, untouched). All stepper work below is `*47*`-only.
 

@@ -1120,3 +1120,43 @@ follows; one Save → Present → Next → Exit round-trip.
   `*42–46*` + archive keep the old names. No JS/HTML references exist.
 * Browser checklist for owner: one v47 load (any missing rename shows as
   unstyled chrome at once) + one Save → Present → Exit round-trip.
+
+## 2026-10-16 — v48 fork (authoring pin-dock)
+
+* Mechanical `*47*` → `*48*` copy: `mulermoc-nom-48.html` + 5× `js/*-48.js`
+  + 2× `css/*-48.css`; only the 7 asset references in `48.html` differ
+  (binary swap, BOM + CRLF preserved — this time all `js`/`css` sources are
+  plain LF/no-BOM, only the html carries BOM/CRLF). All non-html fork files
+  byte-identical (verified). `index.html` → 48; `*47*` runnable at root as
+  the fallback, `*46*` untouched. `ui-icons.js`/`mols/`/`scenarios/` stay
+  shared single copies.
+* Parse audit: braces balanced everywhere (5 js + 2 css).
+* Pre-fork owner tweak carried into the fork: `body` + `html, body`
+  `overflow-x: hidden` → `auto` in `jsme-nick-47.css` (was uncommitted
+  working-tree state; enables horizontal scroll for the docked layout).
+* Docs baselines → v48 (README/LAYERS-PLAN/PROJECT-PLAN(-GR)/didactic/
+  CHANGELOG new `[Unreleased]` v48 section; committed v47 history folded
+  into a dated `[v47]` section).
+* Next: pin-dock on `*48*` only — pin button, reparent-dock at the row's
+  right end, viewer width locked to measured pixels, `scPinned` CSS,
+  auto-unpin on Present/authoring-off, live-only flag. `*47*` stays the
+  runnable fallback.
+
+## 2026-10-16 — authoring pin-dock (v48)
+
+* Pain: the open author bar (540px fixed overlay, right) hides the name
+  panel, forcing close → tweak → reopen → Save round-trips.
+* Fix (`scenario-48.js` + `mulermoc-nom-scenario-48.css`, `*48*`-only):
+  `📌` pin button in the title row; `fScenarioSetPinned(on)` reparents the
+  bar into `#panelContainer > .HFlex` as its last child (right end) and
+  freezes `viewerCol` at measured pixels via inline flex (restored on
+  unpin), so applets keep exact widths and the row scrolls (`max-content`,
+  `margin: 0`) instead of squeezing. `body.scPinned` rules outrank
+  `.open`/`.is-hidden`; tab hidden while pinned. Live-only flag; ✕/ESC and
+  Present entry force-unpin (no auto-restore; author re-pins).
+* Static: braces balanced; `*47*` verified untouched (byte-identical).
+* Browser checklist for owner: pin → bar docks right of the name panel,
+  horizontal scrollbar, columns keep widths, both applets healthy without
+  reload; tweak name settings → Update saves live; unpin → overlay back;
+  Present while pinned → clean present; Exit → overlay bar; ESC/✕ while
+  pinned; narrow-window behavior.
