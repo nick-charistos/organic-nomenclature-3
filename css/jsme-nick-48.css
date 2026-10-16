@@ -1986,7 +1986,8 @@ header {
   min-width: 0;
   /* overrides flex default min-width:auto */
   overflow: visible;
-  width: 620px;
+  max-width: 620px;
+  min-width: 290px;
   border: 1px solid var(--lightBlue);
   border-radius: 5px;
   overflow: hidden;

@@ -248,6 +248,11 @@ function jsmeOnLoad() {
   } catch (e) {
     /* startup selection best-effort */
   }
+
+  // Fluid 2D: one initial fit to the real column width (constructor 590px is
+  // the known-good first paint), then the debounced observer owns resizes.
+  try { fResizeViewers(); } catch (eFit) { /* fit best-effort */ }
+  try { fInitZoomObserver2D(); } catch (eObs) { /* observer best-effort */ }
 }
 
 function fClassifyAllMolecules() {
@@ -810,17 +815,15 @@ function fLoadMol2D() {
   try { if (typeof fRenderChainStepper === "function") fRenderChainStepper(); } catch (eStep) { /* stepper unavailable */ }
 }
 
-// ── fZoom2D ─────────────────────────────────────────────────────────────────
-// Zoom in (dir > 0) / out (dir < 0) the 2D molecule view by one ×1.25 step,
-// clamped to 0.5–6.0. Scale is applet state: re-render the SVG afterwards and
-// replay numbering overlays (DOM-side, wiped by the rebuild) like the color
-// toggle does. Highlights are JSME background state and survive.
-function fZoom2D(dir) {
+// ── fReapplyZoomScale2D ─────────────────────────────────────────────────────
+// Re-applies the live absolute zoom scale on both applets, then rebuilds the
+// SVG overlay + replays numbering. Split out of fZoom2D so resizes can force
+// the same re-fit: setSize alone resizes the box but leaves a stale small
+// depiction (fixed by any zoom press) — re-applying the scale re-fits it.
+// Highlight-safe (JSME background state survives scale changes: the zoom
+// buttons prove it daily). No value change, no narration.
+function fReapplyZoomScale2D() {
   if (!jsmeNomeclatureApplet) return;
-  var next = molZoom2D * (dir > 0 ? 1.25 : 1 / 1.25);
-  next = Math.min(MOL_ZOOM_MAX, Math.max(MOL_ZOOM_MIN, next));
-  if (next === molZoom2D) return;
-  molZoom2D = next;
   try {
     jsmeNomeclatureApplet.setMolecularAreaScale(molZoom2D);
     if (jsmeNomeclatureAppletORGNL) jsmeNomeclatureAppletORGNL.setMolecularAreaScale(molZoom2D);
@@ -832,6 +835,20 @@ function fZoom2D(dir) {
     currNumberEl = 0;
     fShowNumbering(0);
   }
+}
+
+// ── fZoom2D ─────────────────────────────────────────────────────────────────
+// Zoom in (dir > 0) / out (dir < 0) the 2D molecule view by one ×1.25 step,
+// clamped to 0.5–6.0. Scale is applet state: re-render the SVG afterwards and
+// replay numbering overlays (DOM-side, wiped by the rebuild) like the color
+// toggle does. Highlights are JSME background state and survive.
+function fZoom2D(dir) {
+  if (!jsmeNomeclatureApplet) return;
+  var next = molZoom2D * (dir > 0 ? 1.25 : 1 / 1.25);
+  next = Math.min(MOL_ZOOM_MAX, Math.max(MOL_ZOOM_MIN, next));
+  if (next === molZoom2D) return;
+  molZoom2D = next;
+  fReapplyZoomScale2D();
 }
 
 // ── fZoom3D ─────────────────────────────────────────────────────────────────
@@ -6226,44 +6243,221 @@ function fSetMolVis3D(theVisModel) {
   Jmol.script(jmolAppletNomeclature, mySpt);
 }
 
-// ── fResizeViewers ────────────────────────────────────────────────────────
-function fResizeViewers() {
-  const container = document.getElementById("nomeclature3D");
-  if (!container) return;
-  const w = container.clientWidth;
-
-  // On small landscape screens (phone landscape, vh < 430px) cap each viewer
-  // at 30% of the viewport height so both fit without overflowing the screen.
-  const maxViewerH =
-    window.innerHeight < 430 ? Math.floor(window.innerHeight * 0.3) : Infinity;
-
-  const h = Math.min(Math.round((w * 220) / 480), maxViewerH);
-  if (typeof jmolAppletNomeclature !== "undefined") {
-    Jmol.resizeApplet(jmolAppletNomeclature, { width: w, height: h });
-  }
-  const svg = document.getElementById("jsmeNomeclatureSVG");
-  if (svg) {
-    const svgH = Math.min(Math.round((w * 200) / 450), maxViewerH);
-    svg.style.width = w + "px";
-    svg.style.height = svgH + "px";
-    if (
-      typeof jsmeNomeclatureApplet !== "undefined" &&
-      jsmeNomeclatureApplet.setSize
-    ) {
-      jsmeNomeclatureApplet.setSize(w, svgH);
+// ── fViewerHeights2D3D ────────────────────────────────────────────────────
+// Container-derived viewer heights (viewport-based, never the viewers' own
+// heights — that would be circular). Total = viewport minus page chrome;
+// column chrome = every visible viewerCol child except the two viewer
+// hosts (generic, so per-step chrome toggles are honored). Visible viewers
+// split the remainder equally; floors mirror the CSS minimums, the phone
+// landscape cap stays as ceiling. Returns {h2, h3} (0 = hidden).
+function fViewerHeights2D3D() {
+  var out = { h2: 0, h3: 0 };
+  try {
+    var total = window.innerHeight - 30; // header
+    var h1 = document.getElementById("pageTitle");
+    if (h1 && h1.offsetParent !== null) total -= h1.offsetHeight;
+    var cred = document.getElementById("creditsUs");
+    if (cred && cred.offsetParent !== null) total -= cred.offsetHeight;
+    total -= 30; // page margins / gaps
+    var vc = document.getElementById("viewerCol");
+    var chrome = 0;
+    var show2D = false, show3D = false;
+    if (vc) {
+      // Visibility is read off the actually-toggled units: the nested SVG
+      // overlay for 2D (it lives INSIDE jsmeNomeclatureDIV, so a children
+      // loop over viewerCol could never see it — and the DIV itself never
+      // hides) and the 3D container. Both hosts are skipped in chrome
+      // accounting below (their heights are viewers, not chrome).
+      try {
+        var _svg2D = document.getElementById("jsmeNomeclatureSVG");
+        if (_svg2D && _svg2D.offsetParent !== null) show2D = true;
+      } catch (eV2) { /* overlay lookup unavailable */ }
+      var kids = vc.children;
+      for (var i = 0; i < kids.length; i++) {
+        var k = kids[i];
+        if (k.id === "jsmeNomeclatureDIV" || k.id === "nomeclature3D") {
+          if (k.id === "nomeclature3D" && k.offsetParent !== null) show3D = true;
+          continue;
+        }
+        if (k.offsetParent !== null && k.offsetHeight > 0) chrome += k.offsetHeight;
+      }
+    } else {
+      show2D = true; show3D = true;
     }
-  }
+    var n = (show2D ? 1 : 0) + (show3D ? 1 : 0);
+    if (n === 0) return out;
+    // Dead-space top-up: when a sibling column (menu/analysis content)
+    // stretches the row taller than the viewport share, viewers split the
+    // row-driven height instead — otherwise dead space sits under them.
+    // Sibling heights never depend on viewer size: no circularity.
+    var each = Math.floor((total - chrome) / n);
+    try {
+      var sibH = 0;
+      var menu = document.getElementById("menuCol");
+      if (menu && menu.offsetParent !== null) sibH = Math.max(sibH, menu.offsetHeight);
+      var anal = document.getElementById("analysisCol");
+      if (anal && anal.offsetParent !== null) sibH = Math.max(sibH, anal.offsetHeight);
+      var rowEach = Math.floor((sibH - chrome) / n);
+      if (rowEach > each) each = rowEach;
+    } catch (eSib) { /* sibling measuring unavailable */ }
+    var maxViewerH =
+      window.innerHeight < 430 ? Math.floor(window.innerHeight * 0.3) : Infinity;
+    if (show2D) out.h2 = Math.min(Math.max(each, 244), maxViewerH);
+    if (show3D) out.h3 = Math.min(Math.max(each, 120), maxViewerH);
+  } catch (eH) { /* measuring unavailable */ }
+  return out;
 }
 
-// let _resizeTimer
+// ── fResizeViewers ────────────────────────────────────────────────────────
+// Fluid viewers: widths follow the viewer column (native re-depict —
+// coordinates correct by construction); heights are container-derived via
+// fViewerHeights2D3D (viewport minus chrome, split equally, floors hold).
+// Then rebuild the Snap overlay + replay numbering from the fresh graphics.
+// Triggered by a debounced ResizeObserver on #viewerCol (installed in
+// jsmeOnLoad); the old window-resize listener below stays retired. Zoom
+// (molZoom2D, absolute, stored per step) composes on top, untouched — fit
+// and framing are independent.
+function fResizeViewers() {
+  // 3D: fit the JSmol viewport to its container (unchanged behavior).
+  var container = document.getElementById("nomeclature3D");
+  var vh = fViewerHeights2D3D();
+  if (container && container.clientWidth > 0) {
+    var w3 = container.clientWidth;
+    // Container-derived height (falls back to the old width ratio if the
+    // helper yields nothing, e.g. hidden viewer).
+    var h = vh.h3 > 0 ? vh.h3 : Math.round((w3 * 220) / 480);
+    try {
+      if (typeof Jmol !== "undefined" && typeof jmolAppletNomeclature !== "undefined") {
+        Jmol.resizeApplet(jmolAppletNomeclature, { width: w3, height: h });
+      }
+    } catch (e3D) { /* 3D applet unavailable */ }
+    // The applet info table div sets the visible 3D height: assert it to the
+    // same value so API and DOM agree (guarded: JSmol version naming).
+    try {
+      var infoDiv = document.getElementById("jmolAppletNomeclature_appletinfotablediv");
+      if (infoDiv) infoDiv.style.height = h + "px";
+    } catch (eInfo) { /* JSmol internals unavailable */ }
+  }
+  // 2D fluid: fit the applets to the viewer column content width.
+  var vc = document.getElementById("viewerCol");
+  if (!vc) return;
+  var vw = 0;
+  try { vw = Math.round(vc.clientWidth); } catch (eV) { vw = 0; }
+  if (!(vw > 0)) return;
+  // Column chrome gutter (border + panel padding): the applet must never
+  // overflow its column. Height is container-derived (falls back to the old
+  // width ratio if the helper yields nothing).
+  var aw = Math.max(vw - 4, 50);
+  var svgH = vh.h2 > 0 ? vh.h2 : Math.round((aw * 200) / 450);
+  // Diagnostics (owner console protocol): set window.MuLERmoCDebugResize
+  // to true and watch for one [resize] line per run (off by default).
+  try {
+    if (typeof window !== "undefined" && window.MuLERmoCDebugResize) {
+      var _vis2 = false, _vis3 = false;
+      try {
+        var _s2 = document.getElementById("jsmeNomeclatureSVG");
+        _vis2 = !!(_s2 && _s2.offsetParent !== null);
+        var _s3 = document.getElementById("nomeclature3D");
+        _vis3 = !!(_s3 && _s3.offsetParent !== null);
+      } catch (eVis) { /* visibility check unavailable */ }
+      console.info("[resize] vh2=" + vh.h2 + " vh3=" + vh.h3 +
+        " fallback2D=" + (!(vh.h2 > 0)) + " fallback3D=" + (!(vh.h3 > 0)) +
+        " applied2D=" + aw + "x" + svgH + " visible2D=" + _vis2 +
+        " visible3D=" + _vis3);
+    }
+  } catch (eDbg) { /* diagnostics unavailable */ }
+  var svg = document.getElementById("jsmeNomeclatureSVG");
+  if (svg) {
+    svg.style.width = aw + "px";
+    svg.style.height = svgH + "px";
+    try {
+      if (
+        typeof jsmeNomeclatureApplet !== "undefined" &&
+        jsmeNomeclatureApplet.setSize
+      ) {
+        jsmeNomeclatureApplet.setSize(aw, svgH);
+      }
+      if (
+        typeof jsmeNomeclatureAppletORGNL !== "undefined" &&
+        jsmeNomeclatureAppletORGNL.setSize
+      ) {
+        jsmeNomeclatureAppletORGNL.setSize(aw, svgH);
+      }
+    } catch (eS) { /* applet unavailable */ }
+  }
+  // Overlays derive from the applet graphics: re-apply the zoom scale (this
+  // re-fits the depiction — setSize alone leaves it small/stale, as any zoom
+  // press demonstrates), rebuild the overlay + replay numbering. Highlight
+  // survival across setSize is a browser verdict (see checklist); if the
+  // tint drops, re-fire the selected component via the click sequence
+  // (fClearHighlights + fUpdateSVG + fExplainNameComp, no narration).
+  try { if (typeof fReapplyZoomScale2D === "function") fReapplyZoomScale2D(); } catch (eZ) { /* zoom re-apply unavailable */ }
+}
+
+// Debounced ResizeObserver on the viewer column: window drags, pin/unpin,
+// viewer toggles, settings open/close. Tracks width AND height; skips
+// unchanged geometry; no loop (applet boxes follow the column, never the
+// reverse). Replaces the retired window listener below.
+var _zoomROTimer = null;
+var _zoomROLastW = 0;
+var _zoomROLastH = 0;
+var _zoomRO = null;
+function fInitZoomObserver2D() {
+  try {
+    if (_zoomRO || typeof ResizeObserver === "undefined") return;
+    var vc = document.getElementById("viewerCol");
+    if (!vc) return;
+    var _geom = function () {
+      var r = { w: 0, h: 0 };
+      try {
+        var b = vc.getBoundingClientRect();
+        r.w = Math.round(b.width); r.h = Math.round(b.height);
+      } catch (eG) { /* measuring unavailable */ }
+      return r;
+    };
+    _zoomRO = new ResizeObserver(function () {
+      try {
+        var g = _geom();
+        if (g.w === _zoomROLastW && g.h === _zoomROLastH) return;
+        if (_zoomROTimer) clearTimeout(_zoomROTimer);
+        _zoomROTimer = setTimeout(function () {
+          _zoomROTimer = null;
+          var g2 = _geom();
+          if (!(g2.w > 0) || (g2.w === _zoomROLastW && g2.h === _zoomROLastH)) return;
+          _zoomROLastW = g2.w; _zoomROLastH = g2.h;
+          fResizeViewers();
+        }, 150);
+      } catch (eO) { /* observer unavailable */ }
+    });
+    try {
+      var g0 = _geom();
+      _zoomROLastW = g0.w; _zoomROLastH = g0.h;
+    } catch (eI) { _zoomROLastW = 0; _zoomROLastH = 0; }
+    _zoomRO.observe(vc);
+  } catch (eZ) { /* observer unavailable */ }
+}
+
+// Retired window-resize listener (superseded by the observer above):
 // window.addEventListener('resize', function () {
 //     clearTimeout(_resizeTimer)
 //     _resizeTimer = setTimeout(fResizeViewers, 150)
 // })
 
-// var _jmol_isReady_orig = (typeof jmol_isReady === 'function') ? jmol_isReady : null
-// jmol_isReady = function (applet) {
-//     if (_jmol_isReady_orig) _jmol_isReady_orig(applet)
-//     setTimeout(fResizeViewers, 300)
-// }
+// JSmol-ready resend: the initial fit (jsmeOnLoad) can land before the 3D
+// applet is live, silently dropping its resize (the usual suspect when the
+// 3D height sticks at a stale value). Re-run once when JSmol reports ready
+// via the page handshake (scenario deep links wait on the same flag).
+var _resizeSentOn3DReady = false;
+(function () {
+  try {
+    var _prevReady = (typeof jmol_isReady === "function") ? jmol_isReady : null;
+    jmol_isReady = function (applet) {
+      try { if (_prevReady) _prevReady(applet); } catch (eP) { /* handshake first */ }
+      if (!_resizeSentOn3DReady) {
+        _resizeSentOn3DReady = true;
+        try { setTimeout(function () { fResizeViewers(); }, 300); } catch (eT) { /* timer unavailable */ }
+      }
+    };
+  } catch (eW) { /* hook unavailable */ }
+})();
 

@@ -1160,3 +1160,57 @@ follows; one Save → Present → Next → Exit round-trip.
   reload; tweak name settings → Update saves live; unpin → overlay back;
   Present while pinned → clean present; Exit → overlay bar; ESC/✕ while
   pinned; narrow-window behavior.
+
+## 2026-10-16 — fluid 2D via revived fResizeViewers (v48)
+
+* Owner was right: no zoom-factor machinery needed for fit. Upstream JSME
+  sanctions resize patterns (`JSME_resize.html`, `JSME_autoresize.html`;
+  no-size construction = 100% of parent); `setSize` was already half in the
+  tree (dead `fResizeViewers` + commented listener).
+* `fResizeViewers` reworked (`molview-48.js`, `*48*`-only): 2D fits both
+  applets to `viewerCol.clientWidth` (4px chrome gutter) + ratio height,
+  then `fUpdateSVG` + numbering replay; 3D path kept, now guarded
+  (`typeof Jmol` + try/catch — it runs live for the first time).
+  Debounced `ResizeObserver` (~150ms, unchanged-width skip, no loop: box
+  follows column) installed once in `jsmeOnLoad` after one initial fit;
+  constructor stays `590×240`; zoom/storage untouched.
+* Lesson logged: trust owner's codebase read first, verify second.
+* Browser checklist for owner: drag-resize (settle-only rebuild, labels +
+  numbering track, no jank); pin/unpin rescales; HIGHLIGHT-SURVIVAL VERDICT
+  across setSize (fallback: re-fire selected component, narration-free);
+  zoom ± then resize (user zoom intact); molecule switch mid-size;
+  Save → Present → Exit.
+* Follow-up (same day): owner console line `vh2=0 … visible2D=true` proved
+  the helper blind to 2D — `#jsmeNomeclatureSVG` nests INSIDE
+  `#jsmeNomeclatureDIV`, so the `viewerCol.children` loop could never match
+  it (2D permanently on ratio fallback; the DIV also inflated chrome).
+  Visibility now reads the overlay directly (the toggled unit); both hosts
+  skipped in chrome. The debug line earned its keep. Awaiting owner
+  re-check (`vh2>0`, larger `vh3`, JSmol-vs-container).
+* Follow-up (same day): heights are container-derived now — new
+  `fViewerHeights2D3D()` (viewport − page/column chrome, equal split,
+  floors 244/120, phone cap ceiling; never reads viewer heights).
+  `fResizeViewers` uses them for both applets (ratio formulas kept as
+  hidden-viewer fallback); 3D height asserted on `resizeApplet` and the
+  `jmolAppletNomeclature_appletinfotablediv` alike; container divs never
+  sized explicitly. Observer tracks W+H (toggles, settings open).
+  Checklist add: both-visible halves; hide 3D → 2D takes all and reverse;
+  settings open shrinks viewers; short landscape cap; highlight re-check.
+* Follow-up (same day): owner reported JSmol stuck below container height
+  (202 vs 240 — the ratio fallback's fingerprint) and heights shrinking
+  under the container. Response: (1) `MuLERmoCDebugResize` console flag (one
+  `[resize]` line per run — helper values, fallbacks, applied sizes,
+  visibility; owner pastes it back to close the loop); (2) 3D resize
+  re-sent once on `jmol_isReady` (initial fit can predate applet
+  readiness); infotablediv id confirmed by owner, no fallback needed;
+  (3) dead-space top-up (`max` viewport/sibling share). Protocol: set the
+  flag (no reload — window vars don't survive it), trigger any resize,
+  paste the `[resize]` line.
+* Follow-up (same day): owner reported the resized SVG keeps a small stale
+  depiction (fixed by any zoom press; small CH4 on load too). Root cause:
+  `setSize` resizes the box without re-fitting. Fix: extracted the zoom
+  tail into `fReapplyZoomScale2D()` (scale + overlay + numbering, no value
+  change, no narration; `fZoom2D` rewired through it behavior-identically)
+  and called it in `fResizeViewers` after `setSize` — initial load included.
+  Checklist add: resize refits immediately with no zoom press; fresh load
+  shows full-size methane; zoom on top still works; highlight re-check.
