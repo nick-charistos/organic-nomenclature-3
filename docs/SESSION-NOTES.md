@@ -1054,3 +1054,59 @@ follows; one Save → Present → Next → Exit round-trip.
   ether without stepper (radios left); ether with stepper (two rows);
   hover `‹`/`›` (bubble above the row below; none when disabled);
   panel open/close; one Save → Present → Exit round-trip.
+
+## 2026-10-16 — numbering-bonds setting (v47)
+
+* New viewer-settings checkbox `Επισήμανση δεσμών κατά την αρίθμηση`
+  (`#highlightNumberingBondsCheck`, default on) in `mulermoc-nom-47.html`.
+  Gates the C–C bond tint in the numbering path only (`compCarbonsCount`:
+  2D ester-acid bonds + 3D `color bonds` tail) via `fShowNumberingBonds()` +
+  opt-out `skipBonds` params on `fHighlightAtomChain[/3D]`; alkyl-rule callers
+  (COMMON ether/ester, alkoxy) keep bonds unconditionally. Live re-apply on
+  toggle with the chain component selected (bond-atoms pattern). Stored per
+  step as additive `styleHighlight.numberingBonds` (legacy → on, no bump;
+  validation merges with defaults) + Present stash / Exit restore.
+* Static: braces balanced; frozen sets untouched.
+* Browser checklist for owner: chain-component click with bonds on (visuals
+  unchanged) → toggle off → re-click → atoms + numbers only, 2D + 3D →
+  toggle on → bonds return; live toggle with selection active; Save →
+  Present → Exit per-step value; legacy file behaves as on.
+* Follow-up fix (same day): the 2D main-chain path painted atoms only
+  (`fHighLightMainChain` had no bond call — pre-existing, not a regression),
+  so 2D bonds never lit even with the setting on. It now paints every bond
+  with both ends in the resolved chain set (any order, green `9`); sole
+  caller is the numbering click path and stored/ stepped chains resolve
+  inside, so all replays inherit it. Default-on now highlights bonds in
+  both viewers.   Checklist add: unsaturated chain lights its multiple bond too.
+* Follow-up fix 3 (same day, three faults): (1) toggling either numbering
+  checkbox with a selection active did nothing visible (atoms box never had a
+  live re-apply) — one combined handler on both settings now re-triggers the
+  selected `compCarbonsCount` box (bond-atoms pattern). (2) 3D bonds stayed
+  green with the bonds box unchecked — Jmol `color bonds none` inherits the
+  atom color, so the omitted clause painted green anyway (this also explains
+  the earlier "opposite" report: unchecked inherited green atoms while
+  checked painted explicit grey); the off-state now paints explicit neutral
+  grey `[X909090]`, never `none`. (3) atoms-off killed bonds too — all bond
+  painting sat inside the atoms `if`; atoms and bonds now gate independently
+  (`fHighLightMainChain` atoms-only again + new `fHighLightMainChainBonds`,
+  `skipAtoms` 4th params on `fHighlightAtomChain[/3D]`, 3D halos follow the
+  atoms half). Truth table (2D+3D): on/on green+green; on/off green atoms +
+  neutral bonds; off/on default atoms + green bonds; off/off plain + numbers.
+  Alkyl callers pass no new params (byte-identical behavior).
+  Checklist add: all four checkbox states in 2D + 3D; live toggle both boxes.
+* Follow-up fix 4 (same day, my bug): the rewrite above fused two Jmol
+  commands — `_atomClause` missed its trailing `;`, wiring
+  `…[X79dc6d] color bonds …` as one unparsable command, so 3D showed halos
+  only (no green atoms, no green bonds, every state). One-character fix;
+  audit confirms no other fused clause in the file. The full 3D state table
+  needs a fresh browser pass.
+* Follow-up fix 5 (same day, same class): atoms-off + bonds-on still left 3D
+  bonds grey — with `_atomClause` empty the wire read `select … color bonds …`
+  (fused again; the separator had come from the atom clause). The bond clause
+  now carries its own leading `;`, so every boundary has exactly one.
+* Follow-up fix 2 (same day): 3D numbering bonds were grey (`[X909090]`,
+  reading as dimmed/off next to green atoms/halos) — now green (`[X79dc6d]`)
+  when the setting is on (one token in `fHighlightAtomChain3D`; gate
+  unchanged). Alkyl paths already overpaint green via `fColorFragmentBonds3D`,
+  so their pixels are unchanged; stale "remains bond-free" comment corrected.
+  Checklist add: bonds on → 3D atoms + bonds green; off → green atoms only.

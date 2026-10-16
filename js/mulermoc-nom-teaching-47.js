@@ -1134,6 +1134,20 @@ $(document).ready(function () {
     }, 0);
   });
 
+  // Numbering highlight settings (atoms + bonds): re-apply live when
+  // flipped with the main-chain (or ester acid-fragment) component selected.
+  // Deferred one tick so the generic handler above has toggled the class
+  // before the highlight readers query it. Same pattern as bondAtomsSetting.
+  $("#highlightNumberingSetting, #highlightNumberingBondsSetting").on("click", ".checkBoxContainer", function () {
+    setTimeout(function () {
+      if ((nameAnalysisMode || "") !== "compCarbonsCount") return;
+      var $sel = $(".nameCompBox.selected");
+      if (!$sel.length) return;
+      $sel.removeClass("selected");
+      $sel.trigger("click");
+    }, 0);
+  });
+
   $(".radioCheckContainer").on("click", function () {
     if ($(this).hasClass("unselectedRadio")) {
       let group = $(this).parent().children(".radioCheckContainer");

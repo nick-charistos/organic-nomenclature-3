@@ -112,8 +112,9 @@ State notes (grounded in v47; v42–v46 identical unless noted):
   hidden in playback). The legacy original-JSME pane toggle is not
   stored either.
 * Highlight options: `styleHighlight` stores the DOM-class-only checkboxes
-  `bondAtomsCheck` (bond-component atom highlight, default off) and
-  `highlightNumberingCheck` (default on); apply restores the classes before
+  `bondAtomsCheck` (bond-component atom highlight, default off),
+  `highlightNumberingCheck` (default on) and `highlightNumberingBondsCheck`
+  (C–C bonds during numbering, default on); apply restores the classes before
   `fSelectMol` since highlight readers query them live; legacy files without
   the group get defaults (additive, no version bump). Present entry stashes
   the author's live states; Exit restores them (not the step's values).

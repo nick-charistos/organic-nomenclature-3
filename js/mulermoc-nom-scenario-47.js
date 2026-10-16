@@ -330,6 +330,7 @@ function fScenarioCapture() {
     styleHighlight: {
       bondAtoms: fScenarioCheck("bondAtomsCheck", false),
       numberingAtoms: fScenarioCheck("highlightNumberingCheck", true),
+      numberingBonds: fScenarioCheck("highlightNumberingBondsCheck", true),
     },
     styleText: { fontSizePx: null, textWidthPx: null, columns: null }, // whole-text size/width/columns; null = theme defaults (18px / 980px / 1 col)
     audio: { narrate: !!fScenarioG("narrateAnalysisFlag", false) },
@@ -450,7 +451,7 @@ function fScenarioDefaults(step, i) {
     selectedRule: null,
     style2D: { atomColors: false, colorMode: "atom", zigzag: false, zoom: 2.0 },
     styleName: { box: true, cross: false, etherNaming: "iupac", panelOpen: true, hidden: [] },
-    styleHighlight: { bondAtoms: false, numberingAtoms: true },
+    styleHighlight: { bondAtoms: false, numberingAtoms: true, numberingBonds: true },
     styleText: { fontSizePx: null, textWidthPx: null, columns: null },
     audio: { narrate: false },
     menuSubset: [],
@@ -683,6 +684,7 @@ function fScenarioStashAuthorSettings() {
   MuLERMoCScenario.authorSettings = {
     bondAtoms: fScenarioCheck("bondAtomsCheck", false),
     numberingAtoms: fScenarioCheck("highlightNumberingCheck", true),
+    numberingBonds: fScenarioCheck("highlightNumberingBondsCheck", true),
     nameHidden: Array.isArray(window.nameHiddenComps) ? window.nameHiddenComps.slice() : [],
     nameEyeEdit: window.nameEyeEdit === true,
     zoom: (typeof molZoom2D !== "undefined" ? molZoom2D : 2.0),
@@ -694,6 +696,7 @@ function fScenarioRestoreAuthorSettings() {
   if (!a) return;
   fScenarioSetCheck("bondAtomsCheck", !!a.bondAtoms, "selectedCheck", "unselectedCheck");
   fScenarioSetCheck("highlightNumberingCheck", a.numberingAtoms !== false, "selectedCheck", "unselectedCheck");
+  fScenarioSetCheck("highlightNumberingBondsCheck", a.numberingBonds !== false, "selectedCheck", "unselectedCheck");
   window.nameHiddenComps = Array.isArray(a.nameHidden) ? a.nameHidden.slice() : [];
   window.nameEyeEdit = a.nameEyeEdit === true;
   // Author's live 2D zoom comes back too (step applies overwrote it);
@@ -1202,6 +1205,7 @@ function fScenarioApply(step) {
   var _sh = step.styleHighlight || {};
   fScenarioSetCheck("bondAtomsCheck", !!_sh.bondAtoms, "selectedCheck", "unselectedCheck");
   fScenarioSetCheck("highlightNumberingCheck", _sh.numberingAtoms !== false, "selectedCheck", "unselectedCheck");
+  fScenarioSetCheck("highlightNumberingBondsCheck", _sh.numberingBonds !== false, "selectedCheck", "unselectedCheck");
   if (typeof step.selectedRule === "number") selectedRule = step.selectedRule;
   // S2: per-step token — every async follow-up below aborts when a newer
   // step takes over (rapid Prev/Next, hash jumps).

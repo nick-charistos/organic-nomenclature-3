@@ -3626,10 +3626,14 @@ function fExplainNameComp() {
         numberingFlag = true;
         var _acidChain = fGetEsterAcidChain();
         var _acidChain3D = fGetEsterAcidChain3D();
-        // Optional (settings): light the numbered acid atoms as well.
-        if ($("#highlightNumberingCheck").hasClass("selectedCheck")) {
-          if (_acidChain && _acidChain.length > 0) fHighlightAtomChain(_acidChain, true);
-          if (_acidChain3D && _acidChain3D.length > 0) fHighlightAtomChain3D(_acidChain3D, true);
+        // Numbering highlight, atoms and bonds gated independently
+        // (either checkbox alone still paints its half).
+        var _showA = false, _showB = true;
+        try { _showA = $("#highlightNumberingCheck").hasClass("selectedCheck"); } catch (eA) { _showA = false; }
+        try { _showB = (typeof fShowNumberingBonds === "function") ? fShowNumberingBonds() : true; } catch (eB2) { _showB = true; }
+        if (_showA || _showB) {
+          if (_acidChain && _acidChain.length > 0) fHighlightAtomChain(_acidChain, true, !_showB, !_showA);
+          if (_acidChain3D && _acidChain3D.length > 0) fHighlightAtomChain3D(_acidChain3D, true, !_showB, !_showA);
         }
         fShowNumbering(0, _acidChain, _acidChain3D);
         $("#ruleTheoryContainer").show();
@@ -3643,11 +3647,14 @@ function fExplainNameComp() {
           ? mainChainAtomsList.length
           : carbons}`;
       numberingFlag = true;
-      // Optional (settings): light the numbered chain atoms as well.
-      if ($("#highlightNumberingCheck").hasClass("selectedCheck")) {
-        fHighLightMainChain();
-        fHighlightAtomChain3D(mainChainAtoms3D, true);
-      }
+      // Numbering highlight, atoms and bonds gated independently
+      // (either checkbox alone still paints its half).
+      var _showA2 = false, _showB2 = true;
+      try { _showA2 = $("#highlightNumberingCheck").hasClass("selectedCheck"); } catch (eA2) { _showA2 = false; }
+      try { _showB2 = (typeof fShowNumberingBonds === "function") ? fShowNumberingBonds() : true; } catch (eB3) { _showB2 = true; }
+      if (_showA2) fHighLightMainChain();
+      if (_showB2) fHighLightMainChainBonds();
+      if (_showA2 || _showB2) fHighlightAtomChain3D(mainChainAtoms3D, true, !_showB2, !_showA2);
       fShowNumbering();
       $("#ruleTheoryContainer").show();
       break;
@@ -3893,8 +3900,9 @@ function fExplainNameComp() {
       fHighlightAtomChain3D(fGetEsterGroupFragment3D(), true);
       // 3D bonds: color each fragment bond explicitly (both ends in fragment),
       // mirroring the 2D both-ends logic. Ester-branch only — the shared
-      // fHighlightAtomChain3D stays untouched so main-chain numbering
-      // remains bond-free.
+      // fHighlightAtomChain3D paints the same green, so this stays as the
+      // explicit alkyl guarantee; main-chain numbering bonds follow the
+      // numbering-bonds setting instead.
       var _estFrag3D = fGetEsterGroupFragment3D() || [];
       if (typeof bondList3D !== "undefined" && _estFrag3D.length > 0) {
         for (var _eb = 0; _eb < bondList3D.length; _eb++) {
@@ -4089,6 +4097,37 @@ function fHighLightMainChain() {
     }
   }
   jsmeNomeclatureApplet.setAtomBackgroundColors(0, highAtomsArg);
+
+  fUpdateSVG();
+}
+
+// ── fHighLightMainChainBonds ─────────────────────────────────────────────
+// 2D companion to fHighLightMainChain: paints every bond with both ends in
+// the same resolved chain (any order, green 9, 3D parity). Separate function
+// so the numbering-bonds setting gates bonds independently of the atoms
+// setting; the caller decides. Sole numbering-path use (via compCarbonsCount).
+function fHighLightMainChainBonds() {
+  if (nameAnalysisMode == "none") {
+    return;
+  }
+
+  const _chain =
+    mainChainMode === "algorithmic" ||
+    !nameExamples[selectedMol]["mainChain" + fMainChainKeySuffix()]
+      ? mainChainAtomsList
+      : nameExamples[selectedMol]["mainChain" + fMainChainKeySuffix()];
+  if (!Array.isArray(_chain) || _chain.length === 0 || typeof bondList === "undefined") {
+    return;
+  }
+  const _chainSet = new Set(_chain);
+  const _bondArgs = [];
+  for (let b = 0; b < bondList.length; b++) {
+    if (!bondList[b]) continue;
+    if (_chainSet.has(bondList[b][0]) && _chainSet.has(bondList[b][1])) {
+      _bondArgs.push((b + 1) + ",9");
+    }
+  }
+  if (_bondArgs.length > 0) jsmeNomeclatureApplet.setBondBackgroundColors(0, _bondArgs.join(","));
 
   fUpdateSVG();
 }
@@ -4735,7 +4774,7 @@ function fUpdateEtherNamingButton() {
 // the bond set (alkyl rule: CnH2n+1 highlights C + H + C–C + C–H). Expanded
 // mode only in practice — condensed/skeletal models carry no H atoms, so the
 // H scan is a no-op there (same pattern as fGetHydrocarbonBranchHighlight).
-function fHighlightAtomChain(chainAtoms, includeH) {
+function fHighlightAtomChain(chainAtoms, includeH, skipBonds, skipAtoms) {
   if (!Array.isArray(chainAtoms) || chainAtoms.length === 0) return;
   let atomSet = chainAtoms.slice();
   if (includeH && typeof bondList !== "undefined" && typeof allAtomsTypeList !== "undefined") {
@@ -4765,11 +4804,14 @@ function fHighlightAtomChain(chainAtoms, includeH) {
       first = false;
     }
   }
-  if (bondArg) jsmeNomeclatureApplet.setBondBackgroundColors(0, bondArg);
+  // Numbering path may opt out of atoms and/or bonds independently
+  // (settings); alkyl-rule callers always keep both (opts omitted → false).
+  if (!skipAtoms) jsmeNomeclatureApplet.setAtomBackgroundColors(0, atomArg);
+  if (bondArg && !skipBonds) jsmeNomeclatureApplet.setBondBackgroundColors(0, bondArg);
   fUpdateSVG();
 }
 
-function fHighlightAtomChain3D(chainAtoms3D, skipH) {
+function fHighlightAtomChain3D(chainAtoms3D, skipH, skipBonds, skipAtoms) {
   if (!Array.isArray(chainAtoms3D) || chainAtoms3D.length === 0) return;
   let arg = "select";
   for (let i = 0; i < chainAtoms3D.length; i++) {
@@ -4778,10 +4820,22 @@ function fHighlightAtomChain3D(chainAtoms3D, skipH) {
   }
   // skipH: halo exactly the listed atoms (ester group: alkyl C without its H).
   if (!skipH) arg += "; select connected(selected) and _H or selected;";
+  // Numbering path may opt out of atoms and/or bonds independently
+  // (settings); alkyl-rule callers always keep both (opts omitted → false).
+  // Bonds are always explicit: green when on, neutral grey when off — plain
+  // `none` would inherit the atom color and defeat the off state.
+  // Halos belong to the atoms half: skipped together with the atoms.
+  // NOTE: the bond clause carries its own leading `;` — when atoms are off
+  // _atomClause is empty and the separator must still be there, otherwise
+  // `select …` fuses with `color …` into one unparsable command.
+  var _atomClause = skipAtoms
+    ? ""
+    : ";color selectionHalos[X79dc6d]; selectionHalos on; color atoms [X79dc6d]";
   Jmol.script(
     jmolAppletNomeclature,
     "select all; selectionHalos off; color atoms none; color bonds none;" + arg +
-      ";color selectionHalos[X79dc6d]; selectionHalos on; color atoms [X79dc6d]; color bonds [X909090];",
+      _atomClause +
+      (skipBonds ? ";color bonds [X909090];" : ";color bonds [X79dc6d];"),
   );
   JmolSelection = arg;
 }
@@ -5868,6 +5922,16 @@ function fShowBondAtoms() {
     return $("#bondAtomsCheck").hasClass("selectedCheck");
   } catch (e) {
     return false;
+  }
+}
+
+function fShowNumberingBonds() {
+  // Settings-panel option (default on): main-chain/acid-fragment numbering
+  // clicks highlight the C–C bonds as well as the atoms.
+  try {
+    return $("#highlightNumberingBondsCheck").hasClass("selectedCheck");
+  } catch (e) {
+    return true;
   }
 }
 
