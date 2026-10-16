@@ -243,10 +243,12 @@ Visibility rules:
   reveals the panel stack. Closing: handle toggle, ✕ in the title
   bar, or ESC (never while typing or presenting); hiding disengages
   pick mode but keeps picks and steps. The Pick checkbox appears only
-  while authoring. Presentation hides the whole unit. The `📌` pin button
-  (title row, v48) docks the bar in-flow at the content row's right end
-  instead of overlaying it, so name settings stay reachable while authoring
-  (page scrolls horizontally; viewer widths frozen, applets untouched);
+  while authoring. Presentation hides the whole unit. The pin button
+  (title row, v48) docks the bar at the right end of `#authorLayout`,
+  beside `#mainAppContainer` (exactly the three columns, the scroller),
+  so name settings stay reachable while authoring
+  (title above and footer below keep full width;
+  viewer widths frozen from a pre-dock read, applets untouched);
   ✕/ESC and Present entry unpin (live-only flag, never stored in steps).
 * Global shell (`#scenarioAuthorBar`): single merged header row (`#scenarioPlayBarTitle`: `+ New` + `Import` left, title center, `✕` in-flow right; `#scenarioGlobalBar` retired 2026-10-11, ids preserved). `+ New` makes an empty scenario
   card (locks with a toast while `maxEmptyScenarios = 3` empties exist);

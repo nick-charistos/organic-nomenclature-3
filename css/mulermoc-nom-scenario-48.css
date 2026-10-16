@@ -1119,7 +1119,8 @@ border: 2px solid var(--veryLightBlue);
 }
 
 #scenarioAuthorBar .scIconBtn svg,
-.scenarioDrawer .srow .scIconBtn svg {
+.scenarioDrawer .srow .scIconBtn svg,
+#scenarioPlayBarTitle #scPin svg {
    width: 16px;
    height: 16px;
    flex: none;
@@ -1261,21 +1262,32 @@ border: 2px solid var(--veryLightBlue);
    border-color: #fff;
 }
 
-/* Authoring pin-dock (v48): the bar leaves its fixed overlay and docks as a
-   flex item at the right end of the content row, so the name panel stays
-   reachable while authoring (the page scrolls horizontally instead of
-   hiding it). body.scPinned outranks .open/.is-hidden by specificity and
-   comes last in source order. The viewer keeps measured pixels via inline
-   flex (set/cleared in JS), so the applets never reflow. */
-body.scPinned #panelContainer {
+/* Authoring pin-dock (v48): the bar leaves its fixed overlay and docks at
+   the right end of #authorLayout, beside #mainAppContainer (which holds
+   exactly the three app columns and becomes the horizontal scroller).
+   Title h1 above and footer below keep full width and never scroll.
+   body.scPinned outranks .open/.is-hidden by specificity and comes last in
+   source order. The viewer keeps measured pixels via inline flex
+   (set/cleared in JS after a pre-dock read), so the applets never reflow. */
+body.scPinned #authorLayout {
+   display: flex;
+   flex-wrap: nowrap;
+   align-items: flex-start;
+   width: 100%;
+   max-width: calc(1600px + 540px);
+   margin: 0 auto;
+}
+
+body.scPinned #mainAppContainer {
+   flex: 1 1 auto;
+   min-width: 0;
+   overflow-x: auto;
    max-width: none;
-   width: max-content;
    margin: 0;
 }
 
-body.scPinned #panelContainer > .HFlex {
+body.scPinned #mainAppContainer > .HFlex {
    flex-wrap: nowrap;
-   align-items: flex-start;
 }
 
 body.scPinned #scenarioAuthorBar {

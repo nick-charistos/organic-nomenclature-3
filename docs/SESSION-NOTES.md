@@ -1147,11 +1147,21 @@ follows; one Save → Present → Next → Exit round-trip.
 * Pain: the open author bar (540px fixed overlay, right) hides the name
   panel, forcing close → tweak → reopen → Save round-trips.
 * Fix (`scenario-48.js` + `mulermoc-nom-scenario-48.css`, `*48*`-only):
-  `📌` pin button in the title row; `fScenarioSetPinned(on)` reparents the
-  bar into `#panelContainer > .HFlex` as its last child (right end) and
-  freezes `viewerCol` at measured pixels via inline flex (restored on
-  unpin), so applets keep exact widths and the row scrolls (`max-content`,
-  `margin: 0`) instead of squeezing. `body.scPinned` rules outrank
+  `pin` button in the title row (registry `MuLERIcons.pin` from
+  `imgs/pin-svgrepo-com.svg`, 16px/currentColor per file convention; emoji
+  fallback kept in markup); `fScenarioSetPinned(on)` reparents the
+  bar into `#authorLayout` (new thin wrapper, `*48*`-only; `#mainAppContainer`
+  holds exactly the three columns, title `h1` moved above into
+  `#pageContainer`, footer already below — both keep full width) as its
+  last child (right end) and
+  freezes `viewerCol` from a pre-dock read at measured pixels via inline
+  flex (restored on unpin; measuring after the class toggle had locked
+  stretched wide-screen pixels — order matters), so applets keep exact
+  widths and the container itself scrolls
+  (`flex:1/min-width:0/overflow-x:auto`, wrapper capped at `1600px + 540px`
+  centered) instead of squeezing; the row's
+  inline centered justification is forced left while pinned (unreachable
+  left overflow otherwise). `body.scPinned` rules outrank
   `.open`/`.is-hidden`; tab hidden while pinned. Live-only flag; ✕/ESC and
   Present entry force-unpin (no auto-restore; author re-pins).
 * Static: braces balanced; `*47*` verified untouched (byte-identical).

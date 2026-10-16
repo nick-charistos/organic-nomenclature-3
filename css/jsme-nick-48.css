@@ -29,7 +29,7 @@ body {
 
 html,
 body {
-  overflow-x: auto;
+  overflow-x: hidden;
   height: 100%;
 }
 
@@ -65,7 +65,7 @@ header {
   width: 100%;
 }
 
-#panelContainer {
+#mainAppContainer {
   max-width: 1600px;
   margin: auto;
   margin-top: 0;
@@ -2095,7 +2095,7 @@ header {
     display: none;
   }
 
-  #panelContainer {
+  #mainAppContainer {
     margin-top: 6px;
     margin-bottom: 6px;
   }
@@ -2184,7 +2184,7 @@ header {
     flex-shrink: unset;
   }
 
-  #panelContainer .HFlex {
+  #mainAppContainer .HFlex {
     flex-wrap: wrap;
   }
 

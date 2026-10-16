@@ -1769,37 +1769,49 @@ function fScenarioSetAuthoring(on) {
 }
 
 // ── authoring pin-dock (v48) ────────────────────────────────────────────
-// Pinned: the bar leaves its fixed overlay and docks as a flex item at the
-// right end of the content row, so name settings stay reachable while
-// authoring (the page scrolls horizontally instead). Unpinned: back to a
-// body-level fixed overlay. Live-only flag, never captured in step JSON.
-// Reparenting is safe: every bar handler is document-delegated and all
-// state lives in MuLERMoCScenario/ids. The viewer is frozen at measured
-// pixels while docked so the row cannot squeeze the applets (row runs
-// width:max-content and scrolls instead).
+// Pinned: the bar leaves its fixed overlay and docks at the right end of
+// #authorLayout (sibling of #mainAppContainer, which holds exactly the
+// three app columns), so name settings stay reachable while authoring and
+// only the container scrolls. Unpinned: back to a body-level fixed overlay.
+// Live-only flag, never captured in step JSON. Reparenting is safe: every
+// bar handler is document-delegated and all state lives in
+// MuLERMoCScenario/ids. The viewer is frozen at measured pixels while
+// docked so the row cannot squeeze the applets.
+// ORDER MATTERS: measure first — toggling scPinned restyles the layout, and
+// any read after that locks post-dock (stretched) pixels.
 function fScenarioSetPinned(on) {
-  MuLERMoCScenario.pinned = !!on;
   var bar = document.getElementById("scenarioAuthorBar");
   var pin = document.getElementById("scPin");
-  if (pin) pin.classList.toggle("active", !!on);
-  try { document.body.classList.toggle("scPinned", !!on); } catch (eB) { /* no body */ }
   var vc = document.getElementById("viewerCol");
+  var row = document.querySelector("#mainAppContainer > .HFlex");
+  var host = document.getElementById("authorLayout");
   if (on) {
-    var row = document.querySelector("#panelContainer > .HFlex");
-    if (!row || !bar) {
+    if (!row || !host || !bar) {
       MuLERMoCScenario.pinned = false;
       try { document.body.classList.remove("scPinned"); } catch (eB2) { /* no body */ }
       if (pin) pin.classList.remove("active");
       if (vc) vc.style.flex = "";
+      if (row) row.style.justifyContent = "";
       fScenarioToast("Pin unavailable here.");
       return;
     }
+    // Measure while the unpinned layout is still intact.
     var w = 0;
     try { w = vc ? vc.getBoundingClientRect().width : 0; } catch (eM) { w = 0; }
+    MuLERMoCScenario.pinned = true;
+    if (pin) pin.classList.add("active");
+    try { document.body.classList.add("scPinned"); } catch (eB) { /* no body */ }
     if (vc && w > 0) vc.style.flex = "0 0 " + Math.round(w) + "px";
-    row.appendChild(bar);
+    // The row carries inline justify-content:center — harmless normally, but
+    // with overflowing scroll content it traps the left edge out of reach.
+    row.style.justifyContent = "flex-start";
+    host.appendChild(bar);
   } else {
+    MuLERMoCScenario.pinned = false;
+    if (pin) pin.classList.remove("active");
+    try { document.body.classList.remove("scPinned"); } catch (eB3) { /* no body */ }
     if (vc) vc.style.flex = "";
+    if (row) row.style.justifyContent = "";
     if (bar && bar.parentNode !== document.body) document.body.appendChild(bar);
   }
 }
@@ -2145,6 +2157,10 @@ function fScenarioBuildUi() {
     document.body.appendChild(bar);
     fScenarioPaintIconTextBtn(document.getElementById("scNew"), "libraryNew", "+ New");
     fScenarioPaintIconTextBtn(document.getElementById("scImport"), "upload", "Import");
+    // Pin button: registry SVG replaces the emoji fallback (kept in the
+    // markup for no-registry resilience); tooltip + onclick below untouched.
+    var _pinBtn = document.getElementById("scPin");
+    if (_pinBtn && window.MuLERIcons && window.MuLERIcons.pin) _pinBtn.innerHTML = window.MuLERIcons.pin;
     document.getElementById("scNew").onclick = function () {
       if (fScenarioEmptyCount() >= MuLERMoCScenario.maxEmptyScenarios) {
         fScenarioToast("Fill an empty scenario first (max " + MuLERMoCScenario.maxEmptyScenarios + " empty).");
