@@ -409,7 +409,7 @@ Done in v43 (`mulermoc-nom-43.html`, last suffixed copy; carried through v44 int
    assertions (manual click-through pending).
 6. ✅ CHANGELOG v43 entry (`index.html` → 43 in repo3 only).
 
-Remaining: v48 is the current file set (`*48*` = `*47*` copy + authoring pin-dock work, see `CHANGELOG.md [Unreleased]`; `index.html` → 48; `*47*`/`*46*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced); then quizzes/games on the
+Remaining: v47 is live (`index.html` → 47); v48 is the working-copy file set (`*48*` = `*47*` copy + fluid viewers + authoring pin-dock work, see `CHANGELOG.md [Unreleased]`; `*47*`/`*46*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced); then quizzes/games on the
 same reuse contract. The stepper walk index is intentionally not captured in steps (EXPLORE aid, not step state).
 
 ## 8. Open questions for development (moveto timing closed 2026-10-04)

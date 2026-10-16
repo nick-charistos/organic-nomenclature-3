@@ -4,8 +4,8 @@ A Greek-first interactive learning platform for organic nomenclature, built arou
 
 Desinged and developed by Nickolas Charistos
 
-**Current baseline:** v48 (scaffolded from v47; `index.html` → v48; ongoing work is the *v48 working copy* — see [CHANGELOG](docs/CHANGELOG.md) `[Unreleased]`)
-**Entry point:** [index.html](index.html) → [mulermoc-nom-48.html](mulermoc-nom-48.html) (`mulermoc-nom-47.html`/`-46.html` runnable alongside)
+**Current baseline:** v47 is live (`index.html` → v47); v48 is the *working copy* (scaffolded from v47: fluid viewers + authoring pin-dock; stays off-live until browser-verified) — see [CHANGELOG](docs/CHANGELOG.md) `[Unreleased]`
+**Entry point:** [index.html](index.html) → [mulermoc-nom-47.html](mulermoc-nom-47.html); working copy [mulermoc-nom-48.html](mulermoc-nom-48.html) (`mulermoc-nom-46.html`/`-45.html` runnable alongside)
 
 | Layer | File |
 |---|---|
@@ -33,7 +33,7 @@ Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (o
 
 ---
 
-## What works now (v48 working copy; v47 stable at root)
+## What works now (v47 live; v48 working copy adds fluid viewers + pin-dock)
 
 ### Chemistry engine
 - Greek IUPAC naming for alkanes/alkenes/alkynes, branched chains, halides, alcohols, aldehydes/ketones, carboxylic acids (incl. hydroxy/amino/oxo/keto), nitriles, amines, ethers (systematic + common names), esters (two-word names).
@@ -113,8 +113,8 @@ Out of scope for now: quiz SPA, participant logging, CSV export, server-side cla
 
 ## Status summary
 
-- Baseline: **v48** (+ working copy, `index.html` → v48); v47 runnable at root (`mulermoc-nom-47.html`), v46 runnable at root (`mulermoc-nom-46.html`), v45 runnable at root (`mulermoc-nom-45.html`), v44 runnable at root (`mulermoc-nom-44.html`), v43 frozen at tag `v43`, v42 frozen in repo2
+- Baseline: **v47 live** (`index.html` → v47); **v48 working copy** (fluid viewers + pin-dock, off-live until verified); v47 runnable at root (`mulermoc-nom-47.html`), v46 runnable at root (`mulermoc-nom-46.html`), v45 runnable at root (`mulermoc-nom-45.html`), v44 runnable at root (`mulermoc-nom-44.html`), v43 frozen at tag `v43`, v42 frozen in repo2
 - Focus: **LEARN pilot (stored scenarios) + bounded EXPLORE-lite**
-- Near-term: **authoring pin-dock (v48: scenario bar docks in-flow beside content, page scrolls) + scenario library verification**
+- Near-term: **verify v48 in the browser (fluid 2D/3D viewers, full-height pinned scenario bar with scroll cues), then switch `index.html` → v48; scenario library verification**
 - Rules: secondary explanatory layer; homologous series = database order
 - Research layer: active design (schema v1 in LAYERS-PLAN)

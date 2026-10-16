@@ -2,7 +2,7 @@
 
 Source of truth for the four layers of the twofold+1 vision (see `README.md`):
 1. a useful community tool, 2. ongoing research publications, 3. (+1) platform for isomerism/reactions and beyond.
-Baseline: **v48 working copy** (`mulermoc-nom-48.html`; `index.html` → v48, v47 runnable at root, v46 runnable at root, v43 frozen at tag `v43`).
+Baseline: **v47 live** (`index.html` → v47); **v48 working copy** (`mulermoc-nom-48.html`, off-live until verified; v46 runnable at root, v43 frozen at tag `v43`).
 Hosting: **embedded static** — the chemistry app stays dependency-free static; Drupal owns scenarios, exercises/quizzes, users/sessions, logging, exports.
 
 ---

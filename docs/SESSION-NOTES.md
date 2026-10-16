@@ -1127,8 +1127,9 @@ follows; one Save → Present → Next → Exit round-trip.
   + 2× `css/*-48.css`; only the 7 asset references in `48.html` differ
   (binary swap, BOM + CRLF preserved — this time all `js`/`css` sources are
   plain LF/no-BOM, only the html carries BOM/CRLF). All non-html fork files
-  byte-identical (verified). `index.html` → 48; `*47*` runnable at root as
-  the fallback, `*46*` untouched. `ui-icons.js`/`mols/`/`scenarios/` stay
+  byte-identical (verified). `index.html` → 48 at fork time, then reverted
+  to 47 (commit `f28ecc1`: v48 stays off-live until verified); `*47*` is the
+  live landing + fallback, `*46*` untouched. `ui-icons.js`/`mols/`/`scenarios/` stay
   shared single copies.
 * Parse audit: braces balanced everywhere (5 js + 2 css).
 * Pre-fork owner tweak carried into the fork: `body` + `html, body`
@@ -1252,3 +1253,21 @@ follows; one Save → Present → Next → Exit round-trip.
   span; drop the footer margin rule if the bar should stop above it.
   Checklist add: bar runs title-to-footer; title/footer text clear of it;
   tall content extends the bar; unpin pixel-identical.
+
+## 2026-10-16 — end-of-day state (handoff)
+
+* Commits today (v47): panel conditional rows + stepper tooltips, numbering
+  bonds checkbox + independent atom/bond gates, CSS color-var rename.
+  v48 (`99c55be` fork, `f28ecc1` index→47, `212b729` fluid viewers,
+  `d0deb93` pin-dock, `a4e6742` pin refinements). Owner pushes (no
+  credentials in the assistant environment).
+* Live: `index.html` → v47. v48 = working copy, off-live.
+* v48 browser verdicts still open: full-height pinned bar (title→footer,
+  footer margin assumption), scroll cues feel, unpin pixel-identity,
+  Save → Present → Exit with pin on/off, highlight survival after
+  height-driven `setSize`. Then switch `index.html` → 48.
+* Known standing exclusions: `docs/flowchart-mermaid.md` (binary noise);
+  `css/jsme-nick-47.css` owner overflow tweak was committed separately by
+  the owner (`f05bb4c`).
+* Lessons: owner's codebase read first, verify second; Jmol scripts need
+  one `;` per clause boundary; measure layout BEFORE restyling it.
