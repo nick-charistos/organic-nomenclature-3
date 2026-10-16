@@ -234,7 +234,7 @@ header {
 }
 
 .settingLabel {
-  font-size: 0.75rem;
+  font-size: 0.813rem;
   color: #333;
   margin-right: 2px;
   margin-left: 6px;
@@ -2182,36 +2182,31 @@ header {
 /* Main-chain stepper (v47, in the name-settings panel). */
 #chainStepperBox {
 	display: inline-flex;
-	align-items: flex-start;
+	align-items: center;
 	gap: 4px;
 	position: relative;
   margin-right:5px; 
 }
 
 #chainStepperBox .settingLabel {
-	position: absolute;
-	bottom: -12px;
-	width: 80px;
-	text-align: center;
-	left: -17px;
-	color: var(--baseColor);
-	background: var(--veryLightBlue);
-	border: 1px solid var(--lightBlue);
-	border-top: 0;
+	
+	/* color: var(--baseColor); */
+  margin:0;
+	
 }
 
 #chainStepLabel {
   /* min-width: 3em; */
   text-align: center;
   font-family: "Roboto Condensed", sans-serif;
-  font-size: 0.75rem;
+  font-size: 0.813rem;
   color: var(--baseColor);
   font-weight: bold;
 }
 
 .stepBtn {
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
   padding: 0;
   box-sizing: border-box;
   display: inline-flex;
