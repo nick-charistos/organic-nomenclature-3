@@ -100,10 +100,10 @@
 	font-weight: bold;
 	margin-left: 40px;
 	padding: 3px 0;
-	background: var(--lightGrayNick);
+	background: var(--veryLightGray);
 	margin-right: 120px;
 	border-radius: 5px;
-	color: var(--baseColor);
+	color: var(--darkBlue);
 	border: 2px solid var(--veryLightBlue);
 }
 
@@ -118,9 +118,9 @@
 /* Dark-bg variant for the header action buttons (close button keeps its own rules). */
 #scenarioPlayBarTitle button#scNew,
 #scenarioPlayBarTitle button#scImport {
-background: var(--bgColor);
+background: var(--veryLightEarth);
 border: 2px solid var(--veryLightBlue);
-  color: var(--baseColor);
+  color: var(--darkBlue);
 }
 
 #scenarioPlayBarTitle button#scNew:hover,
@@ -206,15 +206,15 @@ border: 2px solid var(--veryLightBlue);
 }
 
 .scenarioPanel {
-   background: var(--lightGrayNick);
-   border: 2px solid var(--lightGrayNick);
+   background: var(--veryLightGray);
+   border: 2px solid var(--veryLightGray);
    border-radius: 4px;
    overflow: hidden;
    flex: 0 0 auto;
 }
 
 .scenarioPanel.active {
-   border-color: var(--baseColor);
+   border-color: var(--darkBlue);
 
 }
 
@@ -244,8 +244,8 @@ border: 2px solid var(--veryLightBlue);
 #scenarioAuthorBar .scenarioPanel.is-empty .scList:disabled:hover,
 #scenarioAuthorBar .scenarioPanel.is-empty .scPresent:disabled,
 #scenarioAuthorBar .scenarioPanel.is-empty .scPresent:disabled:hover {
-   background: var(--baseColor);
-   border-color: var(--baseColor);
+   background: var(--darkBlue);
+   border-color: var(--darkBlue);
    color: #fff;
    opacity: .5;
    cursor: not-allowed;
@@ -254,9 +254,9 @@ border: 2px solid var(--veryLightBlue);
 /* Empty-panel Export stays light (bgColor), dimmed, no hover change. */
 #scenarioAuthorBar .scenarioPanel.is-empty .scExport:disabled,
 #scenarioAuthorBar .scenarioPanel.is-empty .scExport:disabled:hover {
-   background: var(--bgColor);
+   background: var(--veryLightEarth);
    border-color: var(--darkEarth);
-   color: var(--baseColor);
+   color: var(--darkBlue);
    opacity: .5;
    cursor: not-allowed;
 }
@@ -276,14 +276,14 @@ border: 2px solid var(--veryLightBlue);
    min-width: 0;
    font-size: 1rem;
    font-family: "Roboto Condensed", sans-serif;
-   color: var(--baseColor);
+   color: var(--darkBlue);
    font-weight: bold;
 }
 
 .scenarioPanel .scenarioHeader .scCount {
    font-size: .75rem;
    font-weight: bold;
-   background: var(--guiColor);
+   background: var(--vibrantGreen);
    color: #fff;
    border-radius: 10px;
    padding: 0 7px;
@@ -294,7 +294,7 @@ border: 2px solid var(--veryLightBlue);
 .scenarioPanel .scenarioHeader .scScenarioNo {
    font-size: 1rem;
    font-weight: bold;
-   background: var(--baseColor);
+   background: var(--darkBlue);
    color: #fff;
    border-radius: 4px;
    padding: 2px 7px;
@@ -305,7 +305,7 @@ border: 2px solid var(--veryLightBlue);
 }
 
 .scenarioButtonPanel {
-   background: var(--lightGrayNick);
+   background: var(--veryLightGray);
 }
 
 #scenarioAuthorBar input[type=text] {
@@ -316,11 +316,11 @@ border: 2px solid var(--veryLightBlue);
 #scenarioAuthorBar button,
 #scenarioPlayBar button {
    cursor: pointer;
-   background: var(--bgColor);
+   background: var(--veryLightEarth);
    border-radius: 4px;
    border: 1px solid var(--darkEarth);
    font-family: "Roboto Condensed", sans-serif;
-   color: var(--baseColor);
+   color: var(--darkBlue);
    padding: 3px 5px;
    font-weight: bold;
    transition: all 0.2s;
@@ -337,8 +337,8 @@ border: 2px solid var(--veryLightBlue);
 #scenarioAuthorBar button:disabled:hover,
 #scenarioPlayBar button:disabled,
 #scenarioPlayBar button:disabled:hover {
-   background: var(--bgColor);
-   color: var(--baseColor);
+   background: var(--veryLightEarth);
+   color: var(--darkBlue);
    border-color: var(--darkEarth);
     cursor: not-allowed !important;
 }
@@ -353,25 +353,25 @@ border: 2px solid var(--veryLightBlue);
 /* Steps is stateful: selected while the drawer is open */
 
 #scenarioAuthorBar .scenarioButtonPanel button.scList {
-   background: var(--baseColor);
+   background: var(--darkBlue);
    border-color: var(--darkEarth);
    color: #fff;
 }
 
 #scenarioAuthorBar .scenarioButtonPanel button.scList:hover {
-   background: var(--guiColor);
+   background: var(--vibrantGreen);
    border-color: var(--darkEarth);
    color: #fff;
 }
 
 #scenarioAuthorBar .scenarioButtonPanel button.scList.active {
-   background: var(--guiColor);
-   border-color: var(--baseColor);
+   background: var(--vibrantGreen);
+   border-color: var(--darkBlue);
    color: #fff;
 }
 
 /* scList + scPresent share the same appearance, including disabled:
-   no hover background/text change — stay --baseColor. Must come after
+   no hover background/text change — stay --darkBlue. Must come after
    the enabled :hover rules so disabled wins over them. */
 #scenarioAuthorBar .scenarioButtonPanel button.scList:disabled,
 #scenarioAuthorBar .scenarioButtonPanel button.scList:disabled:hover,
@@ -379,8 +379,8 @@ border: 2px solid var(--veryLightBlue);
 #scenarioAuthorBar .scenarioButtonPanel button.scPresent:disabled:hover,
 #scenarioAuthorBar .scPresent.scIconBtn:disabled,
 #scenarioAuthorBar .scPresent.scIconBtn:disabled:hover {
-   background: var(--baseColor);
-   border-color: var(--baseColor);
+   background: var(--darkBlue);
+   border-color: var(--darkBlue);
    color: #fff;
    opacity: .5;
    cursor: not-allowed;
@@ -393,7 +393,7 @@ border: 2px solid var(--veryLightBlue);
 .scenarioDrawer {
    width: 100%;
    max-width: 100%;
-   background: var(--lightGrayNick);
+   background: var(--veryLightGray);
    /* border-top: 1px solid var(--darkEarth); */
    padding: 0 12px;
    font-size: .8rem;
@@ -434,7 +434,7 @@ border: 2px solid var(--veryLightBlue);
    align-items: flex-end;
    margin: 10px 0;
    flex-wrap: wrap;
-   background: var(--lightGrayNick);
+   background: var(--veryLightGray);
    padding: 10px 10px;
    border-radius: 4px;
    border: 1px solid var(--lightBlue);
@@ -463,7 +463,7 @@ border: 2px solid var(--veryLightBlue);
 }
 
 .scenarioDrawer .srow .scDragHandle:hover {
-   color: var(--baseColor);
+   color: var(--darkBlue);
 }
 
 .scenarioDrawer .srow .scDragHandle:active {
@@ -471,7 +471,7 @@ border: 2px solid var(--veryLightBlue);
 }
 
 .scenarioDrawer .srow .scDragHandle:focus-visible {
-   outline: 2px solid var(--baseColor);
+   outline: 2px solid var(--darkBlue);
    outline-offset: 1px;
 }
 
@@ -481,11 +481,11 @@ border: 2px solid var(--veryLightBlue);
 }
 
 .scenarioDrawer .srow.drag-over-before {
-   box-shadow: 0 -3px 0 var(--baseColor);
+   box-shadow: 0 -3px 0 var(--darkBlue);
 }
 
 .scenarioDrawer .srow.drag-over-after {
-   box-shadow: 0 3px 0 var(--baseColor);
+   box-shadow: 0 3px 0 var(--darkBlue);
 }
 
 
@@ -527,7 +527,7 @@ border: 2px solid var(--veryLightBlue);
    font-size: 0.75rem;
    white-space: nowrap;
    font-family: "Roboto Condensed", sans-serif;
-   color: var(--baseColor);
+   color: var(--darkBlue);
 }
 
 .scenarioDrawer .sshow input[type=checkbox] {
@@ -565,7 +565,7 @@ border: 2px solid var(--veryLightBlue);
 
 .scenarioDrawer .scMolBadge.is-menu {
    background: var(--veryLightBlue);
-   color: var(--baseColor);
+   color: var(--darkBlue);
 }
 
 .scenarioDrawer .scStepNumberWrap {
@@ -579,9 +579,9 @@ border: 2px solid var(--veryLightBlue);
 .scenarioDrawer .stepNumber {
    font-family: "Roboto Condensed", sans-serif;
    font-size: 1.0rem;
-   color: var(--lightGrayNick);
+   color: var(--veryLightGray);
    font-weight: bold;
-   background: var(--guiColor);
+   background: var(--vibrantGreen);
    /* padding: 10px; */
    border-radius: 50%;
    width: 22px;
@@ -661,7 +661,7 @@ border: 2px solid var(--veryLightBlue);
    background: #fff;
    padding: 15px;
    border-radius: 5px;
-   border: 1px solid var(--baseColor);
+   border: 1px solid var(--darkBlue);
    text-align: left;
 }
 
@@ -682,7 +682,7 @@ border: 2px solid var(--veryLightBlue);
    flex-direction: column;
    align-items: center;
    gap: 6px;
-   background: var(--baseColor) !important;
+   background: var(--darkBlue) !important;
    color: #fff !important;
    border: 2px solid #FFF !important;
    border-right: 0 !important;
@@ -706,8 +706,8 @@ border: 2px solid var(--veryLightBlue);
 }
 
 #scenarioAuthorTab.active {
-   background: var(--baseColor) !important;
-   /* color: var(--baseColor) !important; */
+   background: var(--darkBlue) !important;
+   /* color: var(--darkBlue) !important; */
 }
 
 #scenarioAuthorTab:focus-visible {
@@ -762,7 +762,7 @@ border: 2px solid var(--veryLightBlue);
    top: 50%;
    right: 100%;
    transform: translateY(-50%);
-   border-left-color: var(--baseColor);
+   border-left-color: var(--darkBlue);
    z-index: 200;
 }
 
@@ -817,7 +817,7 @@ border: 2px solid var(--veryLightBlue);
 /* off-state check (normal + hover) */
 #nomeclature2Menu .panelTitle #scPickToggle.unselectedCheck .checkBox::after {
    color: var(--lightEarth);
-   background-color: var(--bgColor);
+   background-color: var(--veryLightEarth);
 }
 
 #nomeclature2Menu .panelTitle #scPickToggle.unselectedCheck:hover .checkBox::after {
@@ -827,7 +827,7 @@ border: 2px solid var(--veryLightBlue);
 /* on-state check */
 #nomeclature2Menu .panelTitle #scPickToggle.selectedCheck .checkBox::after {
    color: #fff;
-   background-color: var(--baseColor);
+   background-color: var(--darkBlue);
    border: 2px solid var(--veryLightBlue);
 }
 
@@ -865,7 +865,7 @@ border: 2px solid var(--veryLightBlue);
 #nomeclature2Menu .panelTitle #scPickToggle[data-tooltip]::before {
    top: 100%;
    left: 10px;
-   border-bottom-color: var(--baseColor);
+   border-bottom-color: var(--darkBlue);
    z-index: 200;
 }
 
@@ -901,7 +901,7 @@ border: 2px solid var(--veryLightBlue);
    top: 100%;
    left: 50%;
    transform: translateX(-50%);
-   border-bottom-color: var(--baseColor);
+   border-bottom-color: var(--darkBlue);
    z-index: 200;
 }
 
@@ -921,7 +921,7 @@ border: 2px solid var(--veryLightBlue);
    left: 50%;
    transform: translateX(-50%);
    border-bottom-color: transparent;
-   border-top-color: var(--baseColor);
+   border-top-color: var(--darkBlue);
 }
 
 /* Edge buttons: centered bubbles would spill past the panel's side edges
@@ -954,7 +954,7 @@ border: 2px solid var(--veryLightBlue);
 
 #nomeclature2Menu .panelTitle #scPickToggle .scPickCount {
    background: var(--lightEarth);
-   color: var(--baseColor);
+   color: var(--darkBlue);
    border-radius: 10px;
    padding: 0 7px;
    line-height: 20px;
@@ -978,12 +978,12 @@ border: 2px solid var(--veryLightBlue);
    flex: none;
    align-self: center;
    margin-right: 8px;
-   accent-color: var(--baseColor);
+   accent-color: var(--darkBlue);
    cursor: pointer;
 }
 
 #nomeclature2Menu .menuLi:has(.scPickBox:checked) {
-   background-color: var(--bgColor);
+   background-color: var(--veryLightEarth);
 }
 
 
@@ -1040,12 +1040,12 @@ border: 2px solid var(--veryLightBlue);
 
 .scPresentGroup:hover {
    cursor: pointer;
-   background-color: var(--bgColor);
+   background-color: var(--veryLightEarth);
    color: #111;
 }
 
 .scPresentGroup:hover::before {
-   color: var(--baseColor);
+   color: var(--darkBlue);
 }
 
 .scPresentGroup.open::before {
@@ -1075,17 +1075,17 @@ border: 2px solid var(--veryLightBlue);
 }
 
 .scStepNumberTitle {
-   background: var(--bgColor);
+   background: var(--veryLightEarth);
    display: inline-block;
    /* padding: 0px 5px; */
    border-radius: 50%;
    margin-right: 5px;
-   color: var(--baseColor);
+   color: var(--darkBlue);
    font-size: 1.25rem;
    width: 40px;
    height: 40px;
    line-height: 40px;
-   border: 1px solid var(--baseColor);
+   border: 1px solid var(--darkBlue);
 }
 
 /* Icon-only buttons (see js/ui-icons.js): uniform 16px currentColor art,
@@ -1109,12 +1109,12 @@ border: 2px solid var(--veryLightBlue);
 }
 
 #scenarioAuthorBar .scPresent.scIconBtn {
-   background: var(--baseColor);
+   background: var(--darkBlue);
    color: #fff;
 }
 
 #scenarioAuthorBar .scPresent.scIconBtn:hover {
-   background: var(--guiColor);
+   background: var(--vibrantGreen);
    color: #fff;
 }
 
@@ -1134,7 +1134,7 @@ border: 2px solid var(--veryLightBlue);
 #scenarioAuthorBar .scList .scCountInline {
    font-size: .75rem;
    font-weight: bold;
-   background: var(--guiColor);
+   background: var(--vibrantGreen);
    color: #fff;
    border-radius: 10px;
    padding: 0 7px;

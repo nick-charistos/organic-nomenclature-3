@@ -1110,3 +1110,13 @@ follows; one Save → Present → Next → Exit round-trip.
   unchanged). Alkyl paths already overpaint green via `fColorFragmentBonds3D`,
   so their pixels are unchanged; stale "remains bond-free" comment corrected.
   Checklist add: bonds on → 3D atoms + bonds green; off → green atoms only.
+
+## 2026-10-16 — CSS color naming (v47, behavior-identical)
+
+* Renamed in `css/jsme-nick-47.css` + `css/mulermoc-nom-scenario-47.css` only:
+  `--baseColor` → `--darkBlue`, `--guiColor` → `--vibrantGreen`,
+  `--bgColor` → `--veryLightEarth`, `--lightGrayNick` → `--veryLightGray`.
+  Values unchanged; zero old-name occurrences left in either file; frozen
+  `*42–46*` + archive keep the old names. No JS/HTML references exist.
+* Browser checklist for owner: one v47 load (any missing rename shows as
+  unstyled chrome at once) + one Save → Present → Exit round-trip.
