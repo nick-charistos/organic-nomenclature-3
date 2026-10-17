@@ -1272,6 +1272,11 @@ body.scPinned #pageContainer {
    margin: 0 auto;
    height: auto;
    min-height: calc(100% - 30px);
+   /* Inline-size query container for the adaptive pinned viewer width below
+      (100cqw = this element's content width, already excluding the scrollbar).
+      Safe in pinned mode: this element is already position:relative, and the
+      only position:fixed element (#rotatePrompt) is a direct body child. */
+   container-type: inline-size;
 }
 
 body.scPinned #pageTitle {
@@ -1299,12 +1304,17 @@ body.scPinned #mainAppContainer > .HFlex {
    flex-wrap: nowrap;
 }
 
-/* Pinned viewer width (manual tune via --viewerPinnedWidth, default 400px):
-   ceiling over the inline measured lock — shrinks wide viewers, never forces
-   narrow ones wider. The resize observer picks up the change, so JSME/JSmol
-   follow through the verified fluid path with no JS change. */
+/* Pinned viewer width (adaptive): the inline measured pre-dock flex-basis is
+   the upper bound (620px), and this cap keeps the row + 480px band inside the
+   page container. On wide screens the cap is 620px, so the viewer keeps its
+   original width; as the screen narrows it eases down only as far as needed,
+   with --viewerPinnedWidth (default 400px) as the floor. 100cqw resolves
+   against the pinned #pageContainer above; 1090px = band 480 + menu 230 +
+   gaps 20 + analysis 350 + viewer-border/rounding slack. The resize observer
+   picks up the change, so JSME/JSmol follow through the verified fluid path
+   with no JS change. */
 body.scPinned #viewerCol {
-   max-width: var(--viewerPinnedWidth, 400px);
+   max-width: clamp(var(--viewerPinnedWidth, 400px), calc(100cqw - 1090px), 620px);
 }
 
 body.scPinned #scenarioAuthorBar {

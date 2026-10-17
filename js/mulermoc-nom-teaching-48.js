@@ -1071,6 +1071,7 @@ $(document).ready(function () {
   svgAtomColors2DFlag = true
   // $("#svgAtomColorCheck").removeClass("selectedCheck").addClass("unselectedCheck");
   $("#jsmeNomeclatureSVG").removeClass("svgAtomsColorized");
+  fSyncAtomColorModeDisabled();
 
   atomColorMode2D = "atom";
   localStorage.removeItem("atomColorMode2D");
@@ -1088,6 +1089,7 @@ $(document).ready(function () {
       "svgAtomsColorized",
       svgAtomColors2DFlag,
     );
+    fSyncAtomColorModeDisabled();
     fUpdateSVG();
     if (numberingFlag) {
       currNumberEl = 0;

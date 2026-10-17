@@ -657,6 +657,7 @@ function fScenarioSyncControlUi() {
   // re-syncs from the flag in fUpdateSVG).
   try {
     if (typeof svgAtomColors2DFlag !== "undefined") fScenarioSetCheck("svgAtomColorCheck", !!svgAtomColors2DFlag, "selectedCheck", "unselectedCheck");
+    if (typeof fSyncAtomColorModeDisabled === "function") fSyncAtomColorModeDisabled();
     if (typeof atomColorMode2D !== "undefined") {
       var _cmBtns = document.querySelectorAll("#atomColorMode .atomColorModeRadio");
       for (var _ci = 0; _ci < _cmBtns.length; _ci++) {

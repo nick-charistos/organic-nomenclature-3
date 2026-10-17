@@ -14,8 +14,11 @@
 
   --bodyBg: #faf7f5;
 
-  /* Manual tune: viewer column width while the scenario bar is pinned
-     (consumed by body.scPinned #viewerCol; bounds min-width/max-width hold). */
+  /* Manual tune: MINIMUM viewer column width while the scenario bar is pinned
+     (clamp floor; consumed by body.scPinned #viewerCol in the scenario
+     stylesheet). The pinned cap widens up to 620px on screens with room, so
+     the viewer keeps its original width when possible. Bounds min-width/
+     max-width hold. */
   --viewerPinnedWidth: 400px;
 }
 
@@ -214,8 +217,9 @@ header {
 }
 
 #viewerSettingsPanel.open {
-  max-height: 330px;
+  max-height: min(70vh, 400px);
   padding: 6px 8px;
+  overflow-y: auto;
 }
 
 /* Single-viewer max-height control (v48): checkbox + px slider + readout. */
@@ -2015,6 +2019,32 @@ header {
   border: 1px solid var(--lightBlue);
   border-radius: 5px;
   overflow: hidden;
+  /* Query container for the narrow-viewer fluid UI text below (the panel's
+     own containing block stays .panelTitle, which is nearer/positioned). */
+  container-type: inline-size;
+  container-name: viewer;
+}
+
+/* ── Narrow-viewer fluid UI text ────────────────────────────────────────────
+   Eases the settings/control text down to a 0.75rem floor as the viewer
+   column narrows (e.g. the ~400px pinned width). cqi resolves against
+   #viewerCol; at its 620px max the clamps land on the current sizes, so wide
+   layout is unchanged. Scoped to #viewerCol so the left/right menus and the
+   scenario bar (which share these classes) are untouched. Browsers without
+   container units ignore the declarations and keep the base sizes. */
+#viewerCol .settingLabel {
+  font-size: clamp(0.75rem, 2.1cqi, 0.813rem);
+}
+#viewerCol .radioCheckContainer,
+#viewerCol .checkBoxContainer {
+  font-size: clamp(0.75rem, 2.2cqi, 0.85rem);
+}
+#viewerCol #dropLabel,
+#viewerCol .dropLi {
+  font-size: clamp(0.75rem, 2.2cqi, 0.85rem);
+}
+#viewerCol .viewerHeightVal {
+  font-size: clamp(0.75rem, 2.1cqi, 0.813rem);
 }
 
 #analysisCol {

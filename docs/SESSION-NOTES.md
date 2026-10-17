@@ -1416,3 +1416,99 @@ follows; one Save → Present → Next → Exit round-trip.
   (v48 now live), and `css/jsme-nick-48.css` `.settingRow` `min-height`
   36 → **30px**. CHANGELOG `[Unreleased]` header/lead updated to "live".
 
+## 2026-10-17 (cont.) — 2D/3D detail toggles moved into Ρυθμίσεις (v48)
+
+* Owner request: `Έγχρωμα Σύμβολα` (2D) and `Σύμβολα ατόμων` (3D) are
+  detail-level, so move them out of the always-visible control bars into the
+  gear settings panel. Owner choices: merge the 2D checkbox into the existing
+  `Χρωματισμός ατόμων 2D` row; grey the atom/group radios while coloring is
+  off; give 3D a lone labeled row; make the panel scroll internally.
+* `mulermoc-nom-48.html`: removed `#svgAtomColorCheck` from `#radio2DMode` and
+  `#atomSymbolsCheck` from `#controls3D`; `#svgAtomColorCheck` now sits inside
+  `#atomColorModeRow` (label + checkbox + `#atomColorMode` radios); new
+  `#atomSymbolsSetting` row (`Σύμβολα ατόμων 3D:` + `#atomSymbolsCheck`).
+  IDs unchanged (all handlers are ID-based). Bars now: 2D = mode radios +
+  `Σύμβολα CHn`; 3D = `Υδρογόνα C-H` + style + `Περιστροφή`.
+* `molview-48.js`: new `fSyncAtomColorModeDisabled()` →
+  `$("#atomColorMode .atomColorModeRadio").toggleClass("disabledRadio", !svgAtomColors2DFlag)`
+  (existing `.disabledRadio` = `opacity .35` + `pointer-events:none`).
+* `teaching-48.js`: call it after the `svgAtomColors2DFlag = true` init and
+  inside the `#svgAtomColorCheck` click handler.
+* `scenario-48.js`: call it from `fScenarioSyncControlUi` so per-step apply
+  restores the dim state. No schema change (`style2D.atomColors` /
+  `view3D.atomSymbols` unchanged; `scenarioVersion` stays 1).
+* `jsme-nick-48.css`: `#viewerSettingsPanel.open` → `max-height:
+  min(70vh, 400px)` + `overflow-y:auto` (two extra rows). No bar CSS change
+  needed (`radioCheckContainer` carries its own `margin-left:12px`).
+* Static: html `<div>` parity 81/81; both IDs still single-occurrence; JS
+  brace/paren counts balanced (teaching-48.js keeps its pre-existing +1 `)`
+  in a string, unchanged by this edit). Browser click-through pending.
+* Browser checklist for owner: open Ρυθμίσεις → `Έγχρωμα Σύμβολα` + atom/group
+  radios in one row, `Σύμβολα ατόμων 3D` row present; uncheck coloring → radios
+  grey/inert, recheck → active; 2D/3D bars keep their remaining controls;
+  panel scrolls if tall; per-step Save/apply still stores/applies atomColors /
+  atomSymbols; Present hides the panel but values apply.
+* Docs: CHANGELOG `[Unreleased]` new "Ρυθμίσεις panel: 2D/3D detail toggles
+  moved in" section; didactic `show.controls.2D/3D` notes updated.
+
+## 2026-10-17 (cont.) — narrow-viewer fluid UI text (v48)
+
+* Owner request: shrink the 2D/3D settings text when the panel gets narrow
+  (<~420px), e.g. to 0.75rem. Owner choices: panel **and** the 2D/3D bars;
+  targeted wrappers only (keep `.settingTitle`); smooth `clamp()` (no
+  breakpoint cliff).
+* Key correction: a **media query would be wrong** — `#viewerCol` is 290–620px
+  and ~400px when the scenario bar is pinned, decoupled from viewport width.
+  Used a **container query**: `#viewerCol { container-type: inline-size;
+  container-name: viewer }`. Safe: `.panelTitle` is the nearer positioned
+  ancestor so the settings panel's containing block / `top:100%` is unchanged;
+  only inline-size is contained (block size — the resize pipeline's
+  `offsetHeight`/`ResizeObserver` — untouched).
+* `css/jsme-nick-48.css`: `clamp(0.75rem, ~2.1–2.2cqi, <current>)` on
+  `#viewerCol .settingLabel`, `.radioCheckContainer`, `.checkBoxContainer`,
+  `#dropLabel`, `.dropLi`, `.viewerHeightVal`. At the 620px max the clamps
+  equal the current sizes (wide layout unchanged), easing to 0.75rem as the
+  column narrows. Scoped to `#viewerCol` (menus + scenario bar share these
+  classes and stay untouched); `.settingTitle` left at 0.938rem for hierarchy.
+  No container units support → declarations ignored, base sizes kept.
+* Static: CSS braces balanced (289/289). Browser click-through pending.
+* Browser checklist for owner: drag the column to 290px and pin the bar
+  (~400px) → settings/bar text eases toward 0.75rem, no wrapping/overflow at
+  the wrappers; widen to 620px → back to current sizes; `.settingTitle`
+  unchanged; the left/right menus and scenario bar text unaffected.
+* Docs: CHANGELOG `[Unreleased]` new "Narrow-viewer fluid UI text" section.
+
+
+
+
+## 2026-10-17 (cont.) — adaptive pinned viewer width (v48)
+
+* Owner request: the viewers column took a fixed ~400px while the scenario bar
+  is pinned. Wanted it to keep its original width on large screens and only
+  shrink to fit when the screen is narrower than mainAppContainer + panel.
+  Owner choices: **400px floor**; **CSS clamp via a pinned #pageContainer
+  query container**.
+* Math: row = #menuCol 230 + gap 10 + viewer + gap 10 + #analysisCol 350
+  (600 + viewer); pinned #mainAppContainer reserves 480 → fit needs
+  `viewer <= pageContainer - 1090`. The inline pre-dock flex-basis locked in
+  `fScenarioSetPinned` (<=620) is the upper bound, so a `max-width` only ever
+  shrinks it — original width is preserved on wide screens.
+* `css/mulermoc-nom-scenario-48.css`: `body.scPinned #pageContainer {
+  container-type: inline-size }` (safe — it is already position:relative and
+  the only position:fixed element, #rotatePrompt, is a direct body child);
+  `body.scPinned #viewerCol { max-width: clamp(var(--viewerPinnedWidth,
+  400px), calc(100cqw - 1090px), 620px) }`. `100cqw` = page-container content
+  width (excludes the scrollbar); 1090 = band 480 + menu 230 + gaps 20 +
+  analysis 350 + slack.
+* `css/jsme-nick-48.css`: `--viewerPinnedWidth` comment re-documented as the
+  clamp **floor** (was a hard cap).
+* No JS: resize handled natively; the existing #viewerCol and
+  #mainAppContainer ResizeObservers follow through the fluid pipeline.
+  Unpinned layout untouched.
+* Static: CSS braces balanced (jsme-nick-48.css 289/289; scenario-48.css
+  174/174). Browser click-through pending.
+* Browser checklist for owner: dock the bar on a wide screen → viewer keeps
+  its original width (~620); narrow toward ~1500px → eases 620→400; below
+  that → pinned at 400 with scroll cues only if it still overflows; unpin →
+  normal centered layout; resize while pinned updates smoothly.
+* Docs: CHANGELOG `[Unreleased]` new "Adaptive pinned viewer width" section.

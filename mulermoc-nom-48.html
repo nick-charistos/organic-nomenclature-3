@@ -197,6 +197,12 @@
                 <div id="atomColorModeRow" class="settingRow">
                   <div class="settingLabel">Χρωματισμός ατόμων 2D:</div>
                   <div
+                    id="svgAtomColorCheck"
+                    class="checkBoxContainer selectedCheck"
+                  >
+                    &nbsp;<span class="checkBox"></span>
+                  </div>
+                  <div
                     id="atomColorMode"
                     class="HFlex"
                     style="align-items: center"
@@ -213,6 +219,15 @@
                     >
                       Κατά ομάδα<span class="radioCheck"></span>
                     </div>
+                  </div>
+                </div>
+                <div id="atomSymbolsSetting" class="settingRow">
+                  <div class="settingLabel">Σύμβολα ατόμων 3D:</div>
+                  <div
+                    id="atomSymbolsCheck"
+                    class="checkBoxContainer selectedCheck"
+                  >
+                    &nbsp;<span class="checkBox"></span>
                   </div>
                 </div>
                 <div id="viewerMaxHeightSetting" class="settingRow">
@@ -235,13 +250,6 @@
             <div id="radio2DMode">
               <div class="radioGroupContainer HFlex">
                 <div class="HFlex" style="align-items: center">
-                  <div
-                    id="svgAtomColorCheck"
-                    class="checkBoxContainer selectedCheck"
-                    style="margin-right: 10px"
-                  >
-                    Έγχρωμα Σύμβολα<span class="checkBox"></span>
-                  </div>
                   <div class="radioCheckContainer mode2DOption selectedRadio">
                     Συνεπτυγμένος<span class="radioCheck"></span>
                   </div>
@@ -303,12 +311,6 @@
     
             >
               <div class="HFlex" style="align-items: center">
-                <div
-                  id="atomSymbolsCheck"
-                  class="checkBoxContainer selectedCheck"
-                >
-                  Σύμβολα ατόμων <span class="checkBox"></span>
-                </div>
                 <div
                   id="hydrogensCheck"
                   class="checkBoxContainer selectedCheck"

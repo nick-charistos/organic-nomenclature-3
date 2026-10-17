@@ -721,6 +721,16 @@ function fUpdateDiagr2DButton() {
   }
 }
 
+// ── fSyncAtomColorModeDisabled ────────────────────────────────────────────
+// The 2D "Κατά άτομο / Κατά ομάδα" radios are only meaningful while colored
+// symbols are on (#svgAtomColorCheck). Dim + inert them when the coloring
+// toggle is off (same .disabledRadio convention as the 2D mode radios).
+
+function fSyncAtomColorModeDisabled() {
+  var on = typeof svgAtomColors2DFlag !== "undefined" ? svgAtomColors2DFlag : true;
+  $("#atomColorMode .atomColorModeRadio").toggleClass("disabledRadio", !on);
+}
+
 // ── fSelectMol ────────────────────────────────────────────────────────────
 
 function fSelectMol() {

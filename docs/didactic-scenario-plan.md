@@ -121,8 +121,9 @@ State notes (grounded in v48; v42–v47 identical unless noted):
   the author's live states; Exit restores them (not the step's values).
   Apply also re-syncs the `Έγχρωμα Σύμβολα` checkbox and atom/group radios
   from `style2D` (the SVG class already re-syncs from the flag in
-  `fUpdateSVG`); Exit force-restores all control bars via
-  `fScenarioRestoreChrome()` (inline `display` + `hide` class + viewer
+  `fUpdateSVG`; `fSyncAtomColorModeDisabled()` dims the atom/group radios
+  when the coloring checkbox is off); Exit force-restores all control bars
+  via `fScenarioRestoreChrome()` (inline `display` + `hide` class + viewer
   buttons), since class-based hides beat inline restore.
 * 3D style: JSmol style/spin/H/symbols are stored.
 * 3D camera: `view3D.moveto` stores the verbatim JSmol `moveto`
@@ -154,18 +155,20 @@ Visibility rules:
   too (via `fScenarioApplyViewerMaxHeight`), stashed/restored around
   Present like the other live settings. The 2D CSS floor is 200px.
 * `show.controls.2D` toggles `#radio2DMode`
-  (`mulermoc-nom-45.html`: `Έγχρωμα Σύμβολα`,
-  `Συνεπτυγμένος/Ανεπτυγμένος/Σκελετικός`, `Σύμβολα CHn`).
+  (`Συνεπτυγμένος/Ανεπτυγμένος/Σκελετικός`, `Σύμβολα CHn`).
   Per-step drawer checkbox `2D controls` (default unchecked; disabled
   unless the step's 2D viewer is visible). On apply the bar visuals
-  (mode radios, color checkbox + atom/group radios, CHn box) mirror the
-  step's stored values via `fScenarioSyncControlUi()`, not the live states.
+  (mode radios, CHn box) mirror the step's stored values via
+  `fScenarioSyncControlUi()`, not the live states. `Έγχρωμα Σύμβολα`
+  (`#svgAtomColorCheck`) moved out of this bar into the Ρυθμίσεις panel
+  (v48), merged with the `Χρωματισμός ατόμων 2D` atom/group radios.
 * `show.controls.3D` toggles `#controls3D`:
-  `Σύμβολα ατόμων`, `Υδρογόνα C-H`, `#dropMenu` style,
-  `Περιστροφή`). Irrelevant when that viewer is hidden.
-  Per-step drawer checkbox `3D controls` (default unchecked; disabled
-  unless the step's 3D viewer is visible). On apply the bar visuals
-  (3D checkboxes, style dropdown label) mirror the step's stored values.
+  `Υδρογόνα C-H`, `#dropMenu` style, `Περιστροφή`. Irrelevant when that
+  viewer is hidden. Per-step drawer checkbox `3D controls` (default
+  unchecked; disabled unless the step's 3D viewer is visible). On apply
+  the bar visuals (3D checkboxes, style dropdown label) mirror the step's
+  stored values. `Σύμβολα ατόμων` (`#atomSymbolsCheck`) moved out of this
+  bar into the Ρυθμίσεις panel as its own `Σύμβολα ατόμων 3D` row (v48).
 * `show.save` toggles `#save2DBtn` / `#save3DBtn`
   independently of `controls`. Default `false`.
 * `#viewerVisBtns`, `#viewerSettingsPanel` +
