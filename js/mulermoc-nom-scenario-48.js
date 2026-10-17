@@ -635,6 +635,13 @@ function fScenarioSyncControlUi() {
     /* controls unavailable */
   }
   try {
+    // Dims "Από δεδομένα" for empty/missing stored chains and re-syncs the
+    // radio to the restored mainChainMode. Depends on mode2D (resolved above).
+    if (typeof fUpdateChainModeButton === "function") fUpdateChainModeButton();
+  } catch (e) {
+    /* controls unavailable */
+  }
+  try {
     var m2d = typeof mode2D !== "undefined" ? mode2D : "condensed";
     var idx = m2d === "expanded" ? 1 : (m2d === "skeletal" || m2d === "condensedZigZag") ? 2 : 0;
     var btns = document.querySelectorAll("#radio2DMode .mode2DOption");
@@ -2727,7 +2734,7 @@ function fScenarioRenderOne(scen) {
       noteBar.appendChild(sizeInput);
       var wLabel = document.createElement("span");
       wLabel.className = "sshow";
-      wLabel.appendChild(document.createTextNode("Πλάτος Κειμένου:"));
+      wLabel.appendChild(document.createTextNode("Width:"));
       var wInput = document.createElement("input");
       wInput.type = "number";
       wInput.min = "320";

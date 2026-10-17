@@ -196,8 +196,8 @@ header {
 #viewerSettingsPanel {
   position: absolute;
   top: 100%;
-  left: 0px;
-  right: 0px;
+  left: -1px;
+  right: -1px;
   z-index: 50;
   background: #fff;
   border: 1px solid var(--lightBlue);
@@ -209,9 +209,7 @@ header {
     padding 0.22s ease;
   padding: 0 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
-  background-color: #f3f3f3;
-  border-left: 0;
-  border-right: 0;
+  background-color: var(--veryLightGray);
   border-bottom-left-radius: 5px;
   border-bottom-right-radius: 5px;
 }
@@ -290,6 +288,17 @@ header {
   align-items: center;
   padding: 0 6px;
   border-bottom: 0;
+  /* Last child whenever 3D is visible: rounds the column's bottom corners
+     without clipping (4px = #viewerCol's 5px radius minus its 1px border). */
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+/* When 3D is hidden the 2D bar is the column's last visible child, so it
+   carries the rounded bottom corners. */
+#viewerCol:has(#controls3D.hide) #radio2DMode {
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
 }
 
 .radioGroupContainer {
@@ -2013,12 +2022,15 @@ header {
   /* fills remaining space; never pushes row past viewport */
   min-width: 0;
   /* overrides flex default min-width:auto */
-  overflow: visible;
   max-width: 620px;
   min-width: 290px;
   border: 1px solid var(--lightBlue);
   border-radius: 5px;
-  overflow: hidden;
+  /* No overflow clip: it would chop the settings dropdown (#viewerSettingsPanel
+     is absolutely positioned below .panelTitle) whenever the column is short
+     (no viewer visible). Corner rounding is enforced on the bottom bar(s)
+     instead — see #controls3D / #radio2DMode below. */
+  overflow: visible;
   /* Query container for the narrow-viewer fluid UI text below (the panel's
      own containing block stays .panelTitle, which is nearer/positioned). */
   container-type: inline-size;

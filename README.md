@@ -4,8 +4,8 @@ A Greek-first interactive learning platform for organic nomenclature, built arou
 
 Desinged and developed by Nickolas Charistos
 
-**Current baseline:** v47 is live (`index.html` → v47); v48 is the *working copy* (scaffolded from v47: fluid viewers + authoring pin-dock; stays off-live until browser-verified) — see [CHANGELOG](docs/CHANGELOG.md) `[Unreleased]`
-**Entry point:** [index.html](index.html) → [mulermoc-nom-47.html](mulermoc-nom-47.html); working copy [mulermoc-nom-48.html](mulermoc-nom-48.html) (`mulermoc-nom-46.html`/`-45.html` runnable alongside)
+**Current baseline:** v48 is live (`index.html` → v48) after browser verification — fluid viewers, authoring pin-dock, single-viewer max-height, and the settings-panel UI pass; v47 and earlier remain runnable at root — see [CHANGELOG](docs/CHANGELOG.md)
+**Entry point:** [index.html](index.html) → [mulermoc-nom-48.html](mulermoc-nom-48.html); previous versions `mulermoc-nom-47.html`/`-46.html`/`-45.html`/`-44.html` runnable alongside
 
 | Layer | File |
 |---|---|
@@ -27,13 +27,13 @@ Desinged and developed by Nickolas Charistos
 | [organic-nomenclature-2](https://nick-charistos.github.io/organic-nomenclature-2/) | v42 | frozen — emergency hotfixes only |
 | [organic-nomenclature-3](https://nick-charistos.github.io/organic-nomenclature-3/) | v46 | active — all new work happens here |
 
-Root holds the files of the current working copy (`*48*`; `mulermoc-nom-42/43/44/45/46/47.html` are kept runnable alongside). Older file sets live in [archive/](archive/README.md) (non-runnable museum). Runnable history via git tags `v41`–`v44`.
+Root holds the files of the current live set (`*48*`; `mulermoc-nom-42/43/44/45/46/47.html` are kept runnable alongside). Older file sets live in [archive/](archive/README.md) (non-runnable museum). Runnable history via git tags `v41`–`v44`.
 
 Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (only `image-svgrepo-Industrial-Sharp.svg` is kept; other icons are inlined/served by `js/ui-icons.js`), PDFs, `mols/branched/`, third-party libs served via CDN (see [.gitignore](.gitignore)).
 
 ---
 
-## What works now (v47 live; v48 working copy adds fluid viewers + pin-dock)
+## What works now (v48 live — fluid viewers, authoring pin-dock, scenario presentation)
 
 ### Chemistry engine
 - Greek IUPAC naming for alkanes/alkenes/alkynes, branched chains, halides, alcohols, aldehydes/ketones, carboxylic acids (incl. hydroxy/amino/oxo/keto), nitriles, amines, ethers (systematic + common names), esters (two-word names).
@@ -44,9 +44,12 @@ Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (o
 
 ### Viewer and UI
 - 2D (JSME) and 3D (JSmol) views; condensed, expanded, skeletal and annotated-skeletal modes; `[2D][3D]` visibility toggles; PNG export.
+- **Fluid viewers (v48):** both viewers fit the viewer column via native `setSize` (container-derived heights, debounced `ResizeObserver`); a per-viewer **single max-height** control (Auto | manual px) lives in Ρυθμίσεις and is stored per scenario step.
+- **Authoring pin-dock (v48):** the scenario bar docks full-height beside the app (scoped horizontal scroll with edge cues); the pinned viewer width is adaptive (`clamp`, keeps its original width when the screen has room, eases to a 400px floor); viewer-column UI text scales fluidly via a container query.
+- **Ρυθμίσεις pass (v48):** the 2D/3D detail toggles (`Έγχρωμα Σύμβολα`, `Σύμβολα ατόμων`) are consolidated into the gear panel; the `Από δεδομένα` main-chain bullet is disabled when the molecule has no stored chain data.
 - Menu groups: homologous series (default sort by carbon count), chemical classes, rules, flat `Όλα τα μόρια`.
 - Name panel: IUPAC/COMMON toggle, per-component eye toggles (hide name parts), Greek TTS narration that follows visibility.
-- Tooltips share one navy skin (single copy in `css/jsme-nick-47.css`); scenario-bar/panel/step/toolbar buttons, type badge and drag handle converted from native `title`; all-Greek tooltip texts; geometry variants (button-panel bubbles above, save buttons left, `[2D]` left-aligned, edge buttons Save-left-aligned/Delete-right-aligned) for `overflow:hidden` parents.
+- Tooltips share one navy skin (single copy in `css/jsme-nick-48.css`); scenario-bar/panel/step/toolbar buttons, type badge and drag handle converted from native `title`; all-Greek tooltip texts; geometry variants (button-panel bubbles above, save buttons left, `[2D]` left-aligned, edge buttons Save-left-aligned/Delete-right-aligned) for `overflow:hidden` parents.
 
 ### LEARN layer: didactic scenarios
 - Authoring behind the `Σενάρια` handle: up to 3 scenarios, steps per scenario with per-step molecule/menu/chrome settings, rich step text (`B I sup sub`, size/width/columns), icon buttons, drag-reorder, step drawer, Import/Export JSON.
@@ -103,7 +106,7 @@ Out of scope for now: quiz SPA, participant logging, CSV export, server-side cla
 
 ## Documents
 
-- [CHANGELOG.md](docs/CHANGELOG.md) — authoritative history, incl. `[Unreleased]` v48 working copy
+- [CHANGELOG.md](docs/CHANGELOG.md) — authoritative history (v48 live)
 - [didactic-scenario-plan.md](docs/didactic-scenario-plan.md) — scenario schema and authoring flow
 - [LAYERS-PLAN.md](docs/LAYERS-PLAN.md) — layer contracts, exercise types, research logging schema
 - [DEVELOPMENT-PLAN.md](docs/DEVELOPMENT-PLAN.md), [PROJECT-PLAN.md](docs/PROJECT-PLAN.md), [PROJECT-PLAN-GR.md](docs/PROJECT-PLAN-GR.md) — product/research plans (may lag the code)
@@ -113,8 +116,8 @@ Out of scope for now: quiz SPA, participant logging, CSV export, server-side cla
 
 ## Status summary
 
-- Baseline: **v47 live** (`index.html` → v47); **v48 working copy** (fluid viewers + pin-dock, off-live until verified); v47 runnable at root (`mulermoc-nom-47.html`), v46 runnable at root (`mulermoc-nom-46.html`), v45 runnable at root (`mulermoc-nom-45.html`), v44 runnable at root (`mulermoc-nom-44.html`), v43 frozen at tag `v43`, v42 frozen in repo2
+- Baseline: **v48 live** (`index.html` → v48); v47 runnable at root (`mulermoc-nom-47.html`), v46 runnable at root (`mulermoc-nom-46.html`), v45 runnable at root (`mulermoc-nom-45.html`), v44 runnable at root (`mulermoc-nom-44.html`), v43 frozen at tag `v43`, v42 frozen in repo2
 - Focus: **LEARN pilot (stored scenarios) + bounded EXPLORE-lite**
-- Near-term: **verify v48 in the browser (fluid 2D/3D viewers, full-height pinned scenario bar with scroll cues), then switch `index.html` → v48; scenario library verification**
+- Near-term: **scenario library verification; bounded EXPLORE-lite (~15 mols + menu search); browser checks for the latest settings-panel UI pass**
 - Rules: secondary explanatory layer; homologous series = database order
 - Research layer: active design (schema v1 in LAYERS-PLAN)

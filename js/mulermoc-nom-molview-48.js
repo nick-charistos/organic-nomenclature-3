@@ -636,8 +636,13 @@ function fUpdateChainModeButton() {
   const $dataBtn = $("#radioChainMode .radioCheckContainer").eq(0);
   // Stored chain keys use _Condensed/_Expanded/_Skeletal (see fMainChainKeySuffix).
   const chainKeySuffix = fMainChainKeySuffix();
-  const hasChainData =
-    !selectedMol || !!nameExamples[selectedMol]?.["mainChain" + chainKeySuffix];
+  const _storedChain =
+    selectedMol && nameExamples[selectedMol]
+      ? nameExamples[selectedMol]["mainChain" + chainKeySuffix]
+      : null;
+  // No molecule selected, key missing, or an empty stored array (the ether/
+  // ester and two branched-alkane placeholders) all mean "no stored data".
+  const hasChainData = Array.isArray(_storedChain) && _storedChain.length > 0;
   if (hasChainData) {
     $dataBtn.removeClass("disabledRadio");
   } else {
@@ -4196,11 +4201,15 @@ function fHighLightMainChain() {
     return;
   }
 
+  const _storedChain = nameExamples[selectedMol]
+    ? nameExamples[selectedMol]["mainChain" + fMainChainKeySuffix()]
+    : null;
   highAtoms =
     mainChainMode === "algorithmic" ||
-    !nameExamples[selectedMol]["mainChain" + fMainChainKeySuffix()]
+    !Array.isArray(_storedChain) ||
+    _storedChain.length === 0
       ? mainChainAtomsList
-      : nameExamples[selectedMol]["mainChain" + fMainChainKeySuffix()];
+      : _storedChain;
 
   let highAtomsArg = "";
   for (let i = 0; i < highAtoms.length; i++) {
@@ -4224,11 +4233,15 @@ function fHighLightMainChainBonds() {
     return;
   }
 
+  const _storedChain = nameExamples[selectedMol]
+    ? nameExamples[selectedMol]["mainChain" + fMainChainKeySuffix()]
+    : null;
   const _chain =
     mainChainMode === "algorithmic" ||
-    !nameExamples[selectedMol]["mainChain" + fMainChainKeySuffix()]
+    !Array.isArray(_storedChain) ||
+    _storedChain.length === 0
       ? mainChainAtomsList
-      : nameExamples[selectedMol]["mainChain" + fMainChainKeySuffix()];
+      : _storedChain;
   if (!Array.isArray(_chain) || _chain.length === 0 || typeof bondList === "undefined") {
     return;
   }
@@ -5877,13 +5890,17 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
       break;
 
     case "skeletal":
+      var _skel = nameExamples[selectedMol]
+        ? nameExamples[selectedMol]["mainChain_Skeletal"]
+        : null;
       highAtoms =
         Array.isArray(numberingAtomOverride)
           ? numberingAtomOverride
           : mainChainMode === "algorithmic" ||
-            !nameExamples[selectedMol]["mainChain_Skeletal"]
+            !Array.isArray(_skel) ||
+            _skel.length === 0
             ? mainChainAtomsList
-            : nameExamples[selectedMol]["mainChain_Skeletal"];
+            : _skel;
       highAtoms = (Array.isArray(highAtoms) ? highAtoms : []).filter(
         function (atomNo) {
           return allAtomsTypeList[atomNo - 1] === "C";

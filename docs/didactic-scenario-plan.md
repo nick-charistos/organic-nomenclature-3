@@ -108,6 +108,15 @@ State notes (grounded in v48; v42–v47 identical unless noted):
   out-of-range for the molecule falls back to 0 at apply. Never covers
   menu-only steps; Exit keeps the exit step's chain (no author-chain stash,
   same contract as `selectedMol`).
+* `mainChainMode` ∈ `data` / `algorithmic` (default `algorithmic`). The
+  `Από δεδομένα` bullet in Ρυθμίσεις is disabled (and `mainChainMode` falls
+  back to `algorithmic`) when the selected molecule has no stored chain for
+  the current representation — a missing key **or** an empty array (the eight
+  ether/ester molecules and two branched-alkane placeholders store
+  `mainChain_*: []`) — and also when no molecule is selected (v48).
+  `fUpdateChainModeButton()` owns the state; `fScenarioSyncControlUi()`
+  re-syncs it on apply/exit, so a step saved with `mainChainMode: "data"` on a
+  no-data molecule plays back algorithmically.
 * 2D style: `svgAtomColors2DFlag`, `atomColorMode2D`,
   `zigzagCheck` are stored; menu grouping mode is not (menu is
   hidden in playback). The legacy original-JSME pane toggle is not

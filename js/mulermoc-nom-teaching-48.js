@@ -1072,6 +1072,8 @@ $(document).ready(function () {
   // $("#svgAtomColorCheck").removeClass("selectedCheck").addClass("unselectedCheck");
   $("#jsmeNomeclatureSVG").removeClass("svgAtomsColorized");
   fSyncAtomColorModeDisabled();
+  // No molecule at load → the "Από δεδομένα" bullet starts inactive.
+  if (typeof fUpdateChainModeButton === "function") fUpdateChainModeButton();
 
   atomColorMode2D = "atom";
   localStorage.removeItem("atomColorMode2D");

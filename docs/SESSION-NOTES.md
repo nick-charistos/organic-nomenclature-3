@@ -1512,3 +1512,68 @@ follows; one Save → Present → Next → Exit round-trip.
   that → pinned at 400 with scroll cues only if it still overflows; unpin →
   normal centered layout; resize while pinned updates smoothly.
 * Docs: CHANGELOG `[Unreleased]` new "Adaptive pinned viewer width" section.
+
+## 2026-10-17 (cont.) — main-chain "Από δεδομένα" bullet inactive without data (v48)
+
+* Owner request: in Ρυθμίσεις, the `Υπολογισμός κύριας αλυσίδας:` "Από δεδομένα"
+  bullet must be inactive when the molecule has no stored main-chain data.
+  Owner choices: also inactive when **no molecule** is selected; include the
+  highlight hardening.
+* Root cause: `fUpdateChainModeButton` (molview-48.js) gated the bullet with
+  `!!nameExamples[selectedMol]?.["mainChain"+suffix]`; `!![]` is `true`, so the
+  ten molecules with all-empty `mainChain_*` arrays (8 ethers/esters +
+  methyl_2_pentane/dimethyl_2_3_butane) still showed it active. Missing keys
+  (14 small molecules lack `_Skeletal`) were already handled.
+* `js/mulermoc-nom-molview-48.js`: `hasChainData` now requires a non-empty
+  array; no selected molecule also counts as no data (bullet starts inactive).
+  Init call added in the `$(document).ready` block (`teaching-48.js`).
+  Hardened `fHighLightMainChain`, `fHighLightMainChainBonds` and the skeletal
+  case of `fShowNumbering` to fall back to the algorithmic chain on
+  missing/empty stored arrays (previously an empty array yielded an empty
+  highlight).
+* `js/mulermoc-nom-scenario-48.js`: `fScenarioSyncControlUi` now calls the
+  guarded `fUpdateChainModeButton()` (after `fUpdateDiagr2DButton`) so the
+  bullet + mode re-sync on per-step apply/exit.
+* No CSS/HTML change; `.disabledRadio` (opacity .35 + pointer-events:none) and
+  the click handler guard already cover the inactive state.
+* Static: JS braces/parens balanced (teaching-48.js keeps its pre-existing +1
+  `)` in a string: HEAD 739/740 → now 741/742). Browser click-through pending.
+* Browser checklist for owner: select an ether (e.g. dimethylether) → "Από
+  δεδομένα" greyed and unclickable, "Αλγοριθμικά" selected; select pentane →
+  bullet active again; skeletal mode on a small molecule (e.g. ethane, no
+  `_Skeletal`) → greyed; before any selection → greyed; per-step Save/apply and
+  Present/Exit keep the bullet consistent with the loaded molecule.
+* Docs: CHANGELOG `[Unreleased]` new "Main-chain \"Από δεδομένα\" bullet
+  inactive without stored data" section.
+
+## 2026-10-17 (cont.) — settings panel no longer clipped by the viewer column (v48)
+
+* Owner report: the settings panel (`#viewerSettingsPanel`) is inside
+  `#viewerCol`, which had `overflow: hidden` (used to enforce the column's
+  `border-radius: 5px` on whichever viewer is visible). With no viewer visible
+  the column collapses to the title bar and the clip cut the dropdown off.
+* Chosen fix (owner approved "go recommended"): CSS only. `#viewerCol`
+  `overflow: hidden` → `visible`; bottom rounding moved to the last visible bar
+  — `#controls3D` always (last child when 3D visible) and
+  `#viewerCol:has(#controls3D.hide) #radio2DMode` when 3D is hidden — each
+  `border-bottom-{left,right}-radius: 4px` (column 5px radius − 1px border).
+  Both viewers hidden → the column's own rounded background renders the corner.
+* Rejected alternative (structural wrapper around the viewer area + JS update to
+  `fViewerHeights2D3D`, which sums `#viewerCol`'s direct children as chrome):
+  same visual result, more risk. The clip-preserving option was declined.
+* Known residual: pinned mode — `#mainAppContainer { overflow-x: auto }`
+  computes `overflow-y: auto`, so no-viewer **and** pinned can still clip; a
+  viewer-visible pinned panel fits the row and is fine. Unpinned fixed.
+* Static: CSS braces balanced (290/290). Browser click-through pending.
+* Browser checklist for owner: hide both viewers (2D + 3D title buttons) → open
+  the gear → panel fully visible, not cut off; bottom corners of the column
+  stay rounded with 3D on, with only 2D on, and with neither; toggle viewers
+  while the panel is open → panel stays usable; tooltips on the zoom/save/2D/3D
+  buttons unchanged.
+* Docs: CHANGELOG `[Unreleased]` new "Settings panel no longer clipped when the
+  viewer column is short" section.
+* Docs sync (all): README, `docs/LAYERS-PLAN.md`, `docs/PROJECT-PLAN.md`,
+  `docs/PROJECT-PLAN-GR.md` and `docs/didactic-scenario-plan.md` updated to the
+  **v48-live** baseline (`index.html` → v48) and the shipped v48 features
+  (fluid viewers, authoring pin-dock, single-viewer max-height, settings-panel
+  pass). Historical SESSION-NOTES entries left as dated records.

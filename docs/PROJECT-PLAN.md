@@ -3,8 +3,8 @@
 ### Organic Chemistry Interactive Learning & Research Platform
 
 **Principal Investigator:** N. Charistos, Department of Chemistry, ΑΠΘ
-**Status:** Active development | v47 live, v48 working copy (69 molecules — 69 `nameExamples` keys, scenario scaffold + main-chain stepper; v48 adds fluid viewers + authoring pin-dock; `index.html` → v47, v48/v46 runnable at root, v43 frozen at tag `v43`, v42 frozen in repo2)
-**Last updated:** 2026-10-13
+**Status:** Active development | v48 live (69 molecules — 69 `nameExamples` keys, scenario scaffold + main-chain stepper; v48 adds fluid viewers + authoring pin-dock + single-viewer max-height; `index.html` → v48, v47/v46 runnable at root, v43 frozen at tag `v43`, v42 frozen in repo2)
+**Last updated:** 2026-10-17
 
 > **2026-10 update:** vision is now twofold+1 (community tool + research publications + platform for isomerism/reactions) with four layers in LEARN-first order — LEARN → EXPLORE-lite → PRACTICE → PLAY. The static chemistry app is embedded in Drupal; logging is research-primary. Source of truth for layers: `docs/LAYERS-PLAN.md`. Team P1–P6 roles and timeline are defined there and in `README.md`. What follows below is the original plan text, kept for theory and history; version/count claims predating v44 are superseded.
 
@@ -58,7 +58,7 @@ Each step removes one scaffolding layer. Familiar representations constrain inte
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  MODULE 1: Organic Nomenclature          [ACTIVE — v46]         │
+│  MODULE 1: Organic Nomenclature          [ACTIVE — v48]         │
 ├─────────────────────────────────────────────────────────────────┤
 │  MODULE 2: Isomerism                     [PLANNED — Phase 3]    │
 ├─────────────────────────────────────────────────────────────────┤
@@ -69,7 +69,7 @@ Each step removes one scaffolding layer. Familiar representations constrain inte
 
 ---
 
-## Module 1: Organic Nomenclature — Current State (v48 working copy; v37 text below kept for history)
+## Module 1: Organic Nomenclature — Current State (v48 live; v37 text below kept for history)
 
 ### What exists
 - **69 curated molecules** (69 `nameExamples` keys, incl. 4 ethers + 4 esters + branched `dimethyl_2_3_butane`) covering homologous-series menu groups (series-first, rules secondary)
@@ -79,7 +79,7 @@ Each step removes one scaffolding layer. Familiar representations constrain inte
 - **Teaching layer** — rule-based explanations, component name boxes, TTS narration in Greek
 - **Didactic scenarios (v46; scaffold since v43)** — additive `js/mulermoc-nom-scenario-46.js`: snapshot capture/validate/apply/export/import, `?scenario=&present=#step=` playback, exit restores full chrome
 - **Main-chain stepper (v47, done)** — FG-aware longest-chain pool with settings-panel `‹ n/N ›` stepper, rank-parallel 2D+3D
-- **Fluid viewers + authoring pin-dock (v48, in progress)** — 2D/3D viewers fit their container (native `setSize`); the scenario bar pins full-height beside the app (scoped horizontal scroll with cues) so name settings stay reachable while authoring
+- **Fluid viewers + authoring pin-dock (v48, live)** — 2D/3D viewers fit their container (native `setSize`, container-derived heights); the scenario bar pins full-height beside the app (scoped horizontal scroll with cues) so name settings stay reachable while authoring; plus a per-viewer single max-height control and a settings-panel UI pass (toggles consolidated, main-chain `Από δεδομένα` disabled without stored data)
 - **Technical validation** — algorithm verified against the curated set; tertiary-amine R3N classification fixed in v44 via the bond-order N-table; multi-substituent alkane naming (`2,3-διμεθυλοβουτάνιο`) fixed in v45 (browser verification pending)
 
 ### Known gaps to fill (immediate work)
