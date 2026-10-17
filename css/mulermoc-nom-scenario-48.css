@@ -983,6 +983,19 @@ border: 2px solid var(--veryLightBlue);
 
 /* Presentation-only overrides (JS flips #pageContainer.presenting; display
    authority stays here so present styling survives menu/name rebuilds). */
+/* Present layout: pack title/step text/app at the top and pin the credits
+   footer to the bottom. Base #pageContainer uses justify-content:space-between
+   (jsme-nick-48.css), which spreads every child across the full height; here
+   the last child's margin-top:auto absorbs the free space instead, so the
+   footer stays on the bottom without spreading the rest. */
+#pageContainer.presenting {
+   justify-content: flex-start;
+}
+
+#pageContainer.presenting #creditsUs {
+   margin-top: auto;
+}
+
 /* Presentation menu: taller flat pick list (author default 150px in jsme-nick-44.css). */
 #pageContainer.presenting .menuListContainer {
    max-height: 350px;
