@@ -1368,3 +1368,51 @@ follows; one Save → Present → Next → Exit round-trip.
   `git checkout --`, kept out of the commit.
 * Docs: CHANGELOG `[Unreleased]` "Pinned layout tuning" bullet + stale
   540px/548px/veil/85vh numbers corrected; didactic §3 band value updated.
+
+## 2026-10-17 (cont.) — single-viewer max-height control (v48)
+
+* Owner request: let the author cap how tall a **single** (lone) viewer may
+  grow, per step. Owner decisions: default = **Auto** (cap the survivor at the
+  both-visible height, so hiding the other viewer never resizes it); store an
+  **absolute px** in step JSON; lower the 2D floor to **200**; control = an
+  **enable checkbox + slider** in the Ρυθμίσεις panel; **apply in presentation
+  too**.
+* Reconciled control: **unchecked = Auto / both-visible height**, **checked =
+  Manual px**; the slider `max` is the live full single-viewer height, so the
+  full height is always reachable; `min 200`, `step 10`.
+* `molview-48.js`: new live global `viewerMaxH` (px | `null`; never
+  `localStorage`). `fViewerHeights2D3D(raw)` returns `out.full` (single-viewer
+  height regardless of current visibility) and, when exactly one viewer shows
+  and `!raw`, caps it at `viewerMaxH != null ? viewerMaxH : shareFor(2)`,
+  clamped into `[floor, single share]`; `raw` skips the cap (slider ceiling).
+  New `fViewerMaxHeightFull/Sync/FromUi/Init`. 2D floor **244 → 200** in both
+  the engine and `#jsmeNomeclatureSVG`. `fInitViewerMaxHeight()` called at load
+  (after `fInitViewerSettingsBtn`); `fToggleViewerSettings` syncs on open.
+  Init re-binds on `DOMContentLoaded` if the panel isn't parsed yet and guards
+  double-binding via `dataset.vmhBound`.
+* `mulermoc-nom-48.html` + `jsme-nick-48.css`: new `#viewerMaxHeightSetting`
+  row (`#viewerMaxHeightCheck` `.checkBoxContainer`, `#viewerMaxHeightRange`,
+  `#viewerMaxHeightVal`); panel `.open` `max-height` 260 → 330px; slider/value
+  styling (`.viewerHeightRange`, `.viewerHeightVal`).
+* `scenario-48.js`: additive optional `show.viewerMaxHeight` (default `null`,
+  no `scenarioVersion` bump) with `fScenarioValidViewerMaxHeight` (null/empty →
+  `null`, clamp 200–800, invalid → `null`); validate warning for non-empty
+  invalid input; captured via `fScenarioG("viewerMaxH")`; applied by
+  `fScenarioApplyViewerMaxHeight(step)` in both `fScenarioApply` branches;
+  `viewerMaxH` added to the author-settings stash/restore (re-fits viewers on
+  Exit).
+* Static: braces/parens/brackets balanced in both edited JS files (python
+  counts). No `node` in this environment → no runtime `--check`; owner browser
+  click-through pending.
+* Browser checklist for owner: open Ρυθμίσεις (⚙); check the box → slider
+  enables, drag → lone viewer caps live; uncheck → Auto restores the
+  both-visible height; hide one viewer while capped → height respects the cap;
+  Save the step → JSON `show.viewerMaxHeight` is the px; reload/import →
+  control shows Manual+px; Present a capped step → viewer caps, Exit restores
+  the author value; slider max equals the full single-viewer height.
+* Docs: CHANGELOG `[Unreleased]` new "Single-viewer max height" section +
+  floors 244→200 corrected; didactic schema/`show` notes updated.
+* Owner edits folded into the same commit: `index.html` redirect 47 → **48**
+  (v48 now live), and `css/jsme-nick-48.css` `.settingRow` `min-height`
+  36 → **30px**. CHANGELOG `[Unreleased]` header/lead updated to "live".
+

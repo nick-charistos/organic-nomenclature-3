@@ -214,8 +214,28 @@ header {
 }
 
 #viewerSettingsPanel.open {
-  max-height: 260px;
+  max-height: 330px;
   padding: 6px 8px;
+}
+
+/* Single-viewer max-height control (v48): checkbox + px slider + readout. */
+.viewerHeightRange {
+  flex: 1 1 90px;
+  min-width: 90px;
+  max-width: 150px;
+  accent-color: var(--darkBlue);
+  cursor: pointer;
+}
+.viewerHeightRange:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+.viewerHeightVal {
+  font-family: "Roboto Condensed", sans-serif;
+  font-size: 0.813rem;
+  color: #333;
+  min-width: 44px;
+  text-align: right;
 }
 
 .settingRow {
@@ -223,7 +243,7 @@ header {
   align-items: center;
   gap: 4px;
   flex-wrap: wrap;
-  min-height: 36px;
+  min-height: 30px;
 }
 
 .settingTitle {
@@ -2029,7 +2049,7 @@ header {
   width: 100% !important;
   /* max-width: 450px; */
   height: auto;
-  min-height: 244px;
+  min-height: 200px;
 }
 
 /* ── "Rotate device" prompt ──────────────────────────────────────────── */

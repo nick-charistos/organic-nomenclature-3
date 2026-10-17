@@ -69,6 +69,7 @@ progress tracking, server storage.
         "viewerButtons": false,
         "viewerSettings": false,
         "viewers": {"2D": true, "3D": true},
+        "viewerMaxHeight": null,
         "controls": {"2D": false, "3D": false},
         "save": {"2D": false, "3D": false},
         "naming": true,
@@ -143,6 +144,15 @@ Visibility rules:
   or both. A hidden viewer is not rendered at all (skip
   `fLoadMol2D` / `fLoadMol3D`, `display:none`), reusing the
   scope of `fToggleViewer2D` and `fToggleViewer3D`.
+* `show.viewerMaxHeight` (additive, v48; number px | `null`, default
+  `null` = Auto) caps a **single visible** viewer's height. Auto caps it at
+  the both-visible share (`fViewerHeights2D3D`), so hiding the other viewer
+  never resizes the survivor; an explicit value (clamped 200–800, silently
+  sanitized, `warning` on non-empty invalid input) overrides. The author
+  sets it in the Ρυθμίσεις panel (unchecked = Auto, checked = slider px,
+  slider `max` = the live full single-viewer height). Applied in playback
+  too (via `fScenarioApplyViewerMaxHeight`), stashed/restored around
+  Present like the other live settings. The 2D CSS floor is 200px.
 * `show.controls.2D` toggles `#radio2DMode`
   (`mulermoc-nom-45.html`: `Έγχρωμα Σύμβολα`,
   `Συνεπτυγμένος/Ανεπτυγμένος/Σκελετικός`, `Σύμβολα CHn`).

@@ -164,6 +164,7 @@ function fScenarioG(name, fallback) {
       case "svgAtomColors2DFlag": return typeof svgAtomColors2DFlag !== "undefined" ? svgAtomColors2DFlag : fallback;
       case "atomColorMode2D": return typeof atomColorMode2D !== "undefined" ? atomColorMode2D : fallback;
       case "molZoom2D": return typeof molZoom2D !== "undefined" ? molZoom2D : fallback;
+      case "viewerMaxH": return typeof viewerMaxH !== "undefined" ? viewerMaxH : fallback;
       case "mainChainPoolIdx": return typeof mainChainPoolIdx !== "undefined" ? mainChainPoolIdx : fallback;
       case "nameSettingsFlag": return typeof nameSettingsFlag !== "undefined" ? nameSettingsFlag : fallback;
       case "narrateAnalysisFlag": return typeof narrateAnalysisFlag !== "undefined" ? narrateAnalysisFlag : fallback;
@@ -350,6 +351,7 @@ function fScenarioCapture() {
       viewerButtons: false,
       viewerSettings: false,
       viewers: { "2D": fScenarioViewerOn("2D"), "3D": fScenarioViewerOn("3D") },
+      viewerMaxHeight: fScenarioValidViewerMaxHeight(fScenarioG("viewerMaxH", null)),
       controls: { "2D": false, "3D": false },
       save: { "2D": false, "3D": false },
       naming: true,
@@ -419,6 +421,17 @@ function fScenarioValidChainIdx(v) {
   if (isNaN(n) || n < 0) return 0;
   return n;
 }
+// Single-viewer max height (v48): additive optional show.viewerMaxHeight.
+// null/empty = Auto (cap a lone viewer at the both-visible height). Absolute
+// px, clamped 200–800; invalid → null. No schema change (scenarioVersion 1).
+function fScenarioValidViewerMaxHeight(v) {
+  if (v === null || typeof v === "undefined" || v === "") return null;
+  var n = parseInt(v, 10);
+  if (isNaN(n)) return null;
+  if (n < 200) return 200;
+  if (n > 800) return 800;
+  return n;
+}
 function fScenarioApplyStepFontSize(step) {
   var p = null;
   try { p = document.getElementById("scStepText"); } catch (e) { /* no DOM */ }
@@ -433,6 +446,15 @@ function fScenarioApplyStepFontSize(step) {
   try {
     if (p.classList) p.classList.toggle("scCols2", two);
   } catch (e) { /* no DOM */ }
+}
+// Apply a step's stored single-viewer max height to the live molview global
+// and re-fit the viewers. applyViewerMax(null) resets to Auto. Fsync mirrors
+// the value back into the Ρυθμίσεις control when it exists.
+function fScenarioApplyViewerMaxHeight(step) {
+  var h = step && step.show ? fScenarioValidViewerMaxHeight(step.show.viewerMaxHeight) : null;
+  try { viewerMaxH = h; } catch (eV) { /* global unavailable */ }
+  try { if (typeof fResizeViewers === "function") fResizeViewers(); } catch (eR) { /* resize unavailable */ }
+  try { if (typeof fViewerMaxHeightSync === "function") fViewerMaxHeightSync(); } catch (eU) { /* UI best-effort */ }
 }
 function fScenarioValidMenuGroups(g) {  var out = [];
   (Array.isArray(g) ? g : []).forEach(function (m) {
@@ -462,6 +484,7 @@ function fScenarioDefaults(step, i) {
     show: {
       menu: false, viewerButtons: false, viewerSettings: false,
       viewers: { "2D": true, "3D": true },
+      viewerMaxHeight: null,
       controls: { "2D": false, "3D": false },
       save: { "2D": false, "3D": false },
       naming: true, nameSettings: false, nameEye: false, audio: false, rule: false, text: true,
@@ -474,6 +497,11 @@ function fScenarioDefaults(step, i) {
   out.show.viewers = Object.assign({}, d.show.viewers, (step.show || {}).viewers || {});
   out.show.controls = Object.assign({}, d.show.controls, (step.show || {}).controls || {});
   out.show.save = Object.assign({}, d.show.save, (step.show || {}).save || {});
+  // Single-viewer max height: normalize silently (null = Auto); the validate
+  // path warns on non-empty invalid input.
+  out.show.viewerMaxHeight = fScenarioValidViewerMaxHeight(
+    out.show.viewerMaxHeight === undefined ? null : out.show.viewerMaxHeight
+  );
   // removed 2026-10-06 (not in this phase): legacy files may still carry
   // externalLinks / show.infoHost — strip silently, no warning.
   delete out.externalLinks;
@@ -529,6 +557,10 @@ function fScenarioValidate(obj) {
     var _rawC = s && s.styleText ? s.styleText.columns : null;
     if (_rawC !== null && typeof _rawC !== "undefined" && String(_rawC) !== "" && fScenarioValidColumns(_rawC) === null && String(_rawC) !== "1") {
       warnings.push("Step " + (i + 1) + ": invalid column count discarded (default 1 column used).");
+    }
+    var _rawVMH = s && s.show ? s.show.viewerMaxHeight : null;
+    if (_rawVMH !== null && typeof _rawVMH !== "undefined" && String(_rawVMH) !== "" && fScenarioValidViewerMaxHeight(_rawVMH) === null) {
+      warnings.push("Step " + (i + 1) + ": invalid viewer height discarded (Auto used).");
     }
     var rawMoveto = st.view3D && st.view3D.moveto ? st.view3D.moveto : null;
     st.view3D.moveto = fScenarioValidMoveto(st.view3D.moveto);
@@ -690,6 +722,7 @@ function fScenarioStashAuthorSettings() {
     nameHidden: Array.isArray(window.nameHiddenComps) ? window.nameHiddenComps.slice() : [],
     nameEyeEdit: window.nameEyeEdit === true,
     zoom: (typeof molZoom2D !== "undefined" ? molZoom2D : 2.0),
+    viewerMaxHeight: (typeof viewerMaxH !== "undefined" ? viewerMaxH : null),
   };
 }
 
@@ -711,6 +744,15 @@ function fScenarioRestoreAuthorSettings() {
     if (typeof fUpdateSVG === "function") fUpdateSVG();
   } catch (eZoom) {
     /* applet unavailable */
+  }
+  // Author's live single-viewer max height comes back too (a step apply may
+  // have overwritten it). Re-fit the viewers, then mirror into the control.
+  try {
+    if (typeof viewerMaxH !== "undefined") viewerMaxH = fScenarioValidViewerMaxHeight(a.viewerMaxHeight);
+    if (typeof fResizeViewers === "function") fResizeViewers();
+    if (typeof fViewerMaxHeightSync === "function") fViewerMaxHeightSync();
+  } catch (eVMH) {
+    /* viewer height restore best-effort */
   }
   // Re-render the name boxes with the author's live hidden set (the last
   // present step's view lingers otherwise); the naming-chrome hook no-ops
@@ -1162,6 +1204,7 @@ function fScenarioApply(step) {
     atomColorMode2D = step.style2D.colorMode;
     molZoom2D = fScenarioValidZoom(step.style2D.zoom);
     fScenarioSyncControlUi();
+    fScenarioApplyViewerMaxHeight(step);
     // author's live selectedRule untouched on menu-only steps
     fScenarioChrome(step.show);
     return true;
@@ -1239,6 +1282,7 @@ function fScenarioApply(step) {
   // Same synchronous task as the load render → single paint, no flash; the
   // stored name-highlight replay (§5 below) paints onto the zoomed render.
   molZoom2D = fScenarioValidZoom(step.style2D.zoom);
+  fScenarioApplyViewerMaxHeight(step);
   try {
     if (typeof jsmeNomeclatureApplet !== "undefined" && jsmeNomeclatureApplet) {
       jsmeNomeclatureApplet.setMolecularAreaScale(molZoom2D);

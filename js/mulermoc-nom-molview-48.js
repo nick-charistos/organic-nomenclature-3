@@ -23,6 +23,12 @@ const MOL_ZOOM_DEFAULT = 2.0;
 const MOL_ZOOM_MIN = 0.5;
 const MOL_ZOOM_MAX = 6.0;
 let molZoom2D = MOL_ZOOM_DEFAULT;
+// Single-viewer max-height (v48): null = Auto (cap at the both-visible
+// height, so toggling one viewer off never resizes the survivor); a number is
+// an absolute px cap. Applied only when exactly one viewer is visible, in
+// fViewerHeights2D3D. Set by the Ρυθμίσεις control and per scenario step
+// (show.viewerMaxHeight); scenario owns persistence, this is the live value.
+let viewerMaxH = null;
 // B2 owned-shared viewer state: current MOL strings (fDeselectMol/fLoadMol2D).
 let myMol2D = null;
 let myMol3D = null;
@@ -164,6 +170,7 @@ function fNameCompBox(boxId, boxClass, displayComp) {
 }
 
 fInitViewerSettingsBtn();
+fInitViewerMaxHeight();
 
 // ── jsmeOnLoad ────────────────────────────────────────────────────────────
 
@@ -454,6 +461,7 @@ function fToggleViewerSettings() {
   } else {
     panel.classList.add("open");
     btn.classList.add("active");
+    try { fViewerMaxHeightSync(); } catch (eS) { /* slider sync best-effort */ }
   }
 }
 
@@ -470,6 +478,84 @@ document.addEventListener("click", function (e) {
     btn.classList.remove("active");
   }
 });
+
+// ── single-viewer max-height control (v48) ───────────────────────────────
+// Ρυθμίσεις row: a checkbox (unchecked = Auto, checked = Manual) plus a px
+// slider. Auto caps a lone viewer at the both-visible height; Manual uses the
+// slider value. Only the live global `viewerMaxH` is set here — scenario
+// steps own persistence (show.viewerMaxHeight). fResizeViewers() recomputes.
+function fViewerMaxHeightFull() {
+  try { return Math.max(200, Math.round(fViewerHeights2D3D(true).full || 0)); }
+  catch (eF) { return 200; }
+}
+
+function fViewerMaxHeightSync() {
+  var chk = document.getElementById("viewerMaxHeightCheck");
+  var rng = document.getElementById("viewerMaxHeightRange");
+  var val = document.getElementById("viewerMaxHeightVal");
+  if (!chk || !rng) return;
+  var manual = viewerMaxH != null;
+  try {
+    chk.classList.toggle("selectedCheck", manual);
+    chk.classList.toggle("unselectedCheck", !manual);
+  } catch (eC) { /* class toggle best-effort */ }
+  var full = fViewerMaxHeightFull();
+  rng.min = "200";
+  rng.max = String(full);
+  rng.disabled = !manual;
+  var shown;
+  if (manual) {
+    shown = Math.round(viewerMaxH);
+  } else {
+    var vh = fViewerHeights2D3D();
+    shown = Math.round(vh.h2 || vh.h3 || Math.round(full / 2));
+  }
+  if (shown < 200) shown = 200;
+  if (shown > full) shown = full;
+  rng.value = String(shown);
+  if (val) val.textContent = shown + "px";
+}
+
+function fViewerMaxHeightFromUi() {
+  var chk = document.getElementById("viewerMaxHeightCheck");
+  var rng = document.getElementById("viewerMaxHeightRange");
+  if (!chk || !rng) return;
+  if (chk.classList.contains("selectedCheck")) {
+    var v = parseInt(rng.value, 10);
+    if (isNaN(v)) v = 240;
+    if (v < 200) v = 200;
+    var full = fViewerMaxHeightFull();
+    if (v > full) v = full;
+    viewerMaxH = v;
+  } else {
+    viewerMaxH = null;
+  }
+  fViewerMaxHeightSync();
+  try { fResizeViewers(); } catch (eR) { /* resize best-effort */ }
+}
+
+function fInitViewerMaxHeight() {
+  var chk = document.getElementById("viewerMaxHeightCheck");
+  var rng = document.getElementById("viewerMaxHeightRange");
+  if (!chk || !rng) {
+    // Script may run before the static panel is parsed; retry once then bind.
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", fInitViewerMaxHeight);
+    }
+    return;
+  }
+  // The generic .checkBoxContainer handler toggles the class on the same
+  // click; defer a tick so the post-toggle state is what we read.
+  if (!chk.dataset.vmhBound) {
+    chk.dataset.vmhBound = "1";
+    chk.addEventListener("click", function () { setTimeout(fViewerMaxHeightFromUi, 0); });
+  }
+  if (rng && !rng.dataset.vmhBound) {
+    rng.dataset.vmhBound = "1";
+    rng.addEventListener("input", fViewerMaxHeightFromUi);
+  }
+  fViewerMaxHeightSync();
+}
 
 // ── fToggleNameSettings ────────────────────────────────────────────────
 
@@ -6250,8 +6336,8 @@ function fSetMolVis3D(theVisModel) {
 // hosts (generic, so per-step chrome toggles are honored). Visible viewers
 // split the remainder equally; floors mirror the CSS minimums, the phone
 // landscape cap stays as ceiling. Returns {h2, h3} (0 = hidden).
-function fViewerHeights2D3D() {
-  var out = { h2: 0, h3: 0 };
+function fViewerHeights2D3D(raw) {
+  var out = { h2: 0, h3: 0, full: 0 };
   try {
     var total = window.innerHeight - 30; // header
     var h1 = document.getElementById("pageTitle");
@@ -6290,20 +6376,52 @@ function fViewerHeights2D3D() {
     // stretches the row taller than the viewport share, viewers split the
     // row-driven height instead — otherwise dead space sits under them.
     // Sibling heights never depend on viewer size: no circularity.
-    var each = Math.floor((total - chrome) / n);
+    var sibH = 0;
     try {
-      var sibH = 0;
       var menu = document.getElementById("menuCol");
       if (menu && menu.offsetParent !== null) sibH = Math.max(sibH, menu.offsetHeight);
       var anal = document.getElementById("analysisCol");
       if (anal && anal.offsetParent !== null) sibH = Math.max(sibH, anal.offsetHeight);
-      var rowEach = Math.floor((sibH - chrome) / n);
-      if (rowEach > each) each = rowEach;
     } catch (eSib) { /* sibling measuring unavailable */ }
+    var shareFor = function (k) {
+      var e = Math.floor((total - chrome) / k);
+      var rowE = Math.floor((sibH - chrome) / k);
+      return rowE > e ? rowE : e;
+    };
+    var each = shareFor(n);
+    // Single-viewer full height (no cap), independent of how many are visible
+    // right now — the slider ceiling in Ρυθμίσεις.
+    var eachFull = shareFor(1);
+    out.full = Math.max(
+      show2D ? Math.max(eachFull, 200) : 0,
+      show3D ? Math.max(eachFull, 120) : 0
+    );
     var maxViewerH =
       window.innerHeight < 430 ? Math.floor(window.innerHeight * 0.3) : Infinity;
-    if (show2D) out.h2 = Math.min(Math.max(each, 244), maxViewerH);
-    if (show3D) out.h3 = Math.min(Math.max(each, 120), maxViewerH);
+    // Single visible viewer: cap its height. Default (viewerMaxH == null) is
+    // the both-visible share so hiding the other viewer never resizes the
+    // survivor; an explicit px cap overrides. The cap is clamped into
+    // [floor, single share], so it can neither squash below the CSS minimum
+    // nor exceed the space one viewer can actually take. `raw` skips the cap
+    // (used to measure the full height for the slider ceiling).
+    var cap2 = Infinity, cap3 = Infinity;
+    if (n === 1 && !raw) {
+      var autoCap = shareFor(2);
+      if (show2D) {
+        cap2 = viewerMaxH != null ? viewerMaxH : autoCap;
+        var single2 = Math.max(each, 200);
+        if (cap2 < 200) cap2 = 200;
+        if (cap2 > single2) cap2 = single2;
+      }
+      if (show3D) {
+        cap3 = viewerMaxH != null ? viewerMaxH : autoCap;
+        var single3 = Math.max(each, 120);
+        if (cap3 < 120) cap3 = 120;
+        if (cap3 > single3) cap3 = single3;
+      }
+    }
+    if (show2D) out.h2 = Math.min(Math.max(each, 200), cap2, maxViewerH);
+    if (show3D) out.h3 = Math.min(Math.max(each, 120), cap3, maxViewerH);
   } catch (eH) { /* measuring unavailable */ }
   return out;
 }
