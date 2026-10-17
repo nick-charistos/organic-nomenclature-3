@@ -95,17 +95,10 @@
 	flex: 1;
 	text-align: center;
 	font-size: 1.0rem;
-	font-family: "Roboto Condensed", sans-serif;
 	color: #fff;
 	font-weight: bold;
-	margin-left: 40px;
-	padding: 3px 0;
-	background: var(--veryLightGray);
-	margin-right: 120px;
-	border-radius: 5px;
-	color: var(--darkBlue);
-	border: 2px solid var(--veryLightBlue);
 }
+
 
 /* Merged header (GlobalBar retired): New/Import live left in the dark title row. */
 #scenarioPlayBarTitle .scTitleBtns {
@@ -1232,19 +1225,19 @@ border: 2px solid var(--veryLightBlue);
 
 /* Pin button in the scenario title row (mirrors #scCloseBar; lit while pinned). */
 #scPin {
-   appearance: none;
-   -webkit-appearance: none;
-   background: transparent;
-   border: 1px solid transparent;
-   border-radius: 4px;
-   color: #fff;
-   font-family: "Roboto Condensed", sans-serif;
-   font-size: 1.0rem;
-   line-height: 1;
-   padding: 2px 8px;
-   margin-right: 4px;
-   cursor: pointer;
-   flex: none;
+	appearance: none;
+	-webkit-appearance: none;
+	background: transparent;
+	border: 2px solid var(--veryLightBlue) !important;
+	border-radius: 4px;
+	color: #fff;
+	font-family: "Roboto Condensed", sans-serif;
+	font-size: 1.0rem;
+	line-height: 1;
+	padding: 2px 8px;
+	margin-right: 4px;
+	cursor: pointer;
+	flex: none;
 }
 
 #scPin:hover {
@@ -1258,8 +1251,8 @@ border: 2px solid var(--veryLightBlue);
 }
 
 #scPin.active {
-   background: var(--darkEarth);
-   border-color: #fff;
+   background: var(--vibrantGreen);
+   color: #fff;
 }
 
 /* Authoring pin-dock (v48): the bar leaves its fixed overlay and pins to
@@ -1275,19 +1268,19 @@ border: 2px solid var(--veryLightBlue);
    drawer content scrolls inside instead of growing the page. */
 body.scPinned #pageContainer {
    position: relative;
-   max-width: calc(1600px + 540px);
+   max-width: calc(1600px + 480px);
    margin: 0 auto;
    height: auto;
    min-height: calc(100% - 30px);
 }
 
 body.scPinned #pageTitle {
-   margin-right: 540px;
+   margin-right: 480px;
 }
 
 body.scPinned #creditsUs {
    width: auto;
-   margin-right: 540px;
+   margin-right: 480px;
 }
 
 body.scPinned #authorLayout {
@@ -1298,7 +1291,7 @@ body.scPinned #authorLayout {
 
 body.scPinned #mainAppContainer {
    max-width: none;
-   margin: 0 540px 20px 0;
+   margin: 0 480px 20px 0;
    overflow-x: auto;
 }
 
@@ -1319,8 +1312,8 @@ body.scPinned #scenarioAuthorBar {
    right: 0;
    top: 0;
    bottom: 0;
-   width: 540px;
-   max-width: 540px;
+   width: 480px;
+   max-width: 480px;
    transform: none;
    visibility: visible;
    pointer-events: auto;
@@ -1339,6 +1332,12 @@ body.scPinned #scenarioAuthorTab {
    display: none;
 }
 
+body.scPinned #scenarioPlayBarTitle {
+	background: var(--darkBlue);
+	margin-bottom: 10px;
+	padding-top: 0;
+}
+
 /* Pinned drawer fills the bar (v48): the open drawer's card becomes a flex
    column claiming leftover bar height (bar itself stretches to
    pageContainer's bottom), and the open drawer scrolls internally instead of
@@ -1347,14 +1346,14 @@ body.scPinned #scenarioAuthorTab {
    can't transition to none); unpinned keeps today's slide-down. */
 body.scPinned .scenarioPanel:has(.scenarioDrawer.open) {
    flex: 1 1 auto;
-   min-height: 60vh;
+   min-height: 85vh;
    display: flex;
    flex-direction: column;
 }
 
 body.scPinned .scenarioDrawer.open {
    flex: 1 1 auto;
-   min-height: 60vh;
+   /* min-height: 80vh; */
    overflow-y: auto;
    max-height: none;
 }
@@ -1416,7 +1415,7 @@ body.scPinned #mainAppContainer.scCanScroll ~ #scScrollRight {
 }
 
 #scScrollRight {
-   right: 548px;
+   right: 488px;
 }
 
 #scScrollLeft svg,
@@ -1427,7 +1426,7 @@ body.scPinned #mainAppContainer.scCanScroll ~ #scScrollRight {
 }
 
 /* Clipped-edge fade veil (paint only, never interactive). */
-#scScrollFade {
+/* #scScrollFade {
    display: none;
    position: absolute;
    top: 0;
@@ -1437,11 +1436,11 @@ body.scPinned #mainAppContainer.scCanScroll ~ #scScrollRight {
    pointer-events: none;
    z-index: 55;
    background: linear-gradient(to left, rgba(0, 0, 0, .15), rgba(0, 0, 0, 0));
-}
+} */
 
-body.scPinned #mainAppContainer.scCanScroll ~ #scScrollFade {
-   /* display: block; */
-}
+/* body.scPinned #mainAppContainer.scCanScroll ~ #scScrollFade {
+   display: block;
+} */
 
 /* Branded thumb on the scroller itself (native behavior untouched). */
 body.scPinned #mainAppContainer {

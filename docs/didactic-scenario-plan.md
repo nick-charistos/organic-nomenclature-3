@@ -246,7 +246,7 @@ Visibility rules:
   while authoring. Presentation hides the whole unit. The pin button
   (title row, v48) docks the bar at the right edge of `#pageContainer`,
   spanning its full height; `#mainAppContainer` (exactly the three columns)
-  is the horizontal scroller and the title + footer yield a 540px band,
+  is the horizontal scroller and the title + footer yield a 480px band,
   so name settings stay reachable while authoring
   (viewer widths frozen from a pre-dock read, applets untouched). Authoring
   opens with the bar docked: the pin default is on and remembered

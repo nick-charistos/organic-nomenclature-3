@@ -1342,3 +1342,29 @@ follows; one Save → Present → Next → Exit round-trip.
   reload → open → pinned; deep-link present unaffected.
 * Docs: CHANGELOG `[Unreleased]` bullet revised, didactic §3 pin paragraph
   revised.
+
+## 2026-10-17 (cont.) — pinned layout tuning, veil/Jmol retirements (owner styling)
+
+* Owner's uncommitted styling pass folded in and documented (no JS change):
+  pinned band **540px → 480px** (`#pageContainer` `calc(1600px + 480px)`;
+  `#pageTitle`/`#creditsUs`/`#mainAppContainer` `margin-right` 480;
+  `#scenarioAuthorBar` width/max-width 480) with the cue column following
+  (`#scScrollRight` 548 → 488).
+* `#scPin`: `border: 2px solid var(--veryLightBlue) !important` (was 1px
+  transparent); `#scPin.active`: `background: var(--vibrantGreen)` + white
+  (was `var(--darkEarth)` + white border).
+* Pinned title row fills dark — `body.scPinned #scenarioPlayBarTitle {
+  background: var(--darkBlue); margin-bottom: 10px; padding-top: 0 }`; base
+  `.scTitleText`/title rules simplified (font-family, margins, padding,
+  background, border, radius dropped).
+* Pinned drawer fill `min-height` 60vh → **85vh** (`.scenarioDrawer.open` 80vh
+  commented, fills via flex).
+* **Fade veil retired**: `#scScrollFade` block + show rule commented in
+  `css/mulermoc-nom-scenario-48.css`, div commented in `mulermoc-nom-48.html`.
+* `css/jsme-nick-48.css`: `.JmolContainer { height: 240px }` commented →
+  fluid container height (aligns with the v48 native `setSize` pipeline).
+* Standing exclusion reconfirmed: `docs/flowchart-mermaid.md` was again
+  zlib-corrupted in the working tree (HEAD is UTF-8 text); restored via
+  `git checkout --`, kept out of the commit.
+* Docs: CHANGELOG `[Unreleased]` "Pinned layout tuning" bullet + stale
+  540px/548px/veil/85vh numbers corrected; didactic §3 band value updated.
