@@ -248,8 +248,14 @@ Visibility rules:
   spanning its full height; `#mainAppContainer` (exactly the three columns)
   is the horizontal scroller and the title + footer yield a 540px band,
   so name settings stay reachable while authoring
-  (viewer widths frozen from a pre-dock read, applets untouched);
-  ✕/ESC and Present entry unpin (live-only flag, never stored in steps).
+  (viewer widths frozen from a pre-dock read, applets untouched). Authoring
+  opens with the bar docked: the pin default is on and remembered
+  session-scoped (`pinPref`, live-only, never stored in steps); ✕/ESC and
+  Present entry unpin, but the choice is re-applied when authoring reopens via
+  the tab and on Present → Exit (`fScenarioApplyPinPref` is authoring-only, so
+  presentation always hides the bar; deep-link presents, authoring off, exit
+  with no bar/pin; a session unpin is remembered until a reload restores the
+  pinned default).
 * Global shell (`#scenarioAuthorBar`): single merged header row (`#scenarioPlayBarTitle`: `+ New` + `Import` left, title center, `✕` in-flow right; `#scenarioGlobalBar` retired 2026-10-11, ids preserved). `+ New` makes an empty scenario
   card (locks with a toast while `maxEmptyScenarios = 3` empties exist);
   `Import` (each import adds a card, always lands untouched). Single column,

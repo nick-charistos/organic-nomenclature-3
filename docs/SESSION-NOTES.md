@@ -1271,3 +1271,74 @@ follows; one Save → Present → Next → Exit round-trip.
   the owner (`f05bb4c`).
 * Lessons: owner's codebase read first, verify second; Jmol scripts need
   one `;` per clause boundary; measure layout BEFORE restyling it.
+
+## 2026-10-17 — authoring pin preference persists (v48 working copy)
+
+* Owner request: pin the scenario bar, close authoring (✕/ESC), reopen via the
+  `Σενάρια` tab → bar must come back pinned; presentation always hides it.
+* `scenario-48.js` only (no localStorage, no schema/version bump): new
+  session-scoped `MuLERMoCScenario.pinPref` (remembered authoring pin choice,
+  never in step JSON). Pin button records intent before toggling; new
+  `fScenarioApplyPinPref()` re-docks when the bar returns, guarded to authoring
+  and `!present` (no-op on unpinned/missing bar/deep-link present). Called at
+  the end of `fScenarioSetAuthoring(true)` and `fScenarioExitPresent()`;
+  `fScenarioSetAuthoring(false)` keeps its forced unpin (layout) but leaves the
+  preference untouched; `fScenarioPresentBegin` still force-unpins without
+  clearing the preference (so Exit restores it).
+* Static: braces/parens/brackets balanced (`scenario-48.js`); 2 call sites +
+  definition + button verified. No node runtime here — browser click-through
+  pending.
+* Browser checklist for owner: pin → ✕ → reopen tab → still pinned; unpin →
+  ✕ → reopen → still unpinned; pin → Play (present hidden) → Exit → pinned;
+  deep-link `?scenario=…&present=1` → Exit → no bar/pin; reload → unpinned;
+  no spurious "Pin unavailable here." toast; `body.scPinned` layout clean.
+* Docs: CHANGELOG `[Unreleased]` bullet, didactic §3 pin paragraph revised.
+
+## 2026-10-17 (cont.) — app-row centering via `safe center` (v48)
+
+* Owner question: the first `.HFlex` child of `#mainAppContainer` carries inline
+  `style="justify-content: center"`; where/why does it change and can it stay
+  centered? Finding: only `fScenarioSetPinned()` changed it — set `flex-start`
+  while pinned (`scenario-48.js`) with a comment: centered overflow in the
+  pinned horizontal scroller traps the left edge (LTR `scrollLeft` can't go
+  negative), so pinned columns were left-aligned; the unpin clear `""` also
+  dropped the inline value (no `.HFlex` rule backfilled it), so unpin silently
+  left-aligned too. No CSS rule touches it (pinned CSS only adds `flex-wrap:
+  nowrap`).
+* Fix (owner chose `safe center`): `mulermoc-nom-48.html:97` inline →
+  `justify-content: safe center`; `fScenarioSetPinned()` no longer writes the
+  row's `justify-content` (removed the `flex-start` set + both `""` clears; the
+  `var row` stays for the pin-unavailable guard). JS now has zero
+  `justifyContent` refs. Columns center when they fit; `safe` falls back to
+  `start` only on overflow, so the left menu stays reachable and the scroll
+  cues' end-states stay truthful. Unpin restores center (quirk fixed).
+* Support: Chrome/Edge 115+, Firefox 63+, Safari 17.6+; unsupported browsers
+  drop the declaration → left-align (acceptable).
+* Static: braces/parens/brackets balanced; `justifyContent` count 0. Browser
+  click-through pending.
+* Browser checklist for owner: unpinned centered; pinned + wide (fits) centered
+  with no cues; pinned + narrow (overflow) left-aligned with working `‹`/`›`
+  and reachable menu; pin → unpin back to centered.
+* Docs: CHANGELOG `[Unreleased]` bullet (above).
+
+## 2026-10-17 (cont.) — pinned is the default authoring state (v48)
+
+* Owner request (clarified): the scenario panel stays **closed on page load**,
+  but the pin *state* defaults to pinned, so the first time the user opens the
+  panel via the `Σενάρια` tab it comes back docked.
+* Change: one token in `js/mulermoc-nom-scenario-48.js` —
+  `MuLERMoCScenario.pinPref: false → true`. `authoring` stays `false` (panel
+  closed at boot, nothing docks until the tab opens) and `pinned` stays `false`
+  (critical: `fScenarioApplyPinPref()` early-returns when `pinned` is already
+  true, so a `pinned: true` default would silently skip the actual dock).
+* Flow: load → closed; open `Σενάρια` → `fScenarioSetAuthoring(true)` →
+  `fScenarioApplyPinPref()` docks. Unpin → `pinPref=false` for the session;
+  reload → pinned again.
+* Chosen polish (a): keep the current open animation order (bar slides in at
+  the overlay position, docks a frame later); a brief jump is acceptable.
+* Static: single-token change, braces balanced. Browser click-through pending.
+* Browser checklist for owner: fresh load shows only the `Σενάρια` tab (no bar,
+  no dock); open tab → bar docks pinned; unpin → close → reopen → unpinned;
+  reload → open → pinned; deep-link present unaffected.
+* Docs: CHANGELOG `[Unreleased]` bullet revised, didactic §3 pin paragraph
+  revised.

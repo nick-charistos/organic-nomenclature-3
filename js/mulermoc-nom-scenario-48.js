@@ -23,6 +23,7 @@ var MuLERMoCScenario = {
   menuPickMode: false, // authoring: show pick checkboxes in the left menu
   authoring: false, // authoring mode: bar + panels + pick UI (off by default)
   pinned: false, // authoring pin-dock: bar docked in-flow at the row's right end (live-only, never in step JSON)
+  pinPref: true, // remembered authoring pin choice (default pinned; panel stays closed until opened; live-only, session-scoped, never in step JSON)
   maxEmptyScenarios: 3, // adjustable cap on step-less cards (scNew locks at cap)
   defaultScenarioUrl: "scenarios/Αλκάνια-Αιθάνιο.scenario.json", // preloaded as S1 at boot (S2 stays empty); ?scenario= deep links skip this
 };
@@ -1766,6 +1767,7 @@ function fScenarioSetAuthoring(on) {
   }
   fScenarioSyncAuthorUi();
   fScenarioPaintPickUi();
+  fScenarioApplyPinPref();
 }
 
 // ── authoring pin-dock (v48) ────────────────────────────────────────────
@@ -1791,7 +1793,6 @@ function fScenarioSetPinned(on) {
       try { document.body.classList.remove("scPinned"); } catch (eB2) { /* no body */ }
       if (pin) pin.classList.remove("active");
       if (vc) vc.style.flex = "";
-      if (row) row.style.justifyContent = "";
       fScenarioToast("Pin unavailable here.");
       return;
     }
@@ -1802,9 +1803,6 @@ function fScenarioSetPinned(on) {
     if (pin) pin.classList.add("active");
     try { document.body.classList.add("scPinned"); } catch (eB) { /* no body */ }
     if (vc && w > 0) vc.style.flex = "0 0 " + Math.round(w) + "px";
-    // The row carries inline justify-content:center — harmless normally, but
-    // with overflowing scroll content it traps the left edge out of reach.
-    row.style.justifyContent = "flex-start";
     host.appendChild(bar);
     // Scroll cues + keyboard target for the new scroller state; re-check
     // after layout settles (flex + applet resizes land async).
@@ -1815,13 +1813,25 @@ function fScenarioSetPinned(on) {
     if (pin) pin.classList.remove("active");
     try { document.body.classList.remove("scPinned"); } catch (eB3) { /* no body */ }
     if (vc) vc.style.flex = "";
-    if (row) row.style.justifyContent = "";
     if (bar && bar.parentNode !== document.body) document.body.appendChild(bar);
     try {
       var _sc = document.getElementById("mainAppContainer");
       if (_sc) { _sc.classList.remove("scCanScroll"); _sc.removeAttribute("tabindex"); }
     } catch (eSync2) { /* cues best-effort */ }
   }
+}
+
+// Re-apply the author's remembered pin when the bar returns (authoring only;
+// never in presentation). Session-scoped preference (MuLERMoCScenario.pinPref),
+// set by the pin button; internal forced unpins (✕/ESC, Present entry) leave it
+// untouched so close → reopen and Present → Exit restore the docked bar. Safe
+// to call unconditionally: no-ops outside authoring, when unpinned, or when the
+// remembered choice is off.
+function fScenarioApplyPinPref() {
+  if (MuLERMoCScenario.present || !MuLERMoCScenario.authoring) return;
+  if (!MuLERMoCScenario.pinPref || MuLERMoCScenario.pinned) return;
+  if (!document.getElementById("scenarioAuthorBar")) return;
+  fScenarioSetPinned(true);
 }
 
 // ── pinned scroll cues (v48) ────────────────────────────────────────────
@@ -2005,6 +2015,9 @@ function fScenarioExitPresent() {
   // presentation CSS hook off (apply/chrome above already re-synced it,
   // this covers the no-step path explicitly)
   fScenarioSyncPresentClass();
+  // Present → Exit restores the author's remembered pin (session-scoped);
+  // guarded by authoring, so a deep-link present exits with no bar/pin.
+  fScenarioApplyPinPref();
 }
 
 // ── UI (scenario chrome lives in css/mulermoc-nom-scenario-44.css) ─────────
@@ -2212,7 +2225,9 @@ function fScenarioBuildUi() {
       fScenarioSetAuthoring(false);
     };
     document.getElementById("scPin").onclick = function () {
-      fScenarioSetPinned(!MuLERMoCScenario.pinned);
+      var next = !MuLERMoCScenario.pinned;
+      MuLERMoCScenario.pinPref = next;
+      fScenarioSetPinned(next);
     };
     // Pinned scroll cues: registry chevrons replace the text fallbacks
     // (kept in markup for no-registry resilience); passive scroll listener
