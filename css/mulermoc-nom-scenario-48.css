@@ -1217,15 +1217,21 @@ border: 2px solid var(--veryLightBlue);
 }
 
 /* Present text: lists + font sizes from the note subset. */
+/* #scStepText is white-space:pre-wrap, which inherits into lists and turns the
+   newlines/indentation between hand-typed <li> siblings into blank lines (big
+   gaps). Resetting the list container to normal collapses that inter-item
+   whitespace; li re-declares pre-wrap so line breaks *inside* an item survive. */
 #scStepText ul,
 #scStepText ol {
    margin: 8px 0 8px 20px;
    padding: 0;
    text-align: left;
+   white-space: normal;
 }
 
 #scStepText li {
    margin: 2px 0;
+   white-space: pre-wrap;
 }
 
 #scStepText small {
