@@ -131,22 +131,23 @@ header {
 
 /* ── Settings button in panelTitle ───────────────────────────────────────── */
 .settingsBtn {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: var(--veryLightEarth);
-  border: 2px solid var(--veryLightBlue);
-  color: var(--darkBlue);
-  cursor: pointer;
-  font-size: 0;
-  padding: 2px;
-  /* line-height: 1; */
-  border-radius: 4px;
-  transition: all 0.2s;
-  /* display: flex; */
-  /* align-items: center; */
-  z-index: 300;
+	position: absolute;
+	right: 8px;
+	top: 50%;
+	transform: translateY(-50%);
+	background: var(--veryLightEarth);
+	border: 2px solid var(--veryLightBlue);
+	color: var(--darkBlue);
+	cursor: pointer;
+	font-size: 0;
+	padding: 2px;
+	/* line-height: 1; */
+	border-radius: 4px;
+	transition: all 0.2s;
+	z-index: 300;
+	width: 20px;
+	height: 20px;
+	box-sizing: content-box;
 }
 
 .settingsBtn:hover {
@@ -2291,7 +2292,7 @@ header {
 #chainStepperBox {
 	display: inline-flex;
 	align-items: center;
-	gap: 4px;
+	gap: 0px;
 	position: relative;
 	/* background: var(--veryLightGray); */
 	/* padding: 4px 4px; */
@@ -2300,18 +2301,21 @@ header {
 
 #chainStepperBox .settingLabel {
 	
-	/* color: var(--darkBlue); */
-  margin:0;
+	margin-right: 5px;
 	
 }
 
 #chainStepLabel {
-  /* min-width: 3em; */
-  text-align: center;
-  font-family: "Roboto Condensed", sans-serif;
-  font-size: 0.813rem;
-  color: #333;
-  font-weight: bold;
+	
+	text-align: center;
+	font-family: "Roboto Condensed", sans-serif;
+	font-size: 0.813rem;
+	color: #fff;
+	font-weight: bold;
+	background: var(--darkEarth);
+	padding: 1px 4px;
+	margin: 0;
+  border: 1px solid var(--darkEarth);
 }
 
 .stepBtn {
@@ -2329,6 +2333,7 @@ header {
 	border: 1px solid var(--darkEarth);
 	border-radius: 2px;
 	position: relative;
+  transition: all 0.3s;
 }
 
 .stepBtn:hover {
