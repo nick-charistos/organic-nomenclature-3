@@ -1507,7 +1507,7 @@ header {
 .compEye.off-state {
   /* Dimmed via color, not opacity: opacity < 1 would create a stacking
      context on the button and trap its tooltip below the panel again. */
-  color: var(--veryLightBlue);
+  /* color: var(--veryLightBlue); */
 }
 
 .compEye.off-state:hover {
