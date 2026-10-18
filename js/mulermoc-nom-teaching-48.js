@@ -582,9 +582,11 @@ $(document).ready(function () {
     window.nameBoxFlag = !window.nameBoxFlag;
     if (window.nameBoxFlag) {
       $(".nameCompBox ").removeClass("unboxed").addClass("boxed");
+       $(this).addClass("active");
       $(this).html(svgNameBox).attr("data-tooltip", "Πλαίσια συνθετικών");
     } else {
       $(".nameCompBox ").removeClass("boxed").addClass("unboxed");
+       $(this).removeClass("active");
       $(this)
         .html(svgNameBoxOff)
         .attr("data-tooltip", "Χωρίς πλαίσια συνθετικών");
@@ -595,8 +597,10 @@ $(document).ready(function () {
     window.nameCrossFlag = !window.nameCrossFlag;
     if (window.nameCrossFlag) {
       $(".nameCompPlus ").removeClass("hide");
+       $(this).addClass("active");
       $(this).html(svgNameCross).attr("data-tooltip", "Διαχωρισμένα συνθετικά");
     } else {
+       $(this).removeClass("active");
       $(".nameCompPlus ").addClass("hide");
       $(this).html(svgNameCrossOff).attr("data-tooltip", "Ενωμένα συνθετικά");
     }

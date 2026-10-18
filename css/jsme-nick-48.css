@@ -398,22 +398,20 @@ header {
   /* border: 1px solid var(--darkEarth); */
 }
 
-.narrateBtn,
-.nameStyleBox,
-.nameStyleCross,
-.nameStyleEye,
-.readNameBtn {
-  width: 24px;
-  height: 24px;
-  color: var(--darkBlue);
-  background-color: var(--veryLightEarth);
-  border: 1px solid var(--darkEarth);
-  padding: 2px;
-  border-radius: 2px;
-  cursor: pointer;
-  transition: all 0.2s;
-  position: relative;
-  z-index: 300;
+.narrateBtn, .nameStyleBox, .nameStyleCross, .nameStyleEye, .readNameBtn {
+	width: 20px;
+	height: 20px;
+	color: var(--darkBlue);
+	background-color: var(--veryLightEarth);
+	border: 2px solid var(--darkEarth);
+	padding: 2px;
+	border-radius: 4px;
+	cursor: pointer;
+	transition: all 0.2s;
+	position: relative;
+	z-index: 300;
+	/* overflow: hidden; */
+	box-sizing: content-box;
 }
 
 .narrateBtn:hover,
@@ -425,15 +423,16 @@ header {
   background-color: var(--darkEarth);
 }
 
+.nameStyleCross.active,
+.nameStyleBox.active,
+.nameStyleEye.active,
 .narrateBtn.active {
   color: #fff;
-  background-color: var(--lightBlue);
+  background-color: var(--darkBlue);
+   border-color: var(--veryLightGray);
 }
 
-.nameStyleEye.active {
-  color: #fff;
-  background-color: var(--lightBlue);
-}
+
 
 .readNameBtn:disabled {
   opacity: 0.6;
@@ -1488,7 +1487,7 @@ header {
 }
 
 .compEye {
-  color: var(--lightBlue);
+  color: var(--darkBlue);
   background-color: transparent;
   border: 0;
   padding: 1px 3px;
