@@ -36,14 +36,19 @@ let viewerMaxH = null;
 // (show.viewerBothHeight); scenario owns persistence, this is the live value.
 let viewerBothH = null;
 // Manual double-viewer slider bounds (v48): the combined 2D+3D height is a
-// fixed 400–800px range regardless of the live single-viewer ceiling.
-const VIEWER_BOTH_MIN = 400;
-const VIEWER_BOTH_MAX = 800;
-// Shared viewer min-height floor (v48): a single 200px minimum for BOTH
+// fixed 300–1000px range regardless of the live single-viewer ceiling.
+const VIEWER_BOTH_MIN = 300;
+const VIEWER_BOTH_MAX = 1000;
+// Shared viewer min-height floor (v48): a single 150px minimum for BOTH
 // viewers, so a long present note card can never squash them to an unusable
 // size (the page scrolls instead). Mirrored by the CSS min-heights
-// (.JmolContainer / #jsmeNomeclatureSVG) so the applet box and the DOM agree.
-const VIEWER_MIN_H = 200;
+// (.JmolContainer / #jsmeNomeclatureSVG) via the `--viewerMinH` custom
+// property, which is set from this constant just below so the two can never
+// drift; the CSS value is only a no-JS fallback.
+const VIEWER_MIN_H = 150;
+try {
+  document.documentElement.style.setProperty("--viewerMinH", VIEWER_MIN_H + "px");
+} catch (eMinH) { /* CSS custom property unavailable */ }
 // B2 owned-shared viewer state: current MOL strings (fDeselectMol/fLoadMol2D).
 let myMol2D = null;
 let myMol3D = null;
@@ -577,8 +582,9 @@ function fInitViewerMaxHeight() {
 
 // ── double-viewer height control (v48) ───────────────────────────────────
 // Ρυθμίσεις row: a checkbox (unchecked = Auto = the equal split both viewers
-// get today, checked = Manual) plus a fixed 400–800px slider. When two viewers
-// are visible, Manual sets their COMBINED height — each viewer takes half.
+// get today, checked = Manual) plus a fixed slider (see VIEWER_BOTH_MIN/MAX).
+// When two viewers are visible, Manual sets their COMBINED height — each
+// viewer takes half.
 // Only the live global `viewerBothH` is set here — scenario steps own
 // persistence (show.viewerBothHeight). fResizeViewers() recomputes.
 function fViewerBothHeightSync() {

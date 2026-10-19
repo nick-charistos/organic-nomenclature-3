@@ -20,6 +20,12 @@
      the viewer keeps its original width when possible. Bounds min-width/
      max-width hold. */
   --viewerPinnedWidth: 400px;
+
+  /* Shared viewer min-height floor (v48). Single source of truth is the JS
+     `VIEWER_MIN_H` constant, pushed into this variable at load; the value here
+     is only the no-JS fallback. Consumed by .JmolContainer / #jsmeNomeclatureSVG
+     so the applet box and the DOM agree. */
+  --viewerMinH: 150px;
 }
 
 
@@ -2079,10 +2085,10 @@ header {
 
 /* JSmol container — base height (220px) kept so JSmol inits at non-zero size.
    fResizeViewers() corrects dimensions via Jmol.resizeApplet() after load.
-   min-height mirrors the JS VIEWER_MIN_H floor (shared with the 2D viewer). */
+   min-height mirrors the JS VIEWER_MIN_H floor (via --viewerMinH). */
 .JmolContainer {
   width: 100% !important;
-  min-height: 200px;
+  min-height: var(--viewerMinH, 150px);
 }
 
 /* JSME SVG */
@@ -2090,7 +2096,7 @@ header {
   width: 100% !important;
   /* max-width: 450px; */
   height: auto;
-  min-height: 200px;
+  min-height: var(--viewerMinH, 150px);
 }
 
 /* ── "Rotate device" prompt ──────────────────────────────────────────── */

@@ -163,8 +163,9 @@ Visibility rules:
   slider `max` = the live full single-viewer height). Applied in playback
   too (via `fScenarioApplyViewerMaxHeight`), stashed/restored around
   Present like the other live settings. Both viewers share a min-height floor
-  (`VIEWER_MIN_H`, live **200px** — owner-tuned from the original 240; CSS
-  `.JmolContainer`/`#jsmeNomeclatureSVG` mirror it), so a long note scrolls the
+  (`VIEWER_MIN_H`, live **150px** — owner-tuned down from 240; the CSS
+  `.JmolContainer`/`#jsmeNomeclatureSVG` floor is driven by this constant via
+  the `--viewerMinH` variable), so a long note scrolls the
   page instead of squashing them.
   The fit subtracts the visible `#scStepText` note card (offsetHeight +
   margins) too, so a two-viewer present step with a note reserves room for
@@ -172,11 +173,11 @@ Visibility rules:
 * `show.viewerBothHeight` (additive, v48; number px | `null`, default
   `null` = Auto) sets the **combined** 2D+3D height of the viewers when
   **two** are visible — each viewer takes half. Auto keeps the equal split
-  (`fViewerHeights2D3D`); an explicit value (clamped 400–800, silently
+  (`fViewerHeights2D3D`); an explicit value (clamped 300–1000, silently
   sanitized, `warning` on non-empty invalid input) **overrides** the split for
-  both, so 400 → 200px each and 800 → 400px each (the page scrolls if the total
+  both, so 300 → 150px each and 1000 → 500px each (the page scrolls if the total
   no longer fits; the `<430px` phone cap still trims). The author sets it in the
-  Ρυθμίσεις panel (unchecked = Auto, checked = fixed 400–800px slider, live
+  Ρυθμίσεις panel (unchecked = Auto, checked = fixed 300–1000px slider, live
   re-fit on drag). Applied in playback too (via
   `fScenarioApplyViewerMaxHeight`), stashed/restored around Present like the
   other live settings; independent of the single-viewer cap (each governs its

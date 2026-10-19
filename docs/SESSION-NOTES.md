@@ -1762,3 +1762,30 @@ follows; one Save → Present → Next → Exit round-trip.
   replay in Present, Exit. Commit `v48: double-viewer height = combined total
   (override, live)`. Docs: CHANGELOG/Didactic corrected to "combined total,
   each = half".
+
+## 2026-10-19 (cont.) — viewer floor 150 + CSS var sync (v48)
+
+* Owner hand-tuned `VIEWER_MIN_H` **200 → 150** and `VIEWER_BOTH_MIN/MAX`
+  **400/800 → 300/1000**, but reported the containers still bottomed out at
+  200px.
+* Root cause: `#nomeclature3D` is `<div id="nomeclature3D" class="JmolContainer">`
+  and `#jsmeNomeclatureSVG` (inside `#jsmeNomeclatureDIV`) both carried
+  `min-height: 200px` — set in the previous commit (`f1876c9`, 240 → 200).
+  `min-height` beats the inline `height` that `fResizeViewers()` writes
+  (`svg.style.height`, `Jmol.resizeApplet(...,{height})`, and the applet
+  info-table div), so the JS floor change alone could never show.
+* Fix (owner picked "drive CSS from the JS constant"):
+  `css/jsme-nick-48.css` — `.JmolContainer` / `#jsmeNomeclatureSVG` now use
+  `min-height: var(--viewerMinH, 150px)`, with `--viewerMinH: 150px` in `:root`
+  as the no-JS fallback. `molview-48.js` pushes the constant once at load:
+  `document.documentElement.style.setProperty("--viewerMinH", VIEWER_MIN_H + "px")`.
+  The two can no longer drift (both prior mismatches — 240 vs 200, 200 vs 150 —
+  came from hand-copied literals).
+* Range: `#viewerBothHeightRange` static `min`/`max` → 300/1000 (the runtime
+  `fViewerBothHeightSync` sets them from the constants; scenario clamp follows
+  automatically). Comments updated (JS trio header + `fScenarioValidViewerBothHeight`;
+  CHANGELOG/Didactic numbers → 300–1000, each 150/500, floor 150).
+* Verify: `node --check` both JS; browser click-through — drag the combined
+  slider to min (300 → 150px each) and confirm both containers actually reach
+  150 (and that the JSmol 3D view renders at that size). Commit `v48: viewer
+  min-height 150 via --viewerMinH (CSS driven by VIEWER_MIN_H)`.
