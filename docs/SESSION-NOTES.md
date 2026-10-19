@@ -1822,3 +1822,31 @@ follows; one Save → Present → Next → Exit round-trip.
 * Docs: CHANGELOG `[Unreleased]` "Scenario/step delete: dedicated icons + red
   danger hover + confirm dialog"; didactic §3 delete notes.
 * Commit `v48: delete scenario/step icons + red danger hover + confirm dialog`.
+
+## 2026-10-19 (cont.) — main-chain multiple-bond priority + alkene test molecules (v48)
+
+* Owner added two alkene test structures from a contributor archive:
+  `methyl_2_propene` (`CH2=C(CH3)CH3`, PubChem CID 8255) and
+  `methyl_3_butene_1` (`CH2=CHCH(CH3)CH3`, CID 11239) — three MOL2D forms each,
+  3D SDFs downloaded into `mols/nomeclature-moc2/`, stored `mainChain_*`
+  arrays empty. Contributor archive (`archive/Giannis_Skendros/`) is now
+  gitignored.
+* Bug exposed by the stepper: `methyl_2_propene` showed **3** chains — the two
+  C=C paths plus the saturated `CH3–C–CH3` path — because `fRankChainPool`
+  filtered to the max-length tier and the legacy comparator only used
+  multi-bonds after length/anchors.
+* Rule (owner decision): rank multiple bonds first globally, even when a
+  shorter chain has more: max CC multiple bonds (C=C + C≡C) → max C=C →
+  longest chain → FG anchors. FG-anchor cover filter stays first; ties remain
+  in the pool.
+* Code (`core-48.js`): 2D/3D Step 7 comparator and `fRankChainPool` updated to
+  the same order; `molview-48.js` comment now says multiple-bond-first. No
+  orientation/numbering changes.
+* Verify: static 2D all-variant regression — only `methyl_2_propene` pool
+  changes (3 → 2, both C=C); no selected-chain changes; FG + multiple-bond
+  examples (`penten_1_one_3`, `pentyn_4_one_2`, etc.) have one carbon path and
+  are unchanged. Owner browser-tested the stepper (`methyl_2_propene` 2/2).
+* Docs: CHANGELOG `[Unreleased]` subsection; README/PROJECT-PLANs/LAYERS/didactic
+  synced to 71 keys and multiple-bond-first wording (historical 69 references
+  left intact).
+* Commit `v48: multiple-bond-first main-chain ranking + 2 alkene test molecules`.

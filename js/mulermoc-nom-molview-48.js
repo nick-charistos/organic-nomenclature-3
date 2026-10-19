@@ -4358,7 +4358,7 @@ function fHighLightMainChainBonds() {
 
 // ── Main-chain stepper (v47, in the name-settings panel) ───────────────────────
 // Compact block: fStepMainChain(dir) + fRenderChainStepper() (+ helpers).
-// Walks the FG-aware longest-chain pool (core mainChainPool, rank-parallel
+// Walks the FG-aware multiple-bond-first pool (core mainChainPool, rank-parallel
 // mainChainPool3D). Swaps the live chain globals and recomputes name +
 // substituents per candidate WITHOUT disturbing teaching state
 // (nameAnalysisMode, boxes, rule theory untouched — stepping only refreshes

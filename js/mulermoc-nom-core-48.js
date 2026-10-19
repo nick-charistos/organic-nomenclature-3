@@ -37,7 +37,7 @@ let anchorSubstName = {}     // Greek prefix-substituent names per anchor C (hal
 let ccDoubleBondKeys = {}
 let ccTripleBondKeys = {}
 let terminalFgCarbons = {} // forced-C1 subset (acid/ester-carbonyl/cyanide/aldehyde); Rule A (was function-local; shared with fOrientChainPath)
-// ── Main-chain stepper pools (v47): ranked longest-chain candidates ─────────
+// ── Main-chain stepper pools (v47): ranked multiple-bond-first candidates ────
 // Each entry: {chain (1-based, oriented), len, fg, fgCover, anchors, multi, dbl}.
 // Pool[0] is the adopted main chain on fresh molecule loads. Rebuilt on every
 // fCalcMainChain[/3D] run (per molecule per mode); the walk index survives
@@ -638,7 +638,7 @@ function fDetectMolType() {
 //   4.  DFS from each terminal → enumerate all terminal-to-terminal simple paths
 //   5.  Collect anchor carbons (C bonded to heteroatoms) from functionalGroupObj
 //   6.  Build CC multi-bond lookup sets for scoring
-//   7.  Score each candidate path (longest → most FG anchors → most multi-bonds → most doubles)
+//   7.  Score each candidate path (most multi-bonds → most doubles → longest → most FG anchors)
 //   8.  Orient selected path: forced-C1 rule (aldehyde/acid/cyanide) OR lowest-locant rule
 //   9.  Write result to mainChainAtomsList (1-based)
 //  10.  Validate against stored nameExamples data via fValidateMainChain()
@@ -1023,11 +1023,11 @@ function fCalcMainChain() {
     }
 
     // ── Step 7: Score candidates and select the best path ────────────────────────
-    // IUPAC priority (adapted for Greek high-school scope):
-    //   a) Longest chain (most C atoms)                            ← primary
-    //   b) Most anchor carbons included (FG-bearing Cs on chain)   ← secondary
-    //   c) Most total CC multi-bonds on the chain                  ← tertiary
-    //   d) Most CC double bonds specifically                       ← quaternary
+    // IUPAC priority:
+    //   a) Most total CC multi-bonds on the chain (C=C + C≡C)      ← primary
+    //   b) Most CC double bonds specifically                       ← secondary
+    //   c) Longest chain (most C atoms)                            ← tertiary
+    //   d) Most anchor carbons included (FG-bearing Cs on chain)   ← quaternary
     let bestPath = null
     let bestLen = -1, bestAnchors = -1, bestMulti = -1, bestDouble = -1
 
@@ -1039,10 +1039,10 @@ function fCalcMainChain() {
         const pDouble = countDoubleBonds(p)
 
         const isBetter = (
-            pLen > bestLen ||
-            (pLen === bestLen && pAnch   > bestAnchors) ||
-            (pLen === bestLen && pAnch   === bestAnchors && pMulti  > bestMulti) ||
-            (pLen === bestLen && pAnch   === bestAnchors && pMulti  === bestMulti && pDouble > bestDouble)
+            pMulti > bestMulti ||
+            (pMulti === bestMulti && pDouble > bestDouble) ||
+            (pMulti === bestMulti && pDouble === bestDouble && pLen > bestLen) ||
+            (pMulti === bestMulti && pDouble === bestDouble && pLen === bestLen && pAnch > bestAnchors)
         )
         if (isBetter) {
             bestPath = p; bestLen = pLen; bestAnchors = pAnch; bestMulti = pMulti; bestDouble = pDouble
@@ -1151,13 +1151,12 @@ function fCalcMainChain() {
         }
     }
 
-    // ── Step 8d: FG-aware longest-chain pool (v47 stepper) ───────────────────────
-    // Longest terminal-to-terminal chains covering the top-priority FG anchors
-    // (fTopFgAnchorSet; halogens/hydrocarbon unranked, ether recorded without
-    // requirement). Falls back to the longest tier overall when nothing covers
-    // the anchors — then pool[0] === legacy winner by the same comparator
-    // (stable sort keeps enumeration order among equals). etherInfo/esterInfo
-    // above intentionally keep the legacy `oriented` pick.
+    // ── Step 8d: FG-aware multiple-bond-first pool (v47 stepper) ────────────────
+    // Chains covering the top-priority FG anchors (fTopFgAnchorSet; halogens/
+    // hydrocarbon unranked, ether recorded without requirement), then the best
+    // multiple-bond tier (most C=C/C≡C → most C=C → longest; fRankChainPool).
+    // Falls back to the best tier overall when nothing covers the anchors.
+    // etherInfo/esterInfo above intentionally keep the legacy `oriented` pick.
     mainChainPool = fRankChainPool(candidatePaths,
         fTopFgAnchorSet(functionalGroupObj, atomConnectivityList, allAtomsTypeList),
         function (p) { return [p.length, countAnchorsInPath(p), countMultiBonds(p), countDoubleBonds(p)] },
@@ -1553,7 +1552,8 @@ function fCalcMainChain3D() {
         return n
     }
 
-    // ── Step 7: Score candidates ──────────────────────────────────────────────────
+    // ── Step 7: Score candidates (same priority as 2D) ───────────────────────────
+    //   multi-bonds → double bonds → length → FG anchors
     let bestPath3D = null
     let bestLen3D = -1, bestAnchors3D = -1, bestMulti3D = -1, bestDouble3D = -1
 
@@ -1565,10 +1565,10 @@ function fCalcMainChain3D() {
         const pDouble = countDoubleBonds3D(p)
 
         const isBetter = (
-            pLen > bestLen3D ||
-            (pLen === bestLen3D && pAnch   > bestAnchors3D) ||
-            (pLen === bestLen3D && pAnch   === bestAnchors3D && pMulti  > bestMulti3D) ||
-            (pLen === bestLen3D && pAnch   === bestAnchors3D && pMulti  === bestMulti3D && pDouble > bestDouble3D)
+            pMulti > bestMulti3D ||
+            (pMulti === bestMulti3D && pDouble > bestDouble3D) ||
+            (pMulti === bestMulti3D && pDouble === bestDouble3D && pLen > bestLen3D) ||
+            (pMulti === bestMulti3D && pDouble === bestDouble3D && pLen === bestLen3D && pAnch > bestAnchors3D)
         )
         if (isBetter) {
             bestPath3D = p; bestLen3D = pLen; bestAnchors3D = pAnch; bestMulti3D = pMulti; bestDouble3D = pDouble
@@ -1587,7 +1587,7 @@ function fCalcMainChain3D() {
     // (Rule A / Rule B tiers live in fOrientChainPath3D; shared with the pool builder.)
     let oriented3D = fOrientChainPath3D(bestPath3D)
 
-    // ── Step 8d: FG-aware longest-chain pool (v47 stepper, 3D mirror) ────────────
+    // ── Step 8d: FG-aware multiple-bond-first pool (v47 stepper, 3D mirror) ──────
     // Same filter/rank contract as 2D Step 8d, on 3D globals. Rank-parallel
     // stepping walks the same index on both sides (independent numbering).
     mainChainPool3D = fRankChainPool(candidatePaths3D,
@@ -1729,10 +1729,11 @@ function fTopFgAnchorSet(fgObj, connList, typeList) {
 }
 
 // Rank terminal-to-terminal paths into the stepper pool: keep only chains
-// covering all required anchors (when any), then the max-length tier, sorted
-// best-first by the legacy Step-7 comparator (stable sort keeps enumeration
-// order among equals → same top as the legacy linear scan). Each entry is
-// oriented via orientFn and stored 1-based. Empty input → empty pool.
+// covering all required anchors (when any), then keep the best multiple-bond
+// tier (most C=C/C≡C → most C=C → longest chain), sorted by the same priority
+// with FG anchors as the final tiebreak. All chains tied on the tier stay in
+// the pool so the stepper can still explore equivalent alternatives. Each
+// entry is oriented via orientFn and stored 1-based. Empty input → empty pool.
 function fRankChainPool(paths, req, scoreFn, orientFn) {
     var i, a
     var inScope = paths, usedFilter = false
@@ -1747,19 +1748,39 @@ function fRankChainPool(paths, req, scoreFn, orientFn) {
         }
         if (hit.length > 0) { inScope = hit; usedFilter = true }
     }
-    var maxLen = 0
-    for (i = 0; i < inScope.length; i++) { if (inScope[i].length > maxLen) maxLen = inScope[i].length }
     var scored = []
     for (i = 0; i < inScope.length; i++) {
-        if (inScope[i].length !== maxLen) continue
         var s = scoreFn(inScope[i])
         scored.push({ p: inScope[i], i: i, len: s[0], an: s[1], mu: s[2], db: s[3] })
     }
+    if (scored.length === 0) return []
+
+    // Best tier: multiple bonds first, then double bonds, then chain length.
+    var bestMu = -1, bestDb = -1, bestLen = -1
+    for (i = 0; i < scored.length; i++) {
+        if (scored[i].mu > bestMu) bestMu = scored[i].mu
+    }
+    for (i = 0; i < scored.length; i++) {
+        if (scored[i].mu === bestMu && scored[i].db > bestDb) bestDb = scored[i].db
+    }
+    for (i = 0; i < scored.length; i++) {
+        if (scored[i].mu === bestMu && scored[i].db === bestDb && scored[i].len > bestLen) {
+            bestLen = scored[i].len
+        }
+    }
+    var top = []
+    for (i = 0; i < scored.length; i++) {
+        if (scored[i].mu === bestMu && scored[i].db === bestDb && scored[i].len === bestLen) {
+            top.push(scored[i])
+        }
+    }
+    scored = top
+
     scored.sort(function (x, y) {
-        if (y.len !== x.len) return y.len - x.len
-        if (y.an !== x.an) return y.an - x.an
         if (y.mu !== x.mu) return y.mu - x.mu
         if (y.db !== x.db) return y.db - x.db
+        if (y.len !== x.len) return y.len - x.len
+        if (y.an !== x.an) return y.an - x.an
         return x.i - y.i
     })
     var pool = []

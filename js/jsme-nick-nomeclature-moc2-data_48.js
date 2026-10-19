@@ -593,6 +593,22 @@ let nameExamples = {
     mainChain3D: [],
   },
 
+  methyl_2_propene: {
+    formula: "CH2=C(CH3)CH3",
+    mainChain_Condensed: [],
+    mainChain_Expanded: [],
+    mainChain_Skeletal: [],
+    mainChain3D: [],
+  },
+
+  methyl_3_butene_1: {
+    formula: "CH2=CHCH(CH3)CH3",
+    mainChain_Condensed: [],
+    mainChain_Expanded: [],
+    mainChain_Skeletal: [],
+    mainChain3D: [],
+  },
+
   //Ethers
   ethyl_methyl_ether: {
     formula: "CH3OCH2CH3",
@@ -5239,6 +5255,14 @@ window.MOL2D = window.MOL2D || {};
   function reg(prop, condensed, expanded, skeletal) {
     window.MOL2D[prop] = { condensed: condensed, expanded: expanded, skeletal: skeletal };
   }
+const methyl_3_butene_1_2D_Condensed = "methyl_3_butene_1_2D_Condensed.mol\n  Namelecule        2D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n   -1.7550    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5850    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.7550    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850   -1.0349    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  2  3  1  0  0  0  0\n  3  4  2  0  0  0  0\n  2  5  1  0  0  0  0\nM  END\n";
+const methyl_3_butene_1_2D_Expanded = "methyl_3_butene_1_2D_Expanded.mol\n  Namelecule        2D\n\n 15 14  0  0  0  0  0  0  0  0999 V2000\n   -1.7550    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5850    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.7550    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850   -1.0349    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.7550    0.9151    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.5350    0.1351    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.7550   -0.6449    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850    0.9151    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5850    0.9151    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.7550    0.9151    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.5350    0.1351    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850   -1.8149    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.3650   -1.0349    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.1950   -1.0349    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  2  3  1  0  0  0  0\n  3  4  2  0  0  0  0\n  2  5  1  0  0  0  0\n  1  6  1  0  0  0  0\n  1  7  1  0  0  0  0\n  1  8  1  0  0  0  0\n  2  9  1  0  0  0  0\n  3 10  1  0  0  0  0\n  4 11  1  0  0  0  0\n  4 12  1  0  0  0  0\n  5 13  1  0  0  0  0\n  5 14  1  0  0  0  0\n  5 15  1  0  0  0  0\nM  END\n";
+const methyl_3_butene_1_2D_Skeletal = "methyl_3_butene_1_2D_Skeletal.mol\n  Namelecule        2D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n   -0.7999    0.5478    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.1244    0.1578    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5511    0.5478    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.2266    0.1578    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.1244   -0.6222    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  2  3  1  0  0  0  0\n  3  4  2  0  0  0  0\n  2  5  1  0  0  0  0\nM  END\n";
+  reg("methyl_3_butene_1", methyl_3_butene_1_2D_Condensed, methyl_3_butene_1_2D_Expanded, methyl_3_butene_1_2D_Skeletal);
+const methyl_2_propene_2D_Condensed = "KingDraw KingDraw.mol\nKingDraw2D\n\n  4  3  0  0  0  0  0  0  0  0999 V2000\n   -1.1700    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -1.0349    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  2  4  1  0\nM  END";
+const methyl_2_propene_2D_Expanded = "KingDraw KingDraw.mol\nKingDraw2D\n\n 12 11  0  0  0  0  0  0  0  0999 V2000\n   -1.1701    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1701    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1701    0.9151    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.9502    0.1351    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -1.0350    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -1.8152    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.7800   -1.0350    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800   -1.0350    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1701    0.9151    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9502    0.1351    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1701   -0.6449    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  3  4  1  0\n  3  5  1  0\n  2  6  1  0\n  6  7  1  0\n  6  8  1  0\n  6  9  1  0\n  1 10  1  0\n  1 11  1  0\n  1 12  1  0\nM  END";
+const methyl_2_propene_2D_Skeletal = "KingDraw KingDraw.mol\nKingDraw2D\n\n  4  3  0  0  0  0  0  0  0  0999 V2000\n   -0.7999    0.5478    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.1244    0.1578    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5510    0.5478    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.1241   -0.6221    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  2  4  1  0\nM  END";
+  reg("methyl_2_propene", methyl_2_propene_2D_Condensed, methyl_2_propene_2D_Expanded, methyl_2_propene_2D_Skeletal);
   reg("methane", (typeof methane_2D_Condensed !== "undefined" ? methane_2D_Condensed : null), (typeof methane_2D_Expanded !== "undefined" ? methane_2D_Expanded : null), (typeof methane_2D_Skeletal !== "undefined" ? methane_2D_Skeletal : null));
   reg("methanoicacid", (typeof methanoicacid_2D_Condensed !== "undefined" ? methanoicacid_2D_Condensed : null), (typeof methanoicacid_2D_Expanded !== "undefined" ? methanoicacid_2D_Expanded : null), (typeof methanoicacid_2D_Skeletal !== "undefined" ? methanoicacid_2D_Skeletal : null));
   reg("ethane", (typeof ethane_2D_Condensed !== "undefined" ? ethane_2D_Condensed : null), (typeof ethane_2D_Expanded !== "undefined" ? ethane_2D_Expanded : null), (typeof ethane_2D_Skeletal !== "undefined" ? ethane_2D_Skeletal : null));
