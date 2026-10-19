@@ -103,6 +103,7 @@ const svgSpeaker = (window.MuLERIcons && window.MuLERIcons.speaker) || "";
 const svgMute = (window.MuLERIcons && window.MuLERIcons.mute) || "";
 const svgStop = (window.MuLERIcons && window.MuLERIcons.stop) || "";
 const svgPlay = (window.MuLERIcons && window.MuLERIcons.playSm) || "";
+const svgAudioDesc = (window.MuLERIcons && window.MuLERIcons.audioDescription) || "";
 const svgNameBox = (window.MuLERIcons && window.MuLERIcons.nameBox) || "";
 const svgNameBoxOff = (window.MuLERIcons && window.MuLERIcons.nameBoxOff) || "";
 const svgNameCross = (window.MuLERIcons && window.MuLERIcons.nameCross) || "";
@@ -3156,7 +3157,7 @@ function fShowNameAnalysis() {
   // - radios only (ether, no stepper): single row, radios left / buttons right.
   // - neither: single row, buttons right (as in frozen versions).
   const _stepperHTML = (typeof fChainStepperHTML === "function") ? fChainStepperHTML() : "";
-  const _buttonsHTML = `<button id='narrateAnalysisToggle' class='narrateBtn${narrateActiveClass}' data-tooltip='${toggleTitle}'>${toggleIcon}</button><button id='readNameBtn' class='readNameBtn' data-tooltip='Εκφώνηση ονόματος' >${svgPlay}</button><button id='nameStyleBoxToggle' class='nameStyleBox ${boxActiveClass}' data-tooltip='${boxTooltip}'>${toggleNameStyleBox}</button><button id='nameStyleCrossToggle' class='nameStyleCross ${crossActiveClass}' data-tooltip='${crossTooltip}'>${toggleNameStyleCross}</button><button id='nameStyleEyeToggle' class='nameStyleEye${eyeActiveClass}' data-tooltip='Ορατότητα συνθετικών'>${toggleNameStyleEye}</button>`;
+  const _buttonsHTML = `<button id='narrateAnalysisToggle' class='narrateBtn${narrateActiveClass}' data-tooltip='${toggleTitle}'>${toggleIcon}</button><button id='readNameBtn' class='readNameBtn' data-tooltip='Εκφώνηση ονόματος' >${svgAudioDesc}</button><button id='nameStyleBoxToggle' class='nameStyleBox ${boxActiveClass}' data-tooltip='${boxTooltip}'>${toggleNameStyleBox}</button><button id='nameStyleCrossToggle' class='nameStyleCross ${crossActiveClass}' data-tooltip='${crossTooltip}'>${toggleNameStyleCross}</button><button id='nameStyleEyeToggle' class='nameStyleEye${eyeActiveClass}' data-tooltip='Ορατότητα συνθετικών'>${toggleNameStyleEye}</button>`;
   var _panelInner = "";
   if (_stepperHTML && etherNamingToggle) {
     _panelInner = `<div id='nameSettingsRowTop'>${_stepperHTML}</div><div id='nameSettingsRowMain'><div class='nsLeft'>${etherNamingToggle}</div><div class='nsRight'>${_buttonsHTML}</div></div>`;
