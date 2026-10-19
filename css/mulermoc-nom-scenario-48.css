@@ -640,6 +640,80 @@ border: 2px solid var(--veryLightBlue);
    opacity: 1
 }
 
+/* Destructive-action confirm dialog (see fScenarioConfirm). Dim backdrop over
+   the whole viewport (above the toast at 600); safe button focused first. */
+#scenarioConfirm {
+   position: fixed;
+   inset: 0;
+   z-index: 700;
+   display: none;
+   align-items: center;
+   justify-content: center;
+   background: rgba(0, 0, 0, .45);
+   font-family: "Roboto Condensed", sans-serif;
+}
+
+#scenarioConfirm.show {
+   display: flex;
+}
+
+#scenarioConfirm .scConfirmPanel {
+   background: #fff;
+   color: var(--darkBlue);
+   border: 2px solid var(--darkBlue);
+   border-radius: 8px;
+   padding: 16px 18px;
+   max-width: min(420px, 86vw);
+   box-shadow: 0 8px 28px rgba(0, 0, 0, .35);
+}
+
+#scenarioConfirm .scConfirmMsg {
+   font-size: 1rem;
+   font-weight: bold;
+   line-height: 1.35;
+   margin-bottom: 14px;
+   word-break: break-word;
+}
+
+#scenarioConfirm .scConfirmBtns {
+   display: flex;
+   gap: 10px;
+   justify-content: flex-end;
+}
+
+#scenarioConfirm .scConfirmBtns button {
+   font-family: inherit;
+   font-weight: bold;
+   font-size: .95rem;
+   cursor: pointer;
+   padding: 6px 14px;
+   border-radius: 4px;
+   border: 1px solid var(--darkBlue);
+   background: var(--veryLightEarth);
+   color: var(--darkBlue);
+   transition: all 0.2s;
+}
+
+#scenarioConfirm .scConfirmNo:hover {
+   background: var(--darkEarth);
+   color: #fff;
+}
+
+#scenarioConfirm .scConfirmYes {
+   background: var(--redAlert);
+   border-color: var(--redAlert);
+   color: #fff;
+}
+
+#scenarioConfirm .scConfirmYes:hover {
+   filter: brightness(1.12);
+}
+
+#scenarioConfirm .scConfirmBtns button:focus-visible {
+   outline: 2px solid var(--darkBlue);
+   outline-offset: 1px;
+}
+
 .scenarioDrawer .scSteps {
    background: var(--veryLightBlue);
 }
@@ -933,6 +1007,16 @@ border: 2px solid var(--veryLightBlue);
    transform: none;
 }
 
+#scenarioAuthorBar .scenarioPanel button.scDelete svg {
+   width: 22px;
+   height: 22px;
+}
+
+#scenarioAuthorBar .scenarioPanel button.scDelete:hover {
+   background: var(--redAlert);
+   border-color: var(--redAlert);
+}
+
 #scenarioAuthorBar .scenarioPanel button.scDelete[data-tooltip]::after {
    left: auto;
    right: 0;
@@ -1124,9 +1208,17 @@ border: 2px solid var(--veryLightBlue);
    color: #fff;
 }
 
+/* Step-row delete (Διαγραφή) button: red danger hover. */
+#scenarioAuthorBar .scenarioDrawer .srow .scIconBtn.delete:hover {
+   background: var(--redAlert);
+   border-color: var(--redAlert);
+   color: #fff;
+}
+
 #scenarioAuthorBar .scIconBtn svg,
 .scenarioDrawer .srow .scIconBtn svg,
-#scenarioPlayBarTitle #scPin svg {
+#scenarioPlayBarTitle #scPin svg,
+#scCloseBar svg {
    width: 16px;
    height: 16px;
    flex: none;

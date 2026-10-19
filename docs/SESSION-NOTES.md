@@ -1789,3 +1789,36 @@ follows; one Save → Present → Next → Exit round-trip.
   slider to min (300 → 150px each) and confirm both containers actually reach
   150 (and that the JSmol 3D view renders at that size). Commit `v48: viewer
   min-height 150 via --viewerMinH (CSS driven by VIEWER_MIN_H)`.
+
+## 2026-10-19 (cont.) — delete icons + confirm dialog (v48)
+
+* Owner dropped three SVGs in `imgs/` (`delete-scenario-`, `close-panel-`,
+  `clear-svgrepo-com.svg`) and asked to inline them in `ui-icons.js` and use
+  them for the scenario-card `.scDelete`, `#scCloseBar`, and the step-row
+  `Διαγραφή` action respectively; then flagged that scenario/step delete is
+  **unrecoverable** and asked for a confirmation step.
+* Icons inlined (source `imgs/*` are **gitignored**, so the art ships inline —
+  same as `pin`/`saveImage`): `deleteScenario` + `closePanel` in the Illustrator
+  `-9 -244 800 800` block (beside `columns1/2`/`formatClear`), `deleteStep` in
+  the 512 block (beside `closeSmall`); `fill → currentColor`, 16px, dropped
+  `<title>`/`id`/`enable-background`.
+* Wiring: `.scDelete` → `fScenarioPaintIconBtn("deleteScenario")`; `#scCloseBar`
+  → `closePanel` (mirror of the `#scPin` hydrate line, `✕` fallback); step-row
+  def key `closeSmall` → `deleteStep` (key only — label/aria untouched, so the
+  other versioned scenario files that still use `closeSmall` are unaffected).
+  `#scCloseBar svg` added to the shared 16px rule.
+* Danger hover: step delete gets a `delete` class; rule
+  `#scenarioAuthorBar .scenarioDrawer .srow .scIconBtn.delete:hover` fills
+  `var(--redAlert)` — id-qualified because a bare `.srow … .delete` selector
+  loses to `#scenarioAuthorBar button:hover`. `--redAlert` (#b90000) added to
+  `jsme-nick-48.css` `:root`.
+* Confirm: `fScenarioConfirm` singleton modal (built like the toast) — backdrop +
+  panel, safe-focused `Άκυρο`, red `Διαγραφή`, ESC (capture-phase, so the author
+  bar stays open) + backdrop cancel. Scenario + step deletes route through it;
+  message names the scenario title / step number; **always** confirms.
+* Verify: `node --check` both JS; CSS braces balanced. **No browser runtime
+  here** — click-through pending (both deletes prompt; Άκυρο/ESC/backdrop keep
+  data; delete hover is red; the three icons render).
+* Docs: CHANGELOG `[Unreleased]` "Scenario/step delete: dedicated icons + red
+  danger hover + confirm dialog"; didactic §3 delete notes.
+* Commit `v48: delete scenario/step icons + red danger hover + confirm dialog`.

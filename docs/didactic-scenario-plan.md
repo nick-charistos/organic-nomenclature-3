@@ -306,14 +306,17 @@ Visibility rules:
   presentation always hides the bar; deep-link presents, authoring off, exit
   with no bar/pin; a session unpin is remembered until a reload restores the
   pinned default).
-* Global shell (`#scenarioAuthorBar`): single merged header row (`#scenarioPlayBarTitle`: `+ New` + `Import` left, title center, `✕` in-flow right; `#scenarioGlobalBar` retired 2026-10-11, ids preserved). `+ New` makes an empty scenario
+* Global shell (`#scenarioAuthorBar`): single merged header row (`#scenarioPlayBarTitle`: `+ New` + `Import` left, title center, `✕` (`closePanel` arrow icon) in-flow right; `#scenarioGlobalBar` retired 2026-10-11, ids preserved). `+ New` makes an empty scenario
   card (locks with a toast while `maxEmptyScenarios = 3` empties exist);
   `Import` (each import adds a card, always lands untouched). Single column,
   panels scroll under the `85vh` cap, never shrink. One empty card is
   always kept: a panel's Delete locks when it is the last remaining card
-  and empty (a sole filled card keeps delete-then-autocreate).
+  and empty (a sole filled card keeps delete-then-autocreate); every
+  scenario Delete is confirm-guarded (icon `deleteScenario`, modal names
+  the scenario — `fScenarioConfirm`).
 * Scenario cards (`.scenarioPanel[data-scenario-id]`, explicit active
-  card): per-card title rename, step count, delete; button panel
+  card): per-card title rename, step count, delete (`deleteScenario`
+  icon, confirm-guarded); button panel
   (`Add step`, `Steps`, `Export`, `Play ▶` — no Import); in-flow
   drawer (down/up via `.open`, accordion: one open at a time,
   drawer follows the active card — Steps button or bar-gap click
@@ -351,7 +354,8 @@ Visibility rules:
    `styleName.hidden` (from the live eye toggles),
    `menuSubset`/`show.menu`/`show.viewers`; toasts kind/subset changes),
   `⧉` duplicate (deep-clone after, title + ` (αντίγραφο)`),
-  reorder up/down, delete, jump-to; step numbers
+  reorder up/down, delete (`deleteStep` icon, red danger hover,
+  confirm-guarded), jump-to; step numbers
   auto-renumber.
    Headers lead with a positional counter (`S1`, `S2`, …); empty
    scenarios (0 steps) flag `.is-empty` on card, count, and Steps button,

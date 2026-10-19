@@ -190,6 +190,72 @@ function fScenarioToast(msg) {
   }, 2600);
 }
 
+// Destructive-action guard: a small modal confirm (singleton, like the toast).
+// ESC / overlay click / Άκυρο cancel; focus lands on the safe button first.
+// Used before deleting a scenario and before deleting a step.
+var fScenarioConfirmEl = null;
+var fScenarioConfirmKey = null;
+var fScenarioConfirmYes = null;
+function fScenarioConfirmClose() {
+  var ov = fScenarioConfirmEl;
+  if (ov) ov.classList.remove("show");
+  if (fScenarioConfirmKey) {
+    document.removeEventListener("keydown", fScenarioConfirmKey, true);
+    fScenarioConfirmKey = null;
+  }
+  fScenarioConfirmYes = null;
+}
+function fScenarioConfirmBuild() {
+  var ov = document.createElement("div");
+  ov.id = "scenarioConfirm";
+  ov.setAttribute("role", "dialog");
+  ov.setAttribute("aria-modal", "true");
+  ov.innerHTML =
+    "<div class='scConfirmPanel'>" +
+      "<div class='scConfirmMsg'></div>" +
+      "<div class='scConfirmBtns'>" +
+        "<button type='button' class='scConfirmNo'>Άκυρο</button>" +
+        "<button type='button' class='scConfirmYes'>Διαγραφή</button>" +
+      "</div>" +
+    "</div>";
+  document.body.appendChild(ov);
+  fScenarioConfirmEl = ov;
+  return ov;
+}
+function fScenarioConfirm(msg, onYes, yesLabel) {
+  var ov = fScenarioConfirmEl;
+  if (!ov || !document.body.contains(ov)) ov = fScenarioConfirmBuild();
+  var msgEl = ov.querySelector(".scConfirmMsg");
+  var noBtn = ov.querySelector(".scConfirmNo");
+  var yesBtn = ov.querySelector(".scConfirmYes");
+  if (msgEl) msgEl.textContent = msg || "";
+  if (yesBtn) yesBtn.textContent = yesLabel || "Διαγραφή";
+  fScenarioConfirmYes = (typeof onYes === "function") ? onYes : null;
+  if (yesBtn) yesBtn.onclick = function (e) {
+    if (e && e.stopPropagation) e.stopPropagation();
+    var fn = fScenarioConfirmYes;
+    fScenarioConfirmClose();
+    if (fn) fn();
+  };
+  if (noBtn) noBtn.onclick = function (e) {
+    if (e && e.stopPropagation) e.stopPropagation();
+    fScenarioConfirmClose();
+  };
+  // Click on the dim backdrop (not the panel) cancels.
+  ov.onclick = function (e) { if (e.target === ov) fScenarioConfirmClose(); };
+  // Capture phase so ESC cancels the dialog without also closing the author bar.
+  fScenarioConfirmKey = function (e) {
+    if (e.key === "Escape") {
+      if (e.preventDefault) e.preventDefault();
+      if (e.stopPropagation) e.stopPropagation();
+      fScenarioConfirmClose();
+    }
+  };
+  document.addEventListener("keydown", fScenarioConfirmKey, true);
+  ov.classList.add("show");
+  if (noBtn && noBtn.focus) noBtn.focus();
+}
+
 // ── readiness: wait for JSME applet + data + entry points ──────────────
 function fScenarioWhenReady(cb) {
   var tries = 0;
@@ -2330,7 +2396,12 @@ function fScenarioBuildUi() {
     });
     $(document).on("click", ".scenarioPanel .scDelete", function () {
       var id = fScenarioPanelIdFromEl(this);
-      if (id) fScenarioDelete(id);
+      if (!id) return;
+      var sc = fScenarioGet(id);
+      var title = (sc && sc.title) ? sc.title : "χωρίς τίτλο";
+      fScenarioConfirm("Διαγραφή σεναρίου «" + title + "»; Τα βήματά του θα χαθούν.", function () {
+        fScenarioDelete(id);
+      });
     });
     $(document).on("click", ".scenarioPanel", function (e) {
       var id = this.getAttribute && this.getAttribute("data-scenario-id");
@@ -2370,6 +2441,10 @@ function fScenarioBuildUi() {
     // markup for no-registry resilience); tooltip + onclick below untouched.
     var _pinBtn = document.getElementById("scPin");
     if (_pinBtn && window.MuLERIcons && window.MuLERIcons.pin) _pinBtn.innerHTML = window.MuLERIcons.pin;
+    // Close-bar button: registry SVG replaces the text fallback (kept in the
+    // markup for no-registry resilience); tooltip + onclick below untouched.
+    var _closeBtn = document.getElementById("scCloseBar");
+    if (_closeBtn && window.MuLERIcons && window.MuLERIcons.closePanel) _closeBtn.innerHTML = window.MuLERIcons.closePanel;
     document.getElementById("scNew").onclick = function () {
       if (fScenarioEmptyCount() >= MuLERMoCScenario.maxEmptyScenarios) {
         fScenarioToast("Fill an empty scenario first (max " + MuLERMoCScenario.maxEmptyScenarios + " empty).");
@@ -2568,6 +2643,7 @@ function fScenarioBuildPanels() {
     fScenarioPaintIconTextBtn(panel.querySelector(".scSave"), "addTask", "Add step");
     fScenarioPaintIconTextBtn(panel.querySelector(".scExport"), "downloadList", "Export");
     fScenarioPaintIconTextBtn(panel.querySelector(".scPresent"), "screen", "Play");
+    fScenarioPaintIconBtn(panel.querySelector(".scDelete"), "deleteScenario", "Διαγραφή σεναρίου");
     host.appendChild(panel);
   });
   fScenarioRenderList();
@@ -2683,7 +2759,7 @@ function fScenarioRenderOne(scen) {
       "<span id='scStep" + i + "' class='scStepNumberWrap'>" +
       "<span class='stepNumber'>" + st.n + "</span></span><span class='scStepTitleWrap'><span class='scStepTitleLabel'>Τίτλος βήματος</span><input type='text' class='scStepTitle' placeholder='Τίτλος βήματος' value=''></span>" +
       "<button data-tooltip='Προεπισκόπηση'>Go</button><button class='scUpdate' data-tooltip='Ενημέρωση βήματος από την τρέχουσα προβολή'>Update</button><button class='scDupe' data-tooltip='Διπλασιασμός βήματος'>⧉</button><button data-tooltip='Επάνω'>↑</button><button data-tooltip='Κάτω'>↓</button>" +
-      "<button data-tooltip='Διαγραφή'>✕</button>";
+      "<button class='delete' data-tooltip='Διαγραφή'>✕</button>";
     // Grip first so it leads the row; mousedown on it arms HTML5 drag
     // (row stays non-draggable otherwise so inputs/textareas keep working).
     if (row.firstChild) row.insertBefore(grip, row.firstChild);
@@ -2699,7 +2775,7 @@ function fScenarioRenderOne(scen) {
       var ab = row.querySelectorAll("button");
       var defs = [
         ["play", "Προεπισκόπηση"], ["reset", "Ενημέρωση βήματος από την τρέχουσα προβολή"], ["copy", "Διπλασιασμός βήματος"],
-        ["arrowUp", "Επάνω"], ["arrowDown", "Κάτω"], ["closeSmall", "Διαγραφή"]
+        ["arrowUp", "Επάνω"], ["arrowDown", "Κάτω"], ["deleteStep", "Διαγραφή"]
       ];
       for (var k = 0; k < defs.length && k < ab.length; k++) {
         var ic = (window.MuLERIcons && window.MuLERIcons[defs[k][0]]) || null;
@@ -3021,9 +3097,11 @@ function fScenarioRenderOne(scen) {
         fScenarioRenumber(scenId);
       };
       btns[5].onclick = function () {
-        var s = fScenarioGet(scenId) || fScenarioActive();
-        s.steps.splice(idx, 1);
-        fScenarioRenumber(scenId);
+        fScenarioConfirm("Διαγραφή βήματος " + st.n + ";", function () {
+          var s = fScenarioGet(scenId) || fScenarioActive();
+          s.steps.splice(idx, 1);
+          fScenarioRenumber(scenId);
+        });
       };
     })(scen.id, i);
     row.addEventListener("dragstart", function (ev) { fScenarioStepDragStart(ev, scen.id); });
