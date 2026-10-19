@@ -267,7 +267,12 @@ Visibility rules:
   pick mode but keeps picks and steps. The Pick checkbox appears only
   while authoring. Presentation hides the whole unit. The pin button
   (title row, v48) docks the bar at the right edge of `#pageContainer`,
-  spanning its full height; `#mainAppContainer` (exactly the three columns)
+  spanning its full height; opening slides the docked bar in from the right
+  edge via the Web Animations API (`fScenarioSlideBar`, since docking reparents
+  the bar and a CSS transition can't see the state change), with `.open` still
+  the visibility/state authority and reduced-motion/no-WAAPI falling back to an
+  instant change; `#mainAppContainer` (exactly
+  the three columns)
   is the horizontal scroller and the title + footer yield a 480px band,
   so name settings stay reachable while authoring
   (viewer widths frozen from a pre-dock read, applets untouched). Authoring

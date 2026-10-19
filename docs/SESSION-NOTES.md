@@ -1577,3 +1577,71 @@ follows; one Save → Present → Next → Exit round-trip.
   **v48-live** baseline (`index.html` → v48) and the shipped v48 features
   (fluid viewers, authoring pin-dock, single-viewer max-height, settings-panel
   pass). Historical SESSION-NOTES entries left as dated records.
+
+## 2026-10-19 — pinned author bar slide-in (v48)
+
+* Owner report: unpinned, the scenario author bar slides in/out (Σενάρια tab,
+  ✕/ESC, Present→Exit); pinned, it snaps instead of animating (both open and
+  close — the earlier "close already animates" assumption proved wrong in the
+  browser).
+* Root cause: `body.scPinned #scenarioAuthorBar` forced `transform: none;
+  visibility: visible; pointer-events: auto; transition: none;`
+  (`css/mulermoc-nom-scenario-48.css`, ~1339-1358), killing the entrance
+  slide. Also, `fScenarioSetAuthoring(true)` (`scenario-48.js` ~1803-1823)
+  adds `.open` then docks via `fScenarioApplyPinPref()` in the same task, so
+  the bar is first painted already docked-and-open → no transition start.
+* Fix attempts (v48 only, in-repo) and outcome:
+  1. CSS-only: dropped the four pinned state declarations (`transform:none;
+     visibility:visible; pointer-events:auto; transition:none`) so pinned
+     inherits the base `.open` slide. **Still snapped** — the reparent makes
+     the CSS transition see no clean closed→open pair.
+  2. Reflow + `requestAnimationFrame`, then nested double-`rAF`
+     (`fScenarioApplyPinPref`: `remove .open` → `void offsetWidth` → rAF×2 add
+     `.open`). **Still snapped** — reparenting + the `visibility:hidden` start
+     frame defeat the CSS transition.
+  3. **WORKING: Web Animations API.** New `fScenarioSlideBar(dir)` runs
+     `bar.animate([{transform:'translateX(100%)'},{transform:'none'}],
+     {duration:250, easing:'ease'})` on slide-in; reverse for slide-out with
+     `fill:'forwards'` + `.cancel()` on finish (no flash). Imperative, so no
+     before-frame/reparent dependency. `.open` is still the state authority;
+     `fScenarioReduceMotion()` guards `prefers-reduced-motion`; no-WAAPI/old
+     browsers fall through to CSS (pinned snaps).
+* Wired (final, Option B): `fScenarioApplyPinPref()` → `fScenarioSlideBar(1)`
+  (Σενάρια open, Present→Exit). Pinned close → `fScenarioSlideBar(-1, onDone)`
+  where `onDone` unpins (`fScenarioSetPinned(false)`), hides
+  (`fScenarioSyncAuthorUi(true)`) and tears the drawers down while the slide's
+  `fill:forwards` holds the bar off-screen; when the helper returns `false`
+  (no-WAAPI/reduced-motion) the close falls back to the original unpin-then-CSS
+  path. Direct pin-button dock (`fScenarioSetPinned` via `#scPin`) stays
+  instant; unpinned open/close is untouched.
+* CSS: `body.scPinned #scenarioAuthorBar` keeps geometry/`border`/`max-height`/
+  shadow and **`transition: none`** (so CSS never races WAAPI); `transform`/
+  `visibility`/`pointer-events` stay dropped so `.open` controls them.
+* Notes: the 540→480px / `top:50px`→full-height geometry jump is still never
+  animated (only the transform slide). Edge case: on ultra-wide viewports
+  (>~2080px) the closed `translateX(100%)` parks into the right margin, but
+  `visibility: hidden` keeps it non-interactive.
+* Browser checklist (VERIFIED by owner 2026-10-19): open Σενάρια with pin pref
+  on → single slide-in; ✕/ESC / Present→Exit → single slide-out; pin-button
+  toggle → instant dock, no double animation; reduced-motion → instant.
+* APPLIED 2026-10-19 (WAAPI, Option B): `fScenarioSlideBar` + `fScenarioReduceMotion`
+  added; open/close wired; CSS `transition: none` kept in the pinned block.
+  `node --check` OK; CSS braces 176/176. Owner click-through ✔ 2026-10-19.
+* Follow-up (owner): WAAPI slid in/out, but the pinned **close** played
+  close→open→close. Root cause was NOT a transition race: the close path
+  removed `.open` (`fScenarioSyncAuthorUi(true)`) and then the helper
+  **re-added** it (`classList.add("open")`) to make the bar visible for the
+  slide — a genuine remove/re-add state flip, so the bar reappeared (the
+  "open") before the WAAPI slid it out again. A first patch (inline
+  `transition:none`) could not help because the re-show was a real state change.
+* Fix (Option B, `fScenarioSetAuthoring(false)` + `fScenarioSlideBar`): the
+  pinned close now slides the still-**docked** bar out FIRST (it stays `.open`
+  for the whole slide; pinned CSS `transition: none` → no race), and the
+  `.open` removal + unpin + drawer teardown all run from a new `onDone` callback
+  that fires while the animation's `fill:forwards` still holds the off-screen
+  pose — so state flips happen off-screen and `.open` is removed exactly once.
+  `fScenarioSlideBar(dir, onDone)` now returns `true` when it started (false →
+  the close falls back to the original unpin-then-CSS path), sets inline
+  `transition:none` before the `getAnimations()` flush, and no longer touches
+  `.open` itself for the out case. Pinned open is unchanged (single `.open`
+  add). Unpinned open/close untouched.

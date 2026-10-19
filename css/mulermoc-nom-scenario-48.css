@@ -1184,9 +1184,9 @@ border: 2px solid var(--veryLightBlue);
 
 /* Whole-text size input inside the note toolbar. */
 .scenarioDrawer .scNoteToolbar .scTextSizeInput {
-   width: 64px;
+   width: 55px;
    font-size: .8rem;
-   padding: 1px 4px;
+   padding: 1px 1px 1px 2px;
 }
 
 /* Present text: two-column mode (per-step toggle, default 1 column). */
@@ -1343,9 +1343,10 @@ body.scPinned #scenarioAuthorBar {
    bottom: 0;
    width: 480px;
    max-width: 480px;
-   transform: none;
-   visibility: visible;
-   pointer-events: auto;
+    /* No transform/visibility/pointer-events here: pinned inherits the base
+       closed/.open state (transform translateX(100%) <-> none, visibility).
+       transition is forced off so CSS never races the WAAPI slide that JS
+       drives (fScenarioSlideBar); reduced-motion/no-WAAPI just snaps. */
    transition: none;
     /* Height is exact (top+bottom of pageContainer); the lifted 85vh cap must
       not clamp it on tall pages — unpinned keeps the cap. Column flex from

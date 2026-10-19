@@ -1803,18 +1803,32 @@ function fScenarioChrome(show) {
 function fScenarioSetAuthoring(on) {
   MuLERMoCScenario.authoring = !!on;
   if (!MuLERMoCScenario.authoring) {
-    if (MuLERMoCScenario.pinned) fScenarioSetPinned(false);
     MuLERMoCScenario.menuPickMode = false;
-    // Close the bar alone in this frame so its slide animates cleanly
-    // (same sequencing as the Play close); teardown after it lands.
-    fScenarioSyncAuthorUi(true);
-    setTimeout(function () {
+    var teardown = function () {
       var drs = document.querySelectorAll(".scenarioDrawer");
       for (var di = 0; di < drs.length; di++) drs[di].classList.remove("open");
       var lbs = document.querySelectorAll(".scList");
       for (var lbi = 0; lbi < lbs.length; lbi++) lbs[lbi].classList.remove("active");
       fScenarioPaintPickUi();
-    }, 260);
+    };
+    // Pinned close: slide the still-DOCKED bar out first (pinned CSS has
+    // transition:none, so there is no CSS race), then unpin + hide + teardown
+    // from the onDone callback while the bar is held off-screen. Keeping
+    // `.open` set for the whole slide (removing it only in onDone) is what
+    // avoids the old remove-then-re-add toggle that flashed close→open→close.
+    if (MuLERMoCScenario.pinned) {
+      if (fScenarioSlideBar(-1, function () {
+        fScenarioSetPinned(false);
+        fScenarioSyncAuthorUi(true);
+        teardown();
+      })) return;
+      // no WAAPI / reduced motion: fall back to the original unpin-then-CSS.
+      fScenarioSetPinned(false);
+    }
+    // Unpinned (or fallback): close the bar alone in this frame so its slide
+    // animates cleanly; teardown after it lands.
+    fScenarioSyncAuthorUi(true);
+    setTimeout(teardown, 260);
     return;
   }
   fScenarioSyncAuthorUi();
@@ -1884,6 +1898,51 @@ function fScenarioApplyPinPref() {
   if (!MuLERMoCScenario.pinPref || MuLERMoCScenario.pinned) return;
   if (!document.getElementById("scenarioAuthorBar")) return;
   fScenarioSetPinned(true);
+  // Dock reparents the bar and .open lands in the same task, so the CSS
+  // transition never sees a clean closed→open pair (reparenting suppresses
+  // it) — WAAPI drives the visible motion instead. Only bar-return paths call
+  // this helper; the direct pin-button dock stays instant (no animation).
+  fScenarioSlideBar(1);
+}
+
+function fScenarioReduceMotion() {
+  try { return window.matchMedia("(prefers-reduced-motion: reduce)").matches; }
+  catch (e) { return false; }
+}
+
+// Pinned bar slide (dir: 1 = in, -1 = out). WAAPI is imperative, so the
+// reparent/same-task .open timing that defeats the CSS transition can't
+// suppress it. `.open` stays the state authority (visibility + final
+// transform); unsupported/no-WAAPI or reduced-motion just snaps via CSS.
+// Returns true when the animation was started (callers fall back on false).
+// onDone (out only) runs while the fill still holds the off-screen end pose —
+// the caller flips pin/hidden state there so nothing re-appears mid-close.
+function fScenarioSlideBar(dir, onDone) {
+  var bar = document.getElementById("scenarioAuthorBar");
+  if (!bar) return false;
+  if (!window.Animation || !bar.animate || fScenarioReduceMotion()) return false;
+  var kf = dir < 0
+    ? [{ transform: "none" }, { transform: "translateX(100%)" }]
+    : [{ transform: "translateX(100%)" }, { transform: "none" }];
+  try {
+    // Disable the CSS transition FIRST (before any style flush) so toggling
+    // .open can never arm a parallel CSS transition alongside the WAAPI slide.
+    bar.style.transition = "none";
+    // Drop any in-flight slide (rapid reopen during a close) so a stale
+    // fill:forwards animation + its onfinish can't fight the new state.
+    try { bar.getAnimations().forEach(function (an) { an.cancel(); }); } catch (eAn) { /* older engines */ }
+    bar.classList.add("open");
+    // Out: hold the end pose (fill) so onDone's state flip (unpin + remove
+    // .open) happens off-screen with no flash; then cancel so the base closed
+    // CSS (translateX(100%) + hidden) takes over cleanly.
+    var a = bar.animate(kf, { duration: 250, easing: "ease", fill: dir < 0 ? "forwards" : "none" });
+    a.onfinish = function () {
+      try { if (dir < 0 && typeof onDone === "function") onDone(); } catch (eDone) { /* teardown best-effort */ }
+      try { a.cancel(); } catch (eCancel) { /* already gone */ }
+      bar.style.transition = "";
+    };
+    return true;
+  } catch (e) { bar.style.transition = ""; return false; /* leave to CSS */ }
 }
 
 // ── pinned scroll cues (v48) ────────────────────────────────────────────
