@@ -4,7 +4,7 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ---
 
-## [Unreleased] (v48 — fluid viewers + authoring pin-dock + single-viewer max-height; live, `index.html` → v48)
+## [Unreleased] (v48 — fluid viewers + authoring pin-dock + single/double-viewer height; live, `index.html` → v48)
 
 New parallel file set `mulermoc-nom-48.html` + `js/*-48.js` + `css/*-48.css`, copied byte-identically from v47 (only the 7 asset refs in the html differ). `index.html` now redirects to v48 (owner flipped it live); `*47*`/`*46*` remain runnable at root, untouched. All work below is `*48*`-only (plus the shared `js/ui-icons.js` `pin` key). Pre-fork owner tweak carried over: `body`/`html` `overflow-x` handling in the v47 stylesheet.
 
@@ -47,7 +47,13 @@ New parallel file set `mulermoc-nom-48.html` + `js/*-48.js` + `css/*-48.css`, co
 
 ### Shared 240px viewer min-height floor
 
-- **Change** (`molview-48.js` + `jsme-nick-48.css` + `mulermoc-nom-48.html`): the two viewer floors (**2D 200 / 3D 120**) are unified into a single **240px** minimum, `const VIEWER_MIN_H`, applied in `fViewerHeights2D3D` (the `out.full` / single-viewer cap math and the final `h2`/`h3` clamps). With a long present note card the viewers now stop at 240px instead of the old 120px 3D floor; the page scrolls rather than squashing them further. The CSS min-heights mirror it (`.JmolContainer`, `#jsmeNomeclatureSVG` → 240px) so the applet box and DOM agree. The max-height control follows the same floor (`fViewerMaxHeightFull` ceiling, `#viewerMaxHeightRange` `min`). The tiny-screen phone cap (`innerHeight < 430` → 30%) is unchanged and still wins as the final ceiling.
+- **Change** (`molview-48.js` + `jsme-nick-48.css` + `mulermoc-nom-48.html`): the two viewer floors (**2D 200 / 3D 120**) are unified into a single **240px** minimum, `const VIEWER_MIN_H`, applied in `fViewerHeights2D3D` (the `out.full` / single-viewer cap math and the final `h2`/`h3` clamps). With a long present note card the viewers now stop at 240px instead of the old 120px 3D floor; the page scrolls rather than squashing them further. The CSS min-heights mirror it (`.JmolContainer`, `#jsmeNomeclatureSVG` → 240px) so the applet box and DOM agree. The max-height control follows the same floor (`fViewerMaxHeightFull` ceiling, `#viewerMaxHeightRange` `min`). The tiny-screen phone cap (`innerHeight < 430` → 30%) is unchanged and still wins as the final ceiling. (Live value later tuned by the owner: `VIEWER_MIN_H = 200`.)
+
+### Double-viewer height (Ρυθμίσεις control, per-step)
+
+- **Control** (`mulermoc-nom-48.html` + `molview-48.js`): new `#viewerBothHeightSetting` row in the viewer-settings panel — label `Ύψος δύο viewers:` + `#viewerBothHeightCheck` (generic `.checkBoxContainer`, unchecked by default) + `#viewerBothHeightRange` (fixed `min 400`, `max 800`, `step 10`) + `#viewerBothHeightVal` readout. **Unchecked = Auto** (the equal split both viewers get today), **checked = Manual**. `fViewerBothHeightSync()` mirrors state into the control, `fViewerBothHeightFromUi()` writes the live global, `fInitViewerBothHeight()` binds (deferred-tick read of the generic checkbox toggle; re-binds on `DOMContentLoaded` if the panel isn't parsed yet) — parallel to the single-viewer max-height trio. Reuses the existing `.settingRow`/`.viewerHeightRange`/`.viewerHeightVal` classes, so no CSS change.
+- **Engine** (`molview-48.js`): new live global `viewerBothH` (px | `null` = Auto; never `localStorage`) plus constants `VIEWER_BOTH_MIN = 400` / `VIEWER_BOTH_MAX = 800`. `fViewerHeights2D3D` now sets `cap2 = cap3 = clamp(viewerBothH, 400, 800)` when **two** viewers are visible and `!raw`, so both take the slider height (the page scrolls if it no longer fits; the phone cap still trims). Auto (`viewerBothH == null`) leaves the equal split byte-for-byte unchanged; `raw` skips it (the single-viewer ceiling measurement is unaffected). Independent of the single-viewer cap — each governs its own visibility case.
+- **Scenario** (`scenario-48.js`): per-step `show.viewerBothHeight` (additive, no schema change). `fScenarioValidViewerBothHeight` (null/empty → `null`; `parseInt`, clamp 400–800; invalid → `null`), captured via `fScenarioG("viewerBothH")`, defaulted/normalized in `fScenarioDefaults`, warned in `fScenarioValidate` on non-empty invalid input. `fScenarioApplyViewerMaxHeight` (called at both apply sites) now also sets `viewerBothH` and syncs the control; the value is stashed/restored around Present via `fScenarioStashAuthorSettings`/`fScenarioRestoreAuthorSettings`.
 
 ### Single-viewer max height (Ρυθμίσεις control, per-step)
 

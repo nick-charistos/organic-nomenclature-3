@@ -29,6 +29,16 @@ let molZoom2D = MOL_ZOOM_DEFAULT;
 // fViewerHeights2D3D. Set by the Ρυθμίσεις control and per scenario step
 // (show.viewerMaxHeight); scenario owns persistence, this is the live value.
 let viewerMaxH = null;
+// Double-viewer height (v48): null = Auto (the equal split both viewers get
+// today); a number is the absolute px height BOTH viewers take when two are
+// visible. Applied only when exactly two viewers are visible, in
+// fViewerHeights2D3D. Set by the Ρυθμίσεις control and per scenario step
+// (show.viewerBothHeight); scenario owns persistence, this is the live value.
+let viewerBothH = null;
+// Manual double-viewer slider bounds (v48): the control range is a fixed
+// 400–800px regardless of the live single-viewer ceiling.
+const VIEWER_BOTH_MIN = 400;
+const VIEWER_BOTH_MAX = 800;
 // Shared viewer min-height floor (v48): a single 240px minimum for BOTH
 // viewers, so a long present note card can never squash them to an unusable
 // size (the page scrolls instead). Mirrored by the CSS min-heights
@@ -177,6 +187,7 @@ function fNameCompBox(boxId, boxClass, displayComp) {
 
 fInitViewerSettingsBtn();
 fInitViewerMaxHeight();
+fInitViewerBothHeight();
 
 // ── jsmeOnLoad ────────────────────────────────────────────────────────────
 
@@ -468,6 +479,7 @@ function fToggleViewerSettings() {
     panel.classList.add("open");
     btn.classList.add("active");
     try { fViewerMaxHeightSync(); } catch (eS) { /* slider sync best-effort */ }
+    try { fViewerBothHeightSync(); } catch (eS2) { /* slider sync best-effort */ }
   }
 }
 
@@ -561,6 +573,78 @@ function fInitViewerMaxHeight() {
     rng.addEventListener("input", fViewerMaxHeightFromUi);
   }
   fViewerMaxHeightSync();
+}
+
+// ── double-viewer height control (v48) ───────────────────────────────────
+// Ρυθμίσεις row: a checkbox (unchecked = Auto = the equal split both viewers
+// get today, checked = Manual) plus a fixed 400–800px slider. When two viewers
+// are visible, Manual sets BOTH to the slider height. Only the live global
+// `viewerBothH` is set here — scenario steps own persistence
+// (show.viewerBothHeight). fResizeViewers() recomputes.
+function fViewerBothHeightSync() {
+  var chk = document.getElementById("viewerBothHeightCheck");
+  var rng = document.getElementById("viewerBothHeightRange");
+  var val = document.getElementById("viewerBothHeightVal");
+  if (!chk || !rng) return;
+  var manual = viewerBothH != null;
+  try {
+    chk.classList.toggle("selectedCheck", manual);
+    chk.classList.toggle("unselectedCheck", !manual);
+  } catch (eC) { /* class toggle best-effort */ }
+  rng.min = String(VIEWER_BOTH_MIN);
+  rng.max = String(VIEWER_BOTH_MAX);
+  rng.disabled = !manual;
+  var shown;
+  if (manual) {
+    shown = Math.round(viewerBothH);
+  } else {
+    var vh = fViewerHeights2D3D();
+    shown = Math.round(vh.h2 || vh.h3 || VIEWER_BOTH_MIN);
+  }
+  if (shown < VIEWER_BOTH_MIN) shown = VIEWER_BOTH_MIN;
+  if (shown > VIEWER_BOTH_MAX) shown = VIEWER_BOTH_MAX;
+  rng.value = String(shown);
+  if (val) val.textContent = manual ? shown + "px" : "Auto";
+}
+
+function fViewerBothHeightFromUi() {
+  var chk = document.getElementById("viewerBothHeightCheck");
+  var rng = document.getElementById("viewerBothHeightRange");
+  if (!chk || !rng) return;
+  if (chk.classList.contains("selectedCheck")) {
+    var v = parseInt(rng.value, 10);
+    if (isNaN(v)) v = VIEWER_BOTH_MIN;
+    if (v < VIEWER_BOTH_MIN) v = VIEWER_BOTH_MIN;
+    if (v > VIEWER_BOTH_MAX) v = VIEWER_BOTH_MAX;
+    viewerBothH = v;
+  } else {
+    viewerBothH = null;
+  }
+  fViewerBothHeightSync();
+  try { fResizeViewers(); } catch (eR) { /* resize best-effort */ }
+}
+
+function fInitViewerBothHeight() {
+  var chk = document.getElementById("viewerBothHeightCheck");
+  var rng = document.getElementById("viewerBothHeightRange");
+  if (!chk || !rng) {
+    // Script may run before the static panel is parsed; retry once then bind.
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", fInitViewerBothHeight);
+    }
+    return;
+  }
+  // The generic .checkBoxContainer handler toggles the class on the same
+  // click; defer a tick so the post-toggle state is what we read.
+  if (!chk.dataset.vbhBound) {
+    chk.dataset.vbhBound = "1";
+    chk.addEventListener("click", function () { setTimeout(fViewerBothHeightFromUi, 0); });
+  }
+  if (rng && !rng.dataset.vbhBound) {
+    rng.dataset.vbhBound = "1";
+    rng.addEventListener("input", fViewerBothHeightFromUi);
+  }
+  fViewerBothHeightSync();
 }
 
 // ── fToggleNameSettings ────────────────────────────────────────────────
@@ -6454,7 +6538,16 @@ function fViewerHeights2D3D(raw) {
     // nor exceed the space one viewer can actually take. `raw` skips the cap
     // (used to measure the full height for the slider ceiling).
     var cap2 = Infinity, cap3 = Infinity;
-    if (n === 1 && !raw) {
+    // Double visible viewers: an explicit height overrides the equal split for
+    // BOTH (fixed px each; the page scrolls if it no longer fits). Auto
+    // (viewerBothH == null) keeps the split. The phone cap still trims.
+    if (!raw && n === 2 && viewerBothH != null) {
+      var both = Math.round(viewerBothH);
+      if (both < VIEWER_BOTH_MIN) both = VIEWER_BOTH_MIN;
+      if (both > VIEWER_BOTH_MAX) both = VIEWER_BOTH_MAX;
+      cap2 = both;
+      cap3 = both;
+    } else if (n === 1 && !raw) {
       var autoCap = shareFor(2);
       if (show2D) {
         cap2 = viewerMaxH != null ? viewerMaxH : autoCap;

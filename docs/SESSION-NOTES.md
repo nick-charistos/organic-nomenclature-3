@@ -1705,3 +1705,31 @@ follows; one Save → Present → Next → Exit round-trip.
   so on very short/landscape-phone windows the effective minimum can be lower.
 * Docs: CHANGELOG `[Unreleased]` "Shared 240px viewer min-height floor";
   didactic §3 floor note updated.
+
+## 2026-10-19 — double-viewer height control (v48)
+
+* Owner: add a second height control to Ρυθμίσεις, mirroring the single-viewer
+  one — for the case where **two** viewers are shown. Unchecked = Auto (today's
+  equal split); checked = a slider that sets BOTH viewers' height.
+* Decisions: per-step (stored like `show.viewerMaxHeight`) and a **fixed
+  400–800px** slider range. (Owner had earlier hand-tuned `VIEWER_MIN_H` 240 →
+  200; the new control's 400 floor is independent of that shared floor.)
+* `molview-48.js`: new live global `viewerBothH` (`null` = Auto) + constants
+  `VIEWER_BOTH_MIN = 400` / `VIEWER_BOTH_MAX = 800`. `fViewerHeights2D3D` sets
+  `cap2 = cap3 = clamp(viewerBothH, 400, 800)` when `n === 2 && !raw`; Auto
+  leaves the split untouched, `raw` skips it. New `fViewerBothHeightSync` /
+  `fViewerBothHeightFromUi` / `fInitViewerBothHeight` (bound at load and synced
+  when the panel opens), parallel to the `fViewerMaxHeight*` trio.
+* `mulermoc-nom-48.html`: new `#viewerBothHeightSetting` row (label `Ύψος δύο
+  viewers:`, checkbox, `#viewerBothHeightRange` `min 400 max 800 step 10`,
+  readout) reusing the existing classes — no CSS change.
+* `scenario-48.js`: per-step `show.viewerBothHeight` — `fScenarioValidViewerBothHeight`
+  (clamp 400–800, invalid → `null`), `fScenarioG("viewerBothH")` case, capture,
+  default, normalize, validate warning; `fScenarioApplyViewerMaxHeight` also
+  applies it + syncs the control (both apply sites); stash/restore around
+  Present. No schema bump.
+* Verify: `node --check` on both JS files (no browser runtime here); browser
+  click-through pending — toggle the box with two viewers, drag the slider,
+  Save a step, replay in Present, Exit (author setting restored), Export/Import.
+* Docs: CHANGELOG `[Unreleased]` "Double-viewer height (Ρυθμίσεις control,
+  per-step)"; didactic §3 `show.viewerBothHeight` bullet.

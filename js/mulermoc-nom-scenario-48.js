@@ -165,6 +165,7 @@ function fScenarioG(name, fallback) {
       case "atomColorMode2D": return typeof atomColorMode2D !== "undefined" ? atomColorMode2D : fallback;
       case "molZoom2D": return typeof molZoom2D !== "undefined" ? molZoom2D : fallback;
       case "viewerMaxH": return typeof viewerMaxH !== "undefined" ? viewerMaxH : fallback;
+      case "viewerBothH": return typeof viewerBothH !== "undefined" ? viewerBothH : fallback;
       case "mainChainPoolIdx": return typeof mainChainPoolIdx !== "undefined" ? mainChainPoolIdx : fallback;
       case "nameSettingsFlag": return typeof nameSettingsFlag !== "undefined" ? nameSettingsFlag : fallback;
       case "narrateAnalysisFlag": return typeof narrateAnalysisFlag !== "undefined" ? narrateAnalysisFlag : fallback;
@@ -352,6 +353,7 @@ function fScenarioCapture() {
       viewerSettings: false,
       viewers: { "2D": fScenarioViewerOn("2D"), "3D": fScenarioViewerOn("3D") },
       viewerMaxHeight: fScenarioValidViewerMaxHeight(fScenarioG("viewerMaxH", null)),
+      viewerBothHeight: fScenarioValidViewerBothHeight(fScenarioG("viewerBothH", null)),
       controls: { "2D": false, "3D": false },
       save: { "2D": false, "3D": false },
       naming: true,
@@ -432,6 +434,18 @@ function fScenarioValidViewerMaxHeight(v) {
   if (n > 800) return 800;
   return n;
 }
+// Double-viewer height (v48): additive optional show.viewerBothHeight. null/
+// empty = Auto (the equal split both viewers get today). Absolute px height
+// BOTH viewers take when two are visible, clamped 400–800; invalid → null.
+// No schema change (scenarioVersion 1).
+function fScenarioValidViewerBothHeight(v) {
+  if (v === null || typeof v === "undefined" || v === "") return null;
+  var n = parseInt(v, 10);
+  if (isNaN(n)) return null;
+  if (n < VIEWER_BOTH_MIN) return VIEWER_BOTH_MIN;
+  if (n > VIEWER_BOTH_MAX) return VIEWER_BOTH_MAX;
+  return n;
+}
 function fScenarioApplyStepFontSize(step) {
   var p = null;
   try { p = document.getElementById("scStepText"); } catch (e) { /* no DOM */ }
@@ -447,14 +461,18 @@ function fScenarioApplyStepFontSize(step) {
     if (p.classList) p.classList.toggle("scCols2", two);
   } catch (e) { /* no DOM */ }
 }
-// Apply a step's stored single-viewer max height to the live molview global
-// and re-fit the viewers. applyViewerMax(null) resets to Auto. Fsync mirrors
-// the value back into the Ρυθμίσεις control when it exists.
+// Apply a step's stored single-viewer max height and double-viewer height to
+// the live molview globals and re-fit the viewers. null resets each to Auto.
+// The Fsync calls mirror the values back into the Ρυθμίσεις controls when
+// they exist.
 function fScenarioApplyViewerMaxHeight(step) {
   var h = step && step.show ? fScenarioValidViewerMaxHeight(step.show.viewerMaxHeight) : null;
   try { viewerMaxH = h; } catch (eV) { /* global unavailable */ }
+  var hb = step && step.show ? fScenarioValidViewerBothHeight(step.show.viewerBothHeight) : null;
+  try { viewerBothH = hb; } catch (eVb) { /* global unavailable */ }
   try { if (typeof fResizeViewers === "function") fResizeViewers(); } catch (eR) { /* resize unavailable */ }
   try { if (typeof fViewerMaxHeightSync === "function") fViewerMaxHeightSync(); } catch (eU) { /* UI best-effort */ }
+  try { if (typeof fViewerBothHeightSync === "function") fViewerBothHeightSync(); } catch (eUb) { /* UI best-effort */ }
 }
 function fScenarioValidMenuGroups(g) {  var out = [];
   (Array.isArray(g) ? g : []).forEach(function (m) {
@@ -485,6 +503,7 @@ function fScenarioDefaults(step, i) {
       menu: false, viewerButtons: false, viewerSettings: false,
       viewers: { "2D": true, "3D": true },
       viewerMaxHeight: null,
+      viewerBothHeight: null,
       controls: { "2D": false, "3D": false },
       save: { "2D": false, "3D": false },
       naming: true, nameSettings: false, nameEye: false, audio: false, rule: false, text: true,
@@ -501,6 +520,11 @@ function fScenarioDefaults(step, i) {
   // path warns on non-empty invalid input.
   out.show.viewerMaxHeight = fScenarioValidViewerMaxHeight(
     out.show.viewerMaxHeight === undefined ? null : out.show.viewerMaxHeight
+  );
+  // Double-viewer height: normalize silently (null = Auto); the validate path
+  // warns on non-empty invalid input.
+  out.show.viewerBothHeight = fScenarioValidViewerBothHeight(
+    out.show.viewerBothHeight === undefined ? null : out.show.viewerBothHeight
   );
   // removed 2026-10-06 (not in this phase): legacy files may still carry
   // externalLinks / show.infoHost — strip silently, no warning.
@@ -561,6 +585,10 @@ function fScenarioValidate(obj) {
     var _rawVMH = s && s.show ? s.show.viewerMaxHeight : null;
     if (_rawVMH !== null && typeof _rawVMH !== "undefined" && String(_rawVMH) !== "" && fScenarioValidViewerMaxHeight(_rawVMH) === null) {
       warnings.push("Step " + (i + 1) + ": invalid viewer height discarded (Auto used).");
+    }
+    var _rawVBH = s && s.show ? s.show.viewerBothHeight : null;
+    if (_rawVBH !== null && typeof _rawVBH !== "undefined" && String(_rawVBH) !== "" && fScenarioValidViewerBothHeight(_rawVBH) === null) {
+      warnings.push("Step " + (i + 1) + ": invalid double-viewer height discarded (Auto used).");
     }
     var rawMoveto = st.view3D && st.view3D.moveto ? st.view3D.moveto : null;
     st.view3D.moveto = fScenarioValidMoveto(st.view3D.moveto);
@@ -731,6 +759,7 @@ function fScenarioStashAuthorSettings() {
     nameEyeEdit: window.nameEyeEdit === true,
     zoom: (typeof molZoom2D !== "undefined" ? molZoom2D : 2.0),
     viewerMaxHeight: (typeof viewerMaxH !== "undefined" ? viewerMaxH : null),
+    viewerBothHeight: (typeof viewerBothH !== "undefined" ? viewerBothH : null),
   };
 }
 
@@ -757,8 +786,10 @@ function fScenarioRestoreAuthorSettings() {
   // have overwritten it). Re-fit the viewers, then mirror into the control.
   try {
     if (typeof viewerMaxH !== "undefined") viewerMaxH = fScenarioValidViewerMaxHeight(a.viewerMaxHeight);
+    if (typeof viewerBothH !== "undefined") viewerBothH = fScenarioValidViewerBothHeight(a.viewerBothHeight);
     if (typeof fResizeViewers === "function") fResizeViewers();
     if (typeof fViewerMaxHeightSync === "function") fViewerMaxHeightSync();
+    if (typeof fViewerBothHeightSync === "function") fViewerBothHeightSync();
   } catch (eVMH) {
     /* viewer height restore best-effort */
   }
