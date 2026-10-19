@@ -1733,3 +1733,32 @@ follows; one Save → Present → Next → Exit round-trip.
   Save a step, replay in Present, Exit (author setting restored), Export/Import.
 * Docs: CHANGELOG `[Unreleased]` "Double-viewer height (Ρυθμίσεις control,
   per-step)"; didactic §3 `show.viewerBothHeight` bullet.
+
+## 2026-10-19 (cont.) — double-viewer height: combined-total override (v48)
+
+* Owner report: "did not see any change" + two requirements — the value is the
+  **overall** (2D+3D combined) height, and the viewers must move live as the
+  slider is dragged (like the single-viewer slider).
+* Root cause: the first cut applied `viewerBothH` as a per-viewer **cap**
+  (`out.h2 = min(max(each, floor), cap, phoneCap)`) — a cap can only **shrink**.
+  With the auto split (`each`) already below 400px on common screens, the whole
+  400–800 range was a no-op → "no change".
+* Fix (`molview-48.js` `fViewerHeights2D3D`): in the two-visible Manual branch,
+  **override** each viewer with `each2 = each3 = round(clamp(total, 400, 800) / 2)`
+  (per-viewer `each2`/`each3` feed the final `out.h2`/`out.h3`); 400 → 200px
+  each, 800 → 400px each. It now grows **and** shrinks; Auto is unchanged; the
+  single-viewer path still uses its cap.
+* Live adjust: `fViewerBothHeightFromUi` already ran `fResizeViewers()` on each
+  `input`; the override makes that effective. Readout (`fViewerBothHeightSync`)
+  now shows the **combined** height (Auto = `h2 + h3`, Manual = `viewerBothH`),
+  `Npx` in both states.
+* Label: `Ύψος δύο viewers:` → `Ύψος δύο viewers (σύνολο):`.
+* CSS floor: `.JmolContainer` / `#jsmeNomeclatureSVG` `min-height` **240 → 200**
+  to match the live `VIEWER_MIN_H`, so total 400 (= 200 each) is reachable
+  instead of clipped by the DOM floor.
+* Owner picked "align CSS to 200" (over keeping 240 with a 480 slider min).
+* Verify: `node --check` both JS; browser click-through pending — with two
+  viewers, check the box and drag: both resize live (0 → combined total), Save,
+  replay in Present, Exit. Commit `v48: double-viewer height = combined total
+  (override, live)`. Docs: CHANGELOG/Didactic corrected to "combined total,
+  each = half".

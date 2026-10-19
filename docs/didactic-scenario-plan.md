@@ -170,15 +170,17 @@ Visibility rules:
   margins) too, so a two-viewer present step with a note reserves room for
   it (re-fit from `fScenarioChrome` after the card is written).
 * `show.viewerBothHeight` (additive, v48; number px | `null`, default
-  `null` = Auto) sets the height of **both** viewers when **two** are visible.
-  Auto keeps the equal split (`fViewerHeights2D3D`); an explicit value
-  (clamped 400–800, silently sanitized, `warning` on non-empty invalid input)
-  overrides the split for both (the page scrolls if it no longer fits; the
-  `<430px` phone cap still trims). The author sets it in the Ρυθμίσεις panel
-  (unchecked = Auto, checked = fixed 400–800px slider). Applied in playback
-  too (via `fScenarioApplyViewerMaxHeight`), stashed/restored around Present
-  like the other live settings; independent of the single-viewer cap (each
-  governs its own visibility case).
+  `null` = Auto) sets the **combined** 2D+3D height of the viewers when
+  **two** are visible — each viewer takes half. Auto keeps the equal split
+  (`fViewerHeights2D3D`); an explicit value (clamped 400–800, silently
+  sanitized, `warning` on non-empty invalid input) **overrides** the split for
+  both, so 400 → 200px each and 800 → 400px each (the page scrolls if the total
+  no longer fits; the `<430px` phone cap still trims). The author sets it in the
+  Ρυθμίσεις panel (unchecked = Auto, checked = fixed 400–800px slider, live
+  re-fit on drag). Applied in playback too (via
+  `fScenarioApplyViewerMaxHeight`), stashed/restored around Present like the
+  other live settings; independent of the single-viewer cap (each governs its
+  own visibility case).
 * `show.controls.2D` toggles `#radio2DMode`
   (`Συνεπτυγμένος/Ανεπτυγμένος/Σκελετικός`, `Σύμβολα CHn`).
   Per-step drawer checkbox `2D controls` (default unchecked; disabled

@@ -2082,7 +2082,7 @@ header {
    min-height mirrors the JS VIEWER_MIN_H floor (shared with the 2D viewer). */
 .JmolContainer {
   width: 100% !important;
-  min-height: 240px;
+  min-height: 200px;
 }
 
 /* JSME SVG */
@@ -2090,7 +2090,7 @@ header {
   width: 100% !important;
   /* max-width: 450px; */
   height: auto;
-  min-height: 240px;
+  min-height: 200px;
 }
 
 /* ── "Rotate device" prompt ──────────────────────────────────────────── */

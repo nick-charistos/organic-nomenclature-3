@@ -30,16 +30,16 @@ let molZoom2D = MOL_ZOOM_DEFAULT;
 // (show.viewerMaxHeight); scenario owns persistence, this is the live value.
 let viewerMaxH = null;
 // Double-viewer height (v48): null = Auto (the equal split both viewers get
-// today); a number is the absolute px height BOTH viewers take when two are
-// visible. Applied only when exactly two viewers are visible, in
-// fViewerHeights2D3D. Set by the Ρυθμίσεις control and per scenario step
+// today); a number is the COMBINED 2D+3D height when two viewers are visible —
+// each viewer takes half. Applied only when exactly two viewers are visible,
+// in fViewerHeights2D3D. Set by the Ρυθμίσεις control and per scenario step
 // (show.viewerBothHeight); scenario owns persistence, this is the live value.
 let viewerBothH = null;
-// Manual double-viewer slider bounds (v48): the control range is a fixed
-// 400–800px regardless of the live single-viewer ceiling.
+// Manual double-viewer slider bounds (v48): the combined 2D+3D height is a
+// fixed 400–800px range regardless of the live single-viewer ceiling.
 const VIEWER_BOTH_MIN = 400;
 const VIEWER_BOTH_MAX = 800;
-// Shared viewer min-height floor (v48): a single 240px minimum for BOTH
+// Shared viewer min-height floor (v48): a single 200px minimum for BOTH
 // viewers, so a long present note card can never squash them to an unusable
 // size (the page scrolls instead). Mirrored by the CSS min-heights
 // (.JmolContainer / #jsmeNomeclatureSVG) so the applet box and the DOM agree.
@@ -578,9 +578,9 @@ function fInitViewerMaxHeight() {
 // ── double-viewer height control (v48) ───────────────────────────────────
 // Ρυθμίσεις row: a checkbox (unchecked = Auto = the equal split both viewers
 // get today, checked = Manual) plus a fixed 400–800px slider. When two viewers
-// are visible, Manual sets BOTH to the slider height. Only the live global
-// `viewerBothH` is set here — scenario steps own persistence
-// (show.viewerBothHeight). fResizeViewers() recomputes.
+// are visible, Manual sets their COMBINED height — each viewer takes half.
+// Only the live global `viewerBothH` is set here — scenario steps own
+// persistence (show.viewerBothHeight). fResizeViewers() recomputes.
 function fViewerBothHeightSync() {
   var chk = document.getElementById("viewerBothHeightCheck");
   var rng = document.getElementById("viewerBothHeightRange");
@@ -598,13 +598,14 @@ function fViewerBothHeightSync() {
   if (manual) {
     shown = Math.round(viewerBothH);
   } else {
+    // Auto: the combined height the equal split currently yields (2D + 3D).
     var vh = fViewerHeights2D3D();
-    shown = Math.round(vh.h2 || vh.h3 || VIEWER_BOTH_MIN);
+    shown = Math.round((vh.h2 || 0) + (vh.h3 || 0) || VIEWER_BOTH_MIN);
   }
   if (shown < VIEWER_BOTH_MIN) shown = VIEWER_BOTH_MIN;
   if (shown > VIEWER_BOTH_MAX) shown = VIEWER_BOTH_MAX;
   rng.value = String(shown);
-  if (val) val.textContent = manual ? shown + "px" : "Auto";
+  if (val) val.textContent = shown + "px";
 }
 
 function fViewerBothHeightFromUi() {
@@ -6538,15 +6539,16 @@ function fViewerHeights2D3D(raw) {
     // nor exceed the space one viewer can actually take. `raw` skips the cap
     // (used to measure the full height for the slider ceiling).
     var cap2 = Infinity, cap3 = Infinity;
-    // Double visible viewers: an explicit height overrides the equal split for
-    // BOTH (fixed px each; the page scrolls if it no longer fits). Auto
+    // Double visible viewers: an explicit COMBINED total overrides the equal
+    // split for BOTH — each viewer gets half the combined 2D+3D height (it can
+    // grow or shrink; the page scrolls if the total no longer fits). Auto
     // (viewerBothH == null) keeps the split. The phone cap still trims.
+    var each2 = each, each3 = each;
     if (!raw && n === 2 && viewerBothH != null) {
-      var both = Math.round(viewerBothH);
-      if (both < VIEWER_BOTH_MIN) both = VIEWER_BOTH_MIN;
-      if (both > VIEWER_BOTH_MAX) both = VIEWER_BOTH_MAX;
-      cap2 = both;
-      cap3 = both;
+      var total = Math.round(viewerBothH);
+      if (total < VIEWER_BOTH_MIN) total = VIEWER_BOTH_MIN;
+      if (total > VIEWER_BOTH_MAX) total = VIEWER_BOTH_MAX;
+      each2 = each3 = Math.round(total / 2);
     } else if (n === 1 && !raw) {
       var autoCap = shareFor(2);
       if (show2D) {
@@ -6562,8 +6564,8 @@ function fViewerHeights2D3D(raw) {
         if (cap3 > single3) cap3 = single3;
       }
     }
-    if (show2D) out.h2 = Math.min(Math.max(each, VIEWER_MIN_H), cap2, maxViewerH);
-    if (show3D) out.h3 = Math.min(Math.max(each, VIEWER_MIN_H), cap3, maxViewerH);
+    if (show2D) out.h2 = Math.min(Math.max(each2, VIEWER_MIN_H), cap2, maxViewerH);
+    if (show3D) out.h3 = Math.min(Math.max(each3, VIEWER_MIN_H), cap3, maxViewerH);
   } catch (eH) { /* measuring unavailable */ }
   return out;
 }

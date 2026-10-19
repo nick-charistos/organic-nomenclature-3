@@ -435,9 +435,9 @@ function fScenarioValidViewerMaxHeight(v) {
   return n;
 }
 // Double-viewer height (v48): additive optional show.viewerBothHeight. null/
-// empty = Auto (the equal split both viewers get today). Absolute px height
-// BOTH viewers take when two are visible, clamped 400–800; invalid → null.
-// No schema change (scenarioVersion 1).
+// empty = Auto (the equal split both viewers get today). COMBINED 2D+3D height
+// when two are visible (each viewer takes half), clamped 400–800; invalid →
+// null. No schema change (scenarioVersion 1).
 function fScenarioValidViewerBothHeight(v) {
   if (v === null || typeof v === "undefined" || v === "") return null;
   var n = parseInt(v, 10);
