@@ -2078,10 +2078,11 @@ header {
 }
 
 /* JSmol container — base height (220px) kept so JSmol inits at non-zero size.
-   fResizeViewers() corrects dimensions via Jmol.resizeApplet() after load. */
+   fResizeViewers() corrects dimensions via Jmol.resizeApplet() after load.
+   min-height mirrors the JS VIEWER_MIN_H floor (shared with the 2D viewer). */
 .JmolContainer {
   width: 100% !important;
-  min-height: 120px;
+  min-height: 240px;
 }
 
 /* JSME SVG */
@@ -2089,7 +2090,7 @@ header {
   width: 100% !important;
   /* max-width: 450px; */
   height: auto;
-  min-height: 200px;
+  min-height: 240px;
 }
 
 /* ── "Rotate device" prompt ──────────────────────────────────────────── */

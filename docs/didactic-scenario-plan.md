@@ -162,7 +162,9 @@ Visibility rules:
   sets it in the Ρυθμίσεις panel (unchecked = Auto, checked = slider px,
   slider `max` = the live full single-viewer height). Applied in playback
   too (via `fScenarioApplyViewerMaxHeight`), stashed/restored around
-  Present like the other live settings. The 2D CSS floor is 200px.
+  Present like the other live settings. Both viewers share a **240px**
+  min-height floor (`VIEWER_MIN_H`; CSS `.JmolContainer`/`#jsmeNomeclatureSVG`
+  mirror it), so a long note scrolls the page instead of squashing them.
   The fit subtracts the visible `#scStepText` note card (offsetHeight +
   margins) too, so a two-viewer present step with a note reserves room for
   it (re-fit from `fScenarioChrome` after the card is written).

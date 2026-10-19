@@ -1685,3 +1685,23 @@ follows; one Save → Present → Next → Exit round-trip.
   (out of flow), so it adds nothing to the budget.
 * Verified static (`node --check`); owner browser test pending (Present a note
   step with both viewers visible).
+
+## 2026-10-19 — shared 240px viewer min-height floor (v48)
+
+* Owner: with a long note the viewers (esp. 3D) shrank too far; add a minimum.
+  Chosen: one shared floor, **240px** for both viewers; keep it a fixed
+  constant (not a control).
+* Change: `const VIEWER_MIN_H = 240` (`molview-48.js`, next to `viewerMaxH`)
+  replaces the old literals — 2D `200` and 3D `120` — throughout
+  `fViewerHeights2D3D` (`out.full`, the single-viewer `cap2`/`cap3` clamps, and
+  the final `out.h2`/`out.h3`). The max-height control follows the floor too
+  (`fViewerMaxHeightFull` ceiling, `fViewerMaxHeightSync`/`FromUi` clamps,
+  `#viewerMaxHeightRange` `min` 200 → 240 in `mulermoc-nom-48.html`).
+* CSS mirrors the floor so the applet box and DOM agree: `.JmolContainer`
+  120 → 240 and `#jsmeNomeclatureSVG` 200 → 240 (`jsme-nick-48.css`).
+* Behavior: a long present note can now push the page into scroll instead of
+  shrinking the viewers below 240. The tiny-screen phone cap
+  (`innerHeight < 430` → 30%) is unchanged and still acts as the final ceiling,
+  so on very short/landscape-phone windows the effective minimum can be lower.
+* Docs: CHANGELOG `[Unreleased]` "Shared 240px viewer min-height floor";
+  didactic §3 floor note updated.

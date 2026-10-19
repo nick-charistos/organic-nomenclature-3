@@ -29,6 +29,11 @@ let molZoom2D = MOL_ZOOM_DEFAULT;
 // fViewerHeights2D3D. Set by the Ρυθμίσεις control and per scenario step
 // (show.viewerMaxHeight); scenario owns persistence, this is the live value.
 let viewerMaxH = null;
+// Shared viewer min-height floor (v48): a single 240px minimum for BOTH
+// viewers, so a long present note card can never squash them to an unusable
+// size (the page scrolls instead). Mirrored by the CSS min-heights
+// (.JmolContainer / #jsmeNomeclatureSVG) so the applet box and the DOM agree.
+const VIEWER_MIN_H = 240;
 // B2 owned-shared viewer state: current MOL strings (fDeselectMol/fLoadMol2D).
 let myMol2D = null;
 let myMol3D = null;
@@ -486,8 +491,8 @@ document.addEventListener("click", function (e) {
 // slider value. Only the live global `viewerMaxH` is set here — scenario
 // steps own persistence (show.viewerMaxHeight). fResizeViewers() recomputes.
 function fViewerMaxHeightFull() {
-  try { return Math.max(200, Math.round(fViewerHeights2D3D(true).full || 0)); }
-  catch (eF) { return 200; }
+  try { return Math.max(VIEWER_MIN_H, Math.round(fViewerHeights2D3D(true).full || 0)); }
+  catch (eF) { return VIEWER_MIN_H; }
 }
 
 function fViewerMaxHeightSync() {
@@ -501,7 +506,7 @@ function fViewerMaxHeightSync() {
     chk.classList.toggle("unselectedCheck", !manual);
   } catch (eC) { /* class toggle best-effort */ }
   var full = fViewerMaxHeightFull();
-  rng.min = "200";
+  rng.min = String(VIEWER_MIN_H);
   rng.max = String(full);
   rng.disabled = !manual;
   var shown;
@@ -511,7 +516,7 @@ function fViewerMaxHeightSync() {
     var vh = fViewerHeights2D3D();
     shown = Math.round(vh.h2 || vh.h3 || Math.round(full / 2));
   }
-  if (shown < 200) shown = 200;
+  if (shown < VIEWER_MIN_H) shown = VIEWER_MIN_H;
   if (shown > full) shown = full;
   rng.value = String(shown);
   if (val) val.textContent = shown + "px";
@@ -523,8 +528,8 @@ function fViewerMaxHeightFromUi() {
   if (!chk || !rng) return;
   if (chk.classList.contains("selectedCheck")) {
     var v = parseInt(rng.value, 10);
-    if (isNaN(v)) v = 240;
-    if (v < 200) v = 200;
+    if (isNaN(v)) v = VIEWER_MIN_H;
+    if (v < VIEWER_MIN_H) v = VIEWER_MIN_H;
     var full = fViewerMaxHeightFull();
     if (v > full) v = full;
     viewerMaxH = v;
@@ -6363,8 +6368,9 @@ function fSetMolVis3D(theVisModel) {
 // heights — that would be circular). Total = viewport minus page chrome;
 // column chrome = every visible viewerCol child except the two viewer
 // hosts (generic, so per-step chrome toggles are honored). Visible viewers
-// split the remainder equally; floors mirror the CSS minimums, the phone
-// landscape cap stays as ceiling. Returns {h2, h3} (0 = hidden).
+// split the remainder equally; both viewers share the VIEWER_MIN_H floor
+// (mirrors the CSS minimums), the phone landscape cap stays as ceiling.
+// Returns {h2, h3} (0 = hidden).
 function fViewerHeights2D3D(raw) {
   var out = { h2: 0, h3: 0, full: 0 };
   try {
@@ -6436,8 +6442,8 @@ function fViewerHeights2D3D(raw) {
     // right now — the slider ceiling in Ρυθμίσεις.
     var eachFull = shareFor(1);
     out.full = Math.max(
-      show2D ? Math.max(eachFull, 200) : 0,
-      show3D ? Math.max(eachFull, 120) : 0
+      show2D ? Math.max(eachFull, VIEWER_MIN_H) : 0,
+      show3D ? Math.max(eachFull, VIEWER_MIN_H) : 0
     );
     var maxViewerH =
       window.innerHeight < 430 ? Math.floor(window.innerHeight * 0.3) : Infinity;
@@ -6452,19 +6458,19 @@ function fViewerHeights2D3D(raw) {
       var autoCap = shareFor(2);
       if (show2D) {
         cap2 = viewerMaxH != null ? viewerMaxH : autoCap;
-        var single2 = Math.max(each, 200);
-        if (cap2 < 200) cap2 = 200;
+        var single2 = Math.max(each, VIEWER_MIN_H);
+        if (cap2 < VIEWER_MIN_H) cap2 = VIEWER_MIN_H;
         if (cap2 > single2) cap2 = single2;
       }
       if (show3D) {
         cap3 = viewerMaxH != null ? viewerMaxH : autoCap;
-        var single3 = Math.max(each, 120);
-        if (cap3 < 120) cap3 = 120;
+        var single3 = Math.max(each, VIEWER_MIN_H);
+        if (cap3 < VIEWER_MIN_H) cap3 = VIEWER_MIN_H;
         if (cap3 > single3) cap3 = single3;
       }
     }
-    if (show2D) out.h2 = Math.min(Math.max(each, 200), cap2, maxViewerH);
-    if (show3D) out.h3 = Math.min(Math.max(each, 120), cap3, maxViewerH);
+    if (show2D) out.h2 = Math.min(Math.max(each, VIEWER_MIN_H), cap2, maxViewerH);
+    if (show3D) out.h3 = Math.min(Math.max(each, VIEWER_MIN_H), cap3, maxViewerH);
   } catch (eH) { /* measuring unavailable */ }
   return out;
 }
