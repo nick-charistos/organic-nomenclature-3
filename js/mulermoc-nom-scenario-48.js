@@ -2643,7 +2643,7 @@ function fScenarioBuildPanels() {
     fScenarioPaintIconTextBtn(panel.querySelector(".scSave"), "addTask", "Add step");
     fScenarioPaintIconTextBtn(panel.querySelector(".scExport"), "downloadList", "Export");
     fScenarioPaintIconTextBtn(panel.querySelector(".scPresent"), "screen", "Play");
-    fScenarioPaintIconBtn(panel.querySelector(".scDelete"), "deleteScenario", "Διαγραφή σεναρίου");
+    fScenarioPaintIconBtn(panel.querySelector(".scDelete"), "deleteStep", "Διαγραφή σεναρίου");
     host.appendChild(panel);
   });
   fScenarioRenderList();
