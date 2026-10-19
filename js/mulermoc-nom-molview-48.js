@@ -33,7 +33,7 @@ let viewerMaxH = null;
 // viewers, so a long present note card can never squash them to an unusable
 // size (the page scrolls instead). Mirrored by the CSS min-heights
 // (.JmolContainer / #jsmeNomeclatureSVG) so the applet box and the DOM agree.
-const VIEWER_MIN_H = 240;
+const VIEWER_MIN_H = 200;
 // B2 owned-shared viewer state: current MOL strings (fDeselectMol/fLoadMol2D).
 let myMol2D = null;
 let myMol3D = null;
