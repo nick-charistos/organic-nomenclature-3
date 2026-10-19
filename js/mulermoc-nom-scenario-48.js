@@ -439,7 +439,7 @@ function fScenarioApplyStepFontSize(step) {
   var px = step && step.styleText ? fScenarioValidFontSizePx(step.styleText.fontSizePx) : null;
   p.style.fontSize = px ? px + "px" : "";
   var w = step && step.styleText ? fScenarioValidTextWidthPx(step.styleText.textWidthPx) : null;
-  p.style.maxWidth = w ? w + "px" : "";
+  p.style.width = w ? w + "px" : "";
   // Columns via class (not inline): the small-screen collapse lives in CSS
   // media queries, which cannot beat an inline column-count.
   var two = !!(step && step.styleText && fScenarioValidColumns(step.styleText.columns) === 2);
@@ -552,7 +552,7 @@ function fScenarioValidate(obj) {
     }
     var _rawW = s && s.styleText ? s.styleText.textWidthPx : null;
     if (_rawW !== null && typeof _rawW !== "undefined" && String(_rawW) !== "" && fScenarioValidTextWidthPx(_rawW) === null) {
-      warnings.push("Step " + (i + 1) + ": invalid text width discarded (default 980px used).");
+      warnings.push("Step " + (i + 1) + ": invalid text width discarded (default auto used).");
     }
     var _rawC = s && s.styleText ? s.styleText.columns : null;
     if (_rawC !== null && typeof _rawC !== "undefined" && String(_rawC) !== "" && fScenarioValidColumns(_rawC) === null && String(_rawC) !== "1") {
@@ -1756,8 +1756,15 @@ function fScenarioChrome(show) {
   var c3 = show.controls && show.controls["3D"] === true && show3D;
   fScenarioShowBar("radio2DMode", !(present && !c2));
   fScenarioShowBar("controls3D", !(present && !c3));
-  fScenarioHide("save2DBtn", present && !(show.save && show.save["2D"] === true && show2D));
-  fScenarioHide("save3DBtn", present && !(show.save && show.save["3D"] === true && show3D));
+  // Save-image buttons ride their control bar: the per-step "2D/3D ρυθμίσεις"
+  // checkbox (`show.controls`) is the only authoring UI, so a checked bar must
+  // also surface its save button. Legacy `show.save` stays an independent OR
+  // trigger. Class-aware like the bars above (a stale `hide` class from a
+  // no-viewer exit would otherwise defeat the inline-display restore).
+  var save2On = !!c2 || (show.save && show.save["2D"] === true && show2D);
+  var save3On = !!c3 || (show.save && show.save["3D"] === true && show3D);
+  fScenarioShowBar("save2DBtn", !(present && !save2On));
+  fScenarioShowBar("save3DBtn", !(present && !save3On));
   // title-bar chrome: always hidden in presentation
   fScenarioHide("viewerVisBtns", present);
   fScenarioHide("viewerSettingsBtnDiv", present);
@@ -2803,7 +2810,7 @@ function fScenarioRenderOne(scen) {
       wInput.title = "Πλάτος κειμένου στην παρουσίαση (px) (320–1200)";
       var curW = st.styleText ? fScenarioValidTextWidthPx(st.styleText.textWidthPx) : null;
       wInput.value = curW === null ? "" : String(curW);
-      wInput.placeholder = "980";
+      wInput.placeholder = "auto";
       wInput.onchange = function () {
         var raw = wInput.value;
         if (String(raw) === "") {

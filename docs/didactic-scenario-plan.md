@@ -179,7 +179,11 @@ Visibility rules:
   stored values. `Σύμβολα ατόμων` (`#atomSymbolsCheck`) moved out of this
   bar into the Ρυθμίσεις panel as its own `Σύμβολα ατόμων 3D` row (v48).
 * `show.save` toggles `#save2DBtn` / `#save3DBtn`
-  independently of `controls`. Default `false`.
+  independently of `controls`. Default `false`; there is no authoring
+  checkbox for it, so in practice the save-image buttons now ride their
+  viewer's `2D/3D ρυθμίσεις` checkbox (`show.controls`) — shown whenever
+  the matching control bar is shown — with a stored `show.save` acting as
+  an additional OR trigger (legacy files).
 * `#viewerVisBtns`, `#viewerSettingsPanel` +
   `#viewerSettingsBtnDiv` are always hidden in playback; the left menu
   is hidden unless the step carries a menu subset (`show.menu`, see

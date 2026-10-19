@@ -1645,3 +1645,22 @@ follows; one Save → Present → Next → Exit round-trip.
   `transition:none` before the `getAnimations()` flush, and no longer touches
   `.open` itself for the out case. Pinned open is unchanged (single `.open`
   add). Unpinned open/close untouched.
+
+## 2026-10-19 — save-image buttons follow the 2D/3D ρυθμίσεις checkbox (v48)
+
+* Owner request: in a step's settings, checking `2D ρυθμίσεις` / `3D ρυθμίσεις`
+  should also surface the corresponding save-image button in playback.
+* Root cause: `fScenarioChrome` (`scenario-48.js` ~1759) gated `#save2DBtn` /
+  `#save3DBtn` on `show.save["2D"|"3D"]`, but **nothing writes `show.save`** —
+  it only appears in the capture defaults / normalize (`:356`, `:489`, `:499`).
+  The per-step drawer's only relevant checkboxes are `2D/3D ρυθμίσεις`, which
+  write `show.controls`, so the save buttons never appeared in presentation.
+* Fix: each save button now rides its control bar —
+  `save2On = !!c2 || (show.save["2D"] === true && show2D)`, likewise 3D — shown
+  whenever `show.controls["2D"|"3D"]` is checked (and that viewer visible),
+  still honoring a legacy `show.save` as an OR. Both switched from
+  `fScenarioHide` to the class-aware `fScenarioShowBar` (they sit in
+  `fScenarioRestoreChrome`'s list, so a stale `hide` class from a no-viewer exit
+  could otherwise suppress them). No schema change; `fScenarioUpdateStep`
+  already preserves `show.controls`, so Update keeps working.
+* Docs: didactic `show.save` note + CHANGELOG `[Unreleased]` subsection.

@@ -35,6 +35,11 @@ New parallel file set `mulermoc-nom-48.html` + `js/*-48.js` + `css/*-48.css`, co
 - **Consistency hardening** (`molview-48.js`): `fHighLightMainChain`, `fHighLightMainChainBonds` and the skeletal case of `fShowNumbering` used the same truthiness test, so an empty stored chain was treated as valid and produced an **empty** highlight. They now fall back to the algorithmic chain when the stored array is missing/empty.
 - No CSS/HTML change; `scenarioVersion` unchanged (live-only UI state).
 
+### Save-image buttons follow the 2D/3D ρυθμίσεις checkbox (per-step)
+
+- **Bug** (`scenario-48.js` `fScenarioChrome`): in playback `#save2DBtn`/`#save3DBtn` were gated on `show.save["2D"/"3D"]`, but **no authoring UI writes `show.save`** (the per-step drawer only carries the `2D/3D ρυθμίσεις` checkboxes, which write `show.controls`), so the save-image buttons never appeared even with a checked ρυθμίσεις bar.
+- **Fix**: the two buttons now ride their control bar — shown whenever `show.controls["2D"/"3D"]` is checked (and that viewer visible) — driven by the class-aware `fScenarioShowBar` (a stale `hide` class from a no-viewer exit could otherwise defeat the inline-display restore). A stored `show.save` stays an independent OR trigger for legacy files. No schema change; "Update" already preserves `show.controls`. (v48 files only.)
+
 ### Single-viewer max height (Ρυθμίσεις control, per-step)
 
 - **Control** (`mulermoc-nom-48.html` + `jsme-nick-48.css` + `molview-48.js`): new `#viewerMaxHeightSetting` row in the viewer-settings panel — label `Όριο ύψους μεμονωμένου viewer:` + `#viewerMaxHeightCheck` (generic `.checkBoxContainer`, unchecked by default) + `#viewerMaxHeightRange` (`min 200`, dynamic `max`, `step 10`) + `#viewerMaxHeightVal` readout. **Unchecked = Auto**, **checked = Manual**. `fViewerMaxHeightSync()` mirrors state into the control, `fViewerMaxHeightFromUi()` writes the live global, `fInitViewerMaxHeight()` binds (deferred-tick read of the generic checkbox toggle; re-binds on `DOMContentLoaded` if the panel isn't parsed yet), `fViewerMaxHeightFull()` returns the dynamic ceiling (`max(200, fViewerHeights2D3D(true).full)`). The panel's `.open` now scrolls internally (`overflow-y:auto`, `max-height: min(70vh, 400px)`) so added rows never clip.
