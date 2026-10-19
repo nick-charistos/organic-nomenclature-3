@@ -6373,6 +6373,20 @@ function fViewerHeights2D3D(raw) {
     if (h1 && h1.offsetParent !== null) total -= h1.offsetHeight;
     var cred = document.getElementById("creditsUs");
     if (cred && cred.offsetParent !== null) total -= cred.offsetHeight;
+    // Per-step note card (presentation only): a flow sibling above the app
+    // columns, so its full vertical footprint (incl. its net margins) must
+    // leave the viewer budget — otherwise a two-viewer present step with a
+    // note overflows the page. Hidden in authoring → offsetParent is null.
+    var stepTxt = document.getElementById("scStepText");
+    if (stepTxt && stepTxt.offsetParent !== null) {
+      var sTxtH = stepTxt.offsetHeight, sTxtMT = 0, sTxtMB = 0;
+      try {
+        var sTxtCs = window.getComputedStyle(stepTxt);
+        sTxtMT = parseFloat(sTxtCs.marginTop) || 0;
+        sTxtMB = parseFloat(sTxtCs.marginBottom) || 0;
+      } catch (eSTxt) { /* computed style unavailable */ }
+      total -= (sTxtH + sTxtMT + sTxtMB);
+    }
     total -= 30; // page margins / gaps
     var vc = document.getElementById("viewerCol");
     var chrome = 0;

@@ -1664,3 +1664,24 @@ follows; one Save → Present → Next → Exit round-trip.
   could otherwise suppress them). No schema change; `fScenarioUpdateStep`
   already preserves `show.controls`, so Update keeps working.
 * Docs: didactic `show.save` note + CHANGELOG `[Unreleased]` subsection.
+
+## 2026-10-19 — present step-text reserved in the viewer height fit (v48)
+
+* Owner: single-viewer height (explicit via Ρυθμίσεις `Όριο ύψους μεμονωμένου
+  viewer`) and the two-viewer auto-fit are fine; the gap is **presentation with
+  two viewers** — the fit must also account for the `#scStepText` note card.
+* Root cause: `fViewerHeights2D3D` (`molview-48.js` ~6370) subtracts the
+  header, `#pageTitle` and `#creditsUs` but **not `#scStepText`** (the note card
+  inserted after the h1, normal flow above the columns). With a note, viewers
+  took the full height and the page scrolled.
+* Fix: subtract the visible card's `offsetHeight` + computed top/bottom margins
+  (`margin:-10px auto 20px auto` → net +10px). Authoring is unaffected (card is
+  `display:none` → `offsetParent` null). Because the step apply fits the
+  viewers *before* `fScenarioChrome` fills the new card, `fScenarioChrome` now
+  re-runs `fResizeViewers()` (present-only) right after
+  `fScenarioFillStepPanel`/`fScenarioHide("scStepText")`; the `offsetHeight`
+  read forces the fresh layout. Width-driven re-fits stay on the `#viewerCol`
+  observer (`fInitZoomObserver2D`). Note: `#scenarioPlayBar` is `position:fixed`
+  (out of flow), so it adds nothing to the budget.
+* Verified static (`node --check`); owner browser test pending (Present a note
+  step with both viewers visible).

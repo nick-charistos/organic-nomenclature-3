@@ -1793,6 +1793,13 @@ function fScenarioChrome(show) {
   var _txtStep = fScenarioPresent().steps[fScenarioPresent().index];
   fScenarioFillStepPanel(_txtStep);
   fScenarioHide("scStepText", !present || !showNoteOn(_txtStep));
+  // The step apply fits the viewers earlier (fScenarioApplyViewerMaxHeight),
+  // before this step's text card is written — so re-fit now that the card's
+  // height (or its absence) is known, letting a two-viewer present step
+  // reserve room for the note. offsetHeight read forces the fresh layout.
+  if (present) {
+    try { if (typeof fResizeViewers === "function") fResizeViewers(); } catch (eRT) { /* resize best-effort */ }
+  }
   // own UI: author bar + drawer follow authoring mode; the edge tab
   // hides only in presentation (see fScenarioSyncAuthorUi)
   fScenarioSyncAuthorUi();

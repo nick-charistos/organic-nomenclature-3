@@ -163,6 +163,9 @@ Visibility rules:
   slider `max` = the live full single-viewer height). Applied in playback
   too (via `fScenarioApplyViewerMaxHeight`), stashed/restored around
   Present like the other live settings. The 2D CSS floor is 200px.
+  The fit subtracts the visible `#scStepText` note card (offsetHeight +
+  margins) too, so a two-viewer present step with a note reserves room for
+  it (re-fit from `fScenarioChrome` after the card is written).
 * `show.controls.2D` toggles `#radio2DMode`
   (`Συνεπτυγμένος/Ανεπτυγμένος/Σκελετικός`, `Σύμβολα CHn`).
   Per-step drawer checkbox `2D controls` (default unchecked; disabled
