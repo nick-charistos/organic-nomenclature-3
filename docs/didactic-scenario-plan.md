@@ -89,7 +89,7 @@ State notes (grounded in v48; v42–v47 identical unless noted):
 
 * `selectedMol`, `mode2D/modeSuffix`, `mainChainMode`,
   `etherNamingMode`, `nameAnalysisMode`, `selectedRule` mirror
-  `js/mulermoc-nom-molview-45.js` (`fSelectMol`, `fShowNameAnalysis`,
+  `js/mulermoc-nom-molview-48.js` (`fSelectMol`, `fShowNameAnalysis`,
   `fExplainNameComp`). (Older revisions cited `molview-42.js` line numbers;
   line refs are fragile — prefer function names.)
 * `mode2D` ∈ `condensed` / `expanded` / `skeletal` / `condensedZigZag`;
@@ -157,8 +157,9 @@ Visibility rules:
 * `show.viewerMaxHeight` (additive, v48; number px | `null`, default
   `null` = Auto) caps a **single visible** viewer's height. Auto caps it at
   the both-visible share (`fViewerHeights2D3D`), so hiding the other viewer
-  never resizes the survivor; an explicit value (clamped 200–800, silently
-  sanitized, `warning` on non-empty invalid input) overrides. The author
+  never resizes the survivor; an explicit value (clamped
+  `VIEWER_MIN_H`–`VIEWER_MAX_H`, live 150–2000; silently sanitized, `warning`
+  on non-empty invalid input) overrides. The author
   sets it in the Ρυθμίσεις panel (unchecked = Auto, checked = slider px,
   slider `max` = the live full single-viewer height). Applied in playback
   too (via `fScenarioApplyViewerMaxHeight`), stashed/restored around
@@ -312,10 +313,10 @@ Visibility rules:
   panels scroll under the `85vh` cap, never shrink. One empty card is
   always kept: a panel's Delete locks when it is the last remaining card
   and empty (a sole filled card keeps delete-then-autocreate); every
-  scenario Delete is confirm-guarded (icon `deleteScenario`, modal names
+  scenario Delete is confirm-guarded (icon `deleteStep`, modal names
   the scenario — `fScenarioConfirm`).
 * Scenario cards (`.scenarioPanel[data-scenario-id]`, explicit active
-  card): per-card title rename, step count, delete (`deleteScenario`
+  card): per-card title rename, step count, delete (`deleteStep`
   icon, confirm-guarded); button panel
   (`Add step`, `Steps`, `Export`, `Play ▶` — no Import); in-flow
   drawer (down/up via `.open`, accordion: one open at a time,
@@ -330,7 +331,8 @@ Visibility rules:
   column toggle icon + clean icon, whole-text size/width via per-step
   `Size (px)` input `styleText.fontSizePx`
   (12–28, empty = 18px) and `Width (px)` input `styleText.textWidthPx`
-  (320–1200, empty = 980px card max-width); 1↔2 column toggle
+  (320–1200, empty = 980px default width; explicit values override up to the
+  card width); 1↔2 column toggle
   `styleText.columns` (default 1; lists never split via `break-inside`,
   small screens collapse to 1); `<ul>`/`<ol>`/`<small>`/`<big>` still
   render in saved notes but are no longer inserted),
@@ -452,7 +454,7 @@ Kept untouched: v42 copies (`molview-42.js`, `jsme-nick-42.css` — frozen),
 * Legacy `#molInfo` in `functional-groups.html:80` is a
   different page and stays untouched (now in `archive/html/`).
 
-## 7. v1 build status (v43 done, v44 released, v45 current)
+## 7. v1 build status (v43 done, v44 released, v48 current)
 
 Done in v43 (`mulermoc-nom-43.html`, last suffixed copy; carried through v44 into v45 unchanged unless noted in `CHANGELOG.md [v44]`):
 
@@ -469,7 +471,7 @@ Done in v43 (`mulermoc-nom-43.html`, last suffixed copy; carried through v44 int
    assertions (manual click-through pending).
 6. ✅ CHANGELOG v43 entry (`index.html` → 43 in repo3 only).
 
-Remaining: v47 is live (`index.html` → 47); v48 is the working-copy file set (`*48*` = `*47*` copy + fluid viewers + authoring pin-dock work, see `CHANGELOG.md [Unreleased]`; `*47*`/`*46*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced); then quizzes/games on the
+Remaining: v48 is live (`index.html` → 48; fluid viewers + authoring pin-dock + single/double-viewer height, see `CHANGELOG.md [Unreleased]`; `*47*`/`*46*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced); then quizzes/games on the
 same reuse contract. The stepper walk index is intentionally not captured in steps (EXPLORE aid, not step state).
 
 ## 8. Open questions for development (moveto timing closed 2026-10-04)

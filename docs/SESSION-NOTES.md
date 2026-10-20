@@ -1850,3 +1850,39 @@ follows; one Save → Present → Next → Exit round-trip.
   synced to 71 keys and multiple-bond-first wording (historical 69 references
   left intact).
 * Commit `v48: multiple-bond-first main-chain ranking + 2 alkene test molecules`.
+
+## 2026-10-20 — v48 review: bounds, width cap, confirm a11y, doc sweep
+
+* Review of the v48 file set + markdown docs (static; no browser runtime here).
+* `scenario-48.js`: `fScenarioValidViewerMaxHeight` now clamps
+  `VIEWER_MIN_H`–`VIEWER_MAX_H` (150–2000) instead of the hardcoded 200–800,
+  so a slider value (150 or >800) is no longer silently rewritten on
+  Save/apply; live apply still re-clamps to the real single-viewer share. The
+  new `VIEWER_MAX_H` constant lives in `molview-48.js` as a sanity ceiling
+  (the slider ceiling itself stays screen-derived).
+* `scenario-48.js`: the confirm dialog removes a stale capture listener before
+  re-arming, stores/restores focus to the triggering control, and labels the
+  dialog via `aria-labelledby` (`#scConfirmMsg`).
+* `css/mulermoc-nom-scenario-48.css`: `#scStepText` is now `width: 980px;
+  max-width: 100%` — the empty default stays 980 while explicit
+  `styleText.textWidthPx` values (up to 1200) take effect (previously capped by
+  `max-width: 980px`). `mulermoc-nom-48.html`: single-height range no-JS
+  fallback min 240 → 150.
+* `core-48.js`: comment only — `oriented` (the unfiltered Step 7 pick used for
+  ether/ester info) must not be used as the displayed chain; pool[0] is
+  authoritative.
+* `ui-icons.js`: dropped the unused `deleteScenario` key (the card has used
+  `deleteStep` since `11685fb`; no version referenced it). `deleteStep` stays.
+* Docs reconciled: README (v48 repo row, baseline/verification wording,
+  double-viewer control, removed the fixed grouped-menu gap and the stale v45
+  working-copy line); didactic (molview-48, 150–2000 message, deleteStep ×2,
+  width wording, v48 status); PROJECT-PLAN/.GR (scenario-48 paths, v48
+  headings, height wording); CHANGELOG (shared icon keys, deleteStep wiring +
+  dropped key, min 150 / 150–2000, misc-UI bullets for the narrate icon and
+  name-style active states).
+* Checked: `node --check` on the five `*-48.js` files + `ui-icons.js`;
+  `deleteScenario` → 0 references; CSS braces balanced.
+* Verify (owner): browser click-through still pending for the confirm dialog
+  (both deletes + Άκυρο/ESC/backdrop/focus return), single height 150 & 900
+  round-trip, both height 300/1000, step width 1200, pin/unpin with both
+  viewers (ResizeObserver warnings), narrow-viewport overflow.

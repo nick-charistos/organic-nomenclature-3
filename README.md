@@ -4,7 +4,7 @@ A Greek-first interactive learning platform for organic nomenclature, built arou
 
 Desinged and developed by Nickolas Charistos
 
-**Current baseline:** v48 is live (`index.html` → v48) after browser verification — fluid viewers, authoring pin-dock, single-viewer max-height, and the settings-panel UI pass; v47 and earlier remain runnable at root — see [CHANGELOG](docs/CHANGELOG.md)
+**Current baseline:** v48 is live (`index.html` → v48) — fluid viewers, authoring pin-dock, single/double-viewer height, and the settings-panel UI pass; browser click-through of the v48 authoring extras (confirm dialog, height controls, pin/unpin) is still pending; v47 and earlier remain runnable at root — see [CHANGELOG](docs/CHANGELOG.md)
 **Entry point:** [index.html](index.html) → [mulermoc-nom-48.html](mulermoc-nom-48.html); previous versions `mulermoc-nom-47.html`/`-46.html`/`-45.html`/`-44.html` runnable alongside
 
 | Layer | File |
@@ -25,7 +25,7 @@ Desinged and developed by Nickolas Charistos
 | Site | Serves | Status |
 |---|---|---|
 | [organic-nomenclature-2](https://nick-charistos.github.io/organic-nomenclature-2/) | v42 | frozen — emergency hotfixes only |
-| [organic-nomenclature-3](https://nick-charistos.github.io/organic-nomenclature-3/) | v46 | active — all new work happens here |
+| [organic-nomenclature-3](https://nick-charistos.github.io/organic-nomenclature-3/) | v48 | active — all new work happens here |
 
 Root holds the files of the current live set (`*48*`; `mulermoc-nom-42/43/44/45/46/47.html` are kept runnable alongside). Older file sets live in [archive/](archive/README.md) (non-runnable museum). Runnable history via git tags `v41`–`v44`.
 
@@ -45,7 +45,7 @@ Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (o
 
 ### Viewer and UI
 - 2D (JSME) and 3D (JSmol) views; condensed, expanded, skeletal and annotated-skeletal modes; `[2D][3D]` visibility toggles; PNG export.
-- **Fluid viewers (v48):** both viewers fit the viewer column via native `setSize` (container-derived heights, debounced `ResizeObserver`); a per-viewer **single max-height** control (Auto | manual px) lives in Ρυθμίσεις and is stored per scenario step.
+- **Fluid viewers (v48):** both viewers fit the viewer column via native `setSize` (container-derived heights, debounced `ResizeObserver`); a **single max-height** control and a **combined 2D+3D height** control for the two-viewer case (Auto | manual px) live in Ρυθμίσεις and are stored per scenario step.
 - **Authoring pin-dock (v48):** the scenario bar docks full-height beside the app (scoped horizontal scroll with edge cues); the pinned viewer width is adaptive (`clamp`, keeps its original width when the screen has room, eases to a 400px floor); viewer-column UI text scales fluidly via a container query.
 - **Ρυθμίσεις pass (v48):** the 2D/3D detail toggles (`Έγχρωμα Σύμβολα`, `Σύμβολα ατόμων`) are consolidated into the gear panel; the `Από δεδομένα` main-chain bullet is disabled when the molecule has no stored chain data.
 - Menu groups: homologous series (default sort by carbon count), chemical classes, rules, flat `Όλα τα μόρια`.
@@ -60,9 +60,8 @@ Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (o
 
 ### Known gaps
 - Unsaturated ethers/esters and wider ester coverage; rings and aromatics not supported.
-- v45 working copy: 2D rename static-audited (braces balanced, zero legacy refs; two composite-key bugs caught and fixed in review); tooltip hover checks pending (owner); scenario exports still stamp `"app": "mulermoc-nom-44"` (informational only — validation ignores it).
+- v48: browser click-through pending for the confirm dialog, both height controls, and pin/unpin (`docs/SESSION-NOTES.md`); scenario exports still stamp `"app": "mulermoc-nom-44"` (informational only — validation ignores it).
 - Stored scenario `Αλκάνια-Αιθάνιο.scenario.json` (7 steps: ethane walkthrough + alkane menu browsing + 3D alkane models) replaces the earlier `ethene*.scenario.json` drafts (which selected ethane while titled ethene); wider scenario library and EPAL/Lyceum two-level notes still to be written.
-- Present grouped menus (`.scPresentGroup.open`) still carry the old dark fill while app group headers went light blue — re-mirror in the UI pass.
 
 ---
 

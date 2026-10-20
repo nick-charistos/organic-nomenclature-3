@@ -196,6 +196,7 @@ function fScenarioToast(msg) {
 var fScenarioConfirmEl = null;
 var fScenarioConfirmKey = null;
 var fScenarioConfirmYes = null;
+var fScenarioConfirmPrevFocus = null;
 function fScenarioConfirmClose() {
   var ov = fScenarioConfirmEl;
   if (ov) ov.classList.remove("show");
@@ -204,15 +205,23 @@ function fScenarioConfirmClose() {
     fScenarioConfirmKey = null;
   }
   fScenarioConfirmYes = null;
+  try {
+    if (fScenarioConfirmPrevFocus && document.contains(fScenarioConfirmPrevFocus) &&
+        fScenarioConfirmPrevFocus.focus) {
+      fScenarioConfirmPrevFocus.focus();
+    }
+  } catch (eF) { /* focus restore best-effort */ }
+  fScenarioConfirmPrevFocus = null;
 }
 function fScenarioConfirmBuild() {
   var ov = document.createElement("div");
   ov.id = "scenarioConfirm";
   ov.setAttribute("role", "dialog");
   ov.setAttribute("aria-modal", "true");
+  ov.setAttribute("aria-labelledby", "scConfirmMsg");
   ov.innerHTML =
     "<div class='scConfirmPanel'>" +
-      "<div class='scConfirmMsg'></div>" +
+      "<div class='scConfirmMsg' id='scConfirmMsg'></div>" +
       "<div class='scConfirmBtns'>" +
         "<button type='button' class='scConfirmNo'>Άκυρο</button>" +
         "<button type='button' class='scConfirmYes'>Διαγραφή</button>" +
@@ -225,6 +234,9 @@ function fScenarioConfirmBuild() {
 function fScenarioConfirm(msg, onYes, yesLabel) {
   var ov = fScenarioConfirmEl;
   if (!ov || !document.body.contains(ov)) ov = fScenarioConfirmBuild();
+  if (!ov.classList.contains("show")) {
+    try { fScenarioConfirmPrevFocus = document.activeElement; } catch (eAF) { fScenarioConfirmPrevFocus = null; }
+  }
   var msgEl = ov.querySelector(".scConfirmMsg");
   var noBtn = ov.querySelector(".scConfirmNo");
   var yesBtn = ov.querySelector(".scConfirmYes");
@@ -243,6 +255,11 @@ function fScenarioConfirm(msg, onYes, yesLabel) {
   };
   // Click on the dim backdrop (not the panel) cancels.
   ov.onclick = function (e) { if (e.target === ov) fScenarioConfirmClose(); };
+  // Drop any listener left by a re-entrant open before arming this one.
+  if (fScenarioConfirmKey) {
+    document.removeEventListener("keydown", fScenarioConfirmKey, true);
+    fScenarioConfirmKey = null;
+  }
   // Capture phase so ESC cancels the dialog without also closing the author bar.
   fScenarioConfirmKey = function (e) {
     if (e.key === "Escape") {
@@ -491,13 +508,14 @@ function fScenarioValidChainIdx(v) {
 }
 // Single-viewer max height (v48): additive optional show.viewerMaxHeight.
 // null/empty = Auto (cap a lone viewer at the both-visible height). Absolute
-// px, clamped 200–800; invalid → null. No schema change (scenarioVersion 1).
+// px, clamped to the live floor/ceiling (VIEWER_MIN_H–VIEWER_MAX_H); invalid
+// → null. No schema change (scenarioVersion 1).
 function fScenarioValidViewerMaxHeight(v) {
   if (v === null || typeof v === "undefined" || v === "") return null;
   var n = parseInt(v, 10);
   if (isNaN(n)) return null;
-  if (n < 200) return 200;
-  if (n > 800) return 800;
+  if (n < VIEWER_MIN_H) return VIEWER_MIN_H;
+  if (n > VIEWER_MAX_H) return VIEWER_MAX_H;
   return n;
 }
 // Double-viewer height (v48): additive optional show.viewerBothHeight. null/

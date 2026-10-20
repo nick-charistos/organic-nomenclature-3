@@ -1156,7 +1156,9 @@ function fCalcMainChain() {
     // hydrocarbon unranked, ether recorded without requirement), then the best
     // multiple-bond tier (most C=C/C≡C → most C=C → longest; fRankChainPool).
     // Falls back to the best tier overall when nothing covers the anchors.
-    // etherInfo/esterInfo above intentionally keep the legacy `oriented` pick.
+    // etherInfo/esterInfo above intentionally keep the legacy `oriented` pick;
+    // that pick is unfiltered, so it must never be used as the displayed main
+    // chain — pool[0] (Step 9) is authoritative.
     mainChainPool = fRankChainPool(candidatePaths,
         fTopFgAnchorSet(functionalGroupObj, atomConnectivityList, allAtomsTypeList),
         function (p) { return [p.length, countAnchorsInPath(p), countMultiBonds(p), countDoubleBonds(p)] },

@@ -39,6 +39,11 @@ let viewerBothH = null;
 // fixed 300–1000px range regardless of the live single-viewer ceiling.
 const VIEWER_BOTH_MIN = 300;
 const VIEWER_BOTH_MAX = 1000;
+// Sanity ceiling for stored single-viewer heights (show.viewerMaxHeight): the
+// live slider ceiling is screen-derived and can exceed 1000 on tall displays,
+// so scenario validation must not silently rewrite those values. Values applied
+// live are still clamped to the real single-viewer share (fViewerHeights2D3D).
+const VIEWER_MAX_H = 2000;
 // Shared viewer min-height floor (v48): a single 150px minimum for BOTH
 // viewers, so a long present note card can never squash them to an unusable
 // size (the page scrolls instead). Mirrored by the CSS min-heights
@@ -6551,10 +6556,10 @@ function fViewerHeights2D3D(raw) {
     // (viewerBothH == null) keeps the split. The phone cap still trims.
     var each2 = each, each3 = each;
     if (!raw && n === 2 && viewerBothH != null) {
-      var total = Math.round(viewerBothH);
-      if (total < VIEWER_BOTH_MIN) total = VIEWER_BOTH_MIN;
-      if (total > VIEWER_BOTH_MAX) total = VIEWER_BOTH_MAX;
-      each2 = each3 = Math.round(total / 2);
+      var bothTotal = Math.round(viewerBothH);
+      if (bothTotal < VIEWER_BOTH_MIN) bothTotal = VIEWER_BOTH_MIN;
+      if (bothTotal > VIEWER_BOTH_MAX) bothTotal = VIEWER_BOTH_MAX;
+      each2 = each3 = Math.round(bothTotal / 2);
     } else if (n === 1 && !raw) {
       var autoCap = shareFor(2);
       if (show2D) {
