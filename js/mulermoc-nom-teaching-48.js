@@ -591,6 +591,7 @@ $(document).ready(function () {
         .html(svgNameBoxOff)
         .attr("data-tooltip", "Χωρίς πλαίσια συνθετικών");
     }
+    if (typeof fFitNameComponents === "function") fFitNameComponents();
   });
 
   $(document).on("click", "#nameStyleCrossToggle", function () {
@@ -604,6 +605,7 @@ $(document).ready(function () {
       $(".nameCompPlus ").addClass("hide");
       $(this).html(svgNameCrossOff).attr("data-tooltip", "Ενωμένα συνθετικά");
     }
+    if (typeof fFitNameComponents === "function") fFitNameComponents();
   });
 
   // Master eye-edit switch (live-only aid): single icon, active
@@ -945,6 +947,7 @@ $(document).ready(function () {
         fSpeakGreek(explainText);
       }
     }
+    if (typeof fFitNameComponents === "function") fFitNameComponents();
   });
 
   $(document).on("click", "#ruleTitle", function () {

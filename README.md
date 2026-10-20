@@ -14,7 +14,7 @@ Desinged and developed by Nickolas Charistos
 | Teaching (rules, narration, UI wiring) | [js/mulermoc-nom-teaching-48.js](js/mulermoc-nom-teaching-48.js) |
 | Scenario module (LEARN authoring + presentation) | [js/mulermoc-nom-scenario-48.js](js/mulermoc-nom-scenario-48.js) |
 | Shared icon helper | [js/ui-icons.js](js/ui-icons.js) |
-| Molecule data (71 molecules — 71 `nameExamples` keys) | [js/jsme-nick-nomeclature-moc2-data_48.js](js/jsme-nick-nomeclature-moc2-data_48.js) |
+| Molecule data (72 molecules — 72 `nameExamples` keys) | [js/jsme-nick-nomeclature-moc2-data_48.js](js/jsme-nick-nomeclature-moc2-data_48.js) |
 | Styles | [css/jsme-nick-48.css](css/jsme-nick-48.css), [css/mulermoc-nom-scenario-48.css](css/mulermoc-nom-scenario-48.css) |
 | Stored scenarios | [scenarios/](scenarios/) (`Αλκάνια-Αιθάνιο.scenario.json`; Greek filenames stay URL-encoded in `?scenario=` links) |
 
@@ -41,7 +41,7 @@ Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (o
 - v44 hardening (carried into v45): bond-order N-table (tertiary R3N fixed), principal-functional-group rank, halogen N-way handling.
 - v45 2D naming rename (code-only, behavior-identical): MOL variables `<mol>_2D_Condensed/_2D_Expanded/_2D_Skeletal`, `mode2D` value `skeletal` (was misspelled `diagramatic`; legacy scenario files coerce on import), stored chain keys `mainChain_Condensed/_Expanded/_Skeletal`.
 - v46 fork (mechanical copy of the v45 set, behavior-identical): 4 new molecules (2 ethers + 2 esters, 65 → 69 keys) + formate-ester engine fix (`methyl_methanoate` was mis-named as alkoxy-aldehyde); `*45*` stays runnable at root.
-- Name analysis: per-fragment highlight and numbering in 2D and 3D, branch highlighting (incl. expanded hydrogens), rule-theory panel.
+- Name analysis: per-fragment highlight and numbering in 2D and 3D, per-alkyl-group branch highlighting (incl. expanded hydrogens), rule-theory panel; long names auto-fit the analysis column (`--nameCompScale`, floor + horizontal-scroll fallback).
 
 ### Viewer and UI
 - 2D (JSME) and 3D (JSmol) views; condensed, expanded, skeletal and annotated-skeletal modes; `[2D][3D]` visibility toggles; PNG export.
@@ -60,7 +60,7 @@ Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (o
 
 ### Known gaps
 - Unsaturated ethers/esters and wider ester coverage; rings and aromatics not supported.
-- v48: browser click-through pending for the confirm dialog, both height controls, and pin/unpin (`docs/SESSION-NOTES.md`); scenario exports still stamp `"app": "mulermoc-nom-44"` (informational only — validation ignores it).
+- v48: browser click-through pending for the confirm dialog, both height controls, pin/unpin, the per-alkyl-group highlight, and long-name auto-fit (`docs/SESSION-NOTES.md`); scenario exports still stamp `"app": "mulermoc-nom-44"` (informational only — validation ignores it).
 - Stored scenario `Αλκάνια-Αιθάνιο.scenario.json` (7 steps: ethane walkthrough + alkane menu browsing + 3D alkane models) replaces the earlier `ethene*.scenario.json` drafts (which selected ethane while titled ethene); wider scenario library and EPAL/Lyceum two-level notes still to be written.
 
 ---
@@ -72,7 +72,7 @@ All layers reuse the same v48 engine, embedded as a static app in Drupal:
 | # | Layer | Contract | State |
 |---|---|---|---|
 | 1 | **LEARN** | teacher-authored linear scenarios; presentation + self-paced learning | working scaffold (authoring + presentation); stored scenario `Αλκάνια-Αιθάνιο` |
-| 2 | **EXPLORE** | free browsing of all molecules (left menu) | working (71 molecules); next: bounded EXPLORE-lite (~15 mols) + menu search |
+| 2 | **EXPLORE** | free browsing of all molecules (left menu) | working (72 molecules); next: bounded EXPLORE-lite (~15 mols) + menu search |
 | 3 | **PRACTICE** | exercises with corrective feedback (3 types v1) | not started — see [LAYERS-PLAN](docs/LAYERS-PLAN.md) |
 | 4 | **PLAY** | gamified quizzes; responses + times logged for research statistics | not started — Drupal owns auth/session/logging; see [LAYERS-PLAN](docs/LAYERS-PLAN.md) |
 

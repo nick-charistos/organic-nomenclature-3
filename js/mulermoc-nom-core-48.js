@@ -2050,6 +2050,13 @@ function fGuessName(skipChainRecalc) {
                 comp0NumberList.push(_locants.join(","))
                 comp0TextList.push(_countPrefix + _bName)
             }
+            const _onlyDouble = sortedMultiDBonds && sortedMultiDBonds.length > 0 && (!sortedMultiTBonds || sortedMultiTBonds.length === 0)
+            const _onlyTriple = sortedMultiTBonds && sortedMultiTBonds.length > 0 && (!sortedMultiDBonds || sortedMultiDBonds.length === 0)
+            if (_onlyDouble && sortedMultiDBonds.some(function (n) { return n > 1; })) {
+                comp1No = "-" + bondPrefixDB
+            } else if (_onlyTriple && sortedMultiTBonds.some(function (n) { return n > 1; })) {
+                comp1No = "-" + bondPrefixTB
+            }
         }
     }
 

@@ -407,6 +407,13 @@ header {
   /* border: 1px solid var(--darkEarth); */
 }
 
+.nameContainer.nameOverflow {
+  justify-content: flex-start !important;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--darkBlue) var(--veryLightBlue);
+}
+
 .narrateBtn,
 .nameStyleBox,
 .nameStyleCross,
@@ -1398,8 +1405,13 @@ header {
   justify-content: center;
 }
 
+.nameCompContainer.nameCompMeasuring .nameCompBox,
+.nameCompContainer.nameCompMeasuring .nameCompPlus {
+  transition: none !important;
+}
+
 .nameCompBox {
-  font-size: 1.1rem;
+  font-size: calc(1.1rem * var(--nameCompScale, 1));
   font-weight: bold;
   color: #000;
   background-color: #fff;
@@ -1430,7 +1442,7 @@ header {
 }
 
 .nameCompPlus {
-  font-size: 1.5rem;
+  font-size: calc(1.5rem * var(--nameCompScale, 1));
   margin-left: 4px;
   margin-right: 4px;
   /* display: none; */

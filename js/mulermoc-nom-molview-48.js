@@ -287,6 +287,7 @@ function jsmeOnLoad() {
   // the known-good first paint), then the debounced observer owns resizes.
   try { fResizeViewers(); } catch (eFit) { /* fit best-effort */ }
   try { fInitZoomObserver2D(); } catch (eObs) { /* observer best-effort */ }
+  try { fInitNameFitObserver(); } catch (eObsN) { /* observer best-effort */ }
 }
 
 function fClassifyAllMolecules() {
@@ -3210,6 +3211,57 @@ window.fSaveJmolPng = function () {
   }, 500);
 };
 
+var NAME_COMP_MIN_SCALE = 0.7;
+
+function fFitNameComponents() {
+  var container = document.querySelector("#nameAnalysis .nameCompContainer");
+  if (!container) return;
+  var parent = container.parentElement;
+  if (!parent) return;
+  var available = 0;
+  try {
+    available = Math.round(parent.clientWidth);
+  } catch (eA) {
+    available = 0;
+  }
+  if (!(available > 0)) return;
+  container.classList.add("nameCompMeasuring");
+  try {
+    container.style.setProperty("--nameCompScale", "1");
+    void container.offsetWidth;
+    var natural = container.scrollWidth;
+    if (!(natural > 0)) return;
+    if (natural <= available) {
+      parent.classList.remove("nameOverflow");
+      return;
+    }
+    var lo = NAME_COMP_MIN_SCALE;
+    var hi = 1;
+    var best = NAME_COMP_MIN_SCALE;
+    for (var i = 0; i < 9; i++) {
+      var mid = (lo + hi) / 2;
+      container.style.setProperty("--nameCompScale", String(mid));
+      void container.offsetWidth;
+      var w = container.scrollWidth;
+      if (w <= available) {
+        best = mid;
+        lo = mid;
+      } else {
+        hi = mid;
+      }
+    }
+    container.style.setProperty("--nameCompScale", String(best));
+    void container.offsetWidth;
+    if (container.scrollWidth > available) {
+      parent.classList.add("nameOverflow");
+    } else {
+      parent.classList.remove("nameOverflow");
+    }
+  } finally {
+    container.classList.remove("nameCompMeasuring");
+  }
+}
+
 // ── fShowNameAnalysis ─────────────────────────────────────────────────────
 
 function fShowNameAnalysis() {
@@ -3440,6 +3492,8 @@ function fShowNameAnalysis() {
   } catch (e) {
     /* scenario absent */
   }
+
+  fFitNameComponents();
 }
 
 // ── fClearHighlights ──────────────────────────────────────────────────────
@@ -3615,20 +3669,23 @@ function fGetPrincipalGroupNounSuffix(usePlural) {
 
 // Alkyl branch noun (e.g. "μεθύλιο") for pure-hydrocarbon molecules with a
 // side branch, or "" otherwise.
-function fGetBranchDisplayName() {
+function fGetBranchDisplayName(groupSlot) {
+  const slot = typeof groupSlot === "number" ? groupSlot : 0;
+  const nameIdx = slot * 2 + 1;
   if (
     Object.keys(functionalGroupObj).length !== 1 ||
     !functionalGroupObj.hydrocarbon ||
     !Array.isArray(nameComponentsList) ||
-    !nameComponentsList[1]
+    !nameComponentsList[nameIdx]
   ) {
     return "";
   }
-  if (fGetHydrocarbonBranchHighlight().atoms.length === 0) {
+  if (fGetHydrocarbonBranchHighlight(slot).atoms.length === 0) {
     return "";
   }
-  const prefix = String(nameComponentsList[1]);
-  return alkylBranchNouns[prefix] || prefix;
+  const prefix = String(nameComponentsList[nameIdx]);
+  const base = prefix.replace(/^(δι|τρι|τετρα|πεντα|εξα|επτα|οκτα)/, "");
+  return alkylBranchNouns[base] || base;
 }
 
 // ── fExplainNameComp ──────────────────────────────────────────────────────
@@ -4497,12 +4554,29 @@ function fChainStepperHTML() {
 
 // ── fGetHydrocarbonBranchHighlight ─────────────────────────────────────────
 
-function fGetHydrocarbonBranchHighlight() {
+function fGetNameComponentLocants(component) {
+  if (component === null || component === undefined) return [];
+  return String(component)
+    .replace(/^-+|-+$/g, "")
+    .split(",")
+    .map(function (n) {
+      return parseInt(n, 10);
+    })
+    .filter(function (n) {
+      return Number.isFinite(n) && n > 0;
+    });
+}
+
+function fGetHydrocarbonBranchHighlight(groupSlot) {
   if (!Array.isArray(mainChainAtomsList) || mainChainAtomsList.length === 0) {
     return { atoms: [], bonds: [] };
   }
 
   const mainSet = new Set(mainChainAtomsList.map((n) => n - 1));
+  const filterLocants =
+    typeof groupSlot === "number"
+      ? fGetNameComponentLocants(nameComponentsList[groupSlot * 2])
+      : null;
   const atoms = new Set();
   const bonds = new Set();
 
@@ -4514,6 +4588,9 @@ function fGetHydrocarbonBranchHighlight() {
       : [];
     const parent = neighbors.find((nb) => mainSet.has(nb));
     if (parent === undefined) continue;
+
+    const locant = mainChainAtomsList.indexOf(parent + 1) + 1;
+    if (filterLocants && filterLocants.indexOf(locant) < 0) continue;
 
     const sideSet = new Set([i]);
     const stack = [i];
@@ -4581,12 +4658,16 @@ function fGetHydrocarbonBranchHighlight() {
 
 // ── fGetHydrocarbonBranchHighlight3D ──────────────────────────────────────
 
-function fGetHydrocarbonBranchHighlight3D() {
+function fGetHydrocarbonBranchHighlight3D(groupSlot) {
   if (!Array.isArray(mainChainAtoms3D) || mainChainAtoms3D.length === 0) {
     return { atoms: [], bonds: [] };
   }
 
   const mainSet = new Set(mainChainAtoms3D.map((n) => n - 1));
+  const filterLocants =
+    typeof groupSlot === "number"
+      ? fGetNameComponentLocants(nameComponentsList[groupSlot * 2])
+      : null;
   const atoms = new Set();
   const bonds = new Set();
 
@@ -4598,6 +4679,9 @@ function fGetHydrocarbonBranchHighlight3D() {
       : [];
     const parent = neighbors.find((nb) => mainSet.has(nb));
     if (parent === undefined) continue;
+
+    const locant = mainChainAtoms3D.indexOf(parent + 1) + 1;
+    if (filterLocants && filterLocants.indexOf(locant) < 0) continue;
 
     const sideSet = new Set([i]);
     const stack = [i];
@@ -5112,13 +5196,17 @@ function fHighlightFG(FGno) {
   const fgKeys = Object.keys(functionalGroupObj).filter(function (k) {
     return k !== "hydrocarbon";
   });
-  const branch = fGetHydrocarbonBranchHighlight();
   const allowBranchFallback = [
     "compNumber1",
     "compNumber2",
     "compSecondSub1",
     "compSecondSub2",
   ].includes(nameAnalysisMode);
+  const branchSlot = typeof FGno === "number" && FGno > 0 ? FGno - 1 : 0;
+  const branch =
+    fgKeys.length === 0 && allowBranchFallback
+      ? fGetHydrocarbonBranchHighlight(branchSlot)
+      : fGetHydrocarbonBranchHighlight();
 
   if (fgKeys.length === 0) {
     if (!allowBranchFallback || branch.atoms.length === 0) {
@@ -5537,13 +5625,17 @@ function fHighlightFG3D(FGno) {
   const fgKeys = Object.keys(functionalGroupObj3D).filter(function (k) {
     return k !== "hydrocarbon";
   });
-  const branch = fGetHydrocarbonBranchHighlight3D();
   const allowBranchFallback = [
     "compNumber1",
     "compNumber2",
     "compSecondSub1",
     "compSecondSub2",
   ].includes(nameAnalysisMode);
+  const branchSlot = typeof FGno === "number" && FGno > 0 ? FGno - 1 : 0;
+  const branch =
+    fgKeys.length === 0 && allowBranchFallback
+      ? fGetHydrocarbonBranchHighlight3D(branchSlot)
+      : fGetHydrocarbonBranchHighlight3D();
 
   let highAtoms3D = [];
 
@@ -6707,6 +6799,35 @@ function fInitZoomObserver2D() {
       _zoomROLastW = g0.w; _zoomROLastH = g0.h;
     } catch (eI) { _zoomROLastW = 0; _zoomROLastH = 0; }
     _zoomRO.observe(vc);
+  } catch (eZ) { /* observer unavailable */ }
+}
+
+var _nameFitROTimer = null;
+var _nameFitROLastW = 0;
+var _nameFitRO = null;
+function fInitNameFitObserver() {
+  try {
+    if (_nameFitRO || typeof ResizeObserver === "undefined") return;
+    var ac = document.getElementById("analysisCol");
+    if (!ac) return;
+    _nameFitRO = new ResizeObserver(function () {
+      try {
+        var w = Math.round(ac.getBoundingClientRect().width);
+        if (w === _nameFitROLastW) return;
+        if (_nameFitROTimer) clearTimeout(_nameFitROTimer);
+        _nameFitROTimer = setTimeout(function () {
+          _nameFitROTimer = null;
+          var w2 = Math.round(ac.getBoundingClientRect().width);
+          if (!(w2 > 0) || w2 === _nameFitROLastW) return;
+          _nameFitROLastW = w2;
+          fFitNameComponents();
+        }, 150);
+      } catch (eO) { /* observer unavailable */ }
+    });
+    try {
+      _nameFitROLastW = Math.round(ac.getBoundingClientRect().width);
+    } catch (eI) { _nameFitROLastW = 0; }
+    _nameFitRO.observe(ac);
   } catch (eZ) { /* observer unavailable */ }
 }
 

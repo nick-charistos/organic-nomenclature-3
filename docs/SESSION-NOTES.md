@@ -1914,3 +1914,30 @@ follows; one Save → Present → Next → Exit round-trip.
   no console errors. Owner browser click-through pending (row Present
   first/mid/last, card Play, drawer persistence, tooltip/Delete hover in the
   scrolling drawer).
+
+## 2026-10-20 — v48 local alkene trial, locant/highlight fixes, name auto-fit
+
+* New molecule `ethyl_3_dimethyl_2_5_hexene_2` (3-ethyl-2,5-dimethylhex-2-ene,
+  C10H20, PubChem CID 56988951): empty `mainChain_*` arrays + 3D SDF
+  `mols/nomeclature-moc2/ethyl_3_dimethyl_2_5_hexene_2_3D.sdf`; 72 keys total.
+* Naming (`core-48.js`): internal double/triple-bond locant preserved for
+  substituted hydrocarbons via a guarded `comp1No` fill; terminal names
+  unchanged. New molecule names `3-αιθυλο-2,5-διμεθυλο-2-εξένιο`.
+* Highlight (`molview-48.js`): `fGetHydrocarbonBranchHighlight[/3D]` gained an
+  optional group slot; branch atoms are filtered by the locants in
+  `nameComponentsList[slot*2]` and `fHighlightFG[/3D]` picks the slot from
+  `FGno`. `comp0`/`comp1` (`3-`/`αιθυλο`) now highlights ethyl only;
+  `comp2`/`comp3` (`-2,5-`/`διμεθυλο`) highlights the two methyls only
+  (2D + 3D).
+* Name auto-fit (`jsme-nick-48.css` + `molview-48.js` + `teaching-48.js`):
+  `fFitNameComponents()` binary-searches `--nameCompScale` on
+  `.nameCompContainer` (transitions disabled while measuring), floor 0.7, and
+  toggles `.nameOverflow` (`overflow-x:auto`, `justify-content:flex-start`)
+  when the floor still overflows. Re-runs on `fShowNameAnalysis`, box/cross
+  toggles, box selection, and a debounced `#analysisCol` `ResizeObserver`.
+* Checks: five `*-48.js` `node --check`; `git diff --check`; headless
+  local-HTTP harness (new + long names, boxes/`+` toggles, forced 120px
+  column, `comp0`/`comp2` highlight) — no JS errors; owner browser
+  click-through pending.
+* Docs synced to 72 keys (README/PROJECT-PLANs/LAYERS/didactic/CHANGELOG);
+  historical 71 references left intact.
