@@ -1,9 +1,9 @@
-// mulermoc-nom-scenario-44.js
-// Didactic scenarios — linear snapshot sequences (v44, additive module).
-// Drives the existing v44 layers (core/molview/teaching) through their
-// public entry points; modifies no v42/v43/v44 layer logic.
-// Disabled by default: without ?scenario / ?present / #step the page
-// behaves exactly like v43 (44-no-params == 43).
+// mulermoc-nom-scenario-48.js
+// Didactic scenarios — linear snapshot sequences (additive module, since v44).
+// Drives the core/molview/teaching layers through their public entry points;
+// modifies no layer logic.
+// Disabled by default: without ?scenario / ?present / #step the page behaves
+// exactly like the plain naming app.
 
 var MuLERMoCScenario = {
   SUPPORTED_VERSION: 1,
@@ -108,7 +108,7 @@ function fScenarioPanelFor(id) {
 }
 
 // nameAnalysisMode -> name-box id (reverse of the .nameCompBox click map
-// in mulermoc-nom-teaching-44.js). comp10/11 depend on chemical class;
+// in mulermoc-nom-teaching-48.js). comp10/11 depend on chemical class;
 // verified after triggering, mismatch falls back to "none".
 var fScenarioModeToCompId = {
   compNumber1: "comp0",
@@ -151,7 +151,7 @@ function fScenarioCompIdFor(mode) {
 
 function fScenarioG(name, fallback) {
   // Eval-free live-state reader (T3 hardening). Explicit whitelist over the
-  // cross-file globals declared in mulermoc-nom-core/molview-44.js; unknown
+  // cross-file globals declared in mulermoc-nom-core/molview-48.js; unknown
   // names yield the fallback (same contract as the old eval version).
   try {
     switch (name) {
@@ -205,6 +205,7 @@ function fScenarioConfirmClose() {
     fScenarioConfirmKey = null;
   }
   fScenarioConfirmYes = null;
+  fScenarioConfirmSetInert(false);
   try {
     if (fScenarioConfirmPrevFocus && document.contains(fScenarioConfirmPrevFocus) &&
       fScenarioConfirmPrevFocus.focus) {
@@ -212,6 +213,24 @@ function fScenarioConfirmClose() {
     }
   } catch (eF) { /* focus restore best-effort */ }
   fScenarioConfirmPrevFocus = null;
+}
+// Keep the background out of the tab order / a11y tree while the modal is up.
+// `inert` handles both where supported; the tab trap below covers older engines.
+function fScenarioConfirmSetInert(on) {
+  if (!document.body) return;
+  Array.prototype.forEach.call(document.body.children, function (ch) {
+    if (!ch || ch === fScenarioConfirmEl) return;
+    if (ch.tagName === "SCRIPT" || ch.tagName === "STYLE" || ch.tagName === "LINK") return;
+    if (on) {
+      if (ch.hasAttribute("data-scInert")) return;
+      ch.setAttribute("data-scInert", "1");
+      try { ch.inert = true; } catch (eI) { /* older browsers */ }
+    } else {
+      if (!ch.hasAttribute("data-scInert")) return;
+      ch.removeAttribute("data-scInert");
+      try { ch.inert = false; } catch (eO) { /* older browsers */ }
+    }
+  });
 }
 function fScenarioConfirmBuild() {
   var ov = document.createElement("div");
@@ -266,9 +285,34 @@ function fScenarioConfirm(msg, onYes, yesLabel) {
       if (e.preventDefault) e.preventDefault();
       if (e.stopPropagation) e.stopPropagation();
       fScenarioConfirmClose();
+      return;
+    }
+    // Focus trap: Tab cycles inside the dialog even where `inert` is missing.
+    if (e.key === "Tab") {
+      var focusables = ov.querySelectorAll(
+        "button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])"
+      );
+      if (!focusables.length) {
+        if (e.preventDefault) e.preventDefault();
+        return;
+      }
+      var first = focusables[0];
+      var last = focusables[focusables.length - 1];
+      var active = document.activeElement;
+      var inside = ov.contains(active);
+      if (e.shiftKey) {
+        if (!inside || active === first) {
+          if (e.preventDefault) e.preventDefault();
+          last.focus();
+        }
+      } else if (!inside || active === last) {
+        if (e.preventDefault) e.preventDefault();
+        first.focus();
+      }
     }
   };
   document.addEventListener("keydown", fScenarioConfirmKey, true);
+  fScenarioConfirmSetInert(true);
   ov.classList.add("show");
   if (noBtn && noBtn.focus) noBtn.focus();
 }
@@ -2319,6 +2363,14 @@ function fScenarioPresentBegin(id, startIdx) {
     MuLERMoCScenario.present = false;
     MuLERMoCScenario.presentId = null;
     fScenarioSyncPresentClass();
+    // Undo the stash: a retry would otherwise re-stash the partially applied
+    // step state and leak it as the author's settings on the next Exit.
+    fScenarioRestoreAuthorSettings();
+    try {
+      history.replaceState(null, "", location.pathname);
+    } catch (eHash) {
+      /* file:// */
+    }
     fScenarioToast("Could not start presentation at step " + (start + 1) + ".");
     return;
   }
@@ -2326,7 +2378,7 @@ function fScenarioPresentBegin(id, startIdx) {
   fScenarioRenderPresentMenu();
 }
 
-// ── UI (scenario chrome lives in css/mulermoc-nom-scenario-44.css) ─────────
+// ── UI (scenario chrome lives in css/mulermoc-nom-scenario-48.css) ─────────
 function fScenarioBuildUi() {
   if (!document.getElementById("scenarioToast")) {
     var t = document.createElement("div");

@@ -40,7 +40,7 @@ progress tracking, server storage.
 ```json
 {
   "scenarioVersion": 1,
-  "app": "mulermoc-nom-45",
+  "app": "mulermoc-nom-44",
   "scenario": "esters-intro",
   "title": "...",
   "steps": [
@@ -70,6 +70,7 @@ progress tracking, server storage.
         "viewerSettings": false,
         "viewers": {"2D": true, "3D": true},
         "viewerMaxHeight": null,
+        "viewerBothHeight": null,
         "controls": {"2D": false, "3D": false},
         "save": {"2D": false, "3D": false},
         "naming": true,
@@ -161,7 +162,7 @@ Visibility rules:
   `VIEWER_MIN_H`–`VIEWER_MAX_H`, live 150–2000; silently sanitized, `warning`
   on non-empty invalid input) overrides. The author
   sets it in the Ρυθμίσεις panel (unchecked = Auto, checked = slider px,
-  slider `max` = the live full single-viewer height). Applied in playback
+  slider `max` = `min(live full single-viewer height, VIEWER_MAX_H)`). Applied in playback
   too (via `fScenarioApplyViewerMaxHeight`), stashed/restored around
   Present like the other live settings. Both viewers share a min-height floor
   (`VIEWER_MIN_H`, live **150px** — owner-tuned down from 240; the CSS
@@ -485,7 +486,7 @@ Done in v43 (`mulermoc-nom-43.html`, last suffixed copy; carried through v44 int
 6. ✅ CHANGELOG v43 entry (`index.html` → 43 in repo3 only).
 
 Remaining: v48 is live (`index.html` → 48; fluid viewers + authoring pin-dock + single/double-viewer height, see `CHANGELOG.md [Unreleased]`; `*47*`/`*46*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced); then quizzes/games on the
-same reuse contract. The stepper walk index is intentionally not captured in steps (EXPLORE aid, not step state).
+same reuse contract. The stepper's main-chain pool index is captured per step (`chainIdx`, v47 additive) and re-asserted on apply; only the transient EXPLORE walk UI position is not step state.
 
 ## 8. Open questions for development (moveto timing closed 2026-10-04)
 

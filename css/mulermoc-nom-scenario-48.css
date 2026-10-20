@@ -1,4 +1,4 @@
-/* mulermoc-nom-scenario-44.css — didactic-scenario chrome (author bar, drawer, playback bar, step text).
+/* mulermoc-nom-scenario-48.css — didactic-scenario chrome (author bar, drawer, playback bar, step text).
    Moved out of fScenarioInjectCss so formats are designed here, not in JS. */
 
 /* Border-box everywhere inside the author panels: 100%-width children
@@ -1409,7 +1409,7 @@
 /* Authoring pin-dock (v48): the bar leaves its fixed overlay and pins to
    the right edge of #pageContainer, spanning its full height (title zone
    through footer). #mainAppContainer holds exactly the three app columns
-   and becomes the horizontal scroller; h1 + footer yield the 540px band via
+   and becomes the horizontal scroller; h1 + footer yield the 480px band via
    right margin so their text stays clear of the bar.
    body.scPinned outranks .open/.is-hidden by specificity and comes last in
    source order. The viewer keeps measured pixels via inline flex

@@ -2050,9 +2050,19 @@ function fGuessName(skipChainRecalc) {
                 comp0NumberList.push(_locants.join(","))
                 comp0TextList.push(_countPrefix + _bName)
             }
-            const _onlyDouble = sortedMultiDBonds && sortedMultiDBonds.length > 0 && (!sortedMultiTBonds || sortedMultiTBonds.length === 0)
-            const _onlyTriple = sortedMultiTBonds && sortedMultiTBonds.length > 0 && (!sortedMultiDBonds || sortedMultiDBonds.length === 0)
-            if (_onlyDouble && sortedMultiDBonds.some(function (n) { return n > 1; })) {
+            const _hasDouble = !!(sortedMultiDBonds && sortedMultiDBonds.length > 0)
+            const _hasTriple = !!(sortedMultiTBonds && sortedMultiTBonds.length > 0)
+            const _onlyDouble = _hasDouble && !_hasTriple
+            const _onlyTriple = _hasTriple && !_hasDouble
+            if (_hasDouble && _hasTriple) {
+                // Mixed en-yne: comp0 held the double-bond prefix but is replaced
+                // by the branch locants below, so move the double locant here;
+                // the triple locant already sits in comp3. Terminal double
+                // (locant 1 only) stays unlocanted, as in the single-type path.
+                if (sortedMultiDBonds.some(function (n) { return n > 1; })) {
+                    comp1No = "-" + bondPrefixDB
+                }
+            } else if (_onlyDouble && sortedMultiDBonds.some(function (n) { return n > 1; })) {
                 comp1No = "-" + bondPrefixDB
             } else if (_onlyTriple && sortedMultiTBonds.some(function (n) { return n > 1; })) {
                 comp1No = "-" + bondPrefixTB
@@ -2094,6 +2104,9 @@ function fGuessName(skipChainRecalc) {
                 // comp0/comp0b assignment for any number of types happens below
                 // (comp0NumberList block): first alphabetical type -> comp0,
                 // remaining types joined -> comp0b
+                // Haloalkenes keep the double-bond locant even when it is 1
+                // (e.g. bromo_4_butene_1 -> 4-βρωμο-1-βουτενιο); unlike the
+                // hydrocarbon path, this naming convention does not elide it.
                 if (bondPrefixDB !== "") {
                     comp1No = "-" + bondPrefixDB
                 } else {

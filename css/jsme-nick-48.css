@@ -464,8 +464,8 @@ header {
    bubble on the page — panel buttons, eye toggles, author tab, pick toggle,
    scenario bar/panel/step/toolbar buttons, type badge, drag handle.
    Geometry (position/top/left/transform) and z-index stay in the per-family
-   rules below and in css/mulermoc-nom-scenario-45.css. Both stylesheets
-   always load together via mulermoc-nom-45.html, so scenario selectors are
+   rules below and in css/mulermoc-nom-scenario-48.css. Both stylesheets
+   always load together via mulermoc-nom-48.html, so scenario selectors are
    covered here and not re-declared there. */
 .narrateBtn[data-tooltip]::after,
 .readNameBtn[data-tooltip]::after,

@@ -411,6 +411,9 @@ function fToggleViewer2D() {
     $("#jsmeNomeclatureSVG").slideDown(200);
     $("#radio2DMode").removeClass("hide");
   }
+  // Auto readouts depend on which viewers are visible; resync once the
+  // 200 ms show/hide animation has settled (the panel may be open).
+  setTimeout(fViewerHeightControlsSync, 220);
 }
 
 // Title-bar 3D visibility toggle. Scope mirrors the (commented-out) viewJSmol
@@ -477,6 +480,14 @@ function fToggleViewer3D() {
     });
     $("#controls3D").removeClass("hide");
   }
+  setTimeout(fViewerHeightControlsSync, 220);
+}
+
+// Shared resync for the two viewer-height rows (panel may be open while a
+// title-bar eye toggle hides/shows a viewer).
+function fViewerHeightControlsSync() {
+  try { fViewerMaxHeightSync(); } catch (eS) { /* slider sync best-effort */ }
+  try { fViewerBothHeightSync(); } catch (eS2) { /* slider sync best-effort */ }
 }
 
 function fToggleViewerSettings() {
@@ -529,8 +540,11 @@ function fViewerMaxHeightSync() {
     chk.classList.toggle("unselectedCheck", !manual);
   } catch (eC) { /* class toggle best-effort */ }
   var full = fViewerMaxHeightFull();
+  // Keep the slider and the live global within the persisted range, even
+  // when the measured row height exceeds VIEWER_MAX_H on very tall screens.
+  var maxShown = Math.min(full, VIEWER_MAX_H);
   rng.min = String(VIEWER_MIN_H);
-  rng.max = String(full);
+  rng.max = String(maxShown);
   rng.disabled = !manual;
   var shown;
   if (manual) {
@@ -540,7 +554,7 @@ function fViewerMaxHeightSync() {
     shown = Math.round(vh.h2 || vh.h3 || Math.round(full / 2));
   }
   if (shown < VIEWER_MIN_H) shown = VIEWER_MIN_H;
-  if (shown > full) shown = full;
+  if (shown > maxShown) shown = maxShown;
   rng.value = String(shown);
   if (val) val.textContent = shown + "px";
 }
@@ -553,8 +567,8 @@ function fViewerMaxHeightFromUi() {
     var v = parseInt(rng.value, 10);
     if (isNaN(v)) v = VIEWER_MIN_H;
     if (v < VIEWER_MIN_H) v = VIEWER_MIN_H;
-    var full = fViewerMaxHeightFull();
-    if (v > full) v = full;
+    var limit = Math.min(fViewerMaxHeightFull(), VIEWER_MAX_H);
+    if (v > limit) v = limit;
     viewerMaxH = v;
   } else {
     viewerMaxH = null;
@@ -3688,6 +3702,30 @@ function fGetBranchDisplayName(groupSlot) {
   return alkylBranchNouns[base] || base;
 }
 
+// Multiplicative prefix (δι-, τρι-, …) on a substituent name component.
+// Returns the count, or 0 when the component has no multiplier.
+function fGetNameComponentMultiplier(comp) {
+  const s = String(comp || "");
+  const prefixes = [
+    ["οκτα", 8],
+    ["επτα", 7],
+    ["εξα", 6],
+    ["πεντα", 5],
+    ["τετρα", 4],
+    ["τρι", 3],
+    ["δι", 2],
+  ];
+  for (let i = 0; i < prefixes.length; i++) {
+    if (s.indexOf(prefixes[i][0]) === 0) return prefixes[i][1];
+  }
+  return 0;
+}
+
+// A numbering component such as "-2,5-" carries more than one locant.
+function fIsMultiLocantComponent(comp) {
+  return fGetNameComponentLocants(comp).length > 1;
+}
+
 // ── fExplainNameComp ──────────────────────────────────────────────────────
 
 function fExplainNameComp() {
@@ -3706,11 +3744,20 @@ function fExplainNameComp() {
       nStyle = "";
       myClass = "";
       if (nameComponentsList[1] !== null && nameComponentsList[1].length > 0) {
-        if (
+        const branchPosName = fGetBranchDisplayName(0);
+        if (branchPosName) {
+          myText = fIsMultiLocantComponent(nameComponentsList[0])
+            ? ` Δηλώνει τις θέσεις της ανθρακικής διακλάδωσης (${branchPosName}).`
+            : ` Δηλώνει τη θέση της ανθρακικής διακλάδωσης (${branchPosName}).`;
+          fHighlightFG();
+          fHighlightFG3D();
+        } else if (
           nameComponentsList[3] !== null &&
           nameComponentsList[3].length > 0
         ) {
-          myText = ` Δηλώνει τη θέση της πρώτης αλφαβητικά δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(1)}.`;
+          myText = fIsMultiLocantComponent(nameComponentsList[0])
+            ? ` Δηλώνει τις θέσεις της πρώτης αλφαβητικά δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(1)}.`
+            : ` Δηλώνει τη θέση της πρώτης αλφαβητικά δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(1)}.`;
           fHighlightFG(1);
           fHighlightFG3D(1);
         } else {
@@ -3729,12 +3776,7 @@ function fExplainNameComp() {
 
             myText = ` Δηλώνει τις θέσεις των ${myCountText} δευτερευουσών  Χαρακτηριστικών Ομάδών${fGetSecondaryGroupNounSuffix(1)}.`;
           } else {
-            const branchPosName = fGetBranchDisplayName();
-            if (branchPosName) {
-              myText = ` Δηλώνει τη θέση της ανθρακικής διακλάδωσης (${branchPosName}).`;
-            } else {
-              myText = ` Δηλώνει τη θέση της δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(1)}.`;
-            }
+            myText = ` Δηλώνει τη θέση της δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(1)}.`;
           }
 
           if (Object.keys(functionalGroupObj).length > 1) {
@@ -3824,8 +3866,18 @@ function fExplainNameComp() {
         fShowNumbering(0, fGetEtherAlkoxyChain(), fGetEtherAlkoxyChain3D());
         break;
       }
-      if (nameComponentsList[3] !== null && nameComponentsList[3].length > 0) {
-        myText = ` Δηλώνει το όνομα  της πρώτης αλφαβητικά δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(1)}.`;
+      const branchSubName = fGetBranchDisplayName(0);
+      const nameComp1Multiplier = fGetNameComponentMultiplier(nameComponentsList[1]);
+      if (branchSubName) {
+        myText = nameComp1Multiplier > 1
+          ? ` Δηλώνει το πλήθος των ανθρακικών διακλαδώσεων (${branchSubName}).`
+          : ` Δηλώνει το όνομα της ανθρακικής διακλάδωσης (${branchSubName}).`;
+        fHighlightFG();
+        fHighlightFG3D();
+      } else if (nameComponentsList[3] !== null && nameComponentsList[3].length > 0) {
+        myText = nameComp1Multiplier > 1
+          ? ` Δηλώνει το πλήθος των δευτερευουσών Χαρακτηριστικών Ομάδων${fGetSecondaryGroupNounSuffix(1)}.`
+          : ` Δηλώνει το όνομα  της πρώτης αλφαβητικά δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(1)}.`;
         fHighlightFG(1);
         fHighlightFG3D(1);
       } else {
@@ -3842,33 +3894,51 @@ function fExplainNameComp() {
           fHighlightFG();
           fHighlightFG3D();
         }
-        const branchSubName = fGetBranchDisplayName();
-        if (branchSubName) {
-          myText = ` Δηλώνει το όνομα της ανθρακικής διακλάδωσης (${branchSubName}).`;
-        } else {
-          myText = ` Δηλώνει το όνομα της δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(1)}.`;
-        }
+        myText = nameComp1Multiplier > 1
+          ? ` Δηλώνει το πλήθος των δευτερευουσών Χαρακτηριστικών Ομάδων${fGetSecondaryGroupNounSuffix(1)}.`
+          : ` Δηλώνει το όνομα της δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(1)}.`;
       }
 
       break;
-    case "compNumber2":
+    case "compNumber2": {
       nStyle = "";
       myClass = "";
-      myText = ` Δηλώνει τη θέση της δεύτερης αλφαβητικά δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(2)}.`;
+      const branchPosName2 = fGetBranchDisplayName(1);
+      if (branchPosName2) {
+        myText = fIsMultiLocantComponent(nameComponentsList[2])
+          ? ` Δηλώνει τις θέσεις της ανθρακικής διακλάδωσης (${branchPosName2}).`
+          : ` Δηλώνει τη θέση της ανθρακικής διακλάδωσης (${branchPosName2}).`;
+      } else {
+        myText = fIsMultiLocantComponent(nameComponentsList[2])
+          ? ` Δηλώνει τις θέσεις της δεύτερης αλφαβητικά δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(2)}.`
+          : ` Δηλώνει τη θέση της δεύτερης αλφαβητικά δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(2)}.`;
+      }
       numberingFlag = true;
 
       fHighlightFG(2);
       fHighlightFG3D(2);
       fShowNumbering(0);
       break;
-    case "compSecondSub2":
+    }
+    case "compSecondSub2": {
       nStyle = "";
       myClass = "";
-      myText = ` Δηλώνει το όνομα  της δεύτερης αλφαβητικά δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(2)}.`;
+      const branchSubName2 = fGetBranchDisplayName(1);
+      const nameComp3Multiplier = fGetNameComponentMultiplier(nameComponentsList[3]);
+      if (branchSubName2) {
+        myText = nameComp3Multiplier > 1
+          ? ` Δηλώνει το πλήθος των ανθρακικών διακλαδώσεων (${branchSubName2}).`
+          : ` Δηλώνει το όνομα της ανθρακικής διακλάδωσης (${branchSubName2}).`;
+      } else {
+        myText = nameComp3Multiplier > 1
+          ? ` Δηλώνει το πλήθος των δευτερευουσών Χαρακτηριστικών Ομάδων${fGetSecondaryGroupNounSuffix(2)}.`
+          : ` Δηλώνει το όνομα  της δεύτερης αλφαβητικά δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(2)}.`;
+      }
       numberingFlag = false;
       fHighlightFG(2);
       fHighlightFG3D(2);
       break;
+    }
     case "compBondPos":
       nStyle = "";
       myClass = "";
@@ -4426,7 +4496,8 @@ function fHighLightMainChainBonds() {
 // (nameAnalysisMode, boxes, rule theory untouched — stepping only refreshes
 // the selected component's highlight via the click sequence). Pool[0] is the
 // adopted main chain; loading a molecule restores it. Algorithmic mode only;
-// scenario steps don't capture the walk index (EXPLORE aid).
+// scenario steps capture the pool index (chainIdx, v47 additive) and
+// re-assert it after the step load.
 
 function fMainChainPoolLive() {
   return (typeof mainChainPool !== "undefined" && Array.isArray(mainChainPool)) ? mainChainPool : [];
