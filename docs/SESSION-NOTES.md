@@ -1886,3 +1886,31 @@ follows; one Save → Present → Next → Exit round-trip.
   (both deletes + Άκυρο/ESC/backdrop/focus return), single height 150 & 900
   round-trip, both height 300/1000, step width 1200, pin/unpin with both
   viewers (ResizeObserver warnings), narrow-viewport overflow.
+
+## 2026-10-20 — v48 scenario UX: per-step Present, persistent drawer, Play from step 1
+
+* `scenario-48.js`: every step row now has `.scPresentStep` (`screen` icon,
+  dark-blue chrome) that calls top-level `fScenarioPresentBegin(scenId, idx)`.
+  Card `Play ▶` calls it without an index; `startIdx` defaults to `0` and is
+  clamped, so card Play always starts at step 1. The temporary start-at number
+  input (`.scStartAt`) and `fScenarioClampStartInput`/`fScenarioSyncStartInput`
+  are removed; the button-panel gap is back to 10px and the four actions stay
+  on one row.
+* `fScenarioPresentBegin` was hoisted out of `fScenarioBuildUi` (the row
+  handler previously hit a `ReferenceError`); default start and the
+  `#step=N` hash now follow `startIdx + 1`.
+* Drawer persistence: authoring-off and Present no longer remove
+  `.scenarioDrawer.open` / `.scList.active`; the CSS hidden-bar rule hides the
+  drawer while the bar is away (`visibility:hidden` + `pointer-events:none`,
+  delayed past the slide), so close → reopen and Play → Exit return to the
+  same card and scroll. Steps/bar-gap clicks still close it. `fScenarioExitPresent`
+  calls `fScenarioScrollDrawerToStep` (rAF + 120ms) to bring the presented row
+  back into view.
+* Step Delete moved to the row's top-right corner (transparent until hover, red
+  hover); row actions are wired by class instead of positional button indices.
+* Docs: didactic §3/§4, README scenario bullet, CHANGELOG entry. Static checks:
+  `node --check`, CSS braces balanced, `git diff --check`. Headless integration:
+  card Play at index 20 → 0, row Present → 10, drawer persistence + Exit scroll,
+  no console errors. Owner browser click-through pending (row Present
+  first/mid/last, card Play, drawer persistence, tooltip/Delete hover in the
+  scrolling drawer).

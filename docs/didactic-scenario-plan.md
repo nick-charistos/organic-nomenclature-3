@@ -318,11 +318,16 @@ Visibility rules:
 * Scenario cards (`.scenarioPanel[data-scenario-id]`, explicit active
   card): per-card title rename, step count, delete (`deleteStep`
   icon, confirm-guarded); button panel
-  (`Add step`, `Steps`, `Export`, `Play ▶` — no Import); in-flow
+  (`Add step`, `Steps`, `Export`, `Play ▶` — no Import; Play always
+  starts at step 1); in-flow
   drawer (down/up via `.open`, accordion: one open at a time,
   drawer follows the active card — Steps button or bar-gap click
   toggles it; Add opens-only, Export/Play leave the panel untouched;
-  Add also pins the drawer to the new last row).
+  Add also pins the drawer to the new last row). The open card and its
+  scroll position survive closing/reopening the bar and Play → Exit: the
+  drawer is hidden by CSS while the bar is away, and Exit scrolls it back
+  to the presented step. The Steps button (or a bar-gap click) still
+  closes it deliberately.
 * Step rows: number + type badge (`molecule`/`menu`, key in tooltip)
   stacked in `.scStepNumberWrap`, step title (`Τίτλος βήματος` label
   above the field, defaults to the live Greek IUPAC name at Save —
@@ -348,7 +353,10 @@ Visibility rules:
    menu-less molecule steps clear silently; unknown keys filtered) and the
    viewer chrome to the step's viewers via `fScenarioRestoreChrome`, the
    same helper Exit uses — panes + `[2D][3D]` actives + control bars follow
-   the step; present navigation never touches picks), `Update`
+   the step; present navigation never touches picks), `▶` Present
+   (enters presentation at this step via the same
+   `fScenarioPresentBegin(scenId, idx)` used by card Play, with the row's
+   0-based index; card Play omits it and starts at step 1), `Update`
   (rewrite the step's stored view snapshot from the current live view:
   Go → tweak molecule, 2D/3D modes + styles, naming clicks/toggles,
    camera, pick → Update; preserves `title`/`note` + the 4 chrome
@@ -356,8 +364,9 @@ Visibility rules:
    `styleName.hidden` (from the live eye toggles),
    `menuSubset`/`show.menu`/`show.viewers`; toasts kind/subset changes),
   `⧉` duplicate (deep-clone after, title + ` (αντίγραφο)`),
-  reorder up/down, delete (`deleteStep` icon, red danger hover,
-  confirm-guarded), jump-to; step numbers
+   reorder up/down, delete (`deleteStep` icon, pinned to the row's
+   top-right corner and transparent until hover, red danger hover,
+   confirm-guarded), jump-to; step numbers
   auto-renumber.
    Headers lead with a positional counter (`S1`, `S2`, …); empty
    scenarios (0 steps) flag `.is-empty` on card, count, and Steps button,
@@ -386,6 +395,10 @@ Visibility rules:
 * `#step=N`: 1-based step in the hash so Prev/Next can use
   `history.replaceState` without a full reload (JSME/JSmol init
   is expensive). Missing/invalid/clamped to 1/last with notice.
+* `Play ▶` on a scenario card always starts at step 1. Each step row's
+  `▶` starts presentation at that step instead; both enter the same player
+  and write `#step=N`. Exit returns to authoring with the card's drawer
+  (if open) scrolled to the step that was on stage.
 * `Prev [3/8] Next` bar with step title + note; keyboard: `←`/`→`
   walk steps (clamped, no wrap), `ESC` exits. Keys ignore modifiers
   and typing focus; JSmol arrow-rotate under applet focus is a known

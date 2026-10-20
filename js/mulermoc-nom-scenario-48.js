@@ -142,7 +142,7 @@ function fScenarioCompIdFor(mode) {
   var n = fScenarioNormMode(mode);
   for (var k in fScenarioModeToCompId) {
     if (Object.prototype.hasOwnProperty.call(fScenarioModeToCompId, k) &&
-        fScenarioNormMode(k) === n) {
+      fScenarioNormMode(k) === n) {
       return fScenarioModeToCompId[k];
     }
   }
@@ -207,7 +207,7 @@ function fScenarioConfirmClose() {
   fScenarioConfirmYes = null;
   try {
     if (fScenarioConfirmPrevFocus && document.contains(fScenarioConfirmPrevFocus) &&
-        fScenarioConfirmPrevFocus.focus) {
+      fScenarioConfirmPrevFocus.focus) {
       fScenarioConfirmPrevFocus.focus();
     }
   } catch (eF) { /* focus restore best-effort */ }
@@ -221,11 +221,11 @@ function fScenarioConfirmBuild() {
   ov.setAttribute("aria-labelledby", "scConfirmMsg");
   ov.innerHTML =
     "<div class='scConfirmPanel'>" +
-      "<div class='scConfirmMsg' id='scConfirmMsg'></div>" +
-      "<div class='scConfirmBtns'>" +
-        "<button type='button' class='scConfirmNo'>Άκυρο</button>" +
-        "<button type='button' class='scConfirmYes'>Διαγραφή</button>" +
-      "</div>" +
+    "<div class='scConfirmMsg' id='scConfirmMsg'></div>" +
+    "<div class='scConfirmBtns'>" +
+    "<button type='button' class='scConfirmNo'>Άκυρο</button>" +
+    "<button type='button' class='scConfirmYes'>Διαγραφή</button>" +
+    "</div>" +
     "</div>";
   document.body.appendChild(ov);
   fScenarioConfirmEl = ov;
@@ -311,7 +311,7 @@ function fScenarioWhenReady(cb) {
 function fScenarioGetMoveto() {
   try {
     if (typeof Jmol === "undefined" || typeof Jmol.scriptWait === "undefined" ||
-        typeof jmolAppletNomeclature === "undefined") return null;
+      typeof jmolAppletNomeclature === "undefined") return null;
     var w = String(Jmol.scriptWait(jmolAppletNomeclature, "show moveto") || "").trim();
     var line = w.split("\n").filter(function (l) {
       return /^moveto\b/i.test(l.trim());
@@ -558,7 +558,8 @@ function fScenarioApplyViewerMaxHeight(step) {
   try { if (typeof fViewerMaxHeightSync === "function") fViewerMaxHeightSync(); } catch (eU) { /* UI best-effort */ }
   try { if (typeof fViewerBothHeightSync === "function") fViewerBothHeightSync(); } catch (eUb) { /* UI best-effort */ }
 }
-function fScenarioValidMenuGroups(g) {  var out = [];
+function fScenarioValidMenuGroups(g) {
+  var out = [];
   (Array.isArray(g) ? g : []).forEach(function (m) {
     if (SCENARIO_MENU_GROUPS.indexOf(m) >= 0 && out.indexOf(m) < 0) out.push(m);
   });
@@ -811,7 +812,7 @@ function fScenarioSyncControlUi() {
   try {
     var _narrBtn = document.getElementById("narrateAnalysisToggle");
     if (_narrBtn && typeof svgSpeaker !== "undefined" && typeof svgMute !== "undefined"
-        && typeof narrateAnalysisFlag !== "undefined") {
+      && typeof narrateAnalysisFlag !== "undefined") {
       _narrBtn.innerHTML = narrateAnalysisFlag ? svgSpeaker : svgMute;
       _narrBtn.classList.toggle("active", narrateAnalysisFlag === true);
     }
@@ -941,8 +942,8 @@ function fScenarioPickOnSelect(mol) {
 function fScenarioDeselectIfUnpicked() {
   try {
     if (typeof selectedMol !== "undefined" && selectedMol &&
-        !fScenarioPickHas(selectedMol) &&
-        typeof fDeselectMol === "function") {
+      !fScenarioPickHas(selectedMol) &&
+      typeof fDeselectMol === "function") {
       fDeselectMol();
     }
   } catch (e) {
@@ -1275,7 +1276,7 @@ function fScenarioOn3DParsed(mol) {
 function fScenarioClickNameBox(step, token) {
   if (typeof token === "number" && token !== MuLERMoCScenario.applyToken) return; // stale
   if (!step || !step.nameAnalysisMode ||
-      fScenarioNormMode(step.nameAnalysisMode) === "none") return;
+    fScenarioNormMode(step.nameAnalysisMode) === "none") return;
   // Locked interaction only gates user clicks (CSS .locked); the stored
   // highlight + explanation always replay in presentation.
   var compId = fScenarioCompIdFor(step.nameAnalysisMode);
@@ -1424,7 +1425,7 @@ function fScenarioApply(step) {
   // fCalcMainChain3D adopts pool3D[shared idx] when the parse lands.
   try {
     if (typeof mainChainPool !== "undefined" && Array.isArray(mainChainPool) &&
-        mainChainPool.length > 0) {
+      mainChainPool.length > 0) {
       var _ci = fScenarioValidChainIdx(step.chainIdx);
       if (_ci > mainChainPool.length - 1) _ci = 0;
       mainChainPoolIdx = _ci;
@@ -1933,11 +1934,10 @@ function fScenarioSetAuthoring(on) {
   MuLERMoCScenario.authoring = !!on;
   if (!MuLERMoCScenario.authoring) {
     MuLERMoCScenario.menuPickMode = false;
+    // Drawer .open/.active and its scroll are deliberately kept: the drawer
+    // is hidden by CSS while the bar is away, so reopening returns to the
+    // same open scenario (and Play -> Exit lands on the presented step).
     var teardown = function () {
-      var drs = document.querySelectorAll(".scenarioDrawer");
-      for (var di = 0; di < drs.length; di++) drs[di].classList.remove("open");
-      var lbs = document.querySelectorAll(".scList");
-      for (var lbi = 0; lbi < lbs.length; lbi++) lbs[lbi].classList.remove("active");
       fScenarioPaintPickUi();
     };
     // Pinned close: slide the still-DOCKED bar out first (pinned CSS has
@@ -1948,7 +1948,7 @@ function fScenarioSetAuthoring(on) {
     if (MuLERMoCScenario.pinned) {
       if (fScenarioSlideBar(-1, function () {
         fScenarioSetPinned(false);
-        fScenarioSyncAuthorUi(true);
+        fScenarioSyncAuthorUi();
         teardown();
       })) return;
       // no WAAPI / reduced motion: fall back to the original unpin-then-CSS.
@@ -1956,7 +1956,7 @@ function fScenarioSetAuthoring(on) {
     }
     // Unpinned (or fallback): close the bar alone in this frame so its slide
     // animates cleanly; teardown after it lands.
-    fScenarioSyncAuthorUi(true);
+    fScenarioSyncAuthorUi();
     setTimeout(teardown, 260);
     return;
   }
@@ -2112,9 +2112,13 @@ function fScenarioPositionDrawer(panel) {
   return;
 }
 
-// Author bar + drawer follow authoring && !present; the tab hides in
-// presentation (clean stage) and shows otherwise.
-function fScenarioSyncAuthorUi(skipDrawers) {
+// Author bar follows authoring && !present; the tab hides in presentation
+// (clean stage) and shows otherwise. Open drawers (with their Steps .active
+// state and scroll) intentionally survive both: the hidden-bar rule in
+// css/mulermoc-nom-scenario-48.css hides them while the bar is away, so
+// Play -> Exit and close -> reopen return to the same open scenario.
+// Steps owns open/close.
+function fScenarioSyncAuthorUi() {
   var showBar = MuLERMoCScenario.authoring && !MuLERMoCScenario.present;
   var tb = document.getElementById("scenarioAuthorBar");
   if (tb) {
@@ -2122,19 +2126,6 @@ function fScenarioSyncAuthorUi(skipDrawers) {
     // beat them and snap instead of animating).
     tb.style.display = "";
     tb.classList.toggle("open", showBar);
-  }
-  // Drawers: never force-open here (Steps buttons own that); close them
-  // whenever the bar goes away (Steps loses its selected state too).
-  // skipDrawers (authoring-off path) defers this past the bar slide so the
-  // toggle frame carries only the bar animation.
-  if (!showBar && !skipDrawers) {
-    var drs = document.querySelectorAll(".scenarioDrawer");
-    for (var dri = 0; dri < drs.length; dri++) {
-      drs[dri].style.display = "";
-      drs[dri].classList.remove("open");
-    }
-    var lbs = document.querySelectorAll(".scList");
-    for (var lbi = 0; lbi < lbs.length; lbi++) lbs[lbi].classList.remove("active");
   }
   // Present hides the whole bar (handle travels with it); otherwise the
   // closed bar leaves only the handle peeking out at the right edge.
@@ -2238,7 +2229,7 @@ function fScenarioExitPresent() {
     try {
       MuLERMoCScenario.reload3DOnce =
         (s.show.viewers["3D"] === false && !!s.selectedMol &&
-         !!((typeof nameExamples !== "undefined" && nameExamples[s.selectedMol])));
+          !!((typeof nameExamples !== "undefined" && nameExamples[s.selectedMol])));
     } catch (eFlag) {
       /* flag best-effort */
     }
@@ -2258,6 +2249,81 @@ function fScenarioExitPresent() {
   // Present → Exit restores the author's remembered pin (session-scoped);
   // guarded by authoring, so a deep-link present exits with no bar/pin.
   fScenarioApplyPinPref();
+  // Back in authoring: if this card's drawer was open before Play, bring the
+  // step that was on stage back into view (the drawer opens where it was).
+  if (MuLERMoCScenario.authoring) {
+    fScenarioScrollDrawerToStep(_psx.id, _psx.index);
+  }
+}
+
+// Scroll only the card's open drawer to a step row (never the page/bar).
+// Exit runs before the pin-dock reparent/width reflow settles, so repeat the
+// measurement on the next frame and once more shortly after.
+function fScenarioScrollDrawerToStep(scenId, stepIdx) {
+  var panel = scenId && fScenarioPanelFor(scenId);
+  var d = panel && panel.querySelector(".scenarioDrawer.open");
+  if (!d) return;
+  var run = function () {
+    var row = d.querySelector('.srow[data-idx="' + stepIdx + '"]');
+    if (!row) return;
+    var dr, rr;
+    try {
+      dr = d.getBoundingClientRect();
+      rr = row.getBoundingClientRect();
+    } catch (e) {
+      return;
+    }
+    var pad = 6;
+    if (rr.top < dr.top + pad || rr.bottom > dr.bottom - pad) {
+      d.scrollTop += rr.top - dr.top - pad;
+    }
+  };
+  if (window.requestAnimationFrame) window.requestAnimationFrame(run);
+  else run();
+  setTimeout(run, 120);
+}
+
+// Start presentation at a step (top-level: the card Play and the per-step
+// Present buttons both call it). startIdx is 0-based; omitted -> step 1.
+function fScenarioPresentBegin(id, startIdx) {
+  var scen = (id && fScenarioGet(id)) || fScenarioActive();
+  if (!scen || !scen.steps.length) {
+    fScenarioToast("Save at least one step first.");
+    return;
+  }
+  var start = (typeof startIdx === "number" && isFinite(startIdx))
+    ? Math.floor(startIdx)
+    : 0;
+  start = Math.max(0, Math.min(start, scen.steps.length - 1));
+  try {
+    history.replaceState(null, "", "#step=" + (start + 1));
+  } catch (e) {
+    /* file:// */
+  }
+  fScenarioSetActive(scen.id);
+  // in-place present (no reload: memory + file keeps steps in this page)
+  // Pin-dock is authoring-only: undock first so presentation owns the stage.
+  if (MuLERMoCScenario.pinned) fScenarioSetPinned(false);
+  fScenarioStashAuthorSettings();
+  MuLERMoCScenario.present = true;
+  MuLERMoCScenario.presentId = scen.id;
+  scen.index = start;
+  fScenarioSyncLegacy();
+  var applied = false;
+  try {
+    applied = !!fScenarioApply(scen.steps[start]);
+  } catch (e) {
+    applied = false;
+  }
+  if (!applied) {
+    MuLERMoCScenario.present = false;
+    MuLERMoCScenario.presentId = null;
+    fScenarioSyncPresentClass();
+    fScenarioToast("Could not start presentation at step " + (start + 1) + ".");
+    return;
+  }
+  fScenarioPlayUi();
+  fScenarioRenderPresentMenu();
 }
 
 // ── UI (scenario chrome lives in css/mulermoc-nom-scenario-44.css) ─────────
@@ -2284,42 +2350,6 @@ function fScenarioBuildUi() {
     } catch (e) {
       return null;
     }
-  }
-  function fScenarioPresentBegin(id) {
-    var scen = (id && fScenarioGet(id)) || fScenarioActive();
-    if (!scen || !scen.steps.length) {
-      fScenarioToast("Save at least one step first.");
-      return;
-    }
-    try {
-      history.replaceState(null, "", "#step=1");
-    } catch (e) {
-      /* file:// */
-    }
-    fScenarioSetActive(scen.id);
-    // in-place present (no reload: memory + file keeps steps in this page)
-    // Pin-dock is authoring-only: undock first so presentation owns the stage.
-    if (MuLERMoCScenario.pinned) fScenarioSetPinned(false);
-    fScenarioStashAuthorSettings();
-    MuLERMoCScenario.present = true;
-    MuLERMoCScenario.presentId = scen.id;
-    scen.index = 0;
-    fScenarioSyncLegacy();
-    var applied = false;
-    try {
-      applied = !!fScenarioApply(scen.steps[0]);
-    } catch (e) {
-      applied = false;
-    }
-    if (!applied) {
-      MuLERMoCScenario.present = false;
-      MuLERMoCScenario.presentId = null;
-      fScenarioSyncPresentClass();
-      fScenarioToast("Could not start presentation at step 1.");
-      return;
-    }
-    fScenarioPlayUi();
-    fScenarioRenderPresentMenu();
   }
   // Drawer follows the card: open this panel's drawer (accordion —
   // all others shut), mark its Steps button. Safe if the panel is gone.
@@ -2399,7 +2429,7 @@ function fScenarioBuildUi() {
     // The closest() guard avoids double-toggling Steps clicks bubbling up.
     $(document).on("click", ".scenarioPanel .scenarioButtonPanel", function (e) {
       if (e && e.target && e.target.closest &&
-          e.target.closest("button,input,textarea,select,label,a")) return;
+        e.target.closest("button,input,textarea,select,label,a")) return;
       var id = fScenarioPanelIdFromEl(this);
       if (id) fScenarioSetActive(id);
       fScenarioToggleDrawer(id);
@@ -2427,7 +2457,7 @@ function fScenarioBuildUi() {
       // Controls handle themselves (Save opens via its own path, Steps
       // toggles, inputs just focus); background clicks select + reveal.
       if (e && e.target && e.target.closest &&
-          e.target.closest("button,input,textarea,select,label,a")) return;
+        e.target.closest("button,input,textarea,select,label,a")) return;
       if (id !== MuLERMoCScenario.activeId) fScenarioSetActive(id);
       fScenarioOpenDrawer(id);
     });
@@ -2447,11 +2477,11 @@ function fScenarioBuildUi() {
     // Inline display is never used here: it would beat the animation classes.
     bar.style.display = "";
     bar.innerHTML =
-    "<div id='scenarioPlayBarTitle'><span class='scTitleBtns'><button id='scNew' data-tooltip='Νέο κενό σενάριο'>+ New</button>" +
+      "<div id='scenarioPlayBarTitle'><span class='scTitleBtns'><button id='scNew' data-tooltip='Νέο κενό σενάριο'>+ New</button>" +
       "<button id='scImport' data-tooltip='Φόρτωση σεναρίου (JSON)'>Import</button>" +
       "<input type='file' id='scFile' accept='.json,application/json' style='display:none'></span>" +
       "<span class='scTitleText'>Σενάρια Παρουσίασης</span><button id='scPin' data-tooltip='Καρφίτσωμα δίπλα στο περιεχόμενο'>📌</button><button id='scCloseBar' data-tooltip='Κλείσιμο (ESC)'>✕</button></div>" +
-    "<div id='scenarioPanels'></div>";
+      "<div id='scenarioPanels'></div>";
     document.body.appendChild(bar);
     fScenarioPaintIconTextBtn(document.getElementById("scNew"), "libraryNew", "+ New");
     fScenarioPaintIconTextBtn(document.getElementById("scImport"), "upload", "Import");
@@ -2642,19 +2672,19 @@ function fScenarioBuildPanels() {
     panel.setAttribute("data-scenario-id", scen.id);
     panel.innerHTML =
       "<div class='scenarioHeader'>" +
-        "<span class='scScenarioNo'>S1</span>" +
-        "<input type='text' class='scenarioTitle' value='' title='Τίτλος σεναρίου'>" +
-        "<span class='scCount'>0</span>" +
-        "<button class='scDelete' data-tooltip='Διαγραφή σεναρίου'>✕</button>" +
+      "<span class='scScenarioNo'>S1</span>" +
+      "<input type='text' class='scenarioTitle' value='' title='Τίτλος σεναρίου'>" +
+      "<span class='scCount'>0</span>" +
+      "<button class='scDelete' data-tooltip='Διαγραφή σεναρίου'>✕</button>" +
       "</div>" +
       "<div class='scenarioButtonPanel'>" +
-        "<button class='scSave' data-tooltip='Αποθήκευση προβολής ως βήμα'>Add step</button>" +
-        "<button class='scList' data-tooltip='Εμφάνιση/Απόκρυψη βημάτων'>Steps</button>" +
-        "<button class='scExport' data-tooltip='Λήψη σεναρίου (JSON)'>Export</button>" +
-        "<button class='scPresent' data-tooltip='Έναρξη παρουσίασης από το βήμα 1'>Play ▶</button>" +
+      "<button class='scSave' data-tooltip='Αποθήκευση προβολής ως βήμα'>Add step</button>" +
+      "<button class='scList' data-tooltip='Εμφάνιση/Απόκρυψη βημάτων'>Steps</button>" +
+      "<button class='scExport' data-tooltip='Λήψη σεναρίου (JSON)'>Export</button>" +
+      "<button class='scPresent' data-tooltip='Έναρξη παρουσίασης από το βήμα 1'>Play ▶</button>" +
       "</div>" +
       "<div class='scenarioDrawer'>" +
-        "<div class='scSteps'></div>" +
+      "<div class='scSteps'></div>" +
       "</div>";
     var ti = panel.querySelector(".scenarioTitle");
     if (ti) ti.value = scen.title || "";
@@ -2765,8 +2795,7 @@ function fScenarioRenderOne(scen) {
     row.className = "srow";
     row.setAttribute("data-idx", String(i));
     row.setAttribute("draggable", "false");
-    // Dedicated drag grip (span, not button: keeps the
-    // button:not(.scNoteBtn) Go/Update/Dupe/Up/Down/Delete index stable).
+    // Dedicated drag grip (span, not button, so it is never a step action).
     var grip = document.createElement("span");
     grip.className = "scDragHandle";
     grip.textContent = "⠿";
@@ -2776,7 +2805,9 @@ function fScenarioRenderOne(scen) {
     row.innerHTML =
       "<span id='scStep" + i + "' class='scStepNumberWrap'>" +
       "<span class='stepNumber'>" + st.n + "</span></span><span class='scStepTitleWrap'><span class='scStepTitleLabel'>Τίτλος βήματος</span><input type='text' class='scStepTitle' placeholder='Τίτλος βήματος' value=''></span>" +
-      "<button data-tooltip='Προεπισκόπηση'>Go</button><button class='scUpdate' data-tooltip='Ενημέρωση βήματος από την τρέχουσα προβολή'>Update</button><button class='scDupe' data-tooltip='Διπλασιασμός βήματος'>⧉</button><button data-tooltip='Επάνω'>↑</button><button data-tooltip='Κάτω'>↓</button>" +
+      "<button class='scGo' data-tooltip='Προεπισκόπηση'>Go</button>" +
+      "<button class='scPresentStep' data-tooltip='Παρουσίαση από το βήμα " + st.n + "'>▶</button>" +
+      "<button class='scUpdate' data-tooltip='Ενημέρωση βήματος από την τρέχουσα προβολή'>Update</button><button class='scDupe' data-tooltip='Διπλασιασμός βήματος'>⧉</button><button class='scUp' data-tooltip='Επάνω'>↑</button><button class='scDown' data-tooltip='Κάτω'>↓</button>" +
       "<button class='delete' data-tooltip='Διαγραφή'>✕</button>";
     // Grip first so it leads the row; mousedown on it arms HTML5 drag
     // (row stays non-draggable otherwise so inputs/textareas keep working).
@@ -2792,7 +2823,7 @@ function fScenarioRenderOne(scen) {
     (function () {
       var ab = row.querySelectorAll("button");
       var defs = [
-        ["play", "Προεπισκόπηση"], ["reset", "Ενημέρωση βήματος από την τρέχουσα προβολή"], ["copy", "Διπλασιασμός βήματος"],
+        ["play", "Προεπισκόπηση"], ["screen", "Παρουσίαση από αυτό το βήμα"], ["reset", "Ενημέρωση βήματος από την τρέχουσα προβολή"], ["copy", "Διπλασιασμός βήματος"],
         ["arrowUp", "Επάνω"], ["arrowDown", "Κάτω"], ["deleteStep", "Διαγραφή"]
       ];
       for (var k = 0; k < defs.length && k < ab.length; k++) {
@@ -3054,67 +3085,76 @@ function fScenarioRenderOne(scen) {
     // presentation; none → flat fallback. Pure molecule steps (no menu)
     // show no trace of this block.
     if (Array.isArray(st.menuSubset) && st.menuSubset.length > 1) {
-    // Single-line set: title + 3 checkboxes share a nowrap wrapper so the
-    // wrapping row can never split them across lines.
-    var menuGroupsRow = document.createElement("div");
-    menuGroupsRow.className = "scMenuGroupsRow";
-    var menuGroupTitle = document.createElement("span");
-    menuGroupTitle.className = "sshow scMenuGroupsTitle";
-    menuGroupTitle.appendChild(document.createTextNode("Ταξινομήσεις Μένου:"));
-    menuGroupsRow.appendChild(menuGroupTitle);
-    [["Μόρια", "molecules"], ["Χημικές Τάξεις", "chemclass"], ["Ομόλογες Σειρές", "series"]].forEach(function (pair) {
-      var gLabel = document.createElement("label");
-      gLabel.className = "sshow scMenuGroup";
-      var gKind = pair[1];
-      var gCheck = document.createElement("input");
-      gCheck.type = "checkbox";
-      // Stored state shown as-is (all-off is valid → flat fallback); only a
-      // missing field (legacy) displays the molecules default.
-      var _mgShown = Array.isArray(st.menuGroups) ? st.menuGroups : ["molecules"];
-      gCheck.checked = _mgShown.indexOf(gKind) >= 0;
-      gCheck.onchange = function () {
-        var cur = Array.isArray(st.menuGroups) ? st.menuGroups.slice() : ["molecules"];
-        // all-off is a valid stored state (renders the flat fallback);
-        // the default only applies to fresh captures.
-        var at = cur.indexOf(gKind);
-        if (gCheck.checked && at < 0) cur.push(gKind);
-        if (!gCheck.checked && at >= 0) cur.splice(at, 1);
-        cur.sort(function (a, b) { return SCENARIO_MENU_GROUPS.indexOf(a) - SCENARIO_MENU_GROUPS.indexOf(b); });
-        st.menuGroups = cur;
-      };
-      gLabel.appendChild(gCheck);
-      gLabel.appendChild(document.createTextNode(" " + pair[0]));
-      menuGroupsRow.appendChild(gLabel);
-    });
-    row.appendChild(menuGroupsRow);
+      // Single-line set: title + 3 checkboxes share a nowrap wrapper so the
+      // wrapping row can never split them across lines.
+      var menuGroupsRow = document.createElement("div");
+      menuGroupsRow.className = "scMenuGroupsRow";
+      var menuGroupTitle = document.createElement("span");
+      menuGroupTitle.className = "sshow scMenuGroupsTitle";
+      menuGroupTitle.appendChild(document.createTextNode("Ταξινομήσεις Μένου:"));
+      menuGroupsRow.appendChild(menuGroupTitle);
+      [["Μόρια", "molecules"], ["Χημικές Τάξεις", "chemclass"], ["Ομόλογες Σειρές", "series"]].forEach(function (pair) {
+        var gLabel = document.createElement("label");
+        gLabel.className = "sshow scMenuGroup";
+        var gKind = pair[1];
+        var gCheck = document.createElement("input");
+        gCheck.type = "checkbox";
+        // Stored state shown as-is (all-off is valid → flat fallback); only a
+        // missing field (legacy) displays the molecules default.
+        var _mgShown = Array.isArray(st.menuGroups) ? st.menuGroups : ["molecules"];
+        gCheck.checked = _mgShown.indexOf(gKind) >= 0;
+        gCheck.onchange = function () {
+          var cur = Array.isArray(st.menuGroups) ? st.menuGroups.slice() : ["molecules"];
+          // all-off is a valid stored state (renders the flat fallback);
+          // the default only applies to fresh captures.
+          var at = cur.indexOf(gKind);
+          if (gCheck.checked && at < 0) cur.push(gKind);
+          if (!gCheck.checked && at >= 0) cur.splice(at, 1);
+          cur.sort(function (a, b) { return SCENARIO_MENU_GROUPS.indexOf(a) - SCENARIO_MENU_GROUPS.indexOf(b); });
+          st.menuGroups = cur;
+        };
+        gLabel.appendChild(gCheck);
+        gLabel.appendChild(document.createTextNode(" " + pair[0]));
+        menuGroupsRow.appendChild(gLabel);
+      });
+      row.appendChild(menuGroupsRow);
     }
-    var btns = row.querySelectorAll("button:not(.scNoteBtn)");
-    // Order in row.innerHTML: Go, Update, Duplicate, Up, Down, Delete.
-    // .scNoteBtn toolbar buttons are excluded by the selector above.
+    // Class-bound step actions (order-free): Go previews, Present jumps
+    // straight into presentation at this step, the rest edit/reorder/delete.
     (function (scenId, idx) {
-      btns[0].onclick = function () {
+      var goBtn = row.querySelector(".scGo");
+      var presentBtn = row.querySelector(".scPresentStep");
+      var updBtn = row.querySelector(".scUpdate");
+      var dupBtn = row.querySelector(".scDupe");
+      var upBtn = row.querySelector(".scUp");
+      var downBtn = row.querySelector(".scDown");
+      var delBtn = row.querySelector(".delete");
+      if (goBtn) goBtn.onclick = function () {
         if (scenId && scenId !== MuLERMoCScenario.activeId) fScenarioSetActive(scenId);
         fScenarioGo(idx);
       };
-      btns[1].onclick = function () {
+      if (presentBtn) presentBtn.onclick = function () {
+        fScenarioPresentBegin(scenId, idx);
+      };
+      if (updBtn) updBtn.onclick = function () {
         fScenarioUpdateStep(scenId, idx);
       };
-      btns[2].onclick = function () {
+      if (dupBtn) dupBtn.onclick = function () {
         fScenarioDuplicateStep(scenId, idx);
       };
-      btns[3].onclick = function () {
+      if (upBtn) upBtn.onclick = function () {
         if (idx === 0) return;
         var s = fScenarioGet(scenId) || fScenarioActive();
         s.steps.splice(idx - 1, 0, s.steps.splice(idx, 1)[0]);
         fScenarioRenumber(scenId);
       };
-      btns[4].onclick = function () {
+      if (downBtn) downBtn.onclick = function () {
         var s = fScenarioGet(scenId) || fScenarioActive();
         if (idx >= s.steps.length - 1) return;
         s.steps.splice(idx + 1, 0, s.steps.splice(idx, 1)[0]);
         fScenarioRenumber(scenId);
       };
-      btns[5].onclick = function () {
+      if (delBtn) delBtn.onclick = function () {
         fScenarioConfirm("Διαγραφή βήματος " + st.n + ";", function () {
           var s = fScenarioGet(scenId) || fScenarioActive();
           s.steps.splice(idx, 1);
@@ -3143,7 +3183,7 @@ function fScenarioStepDragStart(ev, scenId) {
   var row = ev && ev.currentTarget;
   // Only allow drags initiated from the grip handle.
   if (!row || (ev.target && ev.target.closest && !ev.target.closest(".scDragHandle") &&
-      ev.target !== row)) {
+    ev.target !== row)) {
     if (ev.preventDefault) ev.preventDefault();
     return;
   }
