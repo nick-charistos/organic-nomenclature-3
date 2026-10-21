@@ -86,11 +86,11 @@ progress tracking, server storage.
 }
 ```
 
-State notes (grounded in v48; v42–v47 identical unless noted):
+State notes (grounded in v49; v42–v48 identical unless noted):
 
 * `selectedMol`, `mode2D/modeSuffix`, `mainChainMode`,
   `etherNamingMode`, `nameAnalysisMode`, `selectedRule` mirror
-  `js/mulermoc-nom-molview-48.js` (`fSelectMol`, `fShowNameAnalysis`,
+  `js/mulermoc-nom-molview-49.js` (`fSelectMol`, `fShowNameAnalysis`,
   `fExplainNameComp`). (Older revisions cited `molview-42.js` line numbers;
   line refs are fragile — prefer function names.)
 * `mode2D` ∈ `condensed` / `expanded` / `skeletal` / `condensedZigZag`;
@@ -468,7 +468,7 @@ Kept untouched: v42 copies (`molview-42.js`, `jsme-nick-42.css` — frozen),
 * Legacy `#molInfo` in `functional-groups.html:80` is a
   different page and stays untouched (now in `archive/html/`).
 
-## 7. v1 build status (v43 done, v44 released, v48 current)
+## 7. v1 build status (v43 done, v44 released, v49 current)
 
 Done in v43 (`mulermoc-nom-43.html`, last suffixed copy; carried through v44 into v45 unchanged unless noted in `CHANGELOG.md [v44]`):
 
@@ -485,7 +485,7 @@ Done in v43 (`mulermoc-nom-43.html`, last suffixed copy; carried through v44 int
    assertions (manual click-through pending).
 6. ✅ CHANGELOG v43 entry (`index.html` → 43 in repo3 only).
 
-Remaining: v48 is live (`index.html` → 48; fluid viewers + authoring pin-dock + single/double-viewer height, see `CHANGELOG.md [Unreleased]`; `*47*`/`*46*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced); then quizzes/games on the
+Remaining: v49 is live (`index.html` → 49 — MSc-student import: acyclic-alkane parent-chain fix, explicit terminal unsaturation locant, 73rd molecule, alkene scenarios, alkyl table/locant fixes; see `CHANGELOG.md [v49]`; `*48*`/`*47*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced); then quizzes/games on the
 same reuse contract. The stepper's main-chain pool index is captured per step (`chainIdx`, v47 additive) and re-asserted on apply; only the transient EXPLORE walk UI position is not step state.
 
 ## 8. Open questions for development (moveto timing closed 2026-10-04)
@@ -512,7 +512,7 @@ LEARN is layer 1 of the twofold+1 vision (see `README.md`, `docs/LAYERS-PLAN.md`
 
 * **Stored scenarios** under `scenarios/*.json` (same-origin, validated v1 schema), listed by Drupal; URL shape unchanged (`?scenario=scenarios/<name>.json&present=1#step=N`); Import remains the offline/`file://` path.
 * **First library (P3):** 3–5 scenarios (alkanes → alcohols → ethers → esters); each step keeps `selectedMol + show.*`; exit forces full chrome restore (menu `menu-open` + viewers/bars per the exit step — a no-3D exit leaves 3D hidden; settings panels + save buttons always come back).
-* **Per-step menu subsets (EXPLORE-lite enforcement):** steps may carry a browsable `menuSubset` (tri-state group pick in authoring; menu derived — 2+ picks show it, single pick collapses to the step molecule); a scenario can walk students through an expanding universe (3 alkanes → +alcohols → +ether) instead of the full 72-molecule menu.
+* **Per-step menu subsets (EXPLORE-lite enforcement):** steps may carry a browsable `menuSubset` (tri-state group pick in authoring; menu derived — 2+ picks show it, single pick collapses to the step molecule); a scenario can walk students through an expanding universe (3 alkanes → +alcohols → +ether) instead of the full 73-molecule menu.
 * **Two-level `note` convention:** `note` carries the teacher narrative; authoring guidance is EPAL-simple first line(s) / Lyceum-full extension (P3 authors, P5 uses for EPAL-vs-Lyceum comparison). Schema unchanged — convention only.
 * **`moveto` curation:** capture with `rotate off`; prefer curated per-step cameras for the library over ad-hoc capture.
 * **Authoring docs:** Save → Export → Present → Exit flow (Exit restores menu + exit-step viewers + all bars/panels; in-memory steps kept). `Go` previews align picks + viewer chrome to the step, so Go → tweak → Update round-trips keep the menu.

@@ -4,7 +4,43 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ---
 
-## [Unreleased] (v48 — fluid viewers + authoring pin-dock + single/double-viewer height; live, `index.html` → v48)
+## [v49] (student thesis-work import + alkyl reference table/locant fixes; live, `index.html` → v49)
+
+New parallel file set `mulermoc-nom-49.html` + `js/*-49.js` + `css/*-49.css`, forked from v48 (the html copy changes only the 7 asset refs; the JS/data/CSS files were then edited as described below). Folds in the MSc student's `thesis-work` upgrades (fork `yanisken9/organic-nomenclature-3`, tip `48ca292`): the generic main-chain parent-selection fix, the explicit-`1` unsaturation-locant convention, one new molecule, the alkene lesson scenarios, and an adapted alkyl reference table shown for branch/locant components. Namelecule product-layer files are deliberately **not** imported (see below). `index.html` now redirects to v49; `*48*` and earlier remain runnable at root.
+
+### Main-chain parent selection for acyclic alkanes (`core-49.js`)
+- New graph helpers `fIsAcyclicHydrocarbonGraph`, `fCarbonBranchLocants`, `fCompareLocantSets` (0-based graph indices, 1-based locants; first-differing-locant compare, never sums).
+- `fRankChainPool(paths, req, scoreFn, orientFn, connList, typeList)`: after the existing eligible/multiple-bond/length/FG-anchor tier, **only when `bestMu === 0` and the graph is a connected acyclic all-C/H structure**, keep the candidates with the most carbon branches, then the lowest oriented branch-locant set; all graph-equivalent ties retained.
+- `fOrientChainPath` / `fOrientChainPath3D`: carbon-branch locants join the tier-3 detachable-prefix set for those graphs. Both `fRankChainPool` call sites pass the 2D/3D connectivity/type arrays.
+- Effect: `ethyl_3_dimethyl_2_5_hexane` offered 6 candidate paths (some producing `4-αιθυλο…`); now 4 equivalent paths, all `3-αιθυλο-2,5-διμεθυλοεξάνιο`. Multiple-bond/FG/ring/heteroatom molecules keep their existing ranking.
+
+### Explicit terminal unsaturation locant (`core-49.js` `fGuessName`)
+- Branched hydrocarbons with a single multiple-bond type now always keep the bond locant in `comp1No`, **including position 1** (teaching convention): `3-μεθυλο-1-βουτένιο` (was `3-μεθυλοβουτένιο`). Mixed en-yne keeps the double locant in `comp1No` and the triple in `comp3`. Consistent with the existing haloalkene behavior (`4-βρωμο-1-βουτενιο`).
+
+### Data (`data_49.js` → 73 keys)
+- New `ethyl_3_dimethyl_2_5_hexane` (C10H22, PubChem CID 521421): three embedded 2D MOL forms + `mols/nomeclature-moc2/ethyl_3_dimethyl_2_5_hexane_3D.sdf` + `mols/new_molecules/` sources.
+- Stored `mainChain_*` filled for `methyl_2_propene`, `methyl_3_butene_1`, `ethyl_3_dimethyl_2_5_hexene_2` (this activates the "Από δεδομένα" bullet for them, per the v48 non-empty-array rule); `methyl_2_propene` formula normalized to `CH2=C(CH3)2`.
+
+### Scenarios
+- Imported `Αλκένια-Ονοματολογία_και_διακλαδώσεις.scenario.json` (22 steps) and `Αλκένια-Αιθένιο.scenario.json` (7 steps) from the student's set. The numbered/English lesson drafts and the old `ethene.scenario.json` were not imported.
+
+### Deliberately not imported
+- Namelecule product layer (`css/namelecule-*.css`, `design/*`, `assets/*`, `AGENTS.md`, welcome/library, theory library, loading/error screen, `showStepNumbers`/`reserveTitleSpace`, mint/teal theme). The alkyl table was reimplemented locally with nested divs and the existing palette (see below), not copied with the product layer.
+- Their `fFitNameToWidth` / `--nl-name-scale` name fitter — v48's `fFitNameComponents` (0.7 scale floor + horizontal-scroll fallback) is kept as the better (legible, floored) behavior.
+- Their text-parsing branch highlight/explain — v48's structural highlight is kept.
+
+### Alkyl reference table + locant rule-table fixes
+- Converted the alkyl reference table from a `<table>` to the shared nested `ruleRow` divs, so it uses the existing rule-table palette and `.ruleRow.selected` highlight instead of a separate table stylesheet.
+- Branch locants (`compNumber1` / `compNumber2`) now select the alkyl table as well as branch names; the branch early-return paths reveal the rule panel instead of leaving `#ruleTheoryContainer` hidden.
+- Added the missing `compBondType2` / `compEndNumber` rule cases, fixing the `undefined` rule tile/table on enyne `-ιν-` selections.
+- `fGetNameComponentLocants` now splits comma- and hyphen-joined locants, covering the extra-group `comp0b` form.
+
+### Checks
+- JS syntax checked on the changed `*-49.js` files (esprima); CSS braces balanced (301/301); no leftover `alkylRuleTable`/`tr.selected`/`table-layout` selectors; every scenario `selectedMol` key exists in the 73-key set; 73/73 data keys and `reg()` calls. Owner browser click-through pending.
+
+---
+
+## [v48] (fluid viewers + authoring pin-dock + single/double-viewer height; live, `index.html` → v48)
 
 New parallel file set `mulermoc-nom-48.html` + `js/*-48.js` + `css/*-48.css`, copied byte-identically from v47 (only the 7 asset refs in the html differ). `index.html` now redirects to v48 (owner flipped it live); `*47*`/`*46*` remain runnable at root, untouched. All work below is `*48*`-only (plus the shared `js/ui-icons.js` icon keys `pin`, `closePanel`, `deleteStep`). Pre-fork owner tweak carried over: `body`/`html` `overflow-x` handling in the v47 stylesheet.
 

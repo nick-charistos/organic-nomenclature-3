@@ -1941,3 +1941,51 @@ follows; one Save → Present → Next → Exit round-trip.
   click-through pending.
 * Docs synced to 72 keys (README/PROJECT-PLANs/LAYERS/didactic/CHANGELOG);
   historical 71 references left intact.
+
+## 2026-10-21 — v49 fork + student (thesis-work) import: parent-chain fix + 73rd molecule + scenarios
+
+* Forked `*48*` → `*49*` (html + 5 js + 2 css); only the 7 asset refs in
+  `mulermoc-nom-49.html` changed. `js/ui-icons.js` shared (byte-identical).
+  `index.html` flipped → v49 for release; v48 and earlier remain runnable.
+* Source: MSc student's branch `yanisken9/organic-nomenclature-3@thesis-work`
+  (tip `48ca292`), based on `f1ac038`; compared via the GitHub API against local
+  `1ac7636`. **Kept local**: `fFitNameComponents` name auto-fit (0.7 scale floor
+  + horizontal-scroll fallback — chosen over their floorless `fFitNameToWidth`),
+  structural branch highlight. **Not imported**: the Namelecule product layer
+  (theme, welcome/library, loading/error screen, `showStepNumbers`/
+  `reserveTitleSpace`, mint/teal); the alkyl table was reimplemented locally
+  with nested divs and the v49 palette.
+* Core (`core-49.js`): ported the acyclic-alkane parent fix — new helpers
+  `fIsAcyclicHydrocarbonGraph`/`fCarbonBranchLocants`/`fCompareLocantSets`;
+  `fRankChainPool` gains connectivity/type args and, only when `bestMu===0` and
+  the graph is connected acyclic all-C/H, keeps max branch count then lowest
+  oriented branch locants; both 2D/3D call sites pass the arrays;
+  `fOrientChainPath[/3D]` tier-3 now includes carbon-branch locants. The new
+  alkane goes 6 → 4 candidate paths, all `3-αιθυλο-2,5-διμεθυλοεξάνιο`.
+* Core (`core-49.js` `fGuessName`): adopted the explicit terminal locant —
+  branched hydrocarbons with a single multiple-bond type always keep the bond
+  locant in `comp1No` (incl. position 1): `3-μεθυλο-1-βουτένιο`; mixed en-yne
+  keeps the double in `comp1No` and the triple in `comp3`.
+* Data (`data_49.js`, **73 keys**): added `ethyl_3_dimethyl_2_5_hexane`
+  (C10H22, PubChem CID 521421) + three 2D MOL forms +
+  `mols/nomeclature-moc2/ethyl_3_dimethyl_2_5_hexane_3D.sdf` +
+  `mols/new_molecules/` sources; stored `mainChain_*` filled for
+  `methyl_2_propene`/`methyl_3_butene_1`/`ethyl_3_dimethyl_2_5_hexene_2`
+  (activates "Από δεδομένα" for them); `methyl_2_propene` formula →
+  `CH2=C(CH3)2`.
+* Scenarios: imported `Αλκένια-Ονοματολογία_και_διακλαδώσεις.scenario.json`
+  (22 steps) + `Αλκένια-Αιθένιο.scenario.json` (7 steps); numbered/English
+  drafts and the old `ethene.scenario.json` skipped. All `selectedMol` keys
+  verified against the 73-key set.
+* Teaching (`teaching-49.js`/`molview-49.js`): reimplemented the alkyl reference
+  table with nested `ruleRow` divs + `.ruleAlkyl` CSS (no table-specific
+  stylesheet); branch locants (`compNumber1`/`compNumber2`) and branch names
+  show it, all relevant paths reveal `#ruleTheoryContainer`; added missing
+  `compBondType2`/`compEndNumber` rule cases (enyne `-ιν-` no longer renders an
+  `undefined` tile/table); `fGetNameComponentLocants` splits comma/hyphen
+  locants.
+* Checks: JS syntax checked on changed `*-49.js` (esprima); CSS braces
+  301/301, no leftover `alkylRuleTable`/`tr.selected`; 73/73 data keys and
+  scenario refs; `git diff --check` only reports trailing whitespace inherited
+  from the forked/imported files. Owner browser click-through pending.
+* Repeatable import procedure documented in `docs/STUDENT-IMPORT.md`.
