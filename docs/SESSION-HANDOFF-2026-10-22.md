@@ -58,9 +58,14 @@
   `methyl_3_pentyne_1`, `methyl_4_pentyne_2`,
   `ethyl_4_dimethyl_3_5_heptyne_1`; three embedded 2D MOL forms each plus
   `mols/nomeclature-moc2/<key>_3D.sdf`.
-- Added `fHideAlkyneSkeletalCarbons()` to `js/mulermoc-nom-molview-50.js`,
-  called in `fUpdateSVG()` before `patchtheNitrogen()`. Removes the `C` label
-  and its rounded backplate only in `skeletal` mode for `seriesKey === "alkynes"`.
+- Added `fHideSkeletalSpCarbons()` to `js/mulermoc-nom-molview-50.js`,
+  called in `fUpdateSVG()` before `patchtheNitrogen()`. In `skeletal` mode it
+  removes the bare `C` label and its rounded backplate wherever the parsed graph
+  has an sp carbon, via `fMolHasSpCarbon()` (`bondList` + `allAtomsTypeList`):
+  a carbon with a triple bond (`C≡C` or `C≡N`) or cumulated double bonds
+  (`C=C=C`, allene). The original `seriesKey === "alkynes"` gate was too narrow
+  and skipped enynes, the yne-ketone/aldehyde, nitriles and the allene. Plain
+  alkanes/alkenes/etc. have no sp carbon, so they are untouched.
 - 3D left untouched by explicit owner decision: no `initialZoom3D`, no
   `moveto` camera on the new entries, no `spt/init-3.spt` or `fLoadMol3D`
   change. The large alkyne uses the current v50 default 3D scale/orientation;

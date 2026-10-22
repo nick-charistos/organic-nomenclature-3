@@ -3,7 +3,7 @@
 ### Organic Chemistry Interactive Learning & Research Platform
 
 **Principal Investigator:** N. Charistos, Department of Chemistry, ΑΠΘ
-**Status:** Active development | v50 live (73 molecules — 73 `nameExamples` keys): presentation text position (top/left/right sticky rail) + persistent naming shell, with `Αλκάνια-Αιθάνιο-τεστ` as the default scenario; the MSc-student `thesis-work` import is retained (acyclic-alkane parent-chain fix, explicit terminal unsaturation locant, 73rd molecule, alkene scenarios, alkyl reference table/locant rule-table fixes). `index.html` → v50, v49/v48/v47/v46/v45/v44 runnable at root, v43 frozen at tag `v43`, v42 frozen in repo2. Browser verification of the v50 additions is still pending.
+**Status:** Active development | v50 live (80 molecules — 80 `nameExamples` keys): presentation text position (top/left/right sticky rail) + persistent naming shell, with `Αλκάνια-Αιθάνιο-τεστ` as the default scenario; the MSc-student `thesis-work` import is retained (acyclic-alkane parent-chain fix, explicit terminal unsaturation locant, 73rd molecule, alkene scenarios, alkyl reference table/locant rule-table fixes), plus 7 additive alkynes (73 → 80 keys). `index.html` → v50, v49/v48/v47/v46/v45/v44 runnable at root, v43 frozen at tag `v43`, v42 frozen in repo2. Browser verification of the v50 additions is still pending.
 **Last updated:** 2026-10-22
 
 > **2026-10 update:** vision is now twofold+1 (community tool + research publications + platform for isomerism/reactions) with four layers in LEARN-first order — LEARN → EXPLORE-lite → PRACTICE → PLAY. The static chemistry app is embedded in Drupal; logging is research-primary. Source of truth for layers: `docs/LAYERS-PLAN.md`. Team P1–P6 roles and timeline are defined there and in `README.md`. What follows below is the original plan text, kept for theory and history; version/count claims predating v44 are superseded.
@@ -72,7 +72,7 @@ Each step removes one scaffolding layer. Familiar representations constrain inte
 ## Module 1: Organic Nomenclature — Current State (v50 live; v37 text below kept for history)
 
 ### What exists
-- **73 molecules** (73 `nameExamples` keys: 69 curated + 4 alkene/alkane test entries, incl. 4 ethers + 4 esters + branched `dimethyl_2_3_butane`) covering homologous-series menu groups (series-first, rules secondary)
+- **80 molecules** (80 `nameExamples` keys: 69 curated + 4 alkene/alkane test entries + 7 alkynes, incl. 4 ethers + 4 esters + branched `dimethyl_2_3_butane`) covering homologous-series menu groups (series-first, rules secondary)
 - **Algorithmic IUPAC engine** — DFS main chain determination, 3-tier locant rules, Greek euphony; ester two-word naming + ether systematic/common toggle since v40/v41
 - **5 representation modes** — condensed, expanded, annotated skeletal (partial), skeletal, 3D
 - **Synchronized highlighting** — same atom/bond highlighted simultaneously in 2D and 3D
@@ -239,20 +239,20 @@ RQ4: Learner strategies                    detection                    adaptive
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    DATA LAYER                               │
-│  jsme-nick-nomeclature-moc2-data_49.js                      │
-│  73 molecules: MOL strings, main chain, 3D SDF paths        │
+│  jsme-nick-nomeclature-moc2-data_50.js                      │
+│  80 molecules: MOL strings, main chain, 3D SDF paths        │
 └────────────────────────┬────────────────────────────────────┘
                          ↓
 ┌─────────────────────────────────────────────────────────────┐
 │                    CORE ENGINE                              │
-│  mulermoc-nom-core-49.js  (pure JS, no DOM)                 │
+│  mulermoc-nom-core-50.js  (pure JS, no DOM)                 │
 │  fAnalyseStructure → fDetectMolType → fCalcMainChain        │
 │  → fGuessName → Greek IUPAC name + component list          │
 └────────────────────────┬────────────────────────────────────┘
                          ↓
 ┌──────────────────┬──────────────────┬───────────────────────┐
 │   VIEWER LAYER   │  TEACHING LAYER  │     QUIZ LAYER        │
-│  molview-49.js   │  teaching-49.js  │  (quiz-nom-1.js)      │
+│  molview-50.js   │  teaching-50.js  │  (quiz-nom-1.js)      │
 │  JSME (2D)       │  Rule text/tables│  5 scenarios          │
 │  JSmol (3D)      │  TTS narration   │  Session logging      │
 │  Snap.svg        │  Name boxes      │  Research mode        │

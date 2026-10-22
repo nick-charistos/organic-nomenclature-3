@@ -14,7 +14,7 @@ Designed and developed by Nickolas Charistos
 | Teaching (rules, narration, UI wiring) | [js/mulermoc-nom-teaching-50.js](js/mulermoc-nom-teaching-50.js) |
 | Scenario module (LEARN authoring + presentation) | [js/mulermoc-nom-scenario-50.js](js/mulermoc-nom-scenario-50.js) |
 | Shared icon helper | [js/ui-icons.js](js/ui-icons.js) |
-| Molecule data (73 molecules — 73 `nameExamples` keys) | [js/jsme-nick-nomeclature-moc2-data_50.js](js/jsme-nick-nomeclature-moc2-data_50.js) |
+| Molecule data (80 molecules — 80 `nameExamples` keys) | [js/jsme-nick-nomeclature-moc2-data_50.js](js/jsme-nick-nomeclature-moc2-data_50.js) |
 | Styles | [css/jsme-nick-50.css](css/jsme-nick-50.css), [css/mulermoc-nom-scenario-50.css](css/mulermoc-nom-scenario-50.css) |
 | Stored scenarios | [scenarios/](scenarios/) (`Αλκάνια-Αιθάνιο-τεστ` default, `Αλκάνια-Αιθάνιο` legacy retained, `Αλκένια-Αιθένιο`, `Αλκένια-Ονοματολογία_και_διακλαδώσεις`; Greek filenames stay URL-encoded in `?scenario=` links) |
 
@@ -51,7 +51,7 @@ Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (o
 - **Ρυθμίσεις pass (v48):** the 2D/3D detail toggles (`Έγχρωμα Σύμβολα`, `Σύμβολα ατόμων`) are consolidated into the gear panel; the `Από δεδομένα` main-chain bullet is disabled when the molecule has no stored chain data.
 - Menu groups: homologous series (default sort by carbon count), chemical classes, rules, flat `Όλα τα μόρια`.
 - Name panel: IUPAC/COMMON toggle, per-component eye toggles (hide name parts), Greek TTS narration that follows visibility.
-- Tooltips share one navy skin (single copy in `css/jsme-nick-49.css`); scenario-bar/panel/step/toolbar buttons, type badge and drag handle converted from native `title`; all-Greek tooltip texts; geometry variants (button-panel bubbles above, save buttons left, `[2D]` left-aligned, edge buttons Save-left-aligned/Delete-right-aligned) for `overflow:hidden` parents.
+- Tooltips share one navy skin (single copy in `css/jsme-nick-50.css`); scenario-bar/panel/step/toolbar buttons, type badge and drag handle converted from native `title`; all-Greek tooltip texts; geometry variants (button-panel bubbles above, save buttons left, `[2D]` left-aligned, edge buttons Save-left-aligned/Delete-right-aligned) for `overflow:hidden` parents.
 
 ### LEARN layer: didactic scenarios
 - Authoring behind the `Σενάρια` handle: up to 3 scenarios, steps per scenario with per-step molecule/menu/chrome settings, rich step text (`B I sup sub`, size/width/columns in v49; v50 adds top/left/right placement + the persistent naming shell), icon buttons, drag-reorder, step drawer (state survives close and Present → Exit), per-step Present (`▶` starts at that step; card Play always at step 1), Import/Export JSON.
@@ -63,8 +63,8 @@ Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (o
 - Unsaturated ethers/esters and wider ester coverage; rings and aromatics not supported.
 - v48: browser click-through pending for the confirm dialog, both height controls, pin/unpin, the per-alkyl-group highlight, and long-name auto-fit (`docs/SESSION-NOTES.md`); scenario exports still stamp `"app": "mulermoc-nom-44"` (informational only — validation ignores it).
 - v49: browser click-through pending for the acyclic-alkane parent-chain fix (new + existing alkanes), the explicit terminal-`1` locant change (`3-μεθυλο-1-βουτένιο`), the 73rd molecule + 3D SDF, the imported scenarios, the alkyl table on branch/locant components, and the enyne `-ιν-` rule tile.
-- v49: carbon-branch orientation compares locant sets only; alphabetical priority for carbon substituents (as already done for halogen/nitro) is not yet applied, so a future mixed ethyl/methyl alkane with tied locant sets could orient arbitrarily (not exercised by the current 73 molecules).
-- v50: browser click-through pending for the side text rails (left/right, wide/narrow fallback, menu steps, long notes, top↔side switching, 2D/3D refit), the no-molecule naming placeholder, and presentation naming-chrome behavior, plus the v49 items above.
+- v49: carbon-branch orientation compares locant sets only; alphabetical priority for carbon substituents (as already done for halogen/nitro) is not yet applied, so a future mixed ethyl/methyl alkane with tied locant sets could orient arbitrarily (not exercised by the current 80 molecules).
+- v50: browser click-through pending for the side text rails (left/right, wide/narrow fallback, menu steps, long notes, top↔side switching, 2D/3D refit), the no-molecule naming placeholder, and presentation naming-chrome behavior, plus the v49 items above. Also pending: the 7 alkynes added post-live (73 → 80 keys) and the skeletal `C`-label removal for any sp carbon — alkynes, enynes, yne-ketone/aldehyde, nitriles, allene (2D only; 3D framing deferred).
 - Stored scenarios: `Αλκάνια-Αιθάνιο-τεστ.scenario.json` is the default (7 steps: ethane walkthrough + alkane menu browsing + 3D alkane models; steps 5–7 place the note in a left rail with longer text), while the previous `Αλκάνια-Αιθάνιο.scenario.json` is retained on disk for explicit `?scenario=` links but is no longer preloaded; plus the imported `Αλκένια-Αιθένιο` (7) and `Αλκένια-Ονοματολογία_και_διακλαδώσεις` (22); wider scenario library and EPAL/Lyceum two-level notes still to be written.
 
 ---
@@ -76,7 +76,7 @@ All layers reuse the same v50 engine (v49 is the previous runnable copy), embedd
 | # | Layer | Contract | State |
 |---|---|---|---|
 | 1 | **LEARN** | teacher-authored linear scenarios; presentation + self-paced learning | working scaffold (authoring + presentation); stored scenarios `Αλκάνια-Αιθάνιο-τεστ` (default), `Αλκάνια-Αιθάνιο` (legacy), `Αλκένια-Αιθένιο`, `Αλκένια-Ονοματολογία_και_διακλαδώσεις` |
-| 2 | **EXPLORE** | free browsing of all molecules (left menu) | working (73 molecules); next: bounded EXPLORE-lite (~15 mols) + menu search |
+| 2 | **EXPLORE** | free browsing of all molecules (left menu) | working (80 molecules); next: bounded EXPLORE-lite (~15 mols) + menu search |
 | 3 | **PRACTICE** | exercises with corrective feedback (3 types v1) | not started — see [LAYERS-PLAN](docs/LAYERS-PLAN.md) |
 | 4 | **PLAY** | gamified quizzes; responses + times logged for research statistics | not started — Drupal owns auth/session/logging; see [LAYERS-PLAN](docs/LAYERS-PLAN.md) |
 

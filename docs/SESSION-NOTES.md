@@ -1,6 +1,15 @@
 # Session notes — 2026-10-03 (resume point for next session)
 
-Working baseline: **v43**, `index.html` → `mulermoc-nom-43.html`. Tree clean at `cb2460c`.
+> **Current baseline (2026-10-22): v50 live.** `index.html` →
+> `mulermoc-nom-50.html`, 80 `nameExamples` keys (69 curated + 4 alkene/alkane
+> test entries + 7 alkynes, 73 → 80). v50 adds per-step presentation text
+> position (top/left/right sticky rail) + a persistent naming shell; default
+> scenario `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json`. Browser
+> verification of the v50 additions is pending — see
+> `docs/SESSION-HANDOFF-2026-10-22.md`. The v43 header and body below are kept
+> as historical working notes.
+
+Working baseline (historical): **v43**, `index.html` → `mulermoc-nom-43.html`. Tree clean at `cb2460c`.
 No JS runtime in the assistant environment — all changes were verified statically
 (braces HEAD-identical, grep audits) + user browser click-throughs. Re-verify in
 browser after any new change: all 3 modes, numbering, rule tables, menu grouping,

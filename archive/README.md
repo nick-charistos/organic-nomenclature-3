@@ -37,9 +37,9 @@ Tags: `v41` = last v41-only commit (`e6a64c7`),
 
 * v43 was intended as the last suffixed copy, but v44–v50 were forked as
   suffixed sets too (`*44*`–`*50*` at root alongside `*42*`/`*43*`).
-  Current baseline is v50 (`index.html` → `mulermoc-nom-50.html`, 73 molecules):
-  side-text rails (left/right) + persistent naming shell, with
-  `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json` as the default scenario.
+  Current baseline is v50 (`index.html` → `mulermoc-nom-50.html`, 80 molecules):
+  side-text rails (left/right) + persistent naming shell + 7 additive alkynes,
+  with `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json` as the default scenario.
   v49 and earlier remain runnable at root.
 * Runnable history: `mulermoc-nom-42/43/44/45/46/47/48/49/50.html` at root + git tags
   `v41`–`v44`. This folder holds ≤v41 version files plus the imported

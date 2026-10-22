@@ -2772,16 +2772,61 @@ function fMarkExpandedHydrogens() {
   fWrapStandaloneHydrogenTextsAsTspan();
 }
 
-// ── fHideAlkyneSkeletalCarbons ─────────────────────────────────────────────
-// In pure skeletal mode the sp carbons of alkynes are drawn as C labels with
-// rounded backplates that mask the bond lines. Remove the paired label and
-// backplate; bonds, highlights and numbering stay intact.
+// ── fMolHasSpCarbon ────────────────────────────────────────────────────────
+// True when the parsed 2D structure contains at least one sp-hybridised
+// carbon: a carbon in a triple bond (C≡C or C≡N) or in cumulated double bonds
+// (C=C=C, allene). Reads the core bond graph (bondList entries are
+// [atom1, atom2, order] with 1-based atoms into allAtomsTypeList). No
+// molecule selected or no analysed graph → false.
 
-function fHideAlkyneSkeletalCarbons() {
+function fMolHasSpCarbon() {
   if (
-    mode2D !== "skeletal" ||
-    nameExamples[selectedMol]?.classification?.seriesKey !== "alkynes"
+    !selectedMol ||
+    !Array.isArray(bondList) ||
+    !Array.isArray(allAtomsTypeList)
   ) {
+    return false;
+  }
+  const ccDoubleCount = {};
+  for (let i = 0; i < bondList.length; i++) {
+    const bond = bondList[i];
+    if (!bond) continue;
+    const atom1 = bond[0];
+    const atom2 = bond[1];
+    const order = bond[2];
+    if (order === 3) {
+      if (
+        allAtomsTypeList[atom1 - 1] === "C" ||
+        allAtomsTypeList[atom2 - 1] === "C"
+      ) {
+        return true;
+      }
+    } else if (order === 2) {
+      if (
+        allAtomsTypeList[atom1 - 1] === "C" &&
+        allAtomsTypeList[atom2 - 1] === "C"
+      ) {
+        ccDoubleCount[atom1] = (ccDoubleCount[atom1] || 0) + 1;
+        ccDoubleCount[atom2] = (ccDoubleCount[atom2] || 0) + 1;
+      }
+    }
+  }
+  for (const atomIdx in ccDoubleCount) {
+    if (ccDoubleCount[atomIdx] >= 2) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// ── fHideSkeletalSpCarbons ─────────────────────────────────────────────────
+// In pure skeletal mode sp carbons are drawn as C labels with rounded
+// backplates that mask the bond lines. Remove the paired label and backplate
+// for any molecule carrying an sp carbon (alkynes, enynes, yne-carbonyls,
+// nitriles, allenes); bonds, highlights and numbering stay intact.
+
+function fHideSkeletalSpCarbons() {
+  if (mode2D !== "skeletal" || !fMolHasSpCarbon()) {
     return;
   }
   const svg = document.querySelector("#jsmeNomeclatureSVG svg");
@@ -2839,7 +2884,7 @@ function fUpdateSVG() {
   if (mode2D === "condensed") {
     fCompactFunctionalGroups2D();
   }
-  fHideAlkyneSkeletalCarbons();
+  fHideSkeletalSpCarbons();
   patchtheNitrogen();
   fWrapStandaloneHydrogenTextsAsTspan();
   fApplyAtomColors2DToSVGLabels();

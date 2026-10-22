@@ -1,7 +1,8 @@
 # Session handoff — 2026-10-15 (v47 working copy → commit batch)
 
 > **HISTORICAL (2026-10-15):** v47 handoff snapshot. The current baseline is
-> v50 (`mulermoc-nom-50.html`, 73 molecules), with `Αλκάνια-Αιθάνιο-τεστ` as
+> v50 (`mulermoc-nom-50.html`, 80 molecules — 73 after the v49 import + 7
+> alkynes added post-live on 2026-10-22), with `Αλκάνια-Αιθάνιο-τεστ` as
 > the default scenario; version/count statements below are preserved as of this
 > handoff.
 
