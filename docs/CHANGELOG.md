@@ -31,6 +31,12 @@ New parallel file set `mulermoc-nom-50.html` + `js/*-50.js` + `css/*-50.css`, fo
 - Static: `node --check` on `molview-50.js`/`teaching-50.js`/`scenario-50.js`; CSS brace balance `213/213` scenario + `303/303` main; all v50 HTML asset refs resolve. At check time `index.html` still pointed to v49; it now points to v50. Headless DOM smoke check confirmed the persistent `panelTitle`/gear shell renders; the no-molecule placeholder was not browser-validated because the headless applet left component data empty. Static checks were not rerun after the default-scenario and status edits.
 - Owner browser click-through pending (wide/narrow, top/left/right switching, menu steps, long notes, 2D/3D refit, no-molecule placeholder, `Name controls` behavior).
 
+### 2026-10-22 — Additive alkyne data + skeletal C labels (still v50)
+- Added the 7 missing alkynes to `js/jsme-nick-nomeclature-moc2-data_50.js` (73 → 80 keys): `ethyne`, `butyne_1`, `butyne_2`, `methyl_3_butyne_1`, `methyl_3_pentyne_1`, `methyl_4_pentyne_2`, `ethyl_4_dimethyl_3_5_heptyne_1`. Each gets the three embedded 2D MOL forms plus `mols/nomeclature-moc2/<key>_3D.sdf`; existing 73 entries and their order are unchanged.
+- Added `fHideAlkyneSkeletalCarbons()` to `js/mulermoc-nom-molview-50.js`, called from `fUpdateSVG()` before `patchtheNitrogen()`. In `skeletal` mode for `seriesKey === "alkynes"` it removes the `C` label and its rounded backplate; bonds, highlights and numbering are untouched.
+- 3D intentionally untouched: no `initialZoom3D`, no `moveto` camera on the new entries, no `spt/init-3.spt` or `fLoadMol3D` change. The large alkyne uses the current v50 default 3D scale/orientation; framing is deferred to a later 3D pass.
+- Not imported: remote `fFit2DSVG`, color remapping, name-fitting and scenario changes.
+
 ---
 
 ## [v49] (student thesis-work import + alkyl reference table/locant fixes; previous live, `index.html` → v49 before v50)

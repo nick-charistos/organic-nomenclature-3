@@ -51,6 +51,27 @@
   browser-validated because the headless applet left component data empty.
 - Static checks were not rerun after the docs and default-scenario edits.
 
+## Additive alkyne update (after v50 went live)
+
+- Added 7 missing alkynes to `js/jsme-nick-nomeclature-moc2-data_50.js`
+  (73 → 80 keys): `ethyne`, `butyne_1`, `butyne_2`, `methyl_3_butyne_1`,
+  `methyl_3_pentyne_1`, `methyl_4_pentyne_2`,
+  `ethyl_4_dimethyl_3_5_heptyne_1`; three embedded 2D MOL forms each plus
+  `mols/nomeclature-moc2/<key>_3D.sdf`.
+- Added `fHideAlkyneSkeletalCarbons()` to `js/mulermoc-nom-molview-50.js`,
+  called in `fUpdateSVG()` before `patchtheNitrogen()`. Removes the `C` label
+  and its rounded backplate only in `skeletal` mode for `seriesKey === "alkynes"`.
+- 3D left untouched by explicit owner decision: no `initialZoom3D`, no
+  `moveto` camera on the new entries, no `spt/init-3.spt` or `fLoadMol3D`
+  change. The large alkyne uses the current v50 default 3D scale/orientation;
+  framing will be handled in a later 3D pass.
+- Not imported: remote `fFit2DSVG`, color remapping, name-fitting and
+  scenario changes.
+- Static: `node --check` passed on `data_50.js` and `molview-50.js`;
+  data loads as 80 `nameExamples` keys and 80 `window.MOL2D` keys, with all
+  7 new keys carrying condensed/expanded/skeletal forms. Owner browser
+  click-through for the new molecules is still pending.
+
 ## Browser checklist (owner)
 
 - Text rails: top ↔ left ↔ right switching; wide ≥1200px layout; narrow

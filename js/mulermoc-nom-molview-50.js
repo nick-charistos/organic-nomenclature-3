@@ -2772,6 +2772,38 @@ function fMarkExpandedHydrogens() {
   fWrapStandaloneHydrogenTextsAsTspan();
 }
 
+// ── fHideAlkyneSkeletalCarbons ─────────────────────────────────────────────
+// In pure skeletal mode the sp carbons of alkynes are drawn as C labels with
+// rounded backplates that mask the bond lines. Remove the paired label and
+// backplate; bonds, highlights and numbering stay intact.
+
+function fHideAlkyneSkeletalCarbons() {
+  if (
+    mode2D !== "skeletal" ||
+    nameExamples[selectedMol]?.classification?.seriesKey !== "alkynes"
+  ) {
+    return;
+  }
+  const svg = document.querySelector("#jsmeNomeclatureSVG svg");
+  if (!svg) {
+    return;
+  }
+  svg.querySelectorAll("text").forEach(function (label) {
+    if (label.textContent.trim() !== "C") {
+      return;
+    }
+    const backplate = label.previousElementSibling;
+    if (
+      backplate &&
+      backplate.localName === "rect" &&
+      backplate.hasAttribute("rx")
+    ) {
+      backplate.remove();
+    }
+    label.remove();
+  });
+}
+
 // ── fUpdateSVG ────────────────────────────────────────────────────────────
 
 function fUpdateSVG() {
@@ -2807,6 +2839,7 @@ function fUpdateSVG() {
   if (mode2D === "condensed") {
     fCompactFunctionalGroups2D();
   }
+  fHideAlkyneSkeletalCarbons();
   patchtheNitrogen();
   fWrapStandaloneHydrogenTextsAsTspan();
   fApplyAtomColors2DToSVGLabels();
