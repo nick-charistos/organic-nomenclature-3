@@ -28,6 +28,12 @@ window.MuLERIcons.formatClear = "<svg width='16' height='16' viewBox='0 0 24 24'
 // set, same -9 -244 800 800 viewBox; title/id stripped, fill -> currentColor,
 // 16px). Scenario #scCloseBar.
 window.MuLERIcons.closePanel = "<svg width='16' height='16' viewBox='-9 -244 800 800' fill='currentColor' style='vertical-align:middle' xmlns='http://www.w3.org/2000/svg'><polygon points='320.4,13 430.2,122.8 91.2,122.8 91.2,189.4 430.2,189.4 320.4,299.2 367.6,346.3 557.8,156.1 367.6,-34.1'/><rect x='624.3' y='-60.7' width='66.5' height='433.5'/></svg>";
+// Step-text layout panels (from imgs/panel-*-svgrepo-com.svg; Adobe
+// Illustrator set, viewBox and path transform kept, ids/title stripped,
+// fill -> currentColor, 16px). Scenario note-position dropdown.
+window.MuLERIcons.panelTop = "<svg width='16' height='16' viewBox='94 -4 800 800' fill='currentColor' style='vertical-align:middle' xmlns='http://www.w3.org/2000/svg'><g transform='translate(64.000000, 64.000000)'><path d='M130,32h600v600H130V32z M196.7,232l0,333.3h466.7l0-333.3H196.7z'/></g></svg>";
+window.MuLERIcons.panelLeft = "<svg width='16' height='16' viewBox='94 -4 800 800' fill='currentColor' style='vertical-align:middle' xmlns='http://www.w3.org/2000/svg'><g transform='translate(64.000000, 64.000000)'><path d='M130,632V32h600v600H130z M330,565.3l333.3,0V98.7l-333.3,0V565.3z'/></g></svg>";
+window.MuLERIcons.panelRight = "<svg width='16' height='16' viewBox='94 -4 800 800' fill='currentColor' style='vertical-align:middle' xmlns='http://www.w3.org/2000/svg'><g transform='translate(64.000000, 64.000000)'><path d='M730,32v600H130V32H730z M530,98.7l-333.3,0v466.7l333.3,0V98.7z'/></g></svg>";
 // Viewer + naming icons (moved from molview-46.js; single source of truth).
 // `playSm` is the 22-viewBox narration triangle — distinct from `play`
 // (512-viewBox scenario icon).

@@ -57,7 +57,9 @@ Copy-Item css/mulermoc-nom-scenario-48.css  css/mulermoc-nom-scenario-49.css
 
 `js/ui-icons.js` is shared — do not copy. Edit `mulermoc-nom-49.html`: the 2
 `<link>` and 5 `<script>` refs to `-49`. Leave `index.html` → previous version
-(off-live) until the owner flips it after verification.
+(off-live) until the owner flips it after verification. For v49 the owner flipped
+it live with browser click-through still pending; record that status in
+`README.md` and `docs/CHANGELOG.md`.
 
 ## 3. Core
 
@@ -107,7 +109,8 @@ Validate that every `selectedMol` exists in the data key set.
 
 ## 6. Docs
 
-Add a `[Unreleased]` v49-style section to `docs/CHANGELOG.md`, update
+Add a new `[vNN]` section to `docs/CHANGELOG.md` (use `[Unreleased]` only
+before release), update
 `README.md` (baseline/entry/table/counts), and append a `docs/SESSION-NOTES.md`
 entry. Bump the CSS/JS header path comments from `-NN` to `-NN+1`.
 

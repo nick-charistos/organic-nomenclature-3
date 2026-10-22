@@ -1,0 +1,561 @@
+{
+  "scenarioVersion": 1,
+  "app": "mulermoc-nom-44",
+  "scenario": "Αλκάνια-Αιθάνιο-τεστ",
+  "title": "Αλκάνια-Αιθάνιο-τεστ",
+  "steps": [
+    {
+      "n": 1,
+      "title": "Πώς ονομάζεται ένα οργανικό μόριο;",
+      "note": "Το όνομα μιας άκυκλης οργανικής ένωσης που έχει συνεχή ευθύγραμμη ανθρακική αλυσίδα προκύπτει από τον συνδυασμό τριών συνθετικών.",
+      "mode2D": "condensed",
+      "mainChainMode": "algorithmic",
+      "chainIdx": 0,
+      "etherNamingMode": "iupac",
+      "nameAnalysisMode": "none",
+      "selectedRule": null,
+      "style2D": {
+        "atomColors": true,
+        "colorMode": "atom",
+        "zigzag": false,
+        "zoom": 2
+      },
+      "styleName": {
+        "box": true,
+        "cross": true,
+        "etherNaming": "iupac",
+        "panelOpen": true,
+        "hidden": [
+          "comp5",
+          "comp6",
+          "comp9"
+        ]
+      },
+      "styleHighlight": {
+        "bondAtoms": false,
+        "numberingAtoms": true,
+        "numberingBonds": true
+      },
+      "styleText": {
+        "fontSizePx": null,
+        "textWidthPx": null,
+        "columns": null,
+        "position": null
+      },
+      "audio": {
+        "narrate": false
+      },
+      "menuSubset": [],
+      "menuGroups": [
+        "molecules"
+      ],
+      "view3D": {
+        "style": "ballnstick",
+        "spin": false,
+        "showH": true,
+        "atomSymbols": true,
+        "moveto": null
+      },
+      "show": {
+        "menu": false,
+        "viewerButtons": false,
+        "viewerSettings": false,
+        "viewers": {
+          "2D": true,
+          "3D": false
+        },
+        "viewerMaxHeight": null,
+        "viewerBothHeight": null,
+        "controls": {
+          "2D": false,
+          "3D": false
+        },
+        "save": {
+          "2D": false,
+          "3D": false
+        },
+        "naming": true,
+        "nameSettings": false,
+        "nameEye": false,
+        "audio": false,
+        "rule": false,
+        "text": true,
+        "nameClick": false
+      },
+      "selectedMol": "ethane"
+    },
+    {
+      "n": 2,
+      "title": "Πρώτο Συνθετικό",
+      "note": "Το <b>1<sup>o</sup> Συνθετικό</b> δείχνει τον αριθμό των ατόμων άνθρακα της ανθρακικής αλυσίδας.",
+      "mode2D": "condensed",
+      "mainChainMode": "algorithmic",
+      "chainIdx": 0,
+      "etherNamingMode": "iupac",
+      "nameAnalysisMode": "compCarbonsCount",
+      "selectedRule": null,
+      "style2D": {
+        "atomColors": true,
+        "colorMode": "atom",
+        "zigzag": false,
+        "zoom": 2
+      },
+      "styleName": {
+        "box": true,
+        "cross": true,
+        "etherNaming": "iupac",
+        "panelOpen": true,
+        "hidden": [
+          "comp6",
+          "comp9"
+        ]
+      },
+      "styleHighlight": {
+        "bondAtoms": false,
+        "numberingAtoms": true,
+        "numberingBonds": true
+      },
+      "styleText": {
+        "fontSizePx": null,
+        "textWidthPx": null,
+        "columns": null,
+        "position": null
+      },
+      "audio": {
+        "narrate": false
+      },
+      "menuSubset": [],
+      "menuGroups": [
+        "molecules"
+      ],
+      "view3D": {
+        "style": "ballnstick",
+        "spin": false,
+        "showH": true,
+        "atomSymbols": true,
+        "moveto": null
+      },
+      "show": {
+        "menu": false,
+        "viewerButtons": false,
+        "viewerSettings": false,
+        "viewers": {
+          "2D": true,
+          "3D": false
+        },
+        "viewerMaxHeight": null,
+        "viewerBothHeight": null,
+        "controls": {
+          "2D": false,
+          "3D": false
+        },
+        "save": {
+          "2D": false,
+          "3D": false
+        },
+        "naming": true,
+        "nameSettings": false,
+        "nameEye": false,
+        "audio": false,
+        "rule": false,
+        "text": true,
+        "nameClick": false
+      },
+      "selectedMol": "ethane"
+    },
+    {
+      "n": 3,
+      "title": "Δεύτερο Συνθετικό",
+      "note": "Το <b>2<sup>o</sup> Συνθετικό</b>  δείχνει το είδος των δεσμών που υπάρχουν μεταξύ των ατόμων του άνθρακα.",
+      "mode2D": "condensed",
+      "mainChainMode": "algorithmic",
+      "chainIdx": 0,
+      "etherNamingMode": "iupac",
+      "nameAnalysisMode": "compBondType",
+      "selectedRule": null,
+      "style2D": {
+        "atomColors": true,
+        "colorMode": "atom",
+        "zigzag": false,
+        "zoom": 2
+      },
+      "styleName": {
+        "box": true,
+        "cross": true,
+        "etherNaming": "iupac",
+        "panelOpen": true,
+        "hidden": [
+          "comp9"
+        ]
+      },
+      "styleHighlight": {
+        "bondAtoms": false,
+        "numberingAtoms": true,
+        "numberingBonds": true
+      },
+      "styleText": {
+        "fontSizePx": null,
+        "textWidthPx": null,
+        "columns": null,
+        "position": null
+      },
+      "audio": {
+        "narrate": false
+      },
+      "menuSubset": [],
+      "menuGroups": [
+        "molecules"
+      ],
+      "view3D": {
+        "style": "ballnstick",
+        "spin": false,
+        "showH": true,
+        "atomSymbols": true,
+        "moveto": null
+      },
+      "show": {
+        "menu": false,
+        "viewerButtons": false,
+        "viewerSettings": false,
+        "viewers": {
+          "2D": true,
+          "3D": false
+        },
+        "viewerMaxHeight": null,
+        "viewerBothHeight": null,
+        "controls": {
+          "2D": false,
+          "3D": false
+        },
+        "save": {
+          "2D": false,
+          "3D": false
+        },
+        "naming": true,
+        "nameSettings": false,
+        "nameEye": false,
+        "audio": false,
+        "rule": false,
+        "text": true,
+        "nameClick": false
+      },
+      "selectedMol": "ethane"
+    },
+    {
+      "n": 4,
+      "title": "Τρίτο Συνθετικό",
+      "note": "Το <b>3<sup>o</sup> Συνθετικό</b> δηλώνει την χημική τάξη που ανήκει.",
+      "mode2D": "condensed",
+      "mainChainMode": "algorithmic",
+      "chainIdx": 0,
+      "etherNamingMode": "iupac",
+      "nameAnalysisMode": "compSuffix",
+      "selectedRule": null,
+      "style2D": {
+        "atomColors": true,
+        "colorMode": "atom",
+        "zigzag": false,
+        "zoom": 2
+      },
+      "styleName": {
+        "box": true,
+        "cross": true,
+        "etherNaming": "iupac",
+        "panelOpen": true,
+        "hidden": []
+      },
+      "styleHighlight": {
+        "bondAtoms": false,
+        "numberingAtoms": true,
+        "numberingBonds": true
+      },
+      "styleText": {
+        "fontSizePx": null,
+        "textWidthPx": null,
+        "columns": null,
+        "position": null
+      },
+      "audio": {
+        "narrate": false
+      },
+      "menuSubset": [],
+      "menuGroups": [
+        "molecules"
+      ],
+      "view3D": {
+        "style": "ballnstick",
+        "spin": false,
+        "showH": true,
+        "atomSymbols": true,
+        "moveto": null
+      },
+      "show": {
+        "menu": false,
+        "viewerButtons": false,
+        "viewerSettings": false,
+        "viewers": {
+          "2D": true,
+          "3D": false
+        },
+        "viewerMaxHeight": null,
+        "viewerBothHeight": null,
+        "controls": {
+          "2D": false,
+          "3D": false
+        },
+        "save": {
+          "2D": false,
+          "3D": false
+        },
+        "naming": true,
+        "nameSettings": false,
+        "nameEye": false,
+        "audio": false,
+        "rule": false,
+        "text": true,
+        "nameClick": false
+      },
+      "selectedMol": "ethane"
+    },
+    {
+      "n": 5,
+      "title": "Διαφορετικές Αναπαραστάσεις Μορίων",
+      "note": "Ένα μόριο μπορεί να αναπαρίσταται με διαφορετικές μορφές 2D συντακτικών τύπων:\n \n<b>α) συνεπτυγμένη, </b>\n\n<b>β) ανεπτυγμένη,</b>\n\n<b>γ) σκελετική μορφή.</b>\n\nΕπίλεξε τις διαφορετικές αναπαραστάσεις για το αιθάνιο.\n\nEπίλεξε κάθε συνθετικό της ονομασίας για να δεις σε ποιό χαρακτηριστικό του μορίου αντιστοιχεί.\n",
+      "mode2D": "condensed",
+      "mainChainMode": "algorithmic",
+      "chainIdx": 0,
+      "etherNamingMode": "iupac",
+      "nameAnalysisMode": "none",
+      "selectedRule": null,
+      "style2D": {
+        "atomColors": true,
+        "colorMode": "atom",
+        "zigzag": false,
+        "zoom": 2
+      },
+      "styleName": {
+        "box": true,
+        "cross": false,
+        "etherNaming": "iupac",
+        "panelOpen": true,
+        "hidden": []
+      },
+      "styleHighlight": {
+        "bondAtoms": false,
+        "numberingAtoms": true,
+        "numberingBonds": true
+      },
+      "styleText": {
+        "fontSizePx": 16,
+        "textWidthPx": null,
+        "columns": null,
+        "position": "left"
+      },
+      "audio": {
+        "narrate": false
+      },
+      "menuSubset": [],
+      "menuGroups": [
+        "molecules"
+      ],
+      "view3D": {
+        "style": "ballnstick",
+        "spin": false,
+        "showH": true,
+        "atomSymbols": true,
+        "moveto": null
+      },
+      "show": {
+        "menu": false,
+        "viewerButtons": false,
+        "viewerSettings": false,
+        "viewers": {
+          "2D": true,
+          "3D": false
+        },
+        "viewerMaxHeight": null,
+        "viewerBothHeight": null,
+        "controls": {
+          "2D": true,
+          "3D": false
+        },
+        "save": {
+          "2D": false,
+          "3D": false
+        },
+        "naming": true,
+        "nameSettings": true,
+        "nameEye": false,
+        "audio": false,
+        "rule": false,
+        "text": true,
+        "nameClick": true
+      },
+      "selectedMol": "ethane"
+    },
+    {
+      "n": 6,
+      "title": "Διερεύνησε τα μόρια των Αλκανίων",
+      "note": "Διάλεξε τα μόρια στο αριστερό μενού και δες την ονομασία τους.\n\nΔοκίμασε τις διαφορετικές μορφές των αναπαραστάσεων των μορίων.\n\nΕπίλεξε κάθε συνθετικό και δες σε ποιό χαρακτηριστικό του μορίου αντιστοιχεί.\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sodales lorem turpis, ornare condimentum nisl feugiat luctus. \n\nDonec interdum feugiat tellus, in mattis magna viverra et. In convallis non lorem quis facilisis. Suspendisse cursus eu augue lacinia molestie. \n\nDuis ac massa non ante egestas varius. Sed aliquet ultrices nulla, id maximus lacus laoreet convallis. Curabitur cursus, erat suscipit laoreet fringilla, lorem odio auctor lorem, vel egestas odio ligula quis felis. In non sapien leo.\n\nAliquam bibendum velit sed facilisis ullamcorper. Vestibulum quis accumsan neque, quis molestie metus. Nullam orci diam, aliquam a mi id, interdum ultricies justo. \n\nPraesent vel odio tristique, bibendum nisl a, porttitor eros. Phasellus nec iaculis diam, sed eleifend dolor. Sed fermentum volutpat mollis. Vestibulum quis porta odio. Suspendisse eu ligula libero. \n\nEtiam orci nulla, tempor eu erat et, cursus pulvinar purus. Ut sit amet dictum velit, at efficitur sem. Nam a enim iaculis, ullamcorper orci fermentum, faucibus odio. Proin sapien dolor, malesuada in gravida non, luctus sed eros. Praesent congue scelerisque mi, ac ultrices massa ultrices et. \n\nDuis porta justo placerat dolor ultrices, nec elementum arcu cursus. \n\nPhasellus eros eros, porta sit amet iaculis sodales, mollis auctor est. Sed rhoncus sodales ex placerat vulputate.\n\nAenean ac ultrices eros, a scelerisque justo. Vestibulum eleifend nunc ut justo dictum faucibus. Sed rutrum lacinia laoreet. Morbi auctor rutrum interdum. In scelerisque mattis ultrices. Etiam pretium ullamcorper quam. Integer accumsan blandit sem ut eleifend. \n\nClass aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nullam mattis volutpat neque, congue hendrerit mauris molestie a. Cras iaculis tincidunt est vulputate tempor. Interdum et malesuada fames ac ante ipsum primis in faucibus. Praesent tincidunt consequat consectetur. \n\nVivamus in maximus dolor. Vestibulum ornare, tellus sed consectetur dignissim, risus dolor condimentum libero, ut venenatis dolor nunc eget ante. \n\nAenean ex orci, commodo in finibus non, ultricies vitae mauris. Nullam finibus blandit tellus, eget eleifend metus interdum sed. ",
+      "mode2D": "condensed",
+      "mainChainMode": "algorithmic",
+      "chainIdx": 0,
+      "etherNamingMode": "iupac",
+      "nameAnalysisMode": "none",
+      "selectedRule": null,
+      "style2D": {
+        "atomColors": true,
+        "colorMode": "atom",
+        "zigzag": false,
+        "zoom": 2
+      },
+      "styleName": {
+        "box": true,
+        "cross": true,
+        "etherNaming": "iupac",
+        "panelOpen": false,
+        "hidden": []
+      },
+      "styleHighlight": {
+        "bondAtoms": false,
+        "numberingAtoms": true,
+        "numberingBonds": true
+      },
+      "styleText": {
+        "fontSizePx": 16,
+        "textWidthPx": null,
+        "columns": null,
+        "position": "left"
+      },
+      "audio": {
+        "narrate": false
+      },
+      "menuSubset": [
+        "methane",
+        "ethane",
+        "propane",
+        "butane",
+        "pentane"
+      ],
+      "menuGroups": [
+        "molecules"
+      ],
+      "view3D": {
+        "style": "ballnstick",
+        "spin": false,
+        "showH": true,
+        "atomSymbols": true,
+        "moveto": null
+      },
+      "show": {
+        "menu": true,
+        "viewerButtons": false,
+        "viewerSettings": false,
+        "viewers": {
+          "2D": true,
+          "3D": false
+        },
+        "viewerMaxHeight": null,
+        "viewerBothHeight": null,
+        "controls": {
+          "2D": true,
+          "3D": false
+        },
+        "save": {
+          "2D": false,
+          "3D": false
+        },
+        "naming": true,
+        "nameSettings": true,
+        "nameEye": false,
+        "audio": false,
+        "rule": false,
+        "text": true,
+        "nameClick": true
+      },
+      "selectedMol": null
+    },
+    {
+      "n": 7,
+      "title": "Τριδσιάστατα Mοριακά μοντέλα Αλκανίων",
+      "note": "Τα μόρια απεικονίζονται και με τρισδιάστατα μοριακά μοντέλα.\nΔιάλεξε τα μόρια στο αριστερό μενού για να δεις και να διαδράσεις με τα 3D μοντέλα.\n\nΕπίλεξε κάθε συνθετικό και δες σε ποιό χαρακτηριστικό του μοριακού μοντέλου και του συντακτικού τύπου αντιστοιχεί.\n\n Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sodales lorem turpis, ornare condimentum nisl feugiat luctus. \n\nDonec interdum feugiat tellus, in mattis magna viverra et. In convallis non lorem quis facilisis. Suspendisse cursus eu augue lacinia molestie. \n\nDuis ac massa non ante egestas varius. Sed aliquet ultrices nulla, id maximus lacus laoreet convallis. Curabitur cursus, erat suscipit laoreet fringilla, lorem odio auctor lorem, vel egestas odio ligula quis felis. In non sapien leo.\n\nAliquam bibendum velit sed facilisis ullamcorper. Vestibulum quis accumsan neque, quis molestie metus. Nullam orci diam, aliquam a mi id, interdum ultricies justo. \n\nPraesent vel odio tristique, bibendum nisl a, porttitor eros. Phasellus nec iaculis diam, sed eleifend dolor. Sed fermentum volutpat mollis. Vestibulum quis porta odio. Suspendisse eu ligula libero. \n\nEtiam orci nulla, tempor eu erat et, cursus pulvinar purus. Ut sit amet dictum velit, at efficitur sem. Nam a enim iaculis, ullamcorper orci fermentum, faucibus odio. Proin sapien dolor, malesuada in gravida non, luctus sed eros. Praesent congue scelerisque mi, ac ultrices massa ultrices et. \n\nDuis porta justo placerat dolor ultrices, nec elementum arcu cursus. \n\nPhasellus eros eros, porta sit amet iaculis sodales, mollis auctor est. Sed rhoncus sodales ex placerat vulputate.\n\nAenean ac ultrices eros, a scelerisque justo. Vestibulum eleifend nunc ut justo dictum faucibus. Sed rutrum lacinia laoreet. Morbi auctor rutrum interdum. In scelerisque mattis ultrices. Etiam pretium ullamcorper quam. Integer accumsan blandit sem ut eleifend. \n\nClass aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Nullam mattis volutpat neque, congue hendrerit mauris molestie a. Cras iaculis tincidunt est vulputate tempor. Interdum et malesuada fames ac ante ipsum primis in faucibus. Praesent tincidunt consequat consectetur. \n\nVivamus in maximus dolor. Vestibulum ornare, tellus sed consectetur dignissim, risus dolor condimentum libero, ut venenatis dolor nunc eget ante. \n\nAenean ex orci, commodo in finibus non, ultricies vitae mauris. Nullam finibus blandit tellus, eget eleifend metus interdum sed. ",
+      "mode2D": "condensed",
+      "mainChainMode": "algorithmic",
+      "chainIdx": 0,
+      "etherNamingMode": "iupac",
+      "nameAnalysisMode": "none",
+      "selectedRule": null,
+      "style2D": {
+        "atomColors": true,
+        "colorMode": "atom",
+        "zigzag": false,
+        "zoom": 2
+      },
+      "styleName": {
+        "box": true,
+        "cross": true,
+        "etherNaming": "iupac",
+        "panelOpen": false,
+        "hidden": []
+      },
+      "styleHighlight": {
+        "bondAtoms": false,
+        "numberingAtoms": true,
+        "numberingBonds": true
+      },
+      "styleText": {
+        "fontSizePx": 16,
+        "textWidthPx": null,
+        "columns": null,
+        "position": "left"
+      },
+      "audio": {
+        "narrate": false
+      },
+      "menuSubset": [
+        "methane",
+        "ethane",
+        "propane",
+        "butane",
+        "pentane"
+      ],
+      "menuGroups": [
+        "molecules"
+      ],
+      "view3D": {
+        "style": "ballnstick",
+        "spin": false,
+        "showH": true,
+        "atomSymbols": true,
+        "moveto": null
+      },
+      "show": {
+        "menu": true,
+        "viewerButtons": false,
+        "viewerSettings": false,
+        "viewers": {
+          "2D": true,
+          "3D": true
+        },
+        "viewerMaxHeight": null,
+        "viewerBothHeight": null,
+        "controls": {
+          "2D": true,
+          "3D": true
+        },
+        "save": {
+          "2D": false,
+          "3D": false
+        },
+        "naming": true,
+        "nameSettings": true,
+        "nameEye": false,
+        "audio": false,
+        "rule": false,
+        "text": true,
+        "nameClick": true
+      },
+      "selectedMol": null
+    }
+  ]
+}

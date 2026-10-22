@@ -2,7 +2,7 @@
 
 Source of truth for the four layers of the twofold+1 vision (see `README.md`):
 1. a useful community tool, 2. ongoing research publications, 3. (+1) platform for isomerism/reactions and beyond.
-Baseline: **v49 live** (`index.html` → v49 — MSc-student import: acyclic-alkane parent-chain fix + 73rd molecule + alkene scenarios + alkyl reference table/locant fixes; v48/v47/v46 runnable at root, v43 frozen at tag `v43`).
+Baseline: **v50 live** (`index.html` → v50 — per-step presentation text position as a top/left/right fourth-column sticky rail + persistent naming shell; default scenario `Αλκάνια-Αιθάνιο-τεστ`). The v49 MSc-student import (acyclic-alkane parent-chain fix, 73rd molecule, alkene scenarios, alkyl reference table/locant fixes) is retained; v49/v48/v47/v46/v45/v44 runnable at root, v43 frozen at tag `v43`. Browser verification of the v50 additions is pending.
 Hosting: **embedded static** — the chemistry app stays dependency-free static; Drupal owns scenarios, exercises/quizzes, users/sessions, logging, exports.
 
 ---
@@ -11,8 +11,8 @@ Hosting: **embedded static** — the chemistry app stays dependency-free static;
 
 | Layer | Entry | Chrome / behavior | Owner | Exit criteria |
 |---|---|---|---|---|
-| **LEARN** | `mulermoc-nom-49.html?scenario=scenarios/<name>.json&present=1#step=N` (hosted) or Import (offline/`file://`) | linear snapshots (`selectedMol + show.* + note`); menu hidden in present; Exit restores menu (`menu-open`) + exit-step viewers/bars + settings panels; in-memory steps kept | P1 (player) + P3 (content) + P2-lite (listing) | teacher unfamiliar with code can Present + Exit in class |
-| **EXPLORE** | `mulermoc-nom-49.html` (no params) | free browsing, left menu (series-first), all DB molecules | P1 (app) + P4→P3 (molecules) | menu search works; scenario-needed molecules present |
+| **LEARN** | `mulermoc-nom-50.html?scenario=scenarios/<name>.json&present=1#step=N` (hosted) or Import (offline/`file://`) | linear snapshots (`selectedMol + show.* + note`); menu hidden in present; Exit restores menu (`menu-open`) + exit-step viewers/bars + settings panels; in-memory steps kept | P1 (player) + P3 (content) + P2-lite (listing) | teacher unfamiliar with code can Present + Exit in class |
+| **EXPLORE** | `mulermoc-nom-50.html` (no params) | free browsing, left menu (series-first), all DB molecules | P1 (app) + P4→P3 (molecules) | menu search works; scenario-needed molecules present |
 | **PRACTICE** | TBD (`?exercise=` + `itemType`) on the same engine | until-correct feedback loop, attempt counting; reuses `fSelectMol` + name-box click path | P1 + P3 (wording) + P2 (schema) | 3 types v1 usable in small-class pilots |
 | **PLAY** | TBD (Drupal quiz session) | gamified items, score/streak/levels v1; events queued offline, synced to Drupal | P2 leads, P1 thin client; P5/P6 research | response+time log → CSV; EPAL-vs-Lyceum analysis possible |
 
@@ -24,7 +24,7 @@ Scenario schema and log events reserve an optional `lang` field (`gr` default; n
 
 ## 2. LEARN v1.1 — stored library (first)
 
-* 3–5 scenarios (alkanes → alcohols → ethers → esters) under `scenarios/*.json` (3 stored so far: `Αλκάνια-Αιθάνιο` 7 steps, `Αλκένια-Αιθένιο` 7 steps, `Αλκένια-Ονοματολογία_και_διακλαδώσεις` 22 steps).
+* 3–5 scenarios (alkanes → alcohols → ethers → esters) under `scenarios/*.json` (3 active so far: `Αλκάνια-Αιθάνιο-τεστ` 7 steps — the default, plus `Αλκένια-Αιθένιο` 7 steps and `Αλκένια-Ονοματολογία_και_διακλαδώσεις` 22 steps; legacy `Αλκάνια-Αιθάνιο` remains on disk for explicit deep links).
 * Two-level `note` convention: EPAL-simple first / Lyceum-full extension (P3 authors; P5 compares).
 * Curated `moveto` per step (captured with rotate off).
 * Authoring flow: Save → Export → Present → Exit (Exit = full restore).

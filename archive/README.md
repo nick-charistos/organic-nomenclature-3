@@ -33,11 +33,16 @@ Tags: `v41` = last v41-only commit (`e6a64c7`),
 * `archive/css/` — versioned styles (`jsme-nick-*.css` except the
   current one, which stays at `css/`).
 
-## Policy (updated 2026-10-14; original plan in `docs/didactic-scenario-plan.md` §7 superseded)
+## Policy (updated 2026-10-22; original plan in `docs/didactic-scenario-plan.md` §7 superseded)
 
-* v43 was intended as the last suffixed copy, but v44 and v45 shipped as
-  suffixed sets too (`*44*`, `*45*` at root alongside `*42*`/`*43*`).
-  Current baseline is v45 (`index.html` → `mulermoc-nom-45.html`, 65 molecules).
-* Runnable history: `mulermoc-nom-42/43/44.html` at root + git tags
-  `v41`–`v44`. This folder holds ≤v41 only (non-runnable museum).
-* Never edit files in `archive/` — they are frozen.
+* v43 was intended as the last suffixed copy, but v44–v50 were forked as
+  suffixed sets too (`*44*`–`*50*` at root alongside `*42*`/`*43*`).
+  Current baseline is v50 (`index.html` → `mulermoc-nom-50.html`, 73 molecules):
+  side-text rails (left/right) + persistent naming shell, with
+  `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json` as the default scenario.
+  v49 and earlier remain runnable at root.
+* Runnable history: `mulermoc-nom-42/43/44/45/46/47/48/49/50.html` at root + git tags
+  `v41`–`v44`. This folder holds ≤v41 version files plus the imported
+  `Giannis_Skendros/` data snapshots (non-runnable museum).
+* Never edit archived version files (HTML/JS/CSS/data); README/import notes may
+  be corrected for links/status.

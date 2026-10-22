@@ -4,9 +4,38 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ---
 
-## [v49] (student thesis-work import + alkyl reference table/locant fixes; live, `index.html` → v49)
+## [v50] (presentation text rails left/right + persistent naming shell; live, `index.html` → v50)
 
-New parallel file set `mulermoc-nom-49.html` + `js/*-49.js` + `css/*-49.css`, forked from v48 (the html copy changes only the 7 asset refs; the JS/data/CSS files were then edited as described below). Folds in the MSc student's `thesis-work` upgrades (fork `yanisken9/organic-nomenclature-3`, tip `48ca292`): the generic main-chain parent-selection fix, the explicit-`1` unsaturation-locant convention, one new molecule, the alkene lesson scenarios, and an adapted alkyl reference table shown for branch/locant components. Namelecule product-layer files are deliberately **not** imported (see below). `index.html` now redirects to v49; `*48*` and earlier remain runnable at root.
+New parallel file set `mulermoc-nom-50.html` + `js/*-50.js` + `css/*-50.css`, forked from v49 (the html copy changes only the 7 asset refs). Adds per-step presentation text placement and a persistent naming shell; the chemistry engine and molecule data are unchanged. v50 is now live: `index.html` points to `mulermoc-nom-50.html`; v49 remains runnable at root. Browser click-through is still pending (see Checks).
+
+### Default scenario
+- `MuLERMoCScenario.defaultScenarioUrl` now points to `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json` (7 steps; steps 5–7 place the note in a left rail with longer text). The previous `scenarios/Αλκάνια-Αιθάνιο.scenario.json` stays on disk for explicit `?scenario=` deep links but is no longer preloaded.
+
+### Per-step text placement (`scenario-50.js`, `scenario-50.css`)
+- Additive `styleText.position`: `null`/missing = **Πάνω** (current top card), `"left"` or `"right"` = sticky side reading rail. No schema-version bump; invalid values coerce to top, Export stays minimal, Update preserves the choice, and legacy scenarios load unchanged.
+- Step drawer gets an icon dropdown `Θέση: Πάνω / Αριστερά / Δεξιά` beside the existing columns/size/width controls.
+- Side layout at ≥1200px: `#scStepText` becomes a **fourth flex item** inside `#mainAppContainer > .mainApp3Columns`, inserted first for `left` and last for `right`, so it shares the row's 8px gap. `#pageContainer`/`#mainAppContainer` widen to `calc(1600px + clamp(300px, 24vw, 420px) + 8px)`; menu/analysis widths use matching clamps. Below 1200px the card returns to the top slot before `#mainAppContainer`.
+- The rail is sticky and internally scrolling, width `clamp(300px, 24vw, 420px)`, with height capped to the tallest visible app column and the viewport (`min(column height, 100vh - 80px)`), resynced by `ResizeObserver` and window resize. Title and credits still span the page.
+- Side rails always render one column; a stored 2-column choice returns when the step is placed back on top. The stored `textWidthPx` also applies to top mode only (an inline 980px width would overflow the rail).
+- `fViewerHeights2D3D()` skips subtracting the note-card height only while the side layout is actually applied (parent-class probe, so narrow-screen fallback still subtracts). Top↔left/right switches request an `fResizeViewers()` refit after placement settles.
+- New rail/class/dropdown styling in `css/mulermoc-nom-scenario-50.css`; version/path comments refreshed in the copied JS/CSS headers.
+
+### Persistent naming shell (`molview-50.js`, `teaching-50.js`, `jsme-nick-50.css`)
+- `fDeselectMol()` now clears `nameComponentsList` and calls `fShowNameAnalysis()` instead of emptying `#nameAnalysis`; with no molecule selected, `compCount` is forced to 0 and the container renders a muted `.nameEmptyHint` (“Επιλέξτε μόριο για ανάλυση ονόματος”).
+- The naming shell (title + gear + settings panel) renders on page ready via `fShowNameAnalysis()` after `fInitTheory()`, so it is present before any molecule is loaded. The settings panel still opens/closes on demand.
+- The shell is always available in full-app/authoring/no-molecule states. In presentation, `show.nameSettings` keeps its existing gate: unchecked still hides the gear + panel + voice buttons, but the `Ονομασία` title remains (legacy `show.naming`/`show.nameClick` untouched).
+- `fScenarioApplyNamingChrome` counts actual visible boxes (`.nameCompContainer .nameCompBox:not(.comp-hidden)`) and hides the explain line at zero; a menu-only step's hint only returns after free browse has rendered boxes, so no dead hint points at an empty naming row.
+- `.nameEmptyHint` styling lives in `css/jsme-nick-50.css` (full-width, muted italic placeholder).
+
+### Checks
+- Static: `node --check` on `molview-50.js`/`teaching-50.js`/`scenario-50.js`; CSS brace balance `213/213` scenario + `303/303` main; all v50 HTML asset refs resolve. At check time `index.html` still pointed to v49; it now points to v50. Headless DOM smoke check confirmed the persistent `panelTitle`/gear shell renders; the no-molecule placeholder was not browser-validated because the headless applet left component data empty. Static checks were not rerun after the default-scenario and status edits.
+- Owner browser click-through pending (wide/narrow, top/left/right switching, menu steps, long notes, 2D/3D refit, no-molecule placeholder, `Name controls` behavior).
+
+---
+
+## [v49] (student thesis-work import + alkyl reference table/locant fixes; previous live, `index.html` → v49 before v50)
+
+New parallel file set `mulermoc-nom-49.html` + `js/*-49.js` + `css/*-49.css`, forked from v48 (the html copy changes only the 7 asset refs; the JS/data/CSS files were then edited as described below). Folds in the MSc student's `thesis-work` upgrades (fork `yanisken9/organic-nomenclature-3`, tip `48ca292`): the generic main-chain parent-selection fix, the explicit-`1` unsaturation-locant convention, one new molecule, the alkene lesson scenarios, and an adapted alkyl reference table shown for branch/locant components. Namelecule product-layer files are deliberately **not** imported (see below). At release, `index.html` redirected to v49; v50 now supersedes it, and `*48*` and earlier remain runnable at root.
 
 ### Main-chain parent selection for acyclic alkanes (`core-49.js`)
 - New graph helpers `fIsAcyclicHydrocarbonGraph`, `fCarbonBranchLocants`, `fCompareLocantSets` (0-based graph indices, 1-based locants; first-differing-locant compare, never sums).

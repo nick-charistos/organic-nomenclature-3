@@ -2,21 +2,21 @@
 
 A Greek-first interactive learning platform for organic nomenclature, built around molecular structure, naming logic, and multiple representations. It is a no-build static web app (JSME, JSmol, Snap.svg, jQuery, vanilla JavaScript) intended to be embedded in Drupal.
 
-Desinged and developed by Nickolas Charistos
+Designed and developed by Nickolas Charistos
 
-**Current baseline:** v49 is live (`index.html` → v49) — MSc-student `thesis-work` import: acyclic-alkane parent-chain fix, explicit terminal unsaturation locant, 73rd molecule, alkene lesson scenarios, plus the alkyl reference table/locant rule-table fixes (see [CHANGELOG](docs/CHANGELOG.md)). Browser click-through of the v49 learner/authoring additions is still pending.
-**Entry point:** [index.html](index.html) → [mulermoc-nom-49.html](mulermoc-nom-49.html) (live); previous versions `mulermoc-nom-48.html`…`-42.html` runnable alongside
+**Current baseline:** v50 is live (`index.html` → v50) — presentation text rails (top/left/right) + persistent naming shell, with `Αλκάνια-Αιθάνιο-τεστ` as the default preloaded scenario. v49 and earlier remain runnable; browser verification of the v50 additions is still pending.
+**Entry point:** [index.html](index.html) → [mulermoc-nom-50.html](mulermoc-nom-50.html) (live); `mulermoc-nom-49.html` and earlier versions `mulermoc-nom-48.html`…`-42.html` runnable alongside
 
 | Layer | File |
 |---|---|
-| Core engine (analysis + naming) | [js/mulermoc-nom-core-49.js](js/mulermoc-nom-core-49.js) |
-| Viewer (JSME / JSmol / Snap.svg) | [js/mulermoc-nom-molview-49.js](js/mulermoc-nom-molview-49.js) |
-| Teaching (rules, narration, UI wiring) | [js/mulermoc-nom-teaching-49.js](js/mulermoc-nom-teaching-49.js) |
-| Scenario module (LEARN authoring + presentation) | [js/mulermoc-nom-scenario-49.js](js/mulermoc-nom-scenario-49.js) |
+| Core engine (analysis + naming) | [js/mulermoc-nom-core-50.js](js/mulermoc-nom-core-50.js) |
+| Viewer (JSME / JSmol / Snap.svg) | [js/mulermoc-nom-molview-50.js](js/mulermoc-nom-molview-50.js) |
+| Teaching (rules, narration, UI wiring) | [js/mulermoc-nom-teaching-50.js](js/mulermoc-nom-teaching-50.js) |
+| Scenario module (LEARN authoring + presentation) | [js/mulermoc-nom-scenario-50.js](js/mulermoc-nom-scenario-50.js) |
 | Shared icon helper | [js/ui-icons.js](js/ui-icons.js) |
-| Molecule data (73 molecules — 73 `nameExamples` keys) | [js/jsme-nick-nomeclature-moc2-data_49.js](js/jsme-nick-nomeclature-moc2-data_49.js) |
-| Styles | [css/jsme-nick-49.css](css/jsme-nick-49.css), [css/mulermoc-nom-scenario-49.css](css/mulermoc-nom-scenario-49.css) |
-| Stored scenarios | [scenarios/](scenarios/) (`Αλκάνια-Αιθάνιο`, `Αλκένια-Αιθένιο`, `Αλκένια-Ονοματολογία_και_διακλαδώσεις`; Greek filenames stay URL-encoded in `?scenario=` links) |
+| Molecule data (73 molecules — 73 `nameExamples` keys) | [js/jsme-nick-nomeclature-moc2-data_50.js](js/jsme-nick-nomeclature-moc2-data_50.js) |
+| Styles | [css/jsme-nick-50.css](css/jsme-nick-50.css), [css/mulermoc-nom-scenario-50.css](css/mulermoc-nom-scenario-50.css) |
+| Stored scenarios | [scenarios/](scenarios/) (`Αλκάνια-Αιθάνιο-τεστ` default, `Αλκάνια-Αιθάνιο` legacy retained, `Αλκένια-Αιθένιο`, `Αλκένια-Ονοματολογία_και_διακλαδώσεις`; Greek filenames stay URL-encoded in `?scenario=` links) |
 
 ---
 
@@ -25,15 +25,15 @@ Desinged and developed by Nickolas Charistos
 | Site | Serves | Status |
 |---|---|---|
 | [organic-nomenclature-2](https://nick-charistos.github.io/organic-nomenclature-2/) | v42 | frozen — emergency hotfixes only |
-| [organic-nomenclature-3](https://nick-charistos.github.io/organic-nomenclature-3/) | v49 live | active — all new work happens here |
+| [organic-nomenclature-3](https://nick-charistos.github.io/organic-nomenclature-3/) | v50 live | active — all new work happens here |
 
-Root holds the files of the current live set (`*49*`; `mulermoc-nom-42/43/44/45/46/47/48.html` are kept runnable alongside). Older file sets live in [archive/](archive/README.md) (non-runnable museum). Runnable history via git tags `v41`–`v44`.
+Root holds the files of the current live set (`*50*`; `mulermoc-nom-49.html` and `mulermoc-nom-42/43/44/45/46/47/48.html` are kept runnable alongside). Older file sets live in [archive/](archive/README.md) (non-runnable museum). Runnable history via git tags `v41`–`v44`.
 
 Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (only `image-svgrepo-Industrial-Sharp.svg` is kept; other icons are inlined/served by `js/ui-icons.js`), PDFs, `mols/branched/`, third-party libs served via CDN (see [.gitignore](.gitignore)).
 
 ---
 
-## What works now (v49 live — student import, alkyl reference table, scenario presentation)
+## What works now (v50 live — presentation rails, naming shell, new default scenario)
 
 ### Chemistry engine
 - Greek IUPAC naming for alkanes/alkenes/alkynes, branched chains, halides, alcohols, aldehydes/ketones, carboxylic acids (incl. hydroxy/amino/oxo/keto), nitriles, amines, ethers (systematic + common names), esters (two-word names).
@@ -47,13 +47,14 @@ Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (o
 - 2D (JSME) and 3D (JSmol) views; condensed, expanded, skeletal and annotated-skeletal modes; `[2D][3D]` visibility toggles; PNG export.
 - **Fluid viewers (v48):** both viewers fit the viewer column via native `setSize` (container-derived heights, debounced `ResizeObserver`); a **single max-height** control and a **combined 2D+3D height** control for the two-viewer case (Auto | manual px) live in Ρυθμίσεις and are stored per scenario step.
 - **Authoring pin-dock (v48):** the scenario bar docks full-height beside the app (scoped horizontal scroll with edge cues); the pinned viewer width is adaptive (`clamp`, keeps its original width when the screen has room, eases to a 400px floor); viewer-column UI text scales fluidly via a container query.
+- **Presentation text rails + naming shell (v50 live):** each step can place its note **Πάνω** (default), **Αριστερά**, or **Δεξιά**; side modes render as a sticky, internally scrolling 300–420px fourth-column reading rail beside the app on screens ≥1200px, with automatic top fallback below that. Rails always use one column; the stored width/columns return when the step is placed back on top. The naming panel also keeps its title/gear shell available (with a no-molecule placeholder), while presentation `Name controls` still hides gear/panel/voice when unchecked. Available at `mulermoc-nom-50.html`; browser verification is pending.
 - **Ρυθμίσεις pass (v48):** the 2D/3D detail toggles (`Έγχρωμα Σύμβολα`, `Σύμβολα ατόμων`) are consolidated into the gear panel; the `Από δεδομένα` main-chain bullet is disabled when the molecule has no stored chain data.
 - Menu groups: homologous series (default sort by carbon count), chemical classes, rules, flat `Όλα τα μόρια`.
 - Name panel: IUPAC/COMMON toggle, per-component eye toggles (hide name parts), Greek TTS narration that follows visibility.
 - Tooltips share one navy skin (single copy in `css/jsme-nick-49.css`); scenario-bar/panel/step/toolbar buttons, type badge and drag handle converted from native `title`; all-Greek tooltip texts; geometry variants (button-panel bubbles above, save buttons left, `[2D]` left-aligned, edge buttons Save-left-aligned/Delete-right-aligned) for `overflow:hidden` parents.
 
 ### LEARN layer: didactic scenarios
-- Authoring behind the `Σενάρια` handle: up to 3 scenarios, steps per scenario with per-step molecule/menu/chrome settings, rich step text (`B I sup sub`, size/width/columns), icon buttons, drag-reorder, step drawer (state survives close and Present → Exit), per-step Present (`▶` starts at that step; card Play always at step 1), Import/Export JSON.
+- Authoring behind the `Σενάρια` handle: up to 3 scenarios, steps per scenario with per-step molecule/menu/chrome settings, rich step text (`B I sup sub`, size/width/columns in v49; v50 adds top/left/right placement + the persistent naming shell), icon buttons, drag-reorder, step drawer (state survives close and Present → Exit), per-step Present (`▶` starts at that step; card Play always at step 1), Import/Export JSON.
 - `Go` previews align picks + viewer chrome to the step, so Go → tweak → `Update` round-trips keep the menu; Exit restores the full app chrome (viewers/bars per the exit step).
 - Presentation mode (`#pageContainer.presenting`) walks the steps; Exit restores the full app chrome.
 - Details: [docs/didactic-scenario-plan.md](docs/didactic-scenario-plan.md).
@@ -63,17 +64,18 @@ Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (o
 - v48: browser click-through pending for the confirm dialog, both height controls, pin/unpin, the per-alkyl-group highlight, and long-name auto-fit (`docs/SESSION-NOTES.md`); scenario exports still stamp `"app": "mulermoc-nom-44"` (informational only — validation ignores it).
 - v49: browser click-through pending for the acyclic-alkane parent-chain fix (new + existing alkanes), the explicit terminal-`1` locant change (`3-μεθυλο-1-βουτένιο`), the 73rd molecule + 3D SDF, the imported scenarios, the alkyl table on branch/locant components, and the enyne `-ιν-` rule tile.
 - v49: carbon-branch orientation compares locant sets only; alphabetical priority for carbon substituents (as already done for halogen/nitro) is not yet applied, so a future mixed ethyl/methyl alkane with tied locant sets could orient arbitrarily (not exercised by the current 73 molecules).
-- Stored scenarios: `Αλκάνια-Αιθάνιο.scenario.json` (7 steps: ethane walkthrough + alkane menu browsing + 3D alkane models; replaces the earlier `ethene*.scenario.json` drafts, which selected ethane while titled ethene), plus the imported `Αλκένια-Αιθένιο` (7) and `Αλκένια-Ονοματολογία_και_διακλαδώσεις` (22); wider scenario library and EPAL/Lyceum two-level notes still to be written.
+- v50: browser click-through pending for the side text rails (left/right, wide/narrow fallback, menu steps, long notes, top↔side switching, 2D/3D refit), the no-molecule naming placeholder, and presentation naming-chrome behavior, plus the v49 items above.
+- Stored scenarios: `Αλκάνια-Αιθάνιο-τεστ.scenario.json` is the default (7 steps: ethane walkthrough + alkane menu browsing + 3D alkane models; steps 5–7 place the note in a left rail with longer text), while the previous `Αλκάνια-Αιθάνιο.scenario.json` is retained on disk for explicit `?scenario=` links but is no longer preloaded; plus the imported `Αλκένια-Αιθένιο` (7) and `Αλκένια-Ονοματολογία_και_διακλαδώσεις` (22); wider scenario library and EPAL/Lyceum two-level notes still to be written.
 
 ---
 
 ## Four layers (LEARN-first)
 
-All layers reuse the same v49 engine, embedded as a static app in Drupal:
+All layers reuse the same v50 engine (v49 is the previous runnable copy), embedded as a static app in Drupal:
 
 | # | Layer | Contract | State |
 |---|---|---|---|
-| 1 | **LEARN** | teacher-authored linear scenarios; presentation + self-paced learning | working scaffold (authoring + presentation); stored scenario `Αλκάνια-Αιθάνιο` |
+| 1 | **LEARN** | teacher-authored linear scenarios; presentation + self-paced learning | working scaffold (authoring + presentation); stored scenarios `Αλκάνια-Αιθάνιο-τεστ` (default), `Αλκάνια-Αιθάνιο` (legacy), `Αλκένια-Αιθένιο`, `Αλκένια-Ονοματολογία_και_διακλαδώσεις` |
 | 2 | **EXPLORE** | free browsing of all molecules (left menu) | working (73 molecules); next: bounded EXPLORE-lite (~15 mols) + menu search |
 | 3 | **PRACTICE** | exercises with corrective feedback (3 types v1) | not started — see [LAYERS-PLAN](docs/LAYERS-PLAN.md) |
 | 4 | **PLAY** | gamified quizzes; responses + times logged for research statistics | not started — Drupal owns auth/session/logging; see [LAYERS-PLAN](docs/LAYERS-PLAN.md) |
@@ -108,18 +110,18 @@ Out of scope for now: quiz SPA, participant logging, CSV export, server-side cla
 
 ## Documents
 
-- [CHANGELOG.md](docs/CHANGELOG.md) — authoritative history (v49 live); [STUDENT-IMPORT.md](docs/STUDENT-IMPORT.md) — recurring `thesis-work` import procedure
+- [CHANGELOG.md](docs/CHANGELOG.md) — authoritative history (v50 live); [STUDENT-IMPORT.md](docs/STUDENT-IMPORT.md) — recurring `thesis-work` import procedure
 - [didactic-scenario-plan.md](docs/didactic-scenario-plan.md) — scenario schema and authoring flow
 - [LAYERS-PLAN.md](docs/LAYERS-PLAN.md) — layer contracts, exercise types, research logging schema
 - [DEVELOPMENT-PLAN.md](docs/DEVELOPMENT-PLAN.md), [PROJECT-PLAN.md](docs/PROJECT-PLAN.md), [PROJECT-PLAN-GR.md](docs/PROJECT-PLAN-GR.md) — product/research plans (may lag the code)
-- [FLOWCHART.md](docs/FLOWCHART.md), [SESSION-NOTES.md](docs/SESSION-NOTES.md) — engine flow and working notes
+- [FLOWCHART.md](docs/FLOWCHART.md), [SESSION-NOTES.md](docs/SESSION-NOTES.md) — engine flow and working notes; [SESSION-HANDOFF-2026-10-22.md](docs/SESSION-HANDOFF-2026-10-22.md) — current v50 resume notes
 
 ---
 
 ## Status summary
 
-- Baseline: **v49 live** (`index.html` → v49; student-thread import — parent-chain fix + 73rd molecule + scenarios + alkyl rule table/locant fixes); v48/v47/v46/v45/v44 runnable at root (`mulermoc-nom-48/47/46/45/44.html`), v43 frozen at tag `v43`, v42 frozen in repo2
+- Baseline: **v50 live** (`index.html` → v50; presentation text rails top/left/right + persistent naming shell; default scenario `Αλκάνια-Αιθάνιο-τεστ`); v49/v48/v47/v46/v45/v44 runnable at root (`mulermoc-nom-49/48/47/46/45/44.html`), v43 frozen at tag `v43`, v42 frozen in repo2
 - Focus: **LEARN pilot (stored scenarios) + bounded EXPLORE-lite**
-- Near-term: **v49 browser verification (parent-chain fix, `3-μεθυλο-1-βουτένιο` locant, 73rd molecule/3D, imported scenarios, alkyl table/locants, enyne `-ιν-`); scenario library verification; bounded EXPLORE-lite (~15 mols + menu search)**
+- Near-term: **v50 browser verification of the side text rails + persistent naming shell (left/right/top, wide/narrow fallback, menu steps, long notes, 2D/3D refit, no-molecule placeholder, `Name controls`), then the v49 parent-chain fix, `3-μεθυλο-1-βουτένιο` locant, 73rd molecule/3D, imported scenarios, alkyl table/locants, enyne `-ιν-`; scenario library verification; bounded EXPLORE-lite (~15 mols + menu search)**
 - Rules: secondary explanatory layer; homologous series = database order
 - Research layer: active design (schema v1 in LAYERS-PLAN)

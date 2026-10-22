@@ -1989,3 +1989,82 @@ follows; one Save → Present → Next → Exit round-trip.
   scenario refs; `git diff --check` only reports trailing whitespace inherited
   from the forked/imported files. Owner browser click-through pending.
 * Repeatable import procedure documented in `docs/STUDENT-IMPORT.md`.
+
+## 2026-10-21 — v50 presentation text position (top / left rail)
+
+* Forked v49 byte-identically to `*-50` (`html`, data, core, molview,
+  teaching, scenario, both CSS files); HTML refs and version headers updated;
+  `index.html` initially → v50 (later restored to v49, see below).
+* Added additive `styleText.position` (`"left"` or null = top; no schema bump)
+  to capture/defaults/validation/update-preservation. New `Θέση: Πάνω /
+  Αριστερά` select in the step note toolbar.
+* Left mode: `#pageContainer.presenting.scTextLeft` becomes a 2-column grid at
+  ≥1200px (`clamp(300px, 24vw, 420px)` rail + app); the note is a sticky,
+  internally scrolling card (`max-height: calc(100vh - 80px)`); below 1200px
+  it falls back to the top card. Width and 2-column settings apply to top mode
+  only; left always renders one column.
+* Viewer fit: `fViewerHeights2D3D` now skips the note-height subtraction only
+  when the applied layout is the side-by-side grid (computed `display:grid`
+  probe), and top↔left switches trigger `fResizeViewers()` after layout.
+* Docs: initially README baseline/entry/file map/status, CHANGELOG `[v50]`,
+  LAYERS, PROJECT-PLAN EN/GR, didactic schema/UX/status, archive README
+  (then restored to v49 live / v50 parked at end of session).
+* Checks: JS delimiter balance, CSS braces 201/201 scenario + 301/301 main,
+  HTML refs resolve, Markdown links 0 missing. No browser runtime here;
+  owner click-through pending (wide/narrow, menu steps, long notes,
+  top↔left, 2D/3D refit).
+* End of session: v50 parked (not live); `index.html` restored to
+  `mulermoc-nom-49.html`; README, CHANGELOG, LAYERS, PROJECT-PLAN EN/GR,
+  didactic plan, handoffs, and archive README updated to v49 live / v50
+  parked. v50 files remain at root for later verification.
+
+## 2026-10-22 — v50 side text rails (left/right) + persistent naming shell
+
+* Text placement reworked from the left-only grid to a fourth flex item:
+  `styleText.position` now accepts `"left"`/`"right"` (null = top); the note
+  is inserted first/last inside `#mainAppContainer > .mainApp3Columns`, shares
+  the 8px row gap, and returns to the top slot before `#mainAppContainer` for
+  top/fallback/exit. Page max width `calc(1600px + clamp(300px, 24vw, 420px) +
+  8px)` with matching menu/analysis clamps; rail width
+  `clamp(300px, 24vw, 420px)`, sticky, internally scrolling, height capped to
+  the tallest visible app column and `100vh - 80px`.
+* `scenario-50.js`: `fScenarioSyncStepTextLayout()` reparents on apply/resize/
+  exit; `fScenarioSyncStepTextHeight()` + `ResizeObserver` keep the cap in
+  sync; `fViewerHeights2D3D()` skips the note-height subtraction only while a
+  side layout is applied; top↔side switches refit viewers. Step toolbar now
+  uses a `Θέση: Πάνω / Αριστερά / Δεξιά` icon dropdown.
+* Persistent naming shell: `fDeselectMol()` clears `nameComponentsList` and
+  calls `fShowNameAnalysis()` instead of emptying `#nameAnalysis`;
+  `fShowNameAnalysis()` forces `compCount = 0` without a molecule and renders
+  `.nameEmptyHint` (“Επιλέξτε μόριο για ανάλυση ονόματος”). The title/gear
+  shell initializes on page ready after `fInitTheory()`. Presentation keeps
+  the existing `show.nameSettings` gate for gear/panel/voice, but the title is
+  always present; legacy `show.naming`/`show.nameClick` are untouched.
+* `fScenarioApplyNamingChrome()` counts
+  `.nameCompContainer .nameCompBox:not(.comp-hidden)` and hides the explain
+  line at zero; menu-only hints reappear only after free browse renders boxes.
+  `.nameEmptyHint` CSS added at `css/jsme-nick-50.css:410`.
+* Checks (earlier in this session, not rerun for the docs pass): `node
+  --check` on molview/teaching/scenario; CSS braces `213/213` scenario +
+  `303/303` main; `index.html` still → v49; headless DOM smoke check showed the
+  persistent naming shell. Owner browser click-through pending (rails both
+  sides, wide/narrow, menu steps, long notes, refit, no-molecule placeholder,
+  presentation `Name controls`).
+* Docs sweep: README, CHANGELOG `[v50]`, LAYERS, PROJECT-PLAN EN/GR, didactic
+  plan, archive README, and new `SESSION-HANDOFF-2026-10-22.md` synced to v49
+  live / v50 parked. No commit.
+
+## 2026-10-22 (cont.) — v50 promoted live; new default scenario
+
+* Owner pointed `index.html` → `mulermoc-nom-50.html`; v50 is now the live
+  baseline. v49 and earlier remain runnable at root.
+* `js/mulermoc-nom-scenario-50.js`: `defaultScenarioUrl` now loads
+  `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json` (7 steps; steps 5–7 use the
+  left text rail with longer notes). The previous
+  `scenarios/Αλκάνια-Αιθάνιο.scenario.json` stays on disk for explicit
+  `?scenario=` links but is no longer the boot default.
+* Docs resynced from v49 live / v50 parked to v50 live: README, CHANGELOG
+  `[v50]`, LAYERS, PROJECT-PLAN EN/GR, didactic plan, archive README, and the
+  2026-10-22 handoff; earlier handoff banners updated for the current baseline.
+* No static checks rerun (standing docs-only/no-check instruction); JSON files
+  exist and the new scenario was already parsed during inspection. No commit.

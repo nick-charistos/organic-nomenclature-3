@@ -720,7 +720,8 @@
 }
 
 #scenarioConfirm .scConfirmYes:hover {
-   filter: brightness(1.12);
+   background-color: var(--redAlert);
+   color: #fff;
 }
 
 #scenarioConfirm .scConfirmBtns button:focus-visible {

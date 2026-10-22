@@ -183,7 +183,7 @@ These must be designed into the quiz SPA **before** any data collection, not ret
 5. **Session export**: researcher can download full JSON log or CSV at end of session
 6. **Viewer visibility control**: 2D viewer, 3D viewer, or both can be shown/hidden per condition
 7. **No feedback condition**: option to suppress correct/incorrect feedback during study phase (for retention test validity)
-8. **Transfer test molecules**: a separate set of molecules not used during study phase (currently not in data_37.js — needs to be added)
+8. **Transfer test molecules**: a separate set of molecules not used during study phase (currently not in the molecule data file — needs to be added)
 
 ---
 

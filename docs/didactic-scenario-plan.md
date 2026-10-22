@@ -33,8 +33,8 @@ progress tracking, server storage.
 > `menuGroups` is additive (`molecules` default = flat list, `chemclass` /
 > `series` classify the picked subset; unknown values coerce out, missing or
 > empty falls back to flat — no version bump). `styleText` is additive
-> (`fontSizePx` 12–28/null, `textWidthPx` 320–1200/null, `columns` 1|2/null;
-> null = theme defaults). `styleName.hidden` + `show.nameEye` carry
+> (`fontSizePx` 12–28/null, `textWidthPx` 320–1200/null, `columns` 1|2/null,
+> `position` `"left"`/`"right"`/null (v50); null = theme defaults). `styleName.hidden` + `show.nameEye` carry
 > per-component visibility (see §2 visibility rules).
 
 ```json
@@ -58,7 +58,7 @@ progress tracking, server storage.
       "style2D": {"atomColors": true, "colorMode": "atom", "zigzag": false},
       "styleName": {"box": true, "cross": false, "etherNaming": "iupac", "panelOpen": true, "hidden": ["comp5"]},
       "styleHighlight": {"bondAtoms": false, "numberingAtoms": true},
-      "styleText": {"fontSizePx": null, "textWidthPx": null, "columns": null},
+      "styleText": {"fontSizePx": null, "textWidthPx": null, "columns": null, "position": null},
       "menuSubset": ["methane", "ethane"],
       "menuGroups": ["molecules"],
       "audio": {"narrate": false},
@@ -86,11 +86,11 @@ progress tracking, server storage.
 }
 ```
 
-State notes (grounded in v49; v42–v48 identical unless noted):
+State notes (grounded in v50; v42–v49 identical unless noted):
 
 * `selectedMol`, `mode2D/modeSuffix`, `mainChainMode`,
   `etherNamingMode`, `nameAnalysisMode`, `selectedRule` mirror
-  `js/mulermoc-nom-molview-49.js` (`fSelectMol`, `fShowNameAnalysis`,
+  `js/mulermoc-nom-molview-50.js` (`fSelectMol`, `fShowNameAnalysis`,
   `fExplainNameComp`). (Older revisions cited `molview-42.js` line numbers;
   line refs are fragile — prefer function names.)
 * `mode2D` ∈ `condensed` / `expanded` / `skeletal` / `condensedZigZag`;
@@ -170,8 +170,11 @@ Visibility rules:
   the `--viewerMinH` variable), so a long note scrolls the
   page instead of squashing them.
   The fit subtracts the visible `#scStepText` note card (offsetHeight +
-  margins) too, so a two-viewer present step with a note reserves room for
-  it (re-fit from `fScenarioChrome` after the card is written).
+  margins) too, so a two-viewer present step with a top note reserves room
+  for it (re-fit from `fScenarioChrome` after the card is written). The
+  v50 side layout skips that subtraction only while a left/right side
+  rail is actually applied (the card is a fourth flex item beside the app,
+  not above it); narrow-screen/top fallback still subtracts.
 * `show.viewerBothHeight` (additive, v48; number px | `null`, default
   `null` = Auto) sets the **combined** 2D+3D height of the viewers when
   **two** are visible — each viewer takes half. Auto keeps the equal split
@@ -240,11 +243,16 @@ Visibility rules:
   reappears on free-browse selection (the browsed molecule's boxes are
    clickable with guidance). Every rebuild re-asserts the step's naming
    chrome (`fScenarioApplyNamingChrome`: gear/panel + voice stay hidden
-   when their boxes are unchecked). Accepted iff the subset is non-empty.
+   when their boxes are unchecked, while the `Ονομασία` title remains).
+   With no molecule selected the component row shows the muted placeholder
+   “Επιλέξτε μόριο για ανάλυση ονόματος”; the explain line also hides when
+   zero boxes are actually visible. Accepted iff the subset is non-empty.
 * `show.naming` / `show.rule` toggle the explanation and rule
-  panels. `show.nameSettings` toggles the naming gear + panel
-  (per-step drawer checkbox `Name controls`, default unchecked; the
-  voice buttons follow it too);
+  panels. `show.nameSettings` toggles the naming gear + panel and voice
+  buttons (per-step drawer checkbox `Name controls`, default unchecked);
+  the `Ονομασία` title remains visible either way. The shell (title +
+  gear) renders on page load and with no molecule selected, showing the
+  component-row placeholder;
   `show.nameClick` gates name-box interaction only (per-step drawer checkbox
   `Name interact`, default unchecked: locked boxes ignore mouse clicks via
   a `locked` class, but the stored `nameAnalysisMode` highlight +
@@ -340,8 +348,10 @@ Visibility rules:
   (320–1200, empty = 980px default width; explicit values override up to the
   card width); 1↔2 column toggle
   `styleText.columns` (default 1; lists never split via `break-inside`,
-  small screens collapse to 1); `<ul>`/`<ol>`/`<small>`/`<big>` still
-  render in saved notes but are no longer inserted),
+  small screens collapse to 1); `Θέση: Πάνω / Αριστερά / Δεξιά` icon
+  dropdown `styleText.position` (`"left"`/`"right"`, or null = top; v50);
+  `<ul>`/`<ol>`/
+  `<small>`/`<big>` still render in saved notes but are no longer inserted),
   per-step chrome
    checkboxes (`2D controls`, `3D controls`, `Name controls`,
    `Name interact`, `Ορατότητα συνθετικών`, plus `Ταξινομήσεις Μένου` (`Μόρια` default-checked,
@@ -384,7 +394,7 @@ Visibility rules:
 ## 4. Playback UX + URL shape (frozen)
 
 * Canonical URL:
-  `mulermoc-nom-45.html?scenario=scenarios/esters-intro.json&present=1#step=3`
+  `mulermoc-nom-49.html?scenario=scenarios/<name>.json&present=1#step=3`
 * `?scenario=path.json`: which file. v1 allows same-origin
   `scenarios/*.json` only (reject `..`, non-`.json`,
   cross-origin). Fetched over `http(s)`; `file://` users must
@@ -410,6 +420,16 @@ Visibility rules:
   note — otherwise the app title is kept and nothing shows. The
   PlayBar pill keeps only the one-line title/note as a progress
   indicator (same subset rendering).
+* v50 text position (live): default `styleText.position: null` keeps the top
+  card. `"left"`/`"right"` move the note into a sticky, internally scrolling
+  `clamp(300px, 24vw, 420px)` rail beside the app at ≥1200px, as the first/last
+  fourth flex item in `#mainAppContainer > .mainApp3Columns` (8px row gap;
+  page max width `calc(1600px + rail + 8px)`). Below 1200px CSS falls back to
+  the top card before `#mainAppContainer`. The rail always renders one column
+  and its height is capped to the tallest visible app column / `100vh - 80px`;
+  `textWidthPx` applies to top mode only. Switching top↔side refits viewers;
+  `fViewerHeights2D3D` skips the note-height subtraction only while a side rail
+  is actually applied.
 * `#menuCol` is hidden wholesale in presentation so the remaining
   columns center on the page; exit restores it. Exception: a step with
   `show.menu` shows its `menuSubset` with local
@@ -468,7 +488,7 @@ Kept untouched: v42 copies (`molview-42.js`, `jsme-nick-42.css` — frozen),
 * Legacy `#molInfo` in `functional-groups.html:80` is a
   different page and stays untouched (now in `archive/html/`).
 
-## 7. v1 build status (v43 done, v44 released, v49 current)
+## 7. v1 build status (v43 done, v44 released, v50 current)
 
 Done in v43 (`mulermoc-nom-43.html`, last suffixed copy; carried through v44 into v45 unchanged unless noted in `CHANGELOG.md [v44]`):
 
@@ -485,7 +505,7 @@ Done in v43 (`mulermoc-nom-43.html`, last suffixed copy; carried through v44 int
    assertions (manual click-through pending).
 6. ✅ CHANGELOG v43 entry (`index.html` → 43 in repo3 only).
 
-Remaining: v49 is live (`index.html` → 49 — MSc-student import: acyclic-alkane parent-chain fix, explicit terminal unsaturation locant, 73rd molecule, alkene scenarios, alkyl table/locant fixes; see `CHANGELOG.md [v49]`; `*48*`/`*47*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced); then quizzes/games on the
+Remaining: v50 is live (`index.html` → 50 — per-step presentation text position as a top/left/right fourth-column sticky rail + persistent naming shell; default preload `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json`; see `CHANGELOG.md [v50]`; browser verification pending). It retains the v49 MSc-student import (acyclic-alkane parent-chain fix, explicit terminal unsaturation locant, 73rd molecule, alkene scenarios, alkyl table/locant fixes; see `CHANGELOG.md [v49]`); `*49*`–`*44*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced. Then quizzes/games on the
 same reuse contract. The stepper's main-chain pool index is captured per step (`chainIdx`, v47 additive) and re-asserted on apply; only the transient EXPLORE walk UI position is not step state.
 
 ## 8. Open questions for development (moveto timing closed 2026-10-04)
@@ -508,7 +528,7 @@ Many issues will surface during development; adjust there.
 
 ## 9. LEARN v1.1 — stored library (2026-10-03)
 
-LEARN is layer 1 of the twofold+1 vision (see `README.md`, `docs/LAYERS-PLAN.md`). v45 provides the player (v44 runnable at root, v43 frozen at tag `v43`); v1.1 adds the library:
+LEARN is layer 1 of the twofold+1 vision (see `README.md`, `docs/LAYERS-PLAN.md`). v50 provides the player (`*49*`–`*44*` runnable at root, v43 frozen at tag `v43`); v1.1 adds the library:
 
 * **Stored scenarios** under `scenarios/*.json` (same-origin, validated v1 schema), listed by Drupal; URL shape unchanged (`?scenario=scenarios/<name>.json&present=1#step=N`); Import remains the offline/`file://` path.
 * **First library (P3):** 3–5 scenarios (alkanes → alcohols → ethers → esters); each step keeps `selectedMol + show.*`; exit forces full chrome restore (menu `menu-open` + viewers/bars per the exit step — a no-3D exit leaves 3D hidden; settings panels + save buttons always come back).
@@ -516,7 +536,7 @@ LEARN is layer 1 of the twofold+1 vision (see `README.md`, `docs/LAYERS-PLAN.md`
 * **Two-level `note` convention:** `note` carries the teacher narrative; authoring guidance is EPAL-simple first line(s) / Lyceum-full extension (P3 authors, P5 uses for EPAL-vs-Lyceum comparison). Schema unchanged — convention only.
 * **`moveto` curation:** capture with `rotate off`; prefer curated per-step cameras for the library over ad-hoc capture.
 * **Authoring docs:** Save → Export → Present → Exit flow (Exit restores menu + exit-step viewers + all bars/panels; in-memory steps kept). `Go` previews align picks + viewer chrome to the step, so Go → tweak → Update round-trips keep the menu.
-* **Default preload:** authoring boots with S1 = `scenarios/Αλκάνια-Αιθάνιο.scenario.json` (fetched + validated; `?scenario=` deep links skip it, `file://` falls back to one empty card) and S2 = empty `untitled-scenario`, S1 active.
+* **Default preload:** authoring boots with S1 = `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json` (fetched + validated; `?scenario=` deep links skip it, `file://` falls back to one empty card) and S2 = empty `untitled-scenario`, S1 active. The previous `scenarios/Αλκάνια-Αιθάνιο.scenario.json` is retained for explicit deep links but is no longer preloaded.
 
 ## 10. Future states (2026-10-09, docs-only, no code change)
 

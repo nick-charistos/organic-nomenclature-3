@@ -1,5 +1,10 @@
 # Session handoff — 2026-10-15 (v47 working copy → commit batch)
 
+> **HISTORICAL (2026-10-15):** v47 handoff snapshot. The current baseline is
+> v50 (`mulermoc-nom-50.html`, 73 molecules), with `Αλκάνια-Αιθάνιο-τεστ` as
+> the default scenario; version/count statements below are preserved as of this
+> handoff.
+
 Owner instruction in force: **commit this batch** (single commit, explicit file
 list, zero `*45*`/`*46*`/`data_45`/`data_46` paths) and push to `origin/main`.
 Pre-commit HEAD = `12fb448` (3 commits ahead of `origin/main` — push needs

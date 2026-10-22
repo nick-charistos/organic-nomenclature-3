@@ -3,8 +3,8 @@
 ### Organic Chemistry Interactive Learning & Research Platform
 
 **Principal Investigator:** N. Charistos, Department of Chemistry, ΑΠΘ
-**Status:** Active development | v49 live (73 molecules — 73 `nameExamples` keys) folds in the MSc-student `thesis-work` import: acyclic-alkane parent-chain fix, explicit terminal unsaturation locant, 73rd molecule, alkene scenarios, plus the alkyl reference table/locant rule-table fixes; `index.html` → v49, v48/v47/v46 runnable at root, v43 frozen at tag `v43`, v42 frozen in repo2
-**Last updated:** 2026-10-21
+**Status:** Active development | v50 live (73 molecules — 73 `nameExamples` keys): presentation text position (top/left/right sticky rail) + persistent naming shell, with `Αλκάνια-Αιθάνιο-τεστ` as the default scenario; the MSc-student `thesis-work` import is retained (acyclic-alkane parent-chain fix, explicit terminal unsaturation locant, 73rd molecule, alkene scenarios, alkyl reference table/locant rule-table fixes). `index.html` → v50, v49/v48/v47/v46/v45/v44 runnable at root, v43 frozen at tag `v43`, v42 frozen in repo2. Browser verification of the v50 additions is still pending.
+**Last updated:** 2026-10-22
 
 > **2026-10 update:** vision is now twofold+1 (community tool + research publications + platform for isomerism/reactions) with four layers in LEARN-first order — LEARN → EXPLORE-lite → PRACTICE → PLAY. The static chemistry app is embedded in Drupal; logging is research-primary. Source of truth for layers: `docs/LAYERS-PLAN.md`. Team P1–P6 roles and timeline are defined there and in `README.md`. What follows below is the original plan text, kept for theory and history; version/count claims predating v44 are superseded.
 
@@ -58,7 +58,7 @@ Each step removes one scaffolding layer. Familiar representations constrain inte
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  MODULE 1: Organic Nomenclature          [ACTIVE — v49]         │
+│  MODULE 1: Organic Nomenclature          [ACTIVE — v50]         │
 ├─────────────────────────────────────────────────────────────────┤
 │  MODULE 2: Isomerism                     [PLANNED — Phase 3]    │
 ├─────────────────────────────────────────────────────────────────┤
@@ -69,7 +69,7 @@ Each step removes one scaffolding layer. Familiar representations constrain inte
 
 ---
 
-## Module 1: Organic Nomenclature — Current State (v49 live; v37 text below kept for history)
+## Module 1: Organic Nomenclature — Current State (v50 live; v37 text below kept for history)
 
 ### What exists
 - **73 molecules** (73 `nameExamples` keys: 69 curated + 4 alkene/alkane test entries, incl. 4 ethers + 4 esters + branched `dimethyl_2_3_butane`) covering homologous-series menu groups (series-first, rules secondary)
@@ -77,10 +77,11 @@ Each step removes one scaffolding layer. Familiar representations constrain inte
 - **5 representation modes** — condensed, expanded, annotated skeletal (partial), skeletal, 3D
 - **Synchronized highlighting** — same atom/bond highlighted simultaneously in 2D and 3D
 - **Teaching layer** — rule-based explanations, component name boxes, TTS narration in Greek
-- **Didactic scenarios (current `-49`; scaffold since v43)** — additive `js/mulermoc-nom-scenario-49.js`: snapshot capture/validate/apply/export/import, `?scenario=&present=#step=` playback, exit restores full chrome
+- **Didactic scenarios (current `-50`; scaffold since v43)** — additive `js/mulermoc-nom-scenario-50.js`: snapshot capture/validate/apply/export/import, `?scenario=&present=#step=` playback, exit restores full chrome; default preload is `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json`. The v50 additions are per-step text position (top/left/right rail) + persistent naming shell; browser verification is pending
 - **Main-chain stepper (v47, done)** — FG-aware multiple-bond-first pool (max `C=C/C≡C` → max `C=C` → length) with settings-panel `‹ n/N ›` stepper, rank-parallel 2D+3D
-- **Fluid viewers + authoring pin-dock (v48, live)** — 2D/3D viewers fit their container (native `setSize`, container-derived heights); the scenario bar pins full-height beside the app (scoped horizontal scroll with cues) so name settings stay reachable while authoring; plus per-viewer single max-height and combined double-viewer height controls and a settings-panel UI pass (toggles consolidated, main-chain `Από δεδομένα` disabled without stored data)
-- **Student import (v49, live)** — acyclic-alkane parent-chain ranking (most carbon branches → lowest branch locants) with explicit terminal unsaturation locant (`3-μεθυλο-1-βουτένιο`); 73rd molecule `ethyl_3_dimethyl_2_5_hexane` + 3D SDF; stored chains for the alkene test molecules; alkene scenarios (`Αλκένια-Αιθένιο`, `Αλκένια-Ονοματολογία_και_διακλαδώσεις`); alkyl reference table for locants/branches and enyne `-ιν-` rule-table fix
+- **Fluid viewers + authoring pin-dock (v48, retained through v50)** — 2D/3D viewers fit their container (native `setSize`, container-derived heights); the scenario bar pins full-height beside the app (scoped horizontal scroll with cues) so name settings stay reachable while authoring; plus per-viewer single max-height and combined double-viewer height controls and a settings-panel UI pass (toggles consolidated, main-chain `Από δεδομένα` disabled without stored data)
+- **Student import (v49, retained in v50)** — acyclic-alkane parent-chain ranking (most carbon branches → lowest branch locants) with explicit terminal unsaturation locant (`3-μεθυλο-1-βουτένιο`); 73rd molecule `ethyl_3_dimethyl_2_5_hexane` + 3D SDF; stored chains for the alkene test molecules; alkene scenarios (`Αλκένια-Αιθένιο`, `Αλκένια-Ονοματολογία_και_διακλαδώσεις`); alkyl reference table for locants/branches and enyne `-ιν-` rule-table fix
+- **Presentation polish (v50 live)** — per-step text placement top/left/right as a fourth-column sticky rail, plus a persistent naming title/gear shell with a no-molecule placeholder and a zero-visible-box explain-line guard; browser verification pending
 - **Technical validation** — algorithm verified against the curated set; tertiary-amine R3N classification fixed in v44 via the bond-order N-table; multi-substituent alkane naming (`2,3-διμεθυλοβουτάνιο`) fixed in v45 (browser verification pending)
 
 ### Known gaps to fill (immediate work)
