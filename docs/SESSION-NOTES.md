@@ -2085,7 +2085,9 @@ follows; one Save → Present → Next → Exit round-trip.
   scenario + docs), `16a2e34` (7 alkynes + skeletal C labels), `06b2cf3`
   (sp-carbon label removal for any sp carbon + docs count sync), `845208f`
   (owner CSS tweak), `91ac9d8` (prev/next arrow icons + play-bar CSS),
-  `c730ea6` (`#scExit` spacing).
+  `c730ea6` (`#scExit` spacing), `bc8e291` (post-review rail/alignment/class/
+  docs fixes). The working tree adds the `#scPos` restyle and the narrow-
+  presentation step-title fix.
 * `845208f`: `css/mulermoc-nom-scenario-50.css` — scenario play bar now white
   with `--darkBlue` text and a `--lightBlue` bottom border; `#authorLayout`
   base margin `0 10px`, pinned margin `0 2px 0 10px`.
@@ -2093,9 +2095,10 @@ follows; one Save → Present → Next → Exit round-trip.
   `css/mulermoc-nom-scenario-49.css` (inside `24a5ae9`); it is the only
   intentional edit to an earlier runnable version.
 * Owner manually verified JS syntax and CSS brace balance (`214/214` scenario,
-  `305/305` main at that time; the working tree is now `216/216` scenario after
-  the icon and `#scPos` additions); browser click-through of the v50 additions
-  is still pending (see `docs/SESSION-HANDOFF-2026-10-22.md`).
+  `305/305` main at that time; the working tree is now `217/217` scenario after
+  the icon, `#scPos`, and presentation-title additions); browser click-through
+  of the v50 additions is still pending (see
+  `docs/SESSION-HANDOFF-2026-10-22.md`).
 * Added `arrowLeft`/`arrowRight` (22px) to `js/ui-icons.js` and wired them into
   `#scPrev`/`#scNext` in `js/mulermoc-nom-scenario-50.js` via
   `fScenarioPaintIconBtn` (aria-labels; `◀`/`▶` text fallback kept). The same
@@ -2107,14 +2110,18 @@ follows; one Save → Present → Next → Exit round-trip.
 
 * `css/mulermoc-nom-scenario-50.css`: side-rail `top` `10px` → `50px` (clear
   of the fixed play bar); rail-active rows use `align-items: flex-start` so
-  the height cap measures the app columns; UTF-8 BOM removed. The working tree
-  also carries the `#scPos` play-bar readout styling and whitespace cleanup.
+  the height cap measures the app columns;
+  `#pageContainer.presenting #pageTitle` restores the step title at ≤999px
+  landscape (the shared h1 hide no longer drops it or tucks the top card under
+  the play bar); UTF-8 BOM removed. The working tree also carries the `#scPos`
+  play-bar readout styling and whitespace cleanup.
 * `js/mulermoc-nom-scenario-50.js`: `scTextLeft`/`scTextRight` are toggled in
   `fScenarioSyncStepTextLayout()` (breakpoint-gated) so narrow fallback, Exit,
   and resize clear them; `fScenarioApplyStepFontSize()` keeps only the
   refit-on-switch check.
 * Docs: canonical URL `-50`; arrows documented as 22px; HTML-copy wording
-  corrected; commit list includes `91ac9d8`/`c730ea6`; braces refreshed.
-* Checks: CSS braces `216/216` scenario + `305/305` main; JS edits are two
+  corrected; commit list includes `91ac9d8`/`c730ea6`/`bc8e291`; braces
+  refreshed.
+* Checks: CSS braces `217/217` scenario + `305/305` main; JS edits are two
   guarded class-toggle moves verified statically (no JS runtime in the review
-  environment). Browser click-through still pending.
+  environment). Browser click-through still pending (add 900×700 landscape).

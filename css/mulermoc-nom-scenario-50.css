@@ -1,4 +1,4 @@
-﻿/* mulermoc-nom-scenario-50.css — didactic-scenario chrome (author bar, drawer, playback bar, step text).
+/* mulermoc-nom-scenario-50.css — didactic-scenario chrome (author bar, drawer, playback bar, step text).
    Moved out of fScenarioInjectCss so formats are designed here, not in JS. */
 
 /* Border-box everywhere inside the author panels: 100%-width children
@@ -334,11 +334,12 @@
 }
 
 #scenarioPlayBarNextPrevContainer #scPos {
-   background: var(--darkBlue);
+   background:transparent;
    padding: 3px 5px;
-   border: 1px solid var(--darkBlue);
+   border: 0px solid var(--darkBlue);
    border-radius: 4px;
-   color: #fff;
+   color: var(--darkBlue);
+   font-size: 1.25rem;
 }
 
 
@@ -1108,6 +1109,12 @@
    footer stays on the bottom without spreading the rest. */
 #pageContainer.presenting {
    justify-content: flex-start;
+}
+
+/* The shared ≤999px landscape rule hides h1 for the compact explorer;
+   presentation uses #pageTitle for the step title, so keep it visible. */
+#pageContainer.presenting #pageTitle {
+   display: block;
 }
 
 #pageContainer.presenting #creditsUs {

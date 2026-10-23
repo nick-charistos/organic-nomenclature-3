@@ -3,12 +3,12 @@
 > **Current state:** v50 is live (`index.html` → `mulermoc-nom-50.html`), with
 > `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json` as the default preloaded
 > scenario. Browser verification is still pending. `mulermoc-nom-49.html`
-> remains runnable. Work is committed through `c730ea6`: `24a5ae9` (v50 set +
-> default scenario + docs), `16a2e34` (7 alkynes + skeletal labels), `06b2cf3`
-> (sp-carbon labels for any sp carbon + docs), `845208f` (owner CSS tweak),
-> `91ac9d8` (prev/next icons + play-bar CSS), `c730ea6` (`#scExit` spacing).
-> Post-review fixes (rail offset/alignment, class ownership, docs, BOM) are in
-> the working tree.
+> remains runnable. Previous work is committed through `bc8e291`: `24a5ae9`
+> (v50 set + default scenario + docs), `16a2e34` (7 alkynes + skeletal labels),
+> `06b2cf3` (sp-carbon labels for any sp carbon + docs), `845208f` (owner CSS
+> tweak), `91ac9d8` (prev/next icons + play-bar CSS), `c730ea6` (`#scExit`
+> spacing), `bc8e291` (post-review rail/alignment/class/docs fixes). This commit
+> adds the `#scPos` restyle and the narrow-presentation step-title fix.
 
 ## Completed this session
 
@@ -47,10 +47,10 @@
 
 - `node --check` passed for `js/mulermoc-nom-molview-50.js`,
   `js/mulermoc-nom-teaching-50.js`, and `js/mulermoc-nom-scenario-50.js`.
-- CSS braces balanced: `214/214` at the initial check, now `216/216` in
+- CSS braces balanced: `214/214` at the initial check, now `217/217` in
   `css/mulermoc-nom-scenario-50.css` after the 2026-10-23 play-bar icon /
-  `#scPos` additions; `305/305` in `css/jsme-nick-50.css`. The owner also
-  manually verified JS syntax and braces.
+  `#scPos` additions and the presentation-title fix; `305/305` in
+  `css/jsme-nick-50.css`. The owner also manually verified JS syntax and braces.
 - `index.html` now points to v50; at the time the initial static checks ran it
   still pointed to v49.
 - Headless Edge DOM smoke check confirmed the persistent naming
@@ -100,17 +100,20 @@
 - `css/mulermoc-nom-scenario-50.css`: side-rail `top` `10px` → `50px` (the
   fixed `#scenarioPlayBar` no longer covers the sticky card); rail-active rows
   use `align-items: flex-start` so `fScenarioSyncStepTextHeight()` caps against
-  the real app columns instead of a rail-stretched row; UTF-8 BOM removed.
+  the real app columns instead of a rail-stretched row;
+  `#pageContainer.presenting #pageTitle` restores the step title at ≤999px
+  landscape (the shared h1 hide no longer drops it or tucks the top card under
+  the play bar); UTF-8 BOM removed.
 - `js/mulermoc-nom-scenario-50.js`: `scTextLeft`/`scTextRight` are now toggled
   in `fScenarioSyncStepTextLayout()` (breakpoint-gated), so the narrow fallback,
   Exit, and resize clear them; `fScenarioApplyStepFontSize()` keeps only the
   refit-on-switch check.
 - Docs: canonical URL `-50`; arrows `22px`; v50 HTML-copy wording; commit list
   now includes `91ac9d8`/`c730ea6`; brace counts refreshed.
-- Checks: CSS braces `216/216` scenario + `305/305` main; JS edits are two
+- Checks: CSS braces `217/217` scenario + `305/305` main; JS edits are two
   guarded class-toggle moves, verified statically (no JS runtime in the review
   environment). The working tree also carries the `#scPos` readout styling and
-  whitespace cleanup.
+  whitespace cleanup. Browser check to add: 900×700 landscape presentation.
 
 ## Browser checklist (owner)
 

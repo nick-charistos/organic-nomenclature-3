@@ -28,7 +28,7 @@ New parallel file set `mulermoc-nom-50.html` + `js/*-50.js` + `css/*-50.css`, fo
 - `.nameEmptyHint` styling lives in `css/jsme-nick-50.css` (full-width, muted italic placeholder).
 
 ### Checks
-- Static: `node --check` on `molview-50.js`/`teaching-50.js`/`scenario-50.js`; CSS brace balance at the initial check `214/214` scenario + `305/305` main (the scenario file is now `216/216` after the play-bar CSS/icon and `#scPos` additions); all v50 HTML asset refs resolve. At check time `index.html` still pointed to v49; it now points to v50. Headless DOM smoke check confirmed the persistent `panelTitle`/gear shell renders; the no-molecule placeholder was not browser-validated because the headless applet left component data empty. Static checks were not rerun after the default-scenario and status edits.
+- Static: `node --check` on `molview-50.js`/`teaching-50.js`/`scenario-50.js`; CSS brace balance at the initial check `214/214` scenario + `305/305` main (the scenario file is now `217/217` after the play-bar CSS/icon, `#scPos`, and presentation-title additions); all v50 HTML asset refs resolve. At check time `index.html` still pointed to v49; it now points to v50. Headless DOM smoke check confirmed the persistent `panelTitle`/gear shell renders; the no-molecule placeholder was not browser-validated because the headless applet left component data empty. Static checks were not rerun after the default-scenario and status edits.
 - Owner browser click-through pending (wide/narrow, top/left/right switching, menu steps, long notes, 2D/3D refit, no-molecule placeholder, `Name controls` behavior).
 
 ### 2026-10-22 — Additive alkyne data + skeletal C labels (still v50)
@@ -46,7 +46,7 @@ New parallel file set `mulermoc-nom-50.html` + `js/*-50.js` + `css/*-50.css`, fo
 
 - `css/mulermoc-nom-scenario-50.css` (commit `845208f`): the scenario play bar is now white with `--darkBlue` text and a `--lightBlue` bottom border (was `--lightBlue` with white text); `#authorLayout` gains a base `0 10px` margin and the pinned margin becomes `0 2px 0 10px`.
 - Kept intentionally: the v49 confirm-dialog hover edit in `css/mulermoc-nom-scenario-49.css` (shipped in `24a5ae9`) is the only intentional change to an earlier runnable version; earlier versions are otherwise untouched.
-- Checks: the owner's manual check on 2026-10-23 found `214/214` scenario + `305/305` main; the scenario file is now `216/216` after the play-bar icon additions (and the working-tree `#scPos`/whitespace tweak). Browser click-through still pending.
+- Checks: the owner's manual check on 2026-10-23 found `214/214` scenario + `305/305` main; the scenario file is now `217/217` after the play-bar icon/`#scPos` additions and the presentation-title fix. Browser click-through still pending.
 
 ### 2026-10-23 — Play-bar prev/next icons (still v50)
 
@@ -60,10 +60,10 @@ New parallel file set `mulermoc-nom-50.html` + `js/*-50.js` + `css/*-50.css`, fo
 
 ### 2026-10-23 — Post-review fixes (still v50)
 
-- `css/mulermoc-nom-scenario-50.css`: side-rail sticky `top` `10px` → `50px` (clears the fixed play bar); rail-active rows use `align-items: flex-start` so the JS height cap measures the app columns instead of a rail-stretched row; UTF-8 BOM removed. The working tree also carries the `#scPos` play-bar readout styling and whitespace cleanup.
+- `css/mulermoc-nom-scenario-50.css`: side-rail sticky `top` `10px` → `50px` (clears the fixed play bar); rail-active rows use `align-items: flex-start` so the JS height cap measures the app columns instead of a rail-stretched row; `#pageTitle` is forced visible in presentation so the ≤999px landscape h1 hide no longer drops the step title or tucks the top text card under the play bar; UTF-8 BOM removed. The same change also includes the `#scPos` play-bar readout styling and whitespace cleanup.
 - `js/mulermoc-nom-scenario-50.js`: `fScenarioSyncStepTextLayout()` now owns the `scTextLeft`/`scTextRight` classes (cleared on the <1200px fallback, Exit, and resize); `fScenarioApplyStepFontSize()` keeps only the refit-on-switch check.
 - Docs: v50 canonical URL corrected to `-50`; arrow icons documented as 22px; HTML-copy wording fixed; commit lists and brace counts refreshed.
-- Checks: CSS braces `216/216` scenario + `305/305` main; no JS runtime in the review environment, so the two guarded class-toggle edits are static-only verified. Browser click-through still pending.
+- Checks: CSS braces `217/217` scenario + `305/305` main; no JS runtime in the review environment, so the two guarded class-toggle edits are static-only verified. Headless 900×700 landscape presentation shows the step title and the top text card below the play bar; full browser click-through still pending.
 
 ---
 
