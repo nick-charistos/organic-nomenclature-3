@@ -607,8 +607,9 @@
    left: 0;
    right: 0;
    z-index: 500;
-   background: var(--lightBlue);
-   color: #fff;
+   background: #fff;
+   border-bottom: 1px solid   var(--lightBlue);
+   color: var(--darkBlue);
    display: flex;
    gap: 10px;
    align-items: center;
@@ -1100,6 +1101,8 @@
 #pageContainer.presenting .menuListContainer {
    max-height: 350px;
 }
+
+
 
 /* Present grouping switcher (Ταξινομήσεις Μένου, 2+ modes): scenario-owned
    radios; the teaching .groupingMode stays hidden in presentation. */
@@ -1600,10 +1603,14 @@ body.scPinned #creditsUs {
    margin-right: 480px;
 }
 
+ #authorLayout {
+   margin: 0 10px;
+}
+
 body.scPinned #authorLayout {
    position: relative;
    max-width: none;
-   margin: 0;
+   margin: 0 2px 0 10px;
 }
 
 body.scPinned #mainAppContainer {
