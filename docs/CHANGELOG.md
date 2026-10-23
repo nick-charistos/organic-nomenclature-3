@@ -28,7 +28,7 @@ New parallel file set `mulermoc-nom-50.html` + `js/*-50.js` + `css/*-50.css`, fo
 - `.nameEmptyHint` styling lives in `css/jsme-nick-50.css` (full-width, muted italic placeholder).
 
 ### Checks
-- Static: `node --check` on `molview-50.js`/`teaching-50.js`/`scenario-50.js`; CSS brace balance `213/213` scenario + `305/305` main; all v50 HTML asset refs resolve. At check time `index.html` still pointed to v49; it now points to v50. Headless DOM smoke check confirmed the persistent `panelTitle`/gear shell renders; the no-molecule placeholder was not browser-validated because the headless applet left component data empty. Static checks were not rerun after the default-scenario and status edits.
+- Static: `node --check` on `molview-50.js`/`teaching-50.js`/`scenario-50.js`; CSS brace balance `214/214` scenario + `305/305` main; all v50 HTML asset refs resolve. At check time `index.html` still pointed to v49; it now points to v50. Headless DOM smoke check confirmed the persistent `panelTitle`/gear shell renders; the no-molecule placeholder was not browser-validated because the headless applet left component data empty. Static checks were not rerun after the default-scenario and status edits.
 - Owner browser click-through pending (wide/narrow, top/left/right switching, menu steps, long notes, 2D/3D refit, no-molecule placeholder, `Name controls` behavior).
 
 ### 2026-10-22 — Additive alkyne data + skeletal C labels (still v50)
@@ -41,6 +41,17 @@ New parallel file set `mulermoc-nom-50.html` + `js/*-50.js` + `css/*-50.css`, fo
 - `fHideAlkyneSkeletalCarbons()` renamed to `fHideSkeletalSpCarbons()` (`js/mulermoc-nom-molview-50.js`, called from `fUpdateSVG()`). The trigger no longer keys on `seriesKey === "alkynes"`, which skipped every molecule carrying a hetero group: enynes (`seriesKey "enynes"`: `penten_3_yne_1`, `hexen_1_yne_4`, `buten_1_yne_3`, `hexen_2_yne_4`), the yne-ketone/aldehyde (`pentyn_4_one_2`, `propynal`), nitriles and the allene all still showed bare `C` labels in `skeletal` mode.
 - New `fMolHasSpCarbon()` reads the parsed core graph (`bondList` + `allAtomsTypeList`): true when a carbon has a triple bond (`C≡C` or `C≡N`) or cumulated double bonds (`C=C=C`, allene). In `skeletal` mode the `C` label and its rounded backplate are removed whenever that holds; plain alkanes/alkenes/alcohols etc. are untouched, so the label removal is a no-op there. Bonds, highlights and numbering unchanged.
 - Browser click-through pending for the newly covered cases (enynes, yne-ketone/aldehyde, nitrile, allene) alongside the rest of the v50 checks.
+
+### 2026-10-23 — Owner CSS tweak (still v50)
+
+- `css/mulermoc-nom-scenario-50.css` (commit `845208f`): the scenario play bar is now white with `--darkBlue` text and a `--lightBlue` bottom border (was `--lightBlue` with white text); `#authorLayout` gains a base `0 10px` margin and the pinned margin becomes `0 2px 0 10px`.
+- Kept intentionally: the v49 confirm-dialog hover edit in `css/mulermoc-nom-scenario-49.css` (shipped in `24a5ae9`) is the only intentional change to an earlier runnable version; earlier versions are otherwise untouched.
+- Checks: owner manually verified JS syntax and CSS brace balance (`214/214` scenario, `305/305` main) on 2026-10-23; browser click-through still pending.
+
+### 2026-10-23 — Play-bar prev/next icons (still v50)
+
+- `js/ui-icons.js`: added `arrowLeft`/`arrowRight` (from `imgs/arrow-left|right-svgrepo-com.svg`; 16px, `fill` → `currentColor`, viewBox/transform kept, inlined because `imgs/` is gitignored).
+- `js/mulermoc-nom-scenario-50.js`: `#scPrev`/`#scNext` are painted with the arrows via `fScenarioPaintIconBtn`, with aria-labels; the `◀`/`▶` text remains the fallback when `ui-icons.js` is unavailable. No CSS change.
 
 ---
 

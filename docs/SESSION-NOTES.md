@@ -2075,5 +2075,25 @@ follows; one Save → Present → Next → Exit round-trip.
 * Docs resynced from v49 live / v50 parked to v50 live: README, CHANGELOG
   `[v50]`, LAYERS, PROJECT-PLAN EN/GR, didactic plan, archive README, and the
   2026-10-22 handoff; earlier handoff banners updated for the current baseline.
-* No static checks rerun (standing docs-only/no-check instruction); JSON files
-  exist and the new scenario was already parsed during inspection. No commit.
+* No static checks rerun at the time (standing docs-only/no-check instruction);
+  JSON files exist and the new scenario was already parsed during inspection.
+  Committed later on 2026-10-23 (`24a5ae9` v50 set + docs).
+
+## 2026-10-23 — v50 committed + owner CSS tweak
+
+* Committed the v50 work: `24a5ae9` (side text rails + naming shell + default
+  scenario + docs), `16a2e34` (7 alkynes + skeletal C labels), `06b2cf3`
+  (sp-carbon label removal for any sp carbon + docs count sync), `845208f`
+  (owner CSS tweak).
+* `845208f`: `css/mulermoc-nom-scenario-50.css` — scenario play bar now white
+  with `--darkBlue` text and a `--lightBlue` bottom border; `#authorLayout`
+  base margin `0 10px`, pinned margin `0 2px 0 10px`.
+* Kept intentionally: the v49 confirm-dialog hover change in
+  `css/mulermoc-nom-scenario-49.css` (inside `24a5ae9`); it is the only
+  intentional edit to an earlier runnable version.
+* Owner manually verified JS syntax and CSS brace balance (`214/214` scenario,
+  `305/305` main); browser click-through of the v50 additions is still pending
+  (see `docs/SESSION-HANDOFF-2026-10-22.md`).
+* Added `arrowLeft`/`arrowRight` to `js/ui-icons.js` and wired them into
+  `#scPrev`/`#scNext` in `js/mulermoc-nom-scenario-50.js` via
+  `fScenarioPaintIconBtn` (aria-labels; `◀`/`▶` text fallback kept).

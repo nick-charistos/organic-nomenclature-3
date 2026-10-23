@@ -311,7 +311,7 @@
    cursor: pointer;
    background: var(--veryLightEarth);
    border-radius: 4px;
-   border: 1px solid var(--darkEarth);
+   border: 1px solid var(--lightBlue);
    font-family: "Roboto Condensed", sans-serif;
    color: var(--darkBlue);
    padding: 3px 5px;
@@ -324,6 +324,14 @@
    background: var(--darkEarth);
    color: #fff;
 }
+
+#scenarioPlayBarNextPrevContainer button {
+	background: var(--darkBlue);
+	color: #fff;
+	border: 0;
+	padding: 2px 10px;
+}
+
 
 /* Disabled buttons (empty-panel gating) never hover: keep base chrome + text. */
 #scenarioAuthorBar button:disabled,
@@ -347,13 +355,13 @@
 
 #scenarioAuthorBar .scenarioButtonPanel button.scList {
    background: var(--darkBlue);
-   border-color: var(--darkEarth);
+   border-color: var(--lightBlue);
    color: #fff;
 }
 
 #scenarioAuthorBar .scenarioButtonPanel button.scList:hover {
    background: var(--vibrantGreen);
-   border-color: var(--darkEarth);
+   border-color: var(--darkBlue);
    color: #fff;
 }
 
@@ -1225,6 +1233,7 @@
 #scenarioAuthorBar .scPresent.scIconBtn:hover {
    background: var(--vibrantGreen);
    color: #fff;
+   border-color: var(--darkBlue);
 }
 
 /* Per-step Present (same dark-blue language as the card Play button). */

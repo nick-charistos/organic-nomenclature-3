@@ -3,7 +3,9 @@
 > **Current state:** v50 is live (`index.html` → `mulermoc-nom-50.html`), with
 > `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json` as the default preloaded
 > scenario. Browser verification is still pending. `mulermoc-nom-49.html`
-> remains runnable. No commit was made yet.
+> remains runnable. Work is committed: `24a5ae9` (v50 set + default scenario +
+> docs), `16a2e34` (7 alkynes + skeletal labels), `06b2cf3` (sp-carbon labels
+> for any sp carbon + docs), `845208f` (owner CSS tweak).
 
 ## Completed this session
 
@@ -42,14 +44,26 @@
 
 - `node --check` passed for `js/mulermoc-nom-molview-50.js`,
   `js/mulermoc-nom-teaching-50.js`, and `js/mulermoc-nom-scenario-50.js`.
-- CSS braces balanced: `213/213` in `css/mulermoc-nom-scenario-50.css`,
-  `303/303` in `css/jsme-nick-50.css`.
-- `index.html` now points to v50; at the time the static checks ran it still
-  pointed to v49.
+- CSS braces balanced: `214/214` in `css/mulermoc-nom-scenario-50.css`,
+  `305/305` in `css/jsme-nick-50.css` (re-checked 2026-10-23 after the CSS
+  tweak; owner also manually verified JS syntax and braces).
+- `index.html` now points to v50; at the time the initial static checks ran it
+  still pointed to v49.
 - Headless Edge DOM smoke check confirmed the persistent naming
   `panelTitle`/gear shell renders. The no-molecule placeholder was not
   browser-validated because the headless applet left component data empty.
-- Static checks were not rerun after the docs and default-scenario edits.
+- Static checks were not rerun after the docs and default-scenario edits; the
+  owner manually re-checked syntax/braces on 2026-10-23.
+
+## 2026-10-23 owner CSS tweak (still v50)
+
+- `css/mulermoc-nom-scenario-50.css`: the scenario play bar is now white with
+  `--darkBlue` text and a `--lightBlue` bottom border (was `--lightBlue` with
+  white text); `#authorLayout` gains a base `0 10px` margin and the pinned
+  margin becomes `0 2px 0 10px`. Committed as `845208f css tweak`.
+- The v49 confirm-dialog hover change in `css/mulermoc-nom-scenario-49.css`
+  (committed in `24a5ae9`) is kept intentionally; it is the only intentional
+  edit to an earlier runnable version and is documented in `CHANGELOG.md`.
 
 ## Additive alkyne update (after v50 went live)
 
@@ -106,7 +120,9 @@
   `js/mulermoc-nom-molview-50.js`, `js/mulermoc-nom-teaching-50.js`,
   `js/mulermoc-nom-scenario-50.js`, `css/jsme-nick-50.css`,
   `css/mulermoc-nom-scenario-50.css`, `mulermoc-nom-50.html`.
-- Docs synced in this pass: `README.md`, `docs/CHANGELOG.md`,
+- Docs synced in the v50 passes: `README.md`, `docs/CHANGELOG.md`,
   `docs/SESSION-NOTES.md`, `docs/PROJECT-PLAN.md`,
   `docs/PROJECT-PLAN-GR.md`, `docs/LAYERS-PLAN.md`,
   `docs/didactic-scenario-plan.md`, `archive/README.md`, and this handoff.
+  The 2026-10-23 pass refreshed the commit list, brace counts and the owner
+  CSS-tweak note here and in `CHANGELOG.md`/`SESSION-NOTES.md`.

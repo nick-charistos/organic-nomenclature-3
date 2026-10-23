@@ -2866,11 +2866,13 @@ function fScenarioBuildUi() {
     pb.style.display = "none";
     pb.innerHTML =
       "<div id='scenarioPlayBarNextPrevContainer'>" +
-      "<button id='scPrev' data-tooltip='Προηγούμενο (←)'>◀</button><span id='scPos'>1/1</span><button id='scNext' data-tooltip='Επόμενο (→)'>▶</button>" +
+      "<button id='scPrev' data-tooltip='Προηγούμενο βήμα'>◀</button><span id='scPos'>1/1</span><button id='scNext' data-tooltip='Επόμενο βήμα'>▶</button>" +
       "</div>" +
       // "<b id='scStepTitle'></b><span class='snote' id='scStepNote'></span>" +
       "<button id='scExit' data-tooltip='Έξοδος (ESC)'>Exit ✕</button>";
     document.body.appendChild(pb);
+    fScenarioPaintIconBtn(document.getElementById("scPrev"), "arrowLeft", "Προηγούμενο βήμα");
+    fScenarioPaintIconBtn(document.getElementById("scNext"), "arrowRight", "Επόμενο βήμα");
     document.getElementById("scPrev").onclick = function () {
       fScenarioGo(fScenarioPresent().index - 1);
     };
