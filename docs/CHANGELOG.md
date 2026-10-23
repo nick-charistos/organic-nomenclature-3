@@ -6,7 +6,7 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ## [v50] (presentation text rails left/right + persistent naming shell; live, `index.html` → v50)
 
-New parallel file set `mulermoc-nom-50.html` + `js/*-50.js` + `css/*-50.css`, forked from v49 (the html copy changes only the 7 asset refs). Adds per-step presentation text placement and a persistent naming shell; the chemistry engine is unchanged, and the molecule data was unchanged at fork time (a later additive update in this version adds 7 alkynes, 73 → 80 keys — see the 2026-10-22 entry below). v50 is now live: `index.html` points to `mulermoc-nom-50.html`; v49 remains runnable at root. Browser click-through is still pending (see Checks).
+New parallel file set `mulermoc-nom-50.html` + `js/*-50.js` + `css/*-50.css`, forked from v49 (the HTML row class was renamed `.HFlex` → `.mainApp3Columns`, inline styles moved to CSS, and the 7 asset refs updated). Adds per-step presentation text placement and a persistent naming shell; the chemistry engine is unchanged, and the molecule data was unchanged at fork time (a later additive update in this version adds 7 alkynes, 73 → 80 keys — see the 2026-10-22 entry below). v50 is now live: `index.html` points to `mulermoc-nom-50.html`; v49 remains runnable at root. Browser click-through is still pending (see Checks).
 
 ### Default scenario
 - `MuLERMoCScenario.defaultScenarioUrl` now points to `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json` (7 steps; steps 5–7 place the note in a left rail with longer text). The previous `scenarios/Αλκάνια-Αιθάνιο.scenario.json` stays on disk for explicit `?scenario=` deep links but is no longer preloaded.
@@ -15,7 +15,7 @@ New parallel file set `mulermoc-nom-50.html` + `js/*-50.js` + `css/*-50.css`, fo
 - Additive `styleText.position`: `null`/missing = **Πάνω** (current top card), `"left"` or `"right"` = sticky side reading rail. No schema-version bump; invalid values coerce to top, Export stays minimal, Update preserves the choice, and legacy scenarios load unchanged.
 - Step drawer gets an icon dropdown `Θέση: Πάνω / Αριστερά / Δεξιά` beside the existing columns/size/width controls.
 - Side layout at ≥1200px: `#scStepText` becomes a **fourth flex item** inside `#mainAppContainer > .mainApp3Columns`, inserted first for `left` and last for `right`, so it shares the row's 8px gap. `#pageContainer`/`#mainAppContainer` widen to `calc(1600px + clamp(300px, 24vw, 420px) + 8px)`; menu/analysis widths use matching clamps. Below 1200px the card returns to the top slot before `#mainAppContainer`.
-- The rail is sticky and internally scrolling, width `clamp(300px, 24vw, 420px)`, with height capped to the tallest visible app column and the viewport (`min(column height, 100vh - 80px)`), resynced by `ResizeObserver` and window resize. Title and credits still span the page.
+- The rail is sticky (`top: 50px`, clear of the fixed play bar) and internally scrolling, width `clamp(300px, 24vw, 420px)`, with height capped to the tallest visible app column and the viewport (`min(column height, 100vh - 80px)`), resynced by `ResizeObserver` and window resize. The row switches to `align-items: flex-start` while a rail is active, so the cap measures the app columns rather than a rail-stretched row. Title and credits still span the page.
 - Side rails always render one column; a stored 2-column choice returns when the step is placed back on top. The stored `textWidthPx` also applies to top mode only (an inline 980px width would overflow the rail).
 - `fViewerHeights2D3D()` skips subtracting the note-card height only while the side layout is actually applied (parent-class probe, so narrow-screen fallback still subtracts). Top↔left/right switches request an `fResizeViewers()` refit after placement settles.
 - New rail/class/dropdown styling in `css/mulermoc-nom-scenario-50.css`; version/path comments refreshed in the copied JS/CSS headers.
@@ -28,7 +28,7 @@ New parallel file set `mulermoc-nom-50.html` + `js/*-50.js` + `css/*-50.css`, fo
 - `.nameEmptyHint` styling lives in `css/jsme-nick-50.css` (full-width, muted italic placeholder).
 
 ### Checks
-- Static: `node --check` on `molview-50.js`/`teaching-50.js`/`scenario-50.js`; CSS brace balance `214/214` scenario + `305/305` main; all v50 HTML asset refs resolve. At check time `index.html` still pointed to v49; it now points to v50. Headless DOM smoke check confirmed the persistent `panelTitle`/gear shell renders; the no-molecule placeholder was not browser-validated because the headless applet left component data empty. Static checks were not rerun after the default-scenario and status edits.
+- Static: `node --check` on `molview-50.js`/`teaching-50.js`/`scenario-50.js`; CSS brace balance at the initial check `214/214` scenario + `305/305` main (the scenario file is now `216/216` after the play-bar CSS/icon and `#scPos` additions); all v50 HTML asset refs resolve. At check time `index.html` still pointed to v49; it now points to v50. Headless DOM smoke check confirmed the persistent `panelTitle`/gear shell renders; the no-molecule placeholder was not browser-validated because the headless applet left component data empty. Static checks were not rerun after the default-scenario and status edits.
 - Owner browser click-through pending (wide/narrow, top/left/right switching, menu steps, long notes, 2D/3D refit, no-molecule placeholder, `Name controls` behavior).
 
 ### 2026-10-22 — Additive alkyne data + skeletal C labels (still v50)
@@ -46,12 +46,24 @@ New parallel file set `mulermoc-nom-50.html` + `js/*-50.js` + `css/*-50.css`, fo
 
 - `css/mulermoc-nom-scenario-50.css` (commit `845208f`): the scenario play bar is now white with `--darkBlue` text and a `--lightBlue` bottom border (was `--lightBlue` with white text); `#authorLayout` gains a base `0 10px` margin and the pinned margin becomes `0 2px 0 10px`.
 - Kept intentionally: the v49 confirm-dialog hover edit in `css/mulermoc-nom-scenario-49.css` (shipped in `24a5ae9`) is the only intentional change to an earlier runnable version; earlier versions are otherwise untouched.
-- Checks: owner manually verified JS syntax and CSS brace balance (`214/214` scenario, `305/305` main) on 2026-10-23; browser click-through still pending.
+- Checks: the owner's manual check on 2026-10-23 found `214/214` scenario + `305/305` main; the scenario file is now `216/216` after the play-bar icon additions (and the working-tree `#scPos`/whitespace tweak). Browser click-through still pending.
 
 ### 2026-10-23 — Play-bar prev/next icons (still v50)
 
-- `js/ui-icons.js`: added `arrowLeft`/`arrowRight` (from `imgs/arrow-left|right-svgrepo-com.svg`; 16px, `fill` → `currentColor`, viewBox/transform kept, inlined because `imgs/` is gitignored).
-- `js/mulermoc-nom-scenario-50.js`: `#scPrev`/`#scNext` are painted with the arrows via `fScenarioPaintIconBtn`, with aria-labels; the `◀`/`▶` text remains the fallback when `ui-icons.js` is unavailable. No CSS change.
+- `js/ui-icons.js`: added `arrowLeft`/`arrowRight` (from `imgs/arrow-left|right-svgrepo-com.svg`; 22px, `fill` → `currentColor`, viewBox/transform kept, inlined because `imgs/` is gitignored).
+- `js/mulermoc-nom-scenario-50.js`: `#scPrev`/`#scNext` are painted with the arrows via `fScenarioPaintIconBtn`, with aria-labels; the `◀`/`▶` text remains the fallback when `ui-icons.js` is unavailable.
+- `css/mulermoc-nom-scenario-50.css` (same commit): play-bar/steps borders switch `--darkEarth` → `--lightBlue` (plus the `scList`/`scPresent` hover borders) and a dark `#scenarioPlayBarNextPrevContainer button` rule is added.
+
+### 2026-10-23 — Play-bar Exit spacing (still v50)
+
+- `css/mulermoc-nom-scenario-50.css` (commit `c730ea6`): `#scExit` right offset `10px` → `20px` and `font-size: 1rem`.
+
+### 2026-10-23 — Post-review fixes (still v50)
+
+- `css/mulermoc-nom-scenario-50.css`: side-rail sticky `top` `10px` → `50px` (clears the fixed play bar); rail-active rows use `align-items: flex-start` so the JS height cap measures the app columns instead of a rail-stretched row; UTF-8 BOM removed. The working tree also carries the `#scPos` play-bar readout styling and whitespace cleanup.
+- `js/mulermoc-nom-scenario-50.js`: `fScenarioSyncStepTextLayout()` now owns the `scTextLeft`/`scTextRight` classes (cleared on the <1200px fallback, Exit, and resize); `fScenarioApplyStepFontSize()` keeps only the refit-on-switch check.
+- Docs: v50 canonical URL corrected to `-50`; arrow icons documented as 22px; HTML-copy wording fixed; commit lists and brace counts refreshed.
+- Checks: CSS braces `216/216` scenario + `305/305` main; no JS runtime in the review environment, so the two guarded class-toggle edits are static-only verified. Browser click-through still pending.
 
 ---
 

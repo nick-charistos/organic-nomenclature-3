@@ -607,10 +607,10 @@ function fScenarioApplyStepFontSize(step) {
     if (pc && pc.classList) {
       wasSide = pc.classList.contains("scTextLeft") ? "left" :
         (pc.classList.contains("scTextRight") ? "right" : null);
-      pc.classList.toggle("scTextLeft", side === "left");
-      pc.classList.toggle("scTextRight", side === "right");
     }
   } catch (ePc) { /* no page container */ }
+  // Class authority lives in fScenarioSyncStepTextLayout, which also runs on
+  // resize/exit so the rail classes clear in the <1200px top fallback.
   try { fScenarioSyncStepTextLayout(); } catch (ePlace) { /* placement best-effort */ }
   if (side) p.scrollTop = 0;
   // A side rail changes the app width/height budget; refit viewers once the
@@ -679,6 +679,14 @@ function fScenarioSyncStepTextLayout() {
       if (st && pos && showNoteOn(st)) side = pos;
     }
   } catch (eSide) { side = null; }
+  // Own the rail classes here (not in fScenarioApplyStepFontSize) so resizes
+  // and Exit also clear them when the <1200px fallback applies.
+  try {
+    if (pc && pc.classList) {
+      pc.classList.toggle("scTextLeft", side === "left");
+      pc.classList.toggle("scTextRight", side === "right");
+    }
+  } catch (eCls) { /* no page container */ }
   var moved = false;
   try {
     if (side === "left") {

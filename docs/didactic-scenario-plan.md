@@ -394,7 +394,7 @@ Visibility rules:
 ## 4. Playback UX + URL shape (frozen)
 
 * Canonical URL:
-  `mulermoc-nom-49.html?scenario=scenarios/<name>.json&present=1#step=3`
+  `mulermoc-nom-50.html?scenario=scenarios/<name>.json&present=1#step=3`
 * `?scenario=path.json`: which file. v1 allows same-origin
   `scenarios/*.json` only (reject `..`, non-`.json`,
   cross-origin). Fetched over `http(s)`; `file://` users must

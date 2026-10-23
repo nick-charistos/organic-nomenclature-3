@@ -327,10 +327,18 @@
 }
 
 #scenarioPlayBarNextPrevContainer button {
-	background: var(--darkBlue);
-	color: #fff;
-	border: 0;
-	padding: 2px 10px;
+   background: var(--darkBlue);
+   color: #fff;
+   border: 0;
+   padding: 2px 10px;
+}
+
+#scenarioPlayBarNextPrevContainer #scPos {
+   background: var(--darkBlue);
+   padding: 3px 5px;
+   border: 1px solid var(--darkBlue);
+   border-radius: 4px;
+   color: #fff;
 }
 
 
@@ -617,7 +625,7 @@
    right: 0;
    z-index: 500;
    background: #fff;
-   border-bottom: 1px solid   var(--lightBlue);
+   border-bottom: 1px solid var(--lightBlue);
    color: var(--darkBlue);
    display: flex;
    gap: 10px;
@@ -1462,6 +1470,7 @@
    row gap and centers with the app columns. Below 1200px it returns to the
    normal top card with its stored width and column choice. */
 @media (min-width: 1200px) {
+
    #pageContainer.presenting.scTextLeft,
    #pageContainer.presenting.scTextRight {
       height: auto;
@@ -1479,6 +1488,9 @@
    #pageContainer.presenting.scTextLeft .mainApp3Columns,
    #pageContainer.presenting.scTextRight .mainApp3Columns {
       gap: 8px;
+      /* Top-align while a rail is active: the row's default stretch would let
+         a tall rail inflate the column heights used to cap it. */
+      align-items: flex-start;
    }
 
    #pageContainer.presenting.scTextLeft #menuCol,
@@ -1498,7 +1510,8 @@
       flex: 0 0 clamp(300px, 24vw, 420px);
       align-self: flex-start;
       position: sticky;
-      top: 10px;
+      /* Clear the fixed play bar (#scenarioPlayBar) while scrolling. */
+      top: 50px;
       /* Stored width belongs to top mode; !important beats the inline width. */
       width: auto !important;
       max-width: none;
@@ -1613,7 +1626,7 @@ body.scPinned #creditsUs {
    margin-right: 480px;
 }
 
- #authorLayout {
+#authorLayout {
    margin: 0 10px;
 }
 
