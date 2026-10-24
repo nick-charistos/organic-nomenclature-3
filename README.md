@@ -5,6 +5,7 @@ A Greek-first interactive learning platform for organic nomenclature, built arou
 Designed and developed by Nickolas Charistos
 
 **Current baseline:** v50 is live (`index.html` → v50) — presentation text rails (top/left/right) + persistent naming shell, with `Αλκάνια-Αιθάνιο-τεστ` as the default preloaded scenario. v49 and earlier remain runnable; browser verification of the v50 additions is still pending.
+**In development:** v51 (`mulermoc-nom-51.html`) adds safe rich HTML notes (DOMPurify), rule-table components, a content-only authoring note dialog, a compact icon toolbar, and vendored small libraries. It is not live yet; `index.html` stays on v50 until browser verification. See [docs/Presentation-Step-Rich-Text-PLAN.md](docs/Presentation-Step-Rich-Text-PLAN.md).
 **Entry point:** [index.html](index.html) → [mulermoc-nom-50.html](mulermoc-nom-50.html) (live); `mulermoc-nom-49.html` and earlier versions `mulermoc-nom-48.html`…`-42.html` runnable alongside
 
 | Layer | File |
@@ -27,9 +28,9 @@ Designed and developed by Nickolas Charistos
 | [organic-nomenclature-2](https://nick-charistos.github.io/organic-nomenclature-2/) | v42 | frozen — emergency hotfixes only |
 | [organic-nomenclature-3](https://nick-charistos.github.io/organic-nomenclature-3/) | v50 live | active — all new work happens here |
 
-Root holds the files of the current live set (`*50*`; `mulermoc-nom-49.html` and `mulermoc-nom-42/43/44/45/46/47/48.html` are kept runnable alongside). Older file sets live in [archive/](archive/README.md) (non-runnable museum). Runnable history via git tags `v41`–`v44`.
+Root holds the files of the current live set (`*50*`; `mulermoc-nom-49.html` and `mulermoc-nom-42/43/44/45/46/47/48.html` are kept runnable alongside), plus the parallel v51 fork (`mulermoc-nom-51.html`, `js/*-51.js`, `css/*-51.css`) for verification; v51 is not live. Older file sets live in [archive/](archive/README.md) (non-runnable museum). Runnable history via git tags `v41`–`v44`.
 
-Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (only `image-svgrepo-Industrial-Sharp.svg` is kept; other icons are inlined/served by `js/ui-icons.js`), PDFs, `mols/branched/`, third-party libs served via CDN (see [.gitignore](.gitignore)).
+Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (only `image-svgrepo-Industrial-Sharp.svg` is kept; other icons are inlined/served by `js/ui-icons.js`), PDFs, `mols/branched/`, and the large JSmol runtime. Small security- or compatibility-critical libraries are vendored under `js/vendor/`; the rest are served via CDN (see [.gitignore](.gitignore)).
 
 ---
 
@@ -58,6 +59,7 @@ Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (o
 - `Go` previews align picks + viewer chrome to the step, so Go → tweak → `Update` round-trips keep the menu; Exit restores the full app chrome (viewers/bars per the exit step).
 - Presentation mode (`#pageContainer.presenting`) walks the steps; Exit restores the full app chrome.
 - Details: [docs/didactic-scenario-plan.md](docs/didactic-scenario-plan.md).
+- v51 (not live): additive `noteFormat: "html"` rich notes, five rule-table components, a content-only authoring note dialog (expand; live sync; Esc/close), a compact inline toolbar with icon-only rule-table dropdown, and icon-only step actions (`Go` uses the skip icon). Presentation keeps the v50 top/left/right rails; there is no separate wide/focus presentation mode.
 
 ### Known gaps
 - Unsaturated ethers/esters and wider ester coverage; rings and aromatics not supported.
@@ -65,6 +67,7 @@ Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (o
 - v49: browser click-through pending for the acyclic-alkane parent-chain fix (new + existing alkanes), the explicit terminal-`1` locant change (`3-μεθυλο-1-βουτένιο`), the 73rd molecule + 3D SDF, the imported scenarios, the alkyl table on branch/locant components, and the enyne `-ιν-` rule tile.
 - v49: carbon-branch orientation compares locant sets only; alphabetical priority for carbon substituents (as already done for halogen/nitro) is not yet applied, so a future mixed ethyl/methyl alkane with tied locant sets could orient arbitrarily (not exercised by the current 80 molecules).
 - v50: browser click-through pending for the side text rails (left/right, wide/narrow fallback, menu steps, long notes, top↔side switching, 2D/3D refit), the no-molecule naming placeholder, and presentation naming-chrome behavior, plus the v49 items above. Also pending: the 7 alkynes added post-live (73 → 80 keys) and the skeletal `C`-label removal for any sp carbon — alkynes, enynes, yne-ketone/aldehyde, nitriles, allene (2D only; 3D framing deferred).
+- v51 (not live): safe rich notes, rule-table components, the authoring note dialog, and the compact icon toolbar are implemented; static checks pass. The earlier jsdom suite (95 sanitizer + 38 scenario-integration checks) predates the removal of the presentation wide/focus controls and needs updating before reuse. Real-browser click-through is still pending for rich notes, the authoring dialog, the icon dropdown/skip icons, 2D/3D refit, the JSmol local/CDN loader, and jQuery 4; Snap.svg removal remains the final phase.
 - Stored scenarios: `Αλκάνια-Αιθάνιο-τεστ.scenario.json` is the default (7 steps: ethane walkthrough + alkane menu browsing + 3D alkane models; steps 5–7 place the note in a left rail with longer text), while the previous `Αλκάνια-Αιθάνιο.scenario.json` is retained on disk for explicit `?scenario=` links but is no longer preloaded; plus the imported `Αλκένια-Αιθένιο` (7) and `Αλκένια-Ονοματολογία_και_διακλαδώσεις` (22); wider scenario library and EPAL/Lyceum two-level notes still to be written.
 
 ---
@@ -121,7 +124,8 @@ Out of scope for now: quiz SPA, participant logging, CSV export, server-side cla
 ## Status summary
 
 - Baseline: **v50 live** (`index.html` → v50; presentation text rails top/left/right + persistent naming shell; default scenario `Αλκάνια-Αιθάνιο-τεστ`); v49/v48/v47/v46/v45/v44 runnable at root (`mulermoc-nom-49/48/47/46/45/44.html`), v43 frozen at tag `v43`, v42 frozen in repo2
+- In development: **v51** (`mulermoc-nom-51.html`) rich notes + rule-table components + authoring note dialog; `index.html` stays v50
 - Focus: **LEARN pilot (stored scenarios) + bounded EXPLORE-lite**
-- Near-term: **v50 browser verification of the side text rails + persistent naming shell (left/right/top, wide/narrow fallback, menu steps, long notes, 2D/3D refit, no-molecule placeholder, `Name controls`), then the v49 parent-chain fix, `3-μεθυλο-1-βουτένιο` locant, 73rd molecule/3D, imported scenarios, alkyl table/locants, enyne `-ιν-`; scenario library verification; bounded EXPLORE-lite (~15 mols + menu search)**
+- Near-term: **v51 browser verification (rich notes, authoring dialog, icon toolbar, 2D/3D refit, JSmol loader, jQuery 4) and Snap.svg removal; then v50 side-rail verification, the v49 parent-chain fix, `3-μεθυλο-1-βουτένιο` locant, 73rd molecule/3D, imported scenarios, alkyl table/locants, enyne `-ιν-`; scenario library verification; bounded EXPLORE-lite (~15 mols + menu search)**
 - Rules: secondary explanatory layer; homologous series = database order
 - Research layer: active design (schema v1 in LAYERS-PLAN)

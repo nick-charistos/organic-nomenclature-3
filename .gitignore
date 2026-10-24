@@ -90,3 +90,7 @@ communication/
 # Contributor archive not part of the published site
 archive/Giannis_Skendros/
 
+# Vendored small libraries (committed; see js/vendor/README.md)
+!js/vendor/
+!js/vendor/**
+

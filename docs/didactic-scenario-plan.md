@@ -280,11 +280,15 @@ Visibility rules:
   title-only; span construction + pill CSS kept for revert); on exit the
   app title is
   restored. `note` is the educational paragraph in `#scStepText`
-  directly below the title (simple-HTML subset: everything escaped
-  except attributeless `<b>`, `<i>`, `<u>`, `<sup>`, `<sub>`,
-  `<ul>`, `<ol>`, `<li>`, `<small>`, `<big>`; drawer toolbar wraps
-  selection / builds lists from selected lines;
-  `noteFormat: "text"` reserved for further rich text). Heading +
+  directly below the title. `noteFormat: "text"` (default/legacy) keeps
+  the escape-first subset (`<b>`, `<i>`, `<u>`, `<sup>`, `<sub>`,
+  `<ul>`, `<ol>`, `<li>`, `<small>`, `<big>`); `noteFormat: "html"`
+  uses DOMPurify with a curated allowlist (paragraphs, lists, links,
+  tables, figures, images, `note-*` classes, and rule-table components).
+  Rich notes add a text/HTML toggle, image/table/rule-table helpers, and an
+  expand control that opens a content-only modal editor (live sync; no
+  preview/Apply/Cancel). Presentation keeps the v50 top/left/right rails and
+  has no separate wide/focus mode. Heading +
   text show automatically iff the step carries a title or note;
   clear both for a silent visual step (app title kept). Author
   mode always shows the app title and hides the text div (text is
@@ -341,8 +345,10 @@ Visibility rules:
   stacked in `.scStepNumberWrap`, step title (`Τίτλος βήματος` label
   above the field, defaults to the live Greek IUPAC name at Save —
   key fallback, `"menu"` for menu-only), per-step educational text
-  (`note` textarea with formatting toolbar: `B I sup sub` buttons, 1↔2
-  column toggle icon + clean icon, whole-text size/width via per-step
+  (`note` textarea with formatting toolbar: text/HTML toggle,
+  `B I sup sub` buttons, clear, image/table and icon-only rule-table
+  inserts, expand-to-dialog, 1↔2 column toggle icon, whole-text size/width
+  via per-step
   `Size (px)` input `styleText.fontSizePx`
   (12–28, empty = 18px) and `Width (px)` input `styleText.textWidthPx`
   (320–1200, empty = 980px default width; explicit values override up to the

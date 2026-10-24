@@ -4,6 +4,45 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ---
 
+## [v51] (rich presentation notes, safe HTML, rule-table components, authoring note dialog; `index.html` still v50)
+
+New parallel file set `mulermoc-nom-51.html` + `js/*-51.js` + `css/*-51.css`, forked from v50. `index.html` intentionally remains on v50 until browser verification.
+
+### Rich notes (`mulermoc-nom-note-51.js`, `scenario-51.js`, `scenario-51.css`)
+- Additive per-step `noteFormat`: missing/`"text"` keeps the escape-first simple-HTML renderer byte-for-byte; `"html"` uses DOMPurify 3.4.17 with an explicit tag/attribute/class allowlist.
+- HTML notes support paragraphs, lists, links, tables, figures, images, `note-*` styles, and a fixed component vocabulary. No scripts, event handlers, inline styles/IDs, iframes, forms, inline SVG, or raw HTML.
+- Links: relative/`http`/`https`/`mailto`/`tel`; external links get `target="_blank"` + `rel="noopener noreferrer"`; `javascript:`, `data:`, `file:`, `blob:`, and protocol-relative links are rejected.
+- Images: `<img>` only; relative/same-origin and `https:` allowed; `https:` gets `referrerpolicy="no-referrer"`; `data:image/png|jpeg|gif|webp;base64` allowed with a ~500 KB cap; `http:`, `file:`, `blob:`, protocol-relative, and SVG data URIs rejected. Broken images become an accessible fallback; a load-error listener replaces them at runtime.
+- Fail closed: if DOMPurify is unavailable or throws, the note renders through the legacy escaped renderer.
+- `showNoteOn` now treats image/component-only notes as content; the play-bar note is plain text only.
+- Step defaults, capture, validation, Update, Duplicate, Import/Export preserve `noteFormat`; invalid values fall back to `text` with a warning.
+
+### Components and actions
+- `data-note-include="rule-table:1|2|3|4|alkyl"` resolves the five `namingRules` tables by reference (no copied HTML), sanitizes the component with its own allowlist, and wraps it in `note-embed--rule`; missing keys show a visible fallback.
+- `MuLERMoCNote.registerAction(name, handler)` + delegated `[data-note-action]` handling are in place with zero public actions. Buttons without a valid/registered action are unwrapped or marked unavailable. The renderer keeps an optional strip-actions mode for reading-only contexts; v51 ships no presentation focus UI.
+
+### Presentation and authoring
+- Presentation keeps the v50 top/left/right text rails. The intermediate wide/focus presentation controls were removed; there is no separate wide or reading-focus mode in v51.
+- Authoring note toolbar adds a TXT/HTML toggle, `B I sup sub` formatting, clear, image/table inserts, and a five-key rule-table dropdown. Text→HTML converts line breaks; HTML→text converts back to plain text (image alt text and component keys become markers). Image insert rejects `http://`, protocol-relative, non-raster data URIs, and oversized data URIs, and warns on external `https:` images. The stored note remains a single string.
+- The toolbar is flattened inline: expand first, then content controls, then layout (columns/position/size/width). Expand opens a content-only modal note editor that live-syncs with the inline textarea; no preview/Apply/Cancel. Esc or close restores focus to the expand button and the authoring step remains live.
+- The predefined-content control is an icon-only dropdown using `addPredefinedItem` from `imgs/add-predifined-item-svgrepo-com.svg`, with the five rule-table options. The existing component select is gone.
+- Step actions are icon-only; `Go` now uses the new `skip` icon. The new `addDocumentNote`, `book`, `details`, `infoFeed`, `ingestionReport`, `itemDetails`, and `monitor` icons are registered in `js/ui-icons.js`.
+- Note CSS adds table scrolling, image sizing, blockquote/code/link/figure styling, `note-*` callouts, embed cards, the authoring modal editor, and two-column flow inside the note body (not the chrome).
+
+### Dependencies / runtime
+- Vendored under `js/vendor/`: jQuery 4.0.0, DOMPurify 3.4.17, Snap.svg 0.5.1 (temporary, removed with Snap), licenses and hashes in `js/vendor/README.md`; `.gitignore` keeps the directory tracked.
+- Local JSmol updated to 16.4.23 (`JSmol.min.js` + `j2s/`, 48 MB, still Git-ignored). Public loads use the CDN; `?libs=local` switches the script, `j2sPath`, and `serverURL` to the local copy.
+- Snap is still used by `molview-51.js`; its removal remains the final v51 phase. jQuery 4.0.0 is vendored but needs a browser compatibility pass (no removed APIs were found by static grep).
+
+### Docs / checks
+- Added `docs/Presentation-Step-Rich-Text-PLAN.md` (locked decisions, security model, phases) and refreshed `docs/didactic-scenario-plan.md`.
+- Static: `node --check` passes on all v51 JS; CSS brace balance `305/305` (`jsme-nick-51.css`) and `275/275` (`scenario-51.css`); local v51 HTML asset refs resolve; no duplicate ids in the v51 HTML.
+- Earlier runtime suite (Node 22 + jsdom 26 + the vendored DOMPurify/jQuery): 95/95 sanitizer checks and 38/38 scenario-integration checks passed before the presentation wide/focus controls were removed. Those tests still reference the removed `openFocus`/wide APIs, so update and rerun them before release. Coverage included tag/attribute/class stripping, links and images (including control-character and encoded `javascript:` variants), table wrapping, all five component keys, missing components, image error fallback, action registry, text/legacy fallback, fail-closed without DOMPurify, plain-text conversion, and jQuery 4 basics.
+- Fixed during the runtime suite: remove `USE_PROFILES` so `ALLOWED_TAGS` is a strict allowlist (`<h2>` was previously retained); separate block/`<br>` text nodes with spaces (or newlines) in `toPlainText` (`<p>a</p><p>b</p>` was `ab`); reject control characters in note URLs; fail closed if post-clean/component expansion throws; title-only steps no longer render an empty note body; keep image alt text and component markers when converting a rich note to text.
+- Browser click-through still pending: real 2D/3D refit, the full molecule set, JSmol local/CDN loader, jQuery 4 in the complete app, rich notes, the authoring note dialog, and the icon dropdown/skip icons.
+
+---
+
 ## [v50] (presentation text rails left/right + persistent naming shell; live, `index.html` → v50)
 
 New parallel file set `mulermoc-nom-50.html` + `js/*-50.js` + `css/*-50.css`, forked from v49 (the HTML row class was renamed `.HFlex` → `.mainApp3Columns`, inline styles moved to CSS, and the 7 asset refs updated). Adds per-step presentation text placement and a persistent naming shell; the chemistry engine is unchanged, and the molecule data was unchanged at fork time (a later additive update in this version adds 7 alkynes, 73 → 80 keys — see the 2026-10-22 entry below). v50 is now live: `index.html` points to `mulermoc-nom-50.html`; v49 remains runnable at root. Browser click-through is still pending (see Checks).

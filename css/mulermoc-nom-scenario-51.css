@@ -1,0 +1,2247 @@
+/* mulermoc-nom-scenario-51.css — didactic-scenario chrome (author bar, drawer, playback bar, step text).
+   Moved out of fScenarioInjectCss so formats are designed here, not in JS. */
+
+/* Border-box everywhere inside the author panels: 100%-width children
+   (titles, button panel, note fields) must not overflow the fixed widths. */
+#scenarioAuthorBar,
+#scenarioAuthorBar *,
+.scenarioPanel,
+.scenarioPanel *,
+.scenarioDrawer,
+.scenarioDrawer * {
+   box-sizing: border-box;
+}
+
+#scenarioAuthorBar {
+   position: fixed;
+   top: 50px;
+   right: 0;
+   z-index: 500;
+   display: flex;
+   flex-direction: column;
+   flex-wrap: nowrap;
+   background: var(--lightBlue);
+   border: 2px solid #fff;
+   border-right: 0;
+   /* border-top-left-radius: 4px; */
+   border-bottom-left-radius: 4px;
+   /* padding: 10px 10px; */
+   align-items: stretch;
+   box-shadow: 0 1px 4px rgba(0, 0, 0, .45), 0 2px 8px rgba(0, 0, 0, .15);
+   font-size: 1.0rem;
+   font-family: "Roboto Condensed", sans-serif;
+   /* fully hidden when closed (only the child tab stays visible, docked
+      flush to the panel edge); present hides all via .is-hidden.
+      No shadow when closed so translateX(100%) parks the bar exactly
+      off-screen with no bleed — the tab needs no shift in any state. */
+   transform: translateX(100%);
+   visibility: hidden;
+   pointer-events: none;
+   /* box-shadow: none; */
+   transition: transform .25s ease, visibility 0s linear .25s;
+   width: 540px;
+   max-width: 100vw;
+   max-height: 85vh;
+   overflow: visible;
+}
+
+#scenarioAuthorBar.open {
+   transform: none;
+   visibility: visible;
+   pointer-events: auto;
+   transition: transform .25s ease;
+}
+
+#scenarioAuthorBar.is-hidden {
+   transform: translateX(100%);
+   visibility: hidden;
+   pointer-events: none;
+   box-shadow: none;
+   transition: transform .25s ease, visibility 0s linear .25s;
+}
+
+#scenarioPlayBar #scExit {
+   position: absolute;
+   right: 20px;
+   font-size: 1.0rem;
+
+
+}
+
+
+#scenarioPlayBarTitle {
+   font-size: 1.0rem;
+   font-family: "Roboto", sans-serif;
+   color: #fff;
+   font-weight: bold;
+   /* background: var(--lightBlue); */
+   padding: 10px 20px 10px 10px;
+   /* padding-right: 30px; */
+   width: 100%;
+   max-width: 100%;
+   align-self: stretch;
+   text-align: center;
+   border-top-left-radius: 0px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   position: relative;
+}
+
+#scenarioPlayBarTitle>span {
+   flex: 1;
+}
+
+#scenarioPlayBarTitle .scTitleText {
+   flex: 1;
+   text-align: center;
+   font-size: 1.0rem;
+   color: #fff;
+   font-weight: bold;
+}
+
+
+/* Merged header (GlobalBar retired): New/Import live left in the dark title row. */
+#scenarioPlayBarTitle .scTitleBtns {
+   flex: none;
+   display: flex;
+   gap: 8px;
+   align-items: center;
+}
+
+/* Dark-bg variant for the header action buttons (close button keeps its own rules). */
+#scenarioPlayBarTitle button#scNew,
+#scenarioPlayBarTitle button#scImport {
+   background: var(--veryLightEarth);
+   border: 2px solid var(--veryLightBlue);
+   color: var(--darkBlue);
+}
+
+#scenarioPlayBarTitle button#scNew:hover,
+#scenarioPlayBarTitle button#scImport:hover {
+   background: var(--darkEarth);
+   border-color: #fff;
+   color: #fff;
+}
+
+#scenarioPlayBarTitle button#scNew:disabled,
+#scenarioPlayBarTitle button#scNew:disabled:hover {
+   background: transparent;
+   border-color: #fff;
+   color: #fff;
+   opacity: .5;
+   cursor: not-allowed !important;
+}
+
+
+#scCloseBar {
+   appearance: none;
+   -webkit-appearance: none;
+   background: transparent;
+   border: 1px solid transparent;
+   border-radius: 4px;
+   color: #fff;
+   font-family: "Roboto Condensed", sans-serif;
+   font-weight: bold;
+   font-size: 1.0rem;
+   line-height: 1;
+   padding: 2px 8px;
+   margin-right: 8px;
+   cursor: pointer;
+   flex: none;
+   /* position: absolute;
+   right: 20px; */
+}
+
+#scCloseBar:hover {
+   background: var(--darkEarth);
+   border-color: #fff;
+}
+
+#scCloseBar:focus-visible {
+   outline: 2px solid #fff;
+   outline-offset: 1px;
+}
+
+#scenarioPlayBarButtonPanel,
+.scenarioButtonPanel {
+   display: flex;
+   gap: 10px;
+   align-items: center;
+   padding: 10px;
+   /* padding-right: 30px; */
+   background: var(--veryLightBlue);
+   /* border-bottom-left-radius: 4px; */
+   width: 100%;
+   max-width: 100%;
+   align-self: stretch;
+   flex: 0 0 auto;
+   flex-wrap: wrap;
+   /* height: 40px; */
+}
+
+#scenarioPlayBarTitle,
+#scenarioPanels {
+   flex: 0 0 auto;
+   width: 100%;
+}
+
+#scenarioPanels {
+   display: flex;
+   flex-direction: column;
+   flex-wrap: nowrap;
+   gap: 10px;
+   padding: 0px 20px 10px 10px;
+   flex: 1 1 auto;
+   min-height: 0;
+   overflow: auto;
+   /* background: var(--lightBlue); */
+   /* border-bottom-left-radius: 3px; */
+}
+
+.scenarioPanel {
+   background: var(--veryLightGray);
+   border: 2px solid var(--veryLightGray);
+   border-radius: 4px;
+   overflow: hidden;
+   flex: 0 0 auto;
+}
+
+.scenarioPanel.active {
+   border-color: var(--darkBlue);
+
+}
+
+/* Empty scenario (0 steps): dimmed card + count, ghosted Steps button. */
+.scenarioPanel.is-empty {
+   /* opacity: .5; */
+}
+
+.scenarioPanel .scenarioHeader .scCount.is-empty {
+   opacity: .5;
+}
+
+.scenarioPanel.is-empty .scScenarioNo,
+.scenarioPanel.is-empty .scenarioTitle {
+   opacity: .6;
+
+}
+
+
+
+/* Empty scenario: every button except Save step + Delete is disabled
+   (see fScenarioRenderOne); dim the gated ones. Save + Delete stay live.
+   Dark block is scList/scPresent only (see unified rule below); scExport
+   keeps the light chrome via the explicit rule right after.
+   ID prefix keeps this above the generic button:disabled guard below. */
+#scenarioAuthorBar .scenarioPanel.is-empty .scList:disabled,
+#scenarioAuthorBar .scenarioPanel.is-empty .scList:disabled:hover,
+#scenarioAuthorBar .scenarioPanel.is-empty .scPresent:disabled,
+#scenarioAuthorBar .scenarioPanel.is-empty .scPresent:disabled:hover {
+   background: var(--darkBlue);
+   border-color: var(--darkBlue);
+   color: #fff;
+   opacity: .5;
+   cursor: not-allowed;
+}
+
+/* Empty-panel Export stays light (bgColor), dimmed, no hover change. */
+#scenarioAuthorBar .scenarioPanel.is-empty .scExport:disabled,
+#scenarioAuthorBar .scenarioPanel.is-empty .scExport:disabled:hover {
+   background: var(--veryLightEarth);
+   border-color: var(--darkEarth);
+   color: var(--darkBlue);
+   opacity: .5;
+   cursor: not-allowed;
+}
+
+
+
+.scenarioPanel .scenarioHeader {
+   display: flex;
+   gap: 8px;
+   align-items: center;
+   padding: 6px 8px;
+   background: #fff;
+}
+
+.scenarioPanel .scenarioHeader .scenarioTitle {
+   flex: 1;
+   min-width: 0;
+   font-size: 1rem;
+   font-family: "Roboto Condensed", sans-serif;
+   color: var(--darkBlue);
+   font-weight: bold;
+}
+
+.scenarioPanel .scenarioHeader .scCount {
+   font-size: .75rem;
+   font-weight: bold;
+   background: var(--vibrantGreen);
+   color: #fff;
+   border-radius: 10px;
+   padding: 0 7px;
+   line-height: 20px;
+   white-space: nowrap;
+}
+
+.scenarioPanel .scenarioHeader .scScenarioNo {
+   font-size: 1rem;
+   font-weight: bold;
+   background: var(--darkBlue);
+   color: #fff;
+   border-radius: 4px;
+   padding: 2px 7px;
+   line-height: 20px;
+   white-space: nowrap;
+   flex: none;
+   font-family: "Roboto Condensed", sans-serif;
+}
+
+.scenarioButtonPanel {
+   background: var(--veryLightGray);
+}
+
+#scenarioAuthorBar input[type=text] {
+   /* width: 140px; */
+   /* border-radius: 4px; */
+}
+
+#scenarioAuthorBar button,
+#scenarioPlayBar button,
+.scNoteEditorToolbar button {
+   cursor: pointer;
+   background: var(--veryLightEarth);
+   border-radius: 4px;
+   border: 1px solid var(--lightBlue);
+   font-family: "Roboto Condensed", sans-serif;
+   color: var(--darkBlue);
+   padding: 3px 5px;
+   font-weight: bold;
+   transition: all 0.2s;
+}
+
+#scenarioAuthorBar button:hover,
+#scenarioPlayBar button:hover,
+.scNoteEditorToolbar button:hover {
+   background: var(--darkEarth);
+   color: #fff;
+}
+
+#scenarioPlayBarNextPrevContainer button {
+   background: var(--darkBlue);
+   color: #fff;
+   border: 0;
+   padding: 2px 10px;
+}
+
+#scenarioPlayBarNextPrevContainer #scPos {
+   background:transparent;
+   padding: 3px 5px;
+   border: 0px solid var(--darkBlue);
+   border-radius: 4px;
+   color: var(--darkBlue);
+   font-size: 1.25rem;
+}
+
+
+/* Disabled buttons (empty-panel gating) never hover: keep base chrome + text. */
+#scenarioAuthorBar button:disabled,
+#scenarioAuthorBar button:disabled:hover,
+#scenarioPlayBar button:disabled,
+#scenarioPlayBar button:disabled:hover {
+   background: var(--veryLightEarth);
+   color: var(--darkBlue);
+   border-color: var(--darkEarth);
+   cursor: not-allowed !important;
+}
+
+/* Empty-cap gating (see fScenarioSyncNewDeleteUi): dim locked New/Delete. */
+#scenarioPlayBarTitle #scNew:disabled,
+.scenarioPanel .scDelete:disabled {
+   opacity: .5;
+   cursor: not-allowed !important;
+}
+
+/* Steps is stateful: selected while the drawer is open */
+
+#scenarioAuthorBar .scenarioButtonPanel button.scList {
+   background: var(--darkBlue);
+   border-color: var(--lightBlue);
+   color: #fff;
+}
+
+#scenarioAuthorBar .scenarioButtonPanel button.scList:hover {
+   background: var(--vibrantGreen);
+   border-color: var(--darkBlue);
+   color: #fff;
+}
+
+#scenarioAuthorBar .scenarioButtonPanel button.scList.active {
+   background: var(--vibrantGreen);
+   border-color: var(--darkBlue);
+   color: #fff;
+}
+
+/* scList + scPresent share the same appearance, including disabled:
+   no hover background/text change — stay --darkBlue. Must come after
+   the enabled :hover rules so disabled wins over them. */
+#scenarioAuthorBar .scenarioButtonPanel button.scList:disabled,
+#scenarioAuthorBar .scenarioButtonPanel button.scList:disabled:hover,
+#scenarioAuthorBar .scenarioButtonPanel button.scPresent:disabled,
+#scenarioAuthorBar .scenarioButtonPanel button.scPresent:disabled:hover,
+#scenarioAuthorBar .scPresent.scIconBtn:disabled,
+#scenarioAuthorBar .scPresent.scIconBtn:disabled:hover {
+   background: var(--darkBlue);
+   border-color: var(--darkBlue);
+   color: #fff;
+   opacity: .5;
+   cursor: not-allowed;
+}
+
+
+
+/* Per-scenario drawers live in-flow inside their panel and drop down/up
+   below their own button panel (class-driven so it animates). */
+.scenarioDrawer {
+   width: 100%;
+   max-width: 100%;
+   background: var(--veryLightGray);
+   /* border-top: 1px solid var(--darkEarth); */
+   padding: 0 12px;
+   font-size: .8rem;
+   overflow: hidden;
+   max-height: 0;
+   transform: translateY(-8px);
+   opacity: 0;
+   visibility: hidden;
+   pointer-events: none;
+   transition: max-height .25s ease, transform .25s ease, opacity .2s ease, visibility 0s linear .25s;
+}
+
+.scenarioDrawer.open {
+   border-top: 1px solid var(--lightBlue);
+   max-height: 60vh;
+   overflow: auto;
+   /* padding: 12px; */
+   transform: none;
+   opacity: 1;
+   visibility: visible;
+   pointer-events: auto;
+   transition: max-height .25s ease, transform .25s ease .06s, opacity .2s ease .06s;
+   background: var(--veryLightBlue);
+}
+
+/* The bar's closed/presenting state lives on #scenarioAuthorBar
+   (visibility:hidden + pointer-events:none), but an open drawer sets
+   visibility:visible/pointer-events:auto on itself and would escape it.
+   Keep the drawer's .open state and scroll while the bar is away, yet hide
+   it from view, hit testing and the tab order. The visibility delay matches
+   the bar slide so the open drawer rides out with it, then disappears;
+   reopening shows it instantly at the same scroll. */
+#scenarioAuthorBar:not(.open) .scenarioDrawer,
+#scenarioAuthorBar.is-hidden .scenarioDrawer {
+   visibility: hidden;
+   pointer-events: none;
+   transition: visibility 0s linear .25s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+   #scenarioAuthorBar,
+   .scenarioDrawer {
+      transition: none;
+   }
+}
+
+.scenarioDrawer .srow {
+   position: relative;
+   display: flex;
+   gap: 5px;
+   align-items: flex-end;
+   margin: 10px 0;
+   flex-wrap: wrap;
+   background: var(--veryLightGray);
+   padding: 10px 10px;
+   border-radius: 4px;
+   border: 1px solid var(--lightBlue);
+}
+
+/* Drag-reorder grip (authoring): dedicated ⠿ handle, desktop HTML5 DnD.
+   Span (not button) so the button:not(.scNoteBtn) action index is stable. */
+.scenarioDrawer .srow .scDragHandle {
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   min-width: 24px;
+   min-height: 24px;
+   cursor: grab;
+   touch-action: none;
+   user-select: none;
+   -webkit-user-select: none;
+   color: var(--lightBlue);
+   border-radius: 4px;
+   font-size: 1.0rem;
+   align-self: center;
+   position: absolute;
+   left: -4px;
+   top: -2px;
+   transition: all .2s ease;
+}
+
+.scenarioDrawer .srow .scDragHandle:hover {
+   color: var(--darkBlue);
+}
+
+.scenarioDrawer .srow .scDragHandle:active {
+   cursor: grabbing;
+}
+
+.scenarioDrawer .srow .scDragHandle:focus-visible {
+   outline: 2px solid var(--darkBlue);
+   outline-offset: 1px;
+}
+
+/* Drop feedback (see fScenarioStepDragOver): dragging ghost + before/after line. */
+.scenarioDrawer .srow.dragging {
+   opacity: .5;
+}
+
+.scenarioDrawer .srow.drag-over-before {
+   box-shadow: 0 -3px 0 var(--darkBlue);
+}
+
+.scenarioDrawer .srow.drag-over-after {
+   box-shadow: 0 3px 0 var(--darkBlue);
+}
+
+
+
+.scenarioDrawer .srow input[type=text] {
+   flex: 1;
+   min-width: 0
+}
+
+.scenarioDrawer .srow .scStepTitleWrap {
+   flex: 1 1 140px;
+   min-width: 0;
+   display: flex;
+   flex-direction: column;
+   gap: 2px;
+}
+
+.scenarioDrawer .srow .scStepTitleWrap .scStepTitleLabel {
+   font-size: .7rem;
+   color: var(--lightBlue);
+   opacity: .8;
+   line-height: 1.2;
+   font-weight: bold;
+}
+
+.scenarioDrawer .srow .scStepTitleWrap input.scStepTitle {
+   flex: none;
+   width: 100%;
+}
+
+.scenarioDrawer .snote {
+   flex-basis: 100%;
+   width: 100%;
+   min-height: 3em;
+   font-size: .8rem
+}
+
+.scenarioDrawer .sshow {
+   font-size: 0.75rem;
+   white-space: nowrap;
+   font-family: "Roboto Condensed", sans-serif;
+   color: var(--darkBlue);
+}
+
+.scenarioDrawer .sshow input[type=checkbox] {
+   margin-right: 0px;
+   accent-color: var(--lightBlue);
+   cursor: pointer;
+}
+
+.scenarioDrawer .sshow.disabled {
+   opacity: .5
+}
+
+/* Menu-grouping set (Ταξινομήσεις Μένου): title + 3 checkboxes share one
+   nowrap line of their own inside the wrapping step row. */
+.scenarioDrawer .scMenuGroupsRow {
+   display: flex;
+   align-items: center;
+   gap: 6px;
+   flex-wrap: nowrap;
+   flex-basis: 100%;
+}
+
+.scenarioDrawer .scMolBadge {
+   font-size: .7rem;
+   color: #fff;
+   background: var(--lightBlue);
+   border-radius: 4px;
+   padding: 0 6px;
+   white-space: nowrap;
+   max-width: 130px;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   font-family: "Roboto Condensed", sans-serif;
+}
+
+.scenarioDrawer .scMolBadge.is-menu {
+   background: var(--veryLightBlue);
+   color: var(--darkBlue);
+}
+
+.scenarioDrawer .scStepNumberWrap {
+   display: inline-flex;
+   flex-direction: column;
+   align-items: center;
+   gap: 2px;
+   flex: none;
+}
+
+.scenarioDrawer .stepNumber {
+   font-family: "Roboto Condensed", sans-serif;
+   font-size: 1.0rem;
+   color: var(--veryLightGray);
+   font-weight: bold;
+   background: var(--vibrantGreen);
+   /* padding: 10px; */
+   border-radius: 50%;
+   width: 22px;
+   height: 22px;
+   text-align: center;
+   line-height: 22px;
+}
+
+#nameAnalysisContainer.locked .nameCompBox {
+   pointer-events: none
+}
+
+#scenarioPlayBar {
+   position: fixed;
+   top: 0px;
+   left: 0;
+   right: 0;
+   z-index: 500;
+   background: #fff;
+   border-bottom: 1px solid var(--lightBlue);
+   color: var(--darkBlue);
+   display: flex;
+   gap: 10px;
+   align-items: center;
+   padding: 6px 12px;
+   font-size: 1rem;
+   justify-content: center;
+   font-family: "Roboto Condensed", sans-serif;
+   font-weight: bold;
+}
+
+#scenarioPlayBarNextPrevContainer {
+   display: flex;
+   gap: 10px;
+   align-items: center;
+   justify-content: center;
+}
+
+/* #scenarioPlayBar .snote {
+   opacity: .5;
+   font-size: .8rem;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+   max-width: 40vw
+} */
+
+#scenarioToast {
+   position: fixed;
+   bottom: 16px;
+   left: 50%;
+   transform: translateX(-50%);
+   z-index: 600;
+   background: #323232;
+   color: #fff;
+   padding: 8px 14px;
+   border-radius: 6px;
+   opacity: 0;
+   transition: opacity .2s;
+   max-width: 80vw
+}
+
+#scenarioToast.show {
+   opacity: 1
+}
+
+/* Destructive-action confirm dialog (see fScenarioConfirm). Dim backdrop over
+   the whole viewport (above the toast at 600); safe button focused first. */
+#scenarioConfirm {
+   position: fixed;
+   inset: 0;
+   z-index: 700;
+   display: none;
+   align-items: center;
+   justify-content: center;
+   background: rgba(0, 0, 0, .45);
+   font-family: "Roboto Condensed", sans-serif;
+}
+
+#scenarioConfirm.show {
+   display: flex;
+}
+
+#scenarioConfirm .scConfirmPanel {
+   background: #fff;
+   color: var(--darkBlue);
+   border: 2px solid var(--darkBlue);
+   border-radius: 8px;
+   padding: 16px 18px;
+   max-width: min(420px, 86vw);
+   box-shadow: 0 8px 28px rgba(0, 0, 0, .35);
+}
+
+#scenarioConfirm .scConfirmMsg {
+   font-size: 1rem;
+   font-weight: bold;
+   line-height: 1.35;
+   margin-bottom: 14px;
+   word-break: break-word;
+}
+
+#scenarioConfirm .scConfirmBtns {
+   display: flex;
+   gap: 10px;
+   justify-content: flex-end;
+}
+
+#scenarioConfirm .scConfirmBtns button {
+   font-family: inherit;
+   font-weight: bold;
+   font-size: .95rem;
+   cursor: pointer;
+   padding: 6px 14px;
+   border-radius: 4px;
+   border: 1px solid var(--darkBlue);
+   background: var(--veryLightEarth);
+   color: var(--darkBlue);
+   transition: all 0.2s;
+}
+
+#scenarioConfirm .scConfirmNo:hover {
+   background: var(--darkEarth);
+   color: #fff;
+}
+
+#scenarioConfirm .scConfirmYes {
+   background: var(--redAlert);
+   border-color: var(--redAlert);
+   color: #fff;
+}
+
+#scenarioConfirm .scConfirmYes:hover {
+   background-color: var(--redAlert);
+   color: #fff;
+}
+
+#scenarioConfirm .scConfirmBtns button:focus-visible {
+   outline: 2px solid var(--darkBlue);
+   outline-offset: 1px;
+}
+
+.scenarioDrawer .scSteps {
+   background: var(--veryLightBlue);
+}
+
+
+
+#scStepText {
+   font-size: 1.125rem;
+   margin: -10px auto 20px auto;
+   white-space: pre-wrap;
+   width: 980px;
+   max-width: 100%;
+   background: #fff;
+   padding: 15px;
+   border-radius: 5px;
+   border: 1px solid var(--lightBlue);
+   text-align: left;
+}
+
+/* authoring handle: child of the bar docked flush to its top-left corner.
+   Overrides the closed bar's hiding (visibility/pointer-events are
+   re-enableable on children). The closed bar has no shadow and parks at
+   exactly 100%, so the 40px tab lands exactly on screen with no shift. */
+#scenarioAuthorTab {
+   appearance: none;
+   -webkit-appearance: none;
+   position: absolute;
+   left: -40px;
+   top: -2px;
+   width: 40px;
+   /* height: 80px; */
+   /* z-index: -10; */
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   gap: 6px;
+   background: var(--darkBlue) !important;
+   color: #fff !important;
+   border: 2px solid #FFF !important;
+   border-right: 0 !important;
+   border-radius: 8px 0 0 8px !important;
+   padding: 10px 10px !important;
+   cursor: pointer;
+   pointer-events: auto;
+   box-shadow: -2px 2px 8px rgba(0, 0, 0, .25);
+   font-family: "Roboto", sans-serif;
+   opacity: 1;
+   visibility: visible;
+   transition: opacity .2s ease, background-color .2s ease, visibility 0s;
+   /* box-shadow: 0 1px 4px rgba(0, 0, 0, .45), 0 2px 8px rgba(0, 0, 0, .15); */
+
+}
+
+
+
+#scenarioAuthorTab:hover {
+   background: var(--darkEarth) !important;
+}
+
+#scenarioAuthorTab.active {
+   background: var(--darkBlue) !important;
+   /* color: var(--darkBlue) !important; */
+}
+
+#scenarioAuthorTab:focus-visible {
+   outline: 2px solid var(--darkEarth);
+   outline-offset: 2px;
+}
+
+#scenarioAuthorTab.is-hidden {
+   opacity: 0;
+   visibility: hidden;
+   pointer-events: none;
+   transition: opacity .2s ease, background-color .2s ease, visibility 0s linear .25s;
+}
+
+/* closed bar: keep the docked handle on screen (visible + clickable).
+   No transform anywhere — the tab purely rides the bar's own slide. */
+#scenarioAuthorBar:not(.open) #scenarioAuthorTab {
+   visibility: visible;
+   pointer-events: auto;
+}
+
+/* present hides the whole unit, handle included */
+#scenarioAuthorBar.is-hidden #scenarioAuthorTab {
+   visibility: hidden;
+   pointer-events: none;
+}
+
+#scenarioAuthorTab .scTabIcon {
+   font-size: 1rem;
+   line-height: 1;
+}
+
+#scenarioAuthorTab .scTabText {
+   writing-mode: vertical-rl;
+   font-size: 1.0rem;
+   font-weight: 600;
+   letter-spacing: .06em;
+   line-height: 1.2;
+}
+
+/* tooltip to the left of the tab (skin: shared rule in css/jsme-nick-45.css;
+   mirrors .settingsBtn logic) */
+#scenarioAuthorTab[data-tooltip]::after {
+   position: absolute;
+   top: 50%;
+   right: calc(100% + 10px);
+   transform: translateY(-50%);
+   z-index: 200;
+}
+
+#scenarioAuthorTab[data-tooltip]::before {
+   top: 50%;
+   right: 100%;
+   transform: translateY(-50%);
+   border-left-color: var(--darkBlue);
+   z-index: 200;
+}
+
+/* menu-subset pick UI (author mode only; stripped in presentation) */
+
+
+#nomeclature2Menu .panelTitle #scPickToggle {
+   appearance: none;
+   -webkit-appearance: none;
+   background: transparent;
+   border: 0;
+   border-radius: 4px;
+   padding: 2px 6px 2px 29px;
+   margin: 0;
+   position: absolute;
+   left: 12px;
+   top: 50%;
+   transform: translateY(-50%);
+   display: flex;
+   align-items: center;
+   gap: 0px;
+   min-height: 20px;
+   height: 20px;
+   width: auto;
+   cursor: pointer;
+   z-index: 1;
+   color: #fff;
+   font-size: .75rem;
+   font-family: "Roboto Condensed", sans-serif;
+   transition: all 0.2s;
+}
+
+#nomeclature2Menu .panelTitle #scPickToggle:focus-visible {
+   outline: 2px solid #fff;
+   outline-offset: 2px;
+}
+
+/* checkmark lives on the inner box; the button's own ::after/::before
+   are the styled tooltip below (same look as the other tooltips) */
+#nomeclature2Menu .panelTitle #scPickToggle .checkBox::after {
+   content: "\2713";
+   position: absolute;
+   top: 0;
+   left: 0;
+   font-size: 16px;
+   font-family: "Roboto Condensed", "Roboto", sans-serif;
+   font-weight: bold;
+   text-align: center;
+   border-radius: 4px;
+}
+
+/* off-state check (normal + hover) */
+#nomeclature2Menu .panelTitle #scPickToggle.unselectedCheck .checkBox::after {
+   color: var(--lightEarth);
+   background-color: var(--veryLightEarth);
+}
+
+#nomeclature2Menu .panelTitle #scPickToggle.unselectedCheck:hover .checkBox::after {
+   color: var(--darkEarth);
+}
+
+/* on-state check */
+#nomeclature2Menu .panelTitle #scPickToggle.selectedCheck .checkBox::after {
+   color: #fff;
+   background-color: var(--darkBlue);
+   border: 2px solid var(--veryLightBlue);
+}
+
+/* 22px box geometry (scoped, no side effects; border on ::after only —
+   the .checkBox span itself stays borderless so no double frame) */
+#nomeclature2Menu .panelTitle #scPickToggle .checkBox,
+#nomeclature2Menu .panelTitle #scPickToggle .checkBox::after {
+   width: 22px;
+   height: 22px;
+   line-height: 20px;
+   box-sizing: border-box;
+}
+
+#nomeclature2Menu .panelTitle #scPickToggle .checkBox {
+   border: 0;
+}
+
+#nomeclature2Menu .panelTitle #scPickToggle .checkBox::after {
+   border: 2px solid var(--veryLightBlue);
+}
+
+/* styled tooltip below the box (skin: shared rule in css/jsme-nick-45.css);
+   left-anchored so it never clips past the menu's left edge */
+#nomeclature2Menu .panelTitle #scPickToggle.unselectedCheck[data-tooltip]::after,
+#nomeclature2Menu .panelTitle #scPickToggle.selectedCheck[data-tooltip]::after {
+   position: absolute;
+   top: calc(100% + 10px);
+   left: 0;
+   width: auto;
+   height: auto;
+   border: 0;
+   z-index: 200;
+}
+
+#nomeclature2Menu .panelTitle #scPickToggle[data-tooltip]::before {
+   top: 100%;
+   left: 10px;
+   border-bottom-color: var(--darkBlue);
+   z-index: 200;
+}
+
+/* Styled bubbles for scenario bar/panel/step/toolbar buttons, type badge
+   and drag handle (skin: shared rule in css/jsme-nick-45.css). Below-centered
+   like the main app; #scenarioAuthorBar/#scenarioPlayBar buttons and the
+   badge/handle gain position:relative as the ::after anchor (no visual change). */
+#scenarioPlayBarTitle button[data-tooltip],
+#scenarioPlayBar button[data-tooltip],
+.scenarioPanel button[data-tooltip],
+.scMolBadge[data-tooltip],
+.scDragHandle[data-tooltip] {
+   position: relative;
+}
+
+#scenarioPlayBarTitle button[data-tooltip]::after,
+#scenarioPlayBar button[data-tooltip]::after,
+.scenarioPanel button[data-tooltip]::after,
+.scMolBadge[data-tooltip]::after,
+.scDragHandle[data-tooltip]::after {
+   position: absolute;
+   top: calc(100% + 10px);
+   left: 50%;
+   transform: translateX(-50%);
+   z-index: 200;
+}
+
+#scenarioPlayBarTitle button[data-tooltip]::before,
+#scenarioPlayBar button[data-tooltip]::before,
+.scenarioPanel button[data-tooltip]::before,
+.scMolBadge[data-tooltip]::before,
+.scDragHandle[data-tooltip]::before {
+   top: 100%;
+   left: 50%;
+   transform: translateX(-50%);
+   border-bottom-color: var(--darkBlue);
+   z-index: 200;
+}
+
+/* Button-panel bubbles render ABOVE the buttons: when the drawer is shut the
+   panel ends right under the button panel and .scenarioPanel{overflow:hidden}
+   would clip below-positioned bubbles. Header above always has room. */
+#scenarioAuthorBar .scenarioButtonPanel button[data-tooltip]::after {
+   top: auto;
+   bottom: calc(100% + 10px);
+   left: 50%;
+   transform: translateX(-50%);
+}
+
+#scenarioAuthorBar .scenarioButtonPanel button[data-tooltip]::before {
+   top: auto;
+   bottom: 100%;
+   left: 50%;
+   transform: translateX(-50%);
+   border-bottom-color: transparent;
+   border-top-color: var(--darkBlue);
+}
+
+/* Edge buttons: centered bubbles would spill past the panel's side edges
+   (.scenarioPanel{overflow:hidden} clips them). #scSave is leftmost, so its
+   bubble aligns left (shifts right into the panel); #scDelete is rightmost,
+   so its bubble aligns right (shifts left). Vertical placement inherited. */
+#scenarioAuthorBar .scenarioPanel button.scSave[data-tooltip]::after {
+   left: 0;
+   right: auto;
+   transform: none;
+}
+
+#scenarioAuthorBar .scenarioPanel button.scSave[data-tooltip]::before {
+   left: 12px;
+   right: auto;
+   transform: none;
+}
+
+#scenarioAuthorBar .scenarioPanel button.scDelete svg {
+   width: 22px;
+   height: 22px;
+}
+
+#scenarioAuthorBar .scenarioPanel button.scDelete:hover {
+   background: var(--redAlert);
+   border-color: var(--redAlert);
+}
+
+#scenarioAuthorBar .scenarioPanel button.scDelete[data-tooltip]::after {
+   left: auto;
+   right: 0;
+   transform: none;
+}
+
+#scenarioAuthorBar .scenarioPanel button.scDelete[data-tooltip]::before {
+   left: auto;
+   right: 12px;
+   transform: none;
+}
+
+#nomeclature2Menu .panelTitle #scPickToggle .scPickCount {
+   background: var(--lightEarth);
+   color: var(--darkBlue);
+   border-radius: 10px;
+   padding: 0 7px;
+   line-height: 20px;
+   font-size: .75rem;
+   font-weight: bold;
+   white-space: nowrap;
+}
+
+#nomeclature2Menu .panelTitle #scPickToggle .scPickCount[hidden] {
+   display: none;
+}
+
+#nomeclature2Menu .panelTitle #scPickToggle.is-hidden {
+   display: none;
+}
+
+#nomeclature2Menu .scPickBox,
+#nomeclature2Menu .scGroupBox {
+   width: 16px;
+   height: 16px;
+   flex: none;
+   align-self: center;
+   margin-right: 8px;
+   accent-color: var(--darkBlue);
+   cursor: pointer;
+}
+
+#nomeclature2Menu .menuLi:has(.scPickBox:checked) {
+   background-color: var(--veryLightEarth);
+}
+
+
+
+/* Presentation-only overrides (JS flips #pageContainer.presenting; display
+   authority stays here so present styling survives menu/name rebuilds). */
+/* Present layout: pack title/step text/app at the top and pin the credits
+   footer to the bottom. Base #pageContainer uses justify-content:space-between
+   (jsme-nick-51.css), which spreads every child across the full height; here
+   the last child's margin-top:auto absorbs the free space instead, so the
+   footer stays on the bottom without spreading the rest. */
+#pageContainer.presenting {
+   justify-content: flex-start;
+}
+
+/* The shared ≤999px landscape rule hides h1 for the compact explorer;
+   presentation uses #pageTitle for the step title, so keep it visible. */
+#pageContainer.presenting #pageTitle {
+   display: block;
+}
+
+#pageContainer.presenting #creditsUs {
+   margin-top: auto;
+}
+
+/* Presentation menu: taller flat pick list (author default 150px in jsme-nick-44.css). */
+#pageContainer.presenting .menuListContainer {
+   max-height: 350px;
+}
+
+
+
+/* Present grouping switcher (Ταξινομήσεις Μένου, 2+ modes): scenario-owned
+   radios; the teaching .groupingMode stays hidden in presentation. */
+.scPresentGrouping {
+   display: flex;
+   flex-direction: column;
+   gap: 2px;
+   padding: 6px 8px;
+   background: var(--veryLightBlue);
+   border-bottom: 1px solid var(--lightBlue);
+
+}
+
+.scPresentGrouping .radioCheckContainer {
+   cursor: pointer;
+   display: block;
+   margin: 2px 0 2px 4px;
+}
+
+/* Present classified groups: collapsible headers mirroring .crossMenuLi
+   (own classes — no teaching-layer deselect side effects). */
+.scPresentGroup {
+   font-family: "Roboto", sans-serif;
+   font-weight: 500;
+   position: relative;
+   padding: 5px 5px 5px 32px;
+   transition: all 0.3s;
+   color: #333;
+}
+
+.scPresentGroup::before {
+   content: "\203A";
+   position: absolute;
+   left: 10px;
+   top: 50%;
+   transform: translateY(-50%);
+   display: inline-block;
+   transition: all 0.3s;
+   color: #ccc;
+   font-size: 1.75rem;
+   line-height: 1;
+   background-color: transparent;
+}
+
+.scPresentGroup:hover {
+   cursor: pointer;
+   background-color: var(--veryLightEarth);
+   color: #111;
+}
+
+.scPresentGroup:hover::before {
+   color: var(--darkBlue);
+}
+
+.scPresentGroup.open::before {
+   transform: translateY(-50%) rotate(90deg);
+   color: #fff;
+   background-color: transparent !important;
+}
+
+/* Open header takes the main-app submenu chrome (.crossMenuLi.selectedLi). */
+.scPresentGroup.open {
+   background-color: var(--lightBlue) !important;
+   color: #fff;
+   transition: all 0.2s;
+   font-weight: 600;
+   border: 1px solid var(--lightBlue);
+   border-bottom: 0;
+   font-size: 1rem;
+}
+
+.scPresentGroups.closed {
+   display: none;
+}
+
+/* Open submenu body carries the main-app border (.exmplContainer). */
+.scPresentGroups {
+   border-bottom: 1px solid var(--lightBlue);
+}
+
+.scStepNumberTitle {
+   background: var(--veryLightEarth);
+   display: inline-block;
+   /* padding: 0px 5px; */
+   border-radius: 50%;
+   margin-right: 5px;
+   color: var(--darkBlue);
+   font-size: 1.25rem;
+   width: 40px;
+   height: 40px;
+   line-height: 40px;
+   border: 1px solid var(--darkBlue);
+}
+
+/* Icon-only buttons (see js/ui-icons.js): uniform 16px currentColor art,
+   title tooltip + aria-label keep the meaning. */
+#scenarioAuthorBar .scIconBtn,
+.scenarioDrawer .srow .scIconBtn {
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   gap: 4px;
+   min-width: 28px;
+   min-height: 24px;
+   padding: 3px 5px;
+}
+
+#scenarioAuthorBar .scenarioDrawer .srow .scIconBtn {
+   min-width: 22px;
+   min-height: 22px;
+   padding: 0;
+
+}
+
+#scenarioAuthorBar .scPresent.scIconBtn {
+   background: var(--darkBlue);
+   color: #fff;
+}
+
+#scenarioAuthorBar .scPresent.scIconBtn:hover {
+   background: var(--vibrantGreen);
+   color: #fff;
+   border-color: var(--darkBlue);
+}
+
+/* Per-step Present (same dark-blue language as the card Play button). */
+#scenarioAuthorBar .scenarioDrawer .srow .scPresentStep.scIconBtn {
+   background: var(--darkBlue);
+   border-color: var(--darkBlue);
+   color: #fff;
+}
+
+#scenarioAuthorBar .scenarioDrawer .srow .scPresentStep.scIconBtn:hover {
+   background: var(--vibrantGreen);
+   border-color: var(--vibrantGreen);
+   color: #fff;
+}
+
+/* Step-row delete (Διαγραφή): pinned to the card's top-right corner like a
+   close affordance; transparent until hover so it does not read as a box. */
+#scenarioAuthorBar .scenarioDrawer .srow .scIconBtn.delete {
+   position: absolute;
+   right: -1px;
+   top: -1px;
+   border-radius: 0;
+   border: 0;
+   border-top-right-radius: 3px;
+   border-bottom-left-radius: 4px;
+   background: transparent;
+}
+
+#scenarioAuthorBar .scenarioDrawer .srow .scIconBtn.delete:hover {
+   background: var(--redAlert);
+   border-color: var(--redAlert);
+   color: #fff;
+}
+
+#scenarioAuthorBar .scIconBtn svg,
+.scenarioDrawer .srow .scIconBtn svg,
+#scenarioPlayBarTitle #scPin svg,
+#scCloseBar svg {
+   width: 16px;
+   height: 16px;
+   flex: none;
+}
+
+/* Bar buttons: icon + text (primary actions). Step rows stay icon-only. */
+#scenarioAuthorBar .scIconTextBtn {
+   gap: 6px;
+}
+
+/* Steps-button live count next to the list icon. */
+#scenarioAuthorBar .scList .scCountInline {
+   font-size: .75rem;
+   font-weight: bold;
+   background: var(--vibrantGreen);
+   color: #fff;
+   border-radius: 10px;
+   padding: 0 7px;
+   line-height: 18px;
+   white-space: nowrap;
+}
+
+/* T1 note toolbar (authoring): inline formatting over the allowed subset. */
+.scenarioDrawer .scNoteToolbar,
+.scNoteEditorToolbar .scNoteToolbar {
+   display: flex;
+   gap: 4px;
+   flex-wrap: wrap;
+   flex-basis: 100%;
+   align-items: center;
+   margin: 2px 0 -2px 0;
+}
+
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar button.scNoteBtn,
+.scNoteEditorToolbar button.scNoteBtn {
+   width: 20px;
+   font-size: .75rem;
+   line-height: 0;
+   height: 20px;
+   background: var(--veryLightBlue);
+   border-color: var(--lightBlue);
+   /* text-align: center; */
+   border-radius: 2px;
+   padding: 0;
+}
+
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar button.scNoteBtn:hover,
+.scNoteEditorToolbar button.scNoteBtn:hover {
+   background: var(--lightBlue);
+   color: #fff;
+}
+
+/* Unbalanced-tag hint on the note field (see fScenarioCheckNoteTags). */
+.scenarioDrawer .snote.tag-warn {
+   outline: 2px solid #c0392b;
+   outline-offset: 1px;
+}
+
+/* Whole-text size/position controls inside the note toolbar. */
+.scenarioDrawer .scNoteToolbar .scTextSizeInput {
+   width: 55px;
+   font-size: .8rem;
+   padding: 1px 0 1px 2px;
+}
+
+/* Text-position dropdown (v50): current-layout icon + caret trigger, fixed
+   icon-only menu so the drawer's overflow cannot clip it. */
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar .scTextPosDD {
+   display: inline-flex;
+   position: relative;
+}
+
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar button.scTextPosBtn {
+   width: auto;
+   min-width: 24px;
+   padding: 0 2px;
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   gap: 0;
+}
+
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar .scTextPosBtn svg {
+   width: 14px;
+   height: 14px;
+   flex: none;
+}
+
+.scTextPosCaret {
+   width: 0;
+   height: 0;
+   margin-left: 2px;
+   border-left: 3px solid transparent;
+   border-right: 3px solid transparent;
+   border-top: 4px solid currentColor;
+}
+
+.scenarioDrawer .scNoteToolbar .scTextPosMenu {
+   position: fixed;
+   z-index: 650;
+   display: none;
+   flex-direction: column;
+   gap: 2px;
+   padding: 3px;
+   background: #fff;
+   border: 1px solid var(--lightBlue);
+   border-radius: 3px;
+   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+}
+
+.scenarioDrawer .scNoteToolbar .scTextPosMenu.open {
+   display: flex;
+}
+
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar .scTextPosMenu button.scTextPosOpt {
+   width: 26px;
+   height: 26px;
+   padding: 0;
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   background: transparent;
+   border: 1px solid transparent;
+   border-radius: 2px;
+   color: var(--darkBlue);
+}
+
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar .scTextPosMenu button.scTextPosOpt svg {
+   width: 18px;
+   height: 18px;
+   flex: none;
+}
+
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar .scTextPosMenu button.scTextPosOpt:hover {
+   background: var(--lightBlue);
+   border-color: var(--lightBlue);
+   color: #fff;
+}
+
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar .scTextPosMenu button.scTextPosOpt.active {
+   background: var(--darkBlue);
+   border-color: var(--darkBlue);
+   color: #fff;
+}
+
+/* Options sit in a narrow vertical menu, so their bubbles open to the right
+   instead of below (skin from the shared scenario button tooltip rule). */
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar .scTextPosMenu .scTextPosOpt[data-tooltip]::after {
+   top: 50%;
+   bottom: auto;
+   left: calc(100% + 8px);
+   right: auto;
+   transform: translateY(-50%);
+}
+
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar .scTextPosMenu .scTextPosOpt[data-tooltip]::before {
+   top: 50%;
+   bottom: auto;
+   left: 100%;
+   right: auto;
+   transform: translateY(-50%);
+   border-top-color: transparent;
+   border-right-color: transparent;
+   border-bottom-color: transparent;
+   border-left-color: var(--darkBlue);
+}
+
+/* Present text: two-column mode (per-step toggle, default 1 column). */
+#scStepText.scCols2 {
+   column-count: 2;
+   column-gap: 2em;
+}
+
+/* Lists never fracture across columns (whole item stays in one column). */
+#scStepText li,
+#scStepText ul,
+#scStepText ol {
+   break-inside: avoid;
+}
+
+/* Small screens collapse back to one column (class, not inline, so this wins). */
+@media (max-width: 700px) {
+   #scStepText.scCols2 {
+      column-count: 1;
+   }
+}
+
+/* v50: per-step side text rail (left or right). While the rail applies, JS
+   moves the card into .mainApp3Columns as a fourth flex item, so it shares the
+   row gap and centers with the app columns. Below 1200px it returns to the
+   normal top card with its stored width and column choice. */
+@media (min-width: 1200px) {
+
+   #pageContainer.presenting.scTextLeft,
+   #pageContainer.presenting.scTextRight {
+      height: auto;
+      min-height: calc(100% - 30px);
+      max-width: calc(1600px + clamp(300px, 24vw, 420px) + 8px);
+      margin-left: auto;
+      margin-right: auto;
+   }
+
+   #pageContainer.presenting.scTextLeft #mainAppContainer,
+   #pageContainer.presenting.scTextRight #mainAppContainer {
+      max-width: calc(1600px + clamp(300px, 24vw, 420px) + 8px);
+   }
+
+   #pageContainer.presenting.scTextLeft .mainApp3Columns,
+   #pageContainer.presenting.scTextRight .mainApp3Columns {
+      gap: 8px;
+      /* Top-align while a rail is active: the row's default stretch would let
+         a tall rail inflate the column heights used to cap it. */
+      align-items: flex-start;
+   }
+
+   #pageContainer.presenting.scTextLeft #menuCol,
+   #pageContainer.presenting.scTextRight #menuCol {
+      width: clamp(190px, 16vw, 230px);
+      min-width: 190px;
+   }
+
+   #pageContainer.presenting.scTextLeft #analysisCol,
+   #pageContainer.presenting.scTextRight #analysisCol {
+      width: clamp(300px, 22vw, 350px);
+      min-width: 300px;
+   }
+
+   #pageContainer.presenting.scTextLeft .mainApp3Columns>#scStepText,
+   #pageContainer.presenting.scTextRight .mainApp3Columns>#scStepText {
+      flex: 0 0 clamp(300px, 24vw, 420px);
+      align-self: flex-start;
+      position: sticky;
+      /* Clear the fixed play bar (#scenarioPlayBar) while scrolling. */
+      top: 50px;
+      /* Stored width belongs to top mode; !important beats the inline width. */
+      width: auto !important;
+      max-width: none;
+      max-height: calc(100vh - 80px);
+      overflow-y: auto;
+      margin: 0;
+   }
+
+   /* Side rails are always single-column; the stored 2-column choice returns
+      when the step is placed back on top. */
+   #pageContainer.presenting.scTextLeft .mainApp3Columns>#scStepText.scCols2,
+   #pageContainer.presenting.scTextRight .mainApp3Columns>#scStepText.scCols2 {
+      column-count: 1;
+   }
+}
+
+/* Toolbar toggle active state (2-column on). */
+.scenarioDrawer .scNoteToolbar .scNoteBtn.active {
+   background: var(--lightBlue);
+   color: #fff;
+   border-color: var(--lightBlue);
+}
+
+/* Present text: lists + font sizes from the note subset. */
+/* #scStepText is white-space:pre-wrap, which inherits into lists and turns the
+   newlines/indentation between hand-typed <li> siblings into blank lines (big
+   gaps). Resetting the list container to normal collapses that inter-item
+   whitespace; li re-declares pre-wrap so line breaks *inside* an item survive. */
+#scStepText ul,
+#scStepText ol {
+   margin: 8px 0 8px 20px;
+   padding: 0;
+   text-align: left;
+   white-space: normal;
+}
+
+#scStepText li {
+   margin: 2px 0;
+   white-space: pre-wrap;
+}
+
+#scStepText small {
+   font-size: .85em;
+}
+
+#scStepText big {
+   font-size: 1.2em;
+}
+
+/* Pin button in the scenario title row (mirrors #scCloseBar; lit while pinned). */
+#scPin {
+   appearance: none;
+   -webkit-appearance: none;
+   background: transparent;
+   border: 2px solid var(--veryLightBlue) !important;
+   border-radius: 4px;
+   color: #fff;
+   font-family: "Roboto Condensed", sans-serif;
+   font-size: 1.0rem;
+   line-height: 1;
+   padding: 2px 8px;
+   margin-right: 4px;
+   cursor: pointer;
+   flex: none;
+}
+
+#scPin:hover {
+   background: var(--darkEarth);
+   border-color: #fff;
+}
+
+#scPin:focus-visible {
+   outline: 2px solid #fff;
+   outline-offset: 1px;
+}
+
+#scPin.active {
+   background: var(--vibrantGreen);
+   color: #fff;
+}
+
+/* Authoring pin-dock (v48): the bar leaves its fixed overlay and pins to
+   the right edge of #pageContainer, spanning its full height (title zone
+   through footer). #mainAppContainer holds exactly the three app columns
+   and becomes the horizontal scroller; h1 + footer yield the 480px band via
+   right margin so their text stays clear of the bar.
+   body.scPinned outranks .open/.is-hidden by specificity and comes last in
+   source order. The viewer keeps measured pixels via inline flex
+   (set/cleared in JS after a pre-dock read), so the applets never reflow.
+   The bar is absolutely positioned (out of flow) so it can never drive
+   layout height: it always equals the container's height, and tall
+   drawer content scrolls inside instead of growing the page. */
+body.scPinned #pageContainer {
+   position: relative;
+   max-width: calc(1600px + 480px);
+   margin: 0 auto;
+   height: auto;
+   min-height: calc(100% - 30px);
+   /* Inline-size query container for the adaptive pinned viewer width below
+      (100cqw = this element's content width, already excluding the scrollbar).
+      Safe in pinned mode: this element is already position:relative, and the
+      only position:fixed element (#rotatePrompt) is a direct body child. */
+   container-type: inline-size;
+}
+
+body.scPinned #pageTitle {
+   margin-right: 480px;
+}
+
+body.scPinned #creditsUs {
+   width: auto;
+   margin-right: 480px;
+}
+
+#authorLayout {
+   margin: 0 10px;
+}
+
+body.scPinned #authorLayout {
+   position: relative;
+   max-width: none;
+   margin: 0 2px 0 10px;
+}
+
+body.scPinned #mainAppContainer {
+   max-width: none;
+   margin: 0 480px 20px 0;
+   overflow-x: auto;
+}
+
+body.scPinned #mainAppContainer>.mainApp3Columns {
+   flex-wrap: nowrap;
+}
+
+/* Pinned viewer width (adaptive): the inline measured pre-dock flex-basis is
+   the upper bound (620px), and this cap keeps the row + 480px band inside the
+   page container. On wide screens the cap is 620px, so the viewer keeps its
+   original width; as the screen narrows it eases down only as far as needed,
+   with --viewerPinnedWidth (default 400px) as the floor. 100cqw resolves
+   against the pinned #pageContainer above; 1090px = band 480 + menu 230 +
+   gaps 20 + analysis 350 + viewer-border/rounding slack. The resize observer
+   picks up the change, so JSME/JSmol follow through the verified fluid path
+   with no JS change. */
+body.scPinned #viewerCol {
+   max-width: clamp(var(--viewerPinnedWidth, 400px), calc(100cqw - 1090px), 620px);
+}
+
+body.scPinned #scenarioAuthorBar {
+   position: absolute;
+   right: 0;
+   top: 0;
+   bottom: 0;
+   width: 480px;
+   max-width: 480px;
+   /* No transform/visibility/pointer-events here: pinned inherits the base
+       closed/.open state (transform translateX(100%) <-> none, visibility).
+       transition is forced off so CSS never races the WAAPI slide that JS
+       drives (fScenarioSlideBar); reduced-motion/no-WAAPI just snaps. */
+   transition: none;
+   /* Height is exact (top+bottom of pageContainer); the lifted 85vh cap must
+      not clamp it on tall pages — unpinned keeps the cap. Column flex from
+      the base rule lays out title + scrolling panels inside. */
+   max-height: none;
+   box-shadow: none;
+   border: 10px solid var(--darkBlue);
+   border-right: 0;
+   border-radius: 0;
+}
+
+body.scPinned #scenarioAuthorTab {
+   display: none;
+}
+
+body.scPinned #scenarioPlayBarTitle {
+   background: var(--darkBlue);
+   margin-bottom: 10px;
+   padding-top: 0;
+}
+
+/* Pinned drawer fills the bar (v48): the open drawer's card becomes a flex
+   column claiming leftover bar height (bar itself stretches to
+   pageContainer's bottom), and the open drawer scrolls internally instead of
+   pushing the panels container. Only the accordion-open card grows (:has,
+   no JS change). Grow animation becomes instant-tall + fade (max-height
+   can't transition to none); unpinned keeps today's slide-down. */
+body.scPinned .scenarioPanel:has(.scenarioDrawer.open) {
+   flex: 1 1 auto;
+   min-height: 85vh;
+   display: flex;
+   flex-direction: column;
+}
+
+body.scPinned .scenarioDrawer.open {
+   flex: 1 1 auto;
+   /* min-height: 80vh; */
+   overflow-y: auto;
+   max-height: none;
+}
+
+/* Pinned horizontal-scroll cues (v48): the scroller's own bottom bar sits
+   below the fold, so edge buttons + fade + branded thumb carry
+   discoverability. All hidden unless pinned AND overflowing (.scCanScroll
+   on #mainAppContainer, managed in JS). */
+
+/* Edge buttons: viewport-anchored (top:40vh), zero flow impact. */
+#scScrollLeft,
+#scScrollRight {
+   display: none;
+   position: absolute;
+   top: 40vh;
+   z-index: 60;
+   width: 34px;
+   height: 44px;
+   padding: 0;
+   box-sizing: border-box;
+   align-items: center;
+   justify-content: center;
+   font-size: 1.4rem;
+   line-height: 1;
+   cursor: pointer;
+   color: #fff;
+   background: var(--darkBlue);
+   border: 2px solid var(--veryLightBlue);
+   border-radius: 6px;
+   opacity: .85;
+}
+
+#scScrollLeft:hover:not(:disabled),
+#scScrollRight:hover:not(:disabled) {
+   opacity: 1;
+   background: var(--darkEarth);
+   border-color: #fff;
+}
+
+#scScrollLeft:focus-visible,
+#scScrollRight:focus-visible {
+   outline: 2px solid #fff;
+   outline-offset: 1px;
+}
+
+#scScrollLeft:disabled,
+#scScrollRight:disabled {
+   opacity: .3;
+   cursor: default;
+}
+
+body.scPinned #mainAppContainer.scCanScroll~#scScrollLeft,
+body.scPinned #mainAppContainer.scCanScroll~#scScrollRight {
+   display: inline-flex;
+}
+
+#scScrollLeft {
+   left: 8px;
+}
+
+#scScrollRight {
+   right: 488px;
+}
+
+#scScrollLeft svg,
+#scScrollRight svg {
+   width: 18px;
+   height: 18px;
+   flex: none;
+}
+
+/* Clipped-edge fade veil (paint only, never interactive). */
+/* #scScrollFade {
+   display: none;
+   position: absolute;
+   top: 0;
+   bottom: 0;
+   right: 540px;
+   width: 30px;
+   pointer-events: none;
+   z-index: 55;
+   background: linear-gradient(to left, rgba(0, 0, 0, .15), rgba(0, 0, 0, 0));
+} */
+
+/* body.scPinned #mainAppContainer.scCanScroll ~ #scScrollFade {
+   display: block;
+} */
+
+/* Branded thumb on the scroller itself (native behavior untouched). */
+body.scPinned #mainAppContainer {
+   scrollbar-width: thin;
+   scrollbar-color: var(--darkBlue) var(--veryLightBlue);
+}
+
+body.scPinned #mainAppContainer::-webkit-scrollbar {
+   height: 10px;
+}
+
+body.scPinned #mainAppContainer::-webkit-scrollbar-track {
+   background: var(--veryLightBlue);
+}
+
+body.scPinned #mainAppContainer::-webkit-scrollbar-thumb {
+   background: var(--darkBlue);
+   border-radius: 5px;
+}
+
+/* Keyboard scroll target cue. */
+body.scPinned #mainAppContainer:focus-visible {
+   outline: 2px solid var(--darkBlue);
+   outline-offset: -2px;
+}
+
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar button.scNoteFormatBtn,
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar button.scNoteInsertBtn,
+.scNoteEditorToolbar button.scNoteFormatBtn,
+.scNoteEditorToolbar button.scNoteInsertBtn {
+   width: auto;
+   min-width: 30px;
+   padding: 0 5px;
+   font-size: .68rem;
+   line-height: 1.1;
+   font-family: "Roboto Condensed", sans-serif;
+}
+
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar button.scNoteFormatBtn.active,
+.scNoteEditorToolbar button.scNoteFormatBtn.active {
+   background: var(--darkBlue);
+   border-color: var(--darkBlue);
+   color: #fff;
+}
+
+/* Predefined-content dropdown: icon + caret trigger and a fixed text menu
+   shared by the inline and modal note toolbars. */
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar .scNoteComponentDD,
+.scNoteEditorToolbar .scNoteComponentDD {
+   display: inline-flex;
+   position: relative;
+}
+
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar button.scNoteComponentBtn,
+.scNoteEditorToolbar button.scNoteComponentBtn {
+   width: auto;
+   min-width: 24px;
+   padding: 0 2px;
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   gap: 0;
+}
+
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar .scNoteComponentBtn svg,
+.scNoteEditorToolbar .scNoteComponentBtn svg {
+   width: 14px;
+   height: 14px;
+   flex: none;
+}
+
+.scNoteComponentCaret {
+   width: 0;
+   height: 0;
+   margin-left: 2px;
+   border-left: 3px solid transparent;
+   border-right: 3px solid transparent;
+   border-top: 4px solid currentColor;
+}
+
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar .scNoteComponentMenu,
+.scNoteEditorToolbar .scNoteComponentMenu {
+   position: fixed;
+   z-index: 650;
+   display: none;
+   flex-direction: column;
+   gap: 2px;
+   padding: 3px;
+   background: #fff;
+   border: 1px solid var(--lightBlue);
+   border-radius: 3px;
+   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+}
+
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar .scNoteComponentMenu.open,
+.scNoteEditorToolbar .scNoteComponentMenu.open {
+   display: flex;
+}
+
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar .scNoteComponentMenu button.scNoteComponentOpt,
+.scNoteEditorToolbar .scNoteComponentMenu button.scNoteComponentOpt {
+   width: auto;
+   min-width: 118px;
+   height: 24px;
+   padding: 0 8px;
+   text-align: left;
+   font-size: .72rem;
+   font-family: "Roboto Condensed", sans-serif;
+   font-weight: normal;
+   line-height: 1;
+   white-space: nowrap;
+   background: transparent;
+   border: 1px solid transparent;
+   border-radius: 2px;
+   color: var(--darkBlue);
+}
+
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar .scNoteComponentMenu button.scNoteComponentOpt:hover,
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar .scNoteComponentMenu button.scNoteComponentOpt:focus-visible,
+.scNoteEditorToolbar .scNoteComponentMenu button.scNoteComponentOpt:hover,
+.scNoteEditorToolbar .scNoteComponentMenu button.scNoteComponentOpt:focus-visible {
+   background: var(--lightBlue);
+   border-color: var(--lightBlue);
+   color: #fff;
+   outline: none;
+}
+
+#scStepText.note-html {
+   white-space: normal;
+}
+
+.mu-note {
+   overflow-wrap: anywhere;
+}
+
+.mu-note p {
+   margin: 0 0 .55em 0;
+}
+
+.mu-note p:last-child {
+   margin-bottom: 0;
+}
+
+.mu-note a {
+   color: var(--darkBlue);
+   text-decoration: underline;
+}
+
+.mu-note code {
+   font-family: "Roboto Mono", "Courier New", monospace;
+   font-size: .9em;
+   background: var(--veryLightGray);
+   border: 1px solid #ddd;
+   border-radius: 3px;
+   padding: 0 4px;
+}
+
+.mu-note blockquote {
+   margin: 10px 0;
+   padding: 8px 12px;
+   border-left: 4px solid var(--lightBlue);
+   background: var(--veryLightBlue);
+}
+
+.mu-note hr {
+   border: 0;
+   border-top: 1px solid #ddd;
+   margin: 14px 0;
+}
+
+.mu-note ul,
+.mu-note ol {
+   margin: 8px 0 8px 20px;
+   padding: 0;
+}
+
+.mu-note li {
+   margin: 2px 0;
+}
+
+.mu-note.note-html li {
+   white-space: normal;
+}
+
+.mu-note .note-table-scroll {
+   overflow-x: auto;
+   max-width: 100%;
+   margin: 10px 0;
+}
+
+.mu-note table {
+   border-collapse: collapse;
+   width: 100%;
+   min-width: 280px;
+}
+
+.mu-note th,
+.mu-note td {
+   border: 1px solid #d8d8d8;
+   padding: 6px 8px;
+   text-align: left;
+   vertical-align: top;
+}
+
+.mu-note thead th {
+   background: var(--veryLightBlue);
+   color: var(--darkBlue);
+}
+
+.mu-note figure {
+   margin: 12px 0;
+   text-align: center;
+}
+
+.mu-note figcaption {
+   margin-top: 4px;
+   font-size: .85em;
+   color: #555;
+}
+
+.mu-note img {
+   display: block;
+   max-width: 100%;
+   height: auto;
+   margin: 10px auto;
+   border-radius: 4px;
+}
+
+.mu-note .note-img-missing {
+   display: inline-block;
+   padding: 8px 12px;
+   margin: 8px 0;
+   color: #7a4a00;
+   background: #fff6e0;
+   border: 1px dashed #d39b2a;
+   border-radius: 4px;
+   font-size: .9em;
+}
+
+.mu-note .note--tip,
+.mu-note .note--warn,
+.mu-note .note--definition,
+.mu-note .note--example,
+.mu-note .note--formula {
+   margin: 10px 0;
+   padding: 8px 12px;
+   border-left: 4px solid var(--lightBlue);
+   background: var(--veryLightBlue);
+   border-radius: 3px;
+}
+
+.mu-note .note--tip {
+   border-left-color: #2e8b57;
+}
+
+.mu-note .note--warn {
+   border-left-color: #c0392b;
+   background: #fdf0ee;
+}
+
+.mu-note .note--definition {
+   border-left-color: var(--darkBlue);
+}
+
+.mu-note .note--example {
+   border-left-color: #8e44ad;
+}
+
+.mu-note .note--formula {
+   border-left-color: #d39b2a;
+   background: #fffaf0;
+}
+
+.mu-note .note--center {
+   text-align: center;
+}
+
+.mu-note .note--muted {
+   color: #666;
+}
+
+.mu-note .note-embed {
+   max-width: 100%;
+   margin: 12px 0;
+   padding: 5px;
+   overflow-x: auto;
+   /* background: var(--veryLightGray); */
+   /* border: 1px solid var(--lightBlue); */
+   /* border-radius: 6px; */
+}
+
+.mu-note .note-embed .namingRuleTable {
+   width: 100%;
+   min-width: 280px;
+}
+
+.mu-note .note-embed--missing {
+   color: #7a4a00;
+   background: #fff6e0;
+   border: 1px dashed #d39b2a;
+}
+
+.mu-note .note-btn {
+   appearance: none;
+   -webkit-appearance: none;
+   margin: 4px 4px 4px 0;
+   padding: 4px 10px;
+   font-size: .85rem;
+   color: #fff;
+   background: var(--darkBlue);
+   border: 1px solid var(--darkBlue);
+   border-radius: 4px;
+   cursor: pointer;
+}
+
+.mu-note .note-btn:hover {
+   background: var(--darkEarth);
+   border-color: var(--darkEarth);
+}
+
+.mu-note .note-btn--unavailable {
+   opacity: .55;
+   cursor: not-allowed;
+}
+
+.scNoteEditor,
+.scNoteEditor * {
+   box-sizing: border-box;
+}
+
+.scNoteEditor {
+   width: min(1100px, 96vw);
+   max-width: 96vw;
+   height: min(90vh, 900px);
+   max-height: 90vh;
+   margin: auto;
+   padding: 0;
+   border: 0;
+   border-radius: 10px;
+   box-shadow: 0 18px 60px rgba(0, 0, 0, .35);
+   background: #fff;
+   color: #222;
+   display: flex;
+   flex-direction: column;
+   overflow: hidden;
+}
+
+.scNoteEditor:not([open]) {
+   display: none;
+}
+
+.scNoteEditor::backdrop {
+   background: rgba(0, 0, 0, .55);
+}
+
+.scNoteEditorHead {
+   flex: none;
+   display: flex;
+   align-items: center;
+   gap: 12px;
+   padding: 12px 16px;
+   background: var(--lightBlue);
+   color: #fff;
+}
+
+.scNoteEditorTitle {
+   flex: 1;
+   margin: 0;
+   font-family: "Roboto Condensed", sans-serif;
+   font-size: 1.15rem;
+   font-weight: 600;
+}
+
+.scNoteEditorClose {
+	appearance: none;
+	-webkit-appearance: none;
+	width: 30px;
+	height: 30px;
+	padding: 0;
+	font-size: 1rem;
+	line-height: 1;
+	color: var(--darkBlue);
+	background: var(--veryLightEarth);
+	border: 2px solid var(--veryLightBlue);
+	border-radius: 4px;
+	cursor: pointer;
+   transition: all 0.2s;
+}
+
+.scNoteEditorClose:hover,
+.scNoteEditorClose:focus-visible {
+   background: var(--darkEarth);
+   color: #fff;
+}
+
+.scNoteEditorToolbar {
+   flex: none;
+   padding: 8px 12px;
+   background: var(--veryLightGray);
+   border-bottom: 1px solid var(--lightBlue);
+}
+
+.scNoteEditorToolbar .scNoteToolbar {
+   margin: 0;
+}
+
+.scNoteEditorText {
+   flex: 1;
+   width: 100%;
+   min-height: 0;
+   margin: 0;
+   padding: 16px 18px;
+   border: 0;
+   outline: none;
+   resize: none;
+   font-family: "Roboto Mono", "Courier New", monospace;
+   font-size: .9rem;
+   line-height: 1.5;
+   color: #222;
+   background: #fff;
+}
+
+.scNoteEditorText:focus {
+   box-shadow: inset 0 0 0 2px var(--lightBlue);
+}
+
+.scNoteEditorText.tag-warn {
+   box-shadow: inset 0 0 0 2px #c0392b;
+}
+
+@media (max-width: 700px) {
+   .scNoteEditor {
+      width: 100vw;
+      max-width: 100vw;
+      height: 100dvh;
+      max-height: 100dvh;
+      border-radius: 0;
+   }
+}
