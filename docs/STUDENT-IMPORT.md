@@ -4,6 +4,26 @@ Repeatable procedure for folding the student's branch
 (`https://github.com/yanisken9/organic-nomenclature-3`, branch `thesis-work`)
 into this repo. First run: v48 → **v49** (2026-10-21).
 
+## v51 additive molecule import (2026-10-25)
+
+The second import was **additive**, not another version fork:
+
+- Appended 18 molecules (9 alcohols, 6 dienes, 3 enynes) to
+  `js/jsme-nick-nomeclature-moc2-data_51.js` (80 → 98 keys), each with three
+  embedded 2D MOL forms, a `reg()` MOL2D registration, and a runtime
+  `mols/nomeclature-moc2/<key>_3D.sdf`. Existing entries were left intact.
+- Ported only the bounded acyclic-alcohol/branch core and the required
+  molview explanation/highlight support; kept the local palette and
+  `fFitNameComponents`. Did **not** import lessons, theory/library UI,
+  Namelecule theme, `fFit2DSVG`, diene parallel drawing, 3D camera zoom, or the
+  label-plate change.
+- Normalized double-bond stereo to `0` in all new 2D forms and in the local 3D
+  SDFs that still carried stereo `3`. `index.html` stayed on v50.
+- Generalizing branch prefixes to other homologous series (ketones, aldehydes,
+  acids, amines, halides, mixed FGs) is deliberately deferred; the current
+  `fSupportsAlkylBranchPrefixes()` gate remains hydrocarbon/acyclic-alcohol
+  only.
+
 ## Roles / policy
 
 - **Import** (student's own work): new molecules + `.sdf`/`.mol` sources, core

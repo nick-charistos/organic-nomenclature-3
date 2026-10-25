@@ -3374,7 +3374,7 @@ function fShowNameAnalysis() {
     ? "Πλαίσια συνθετικών"
     : "Χωρίς πλαίσια συνθετικών";
   const boxActiveClass = window.nameBoxFlag ? " active" : "";
-  
+
   const toggleNameStyleCross = window.nameCrossFlag ? svgNameCross : svgNameCrossOff;
   const crossClass = window.nameCrossFlag ? "nameCompPlus " : "nameCompPlus hide";
   const crossTooltip = window.nameCrossFlag
@@ -3458,7 +3458,7 @@ function fShowNameAnalysis() {
           ]).has(ch);
         if (_isGkConsonant(lastCh) && _isGkConsonant(firstCh)) {
           const connector =
-            (lastCh === "π" || lastCh === "τ") && firstCh === "δ" ? "α" : "ο";
+            (lastCh === "π" || lastCh === "τ" || lastCh === "ξ") && firstCh === "δ" ? "α" : "ο";
           displayComp = `${currComp}<span class='euphonyLetter'>${connector}</span>`;
         }
         break;
@@ -3518,7 +3518,7 @@ function fShowNameAnalysis() {
       const _crossesEsterBoundary = _isEsterWordBoundary && (n >= 10 && i < 10);
       if (!_crossesEsterBoundary && _isGkConsonant(lastCh) && _isGkConsonant(firstCh)) {
         const connector =
-          (lastCh === "π" || lastCh === "τ") && firstCh === "δ" ? "α" : "ο";
+          (lastCh === "π" || lastCh === "τ" || lastCh === "ξ") && firstCh === "δ" ? "α" : "ο";
         displayComp = `${currComp}<span class='euphonyLetter'>${connector}</span>`;
       }
       break;
@@ -3590,7 +3590,6 @@ function fShowNameAnalysis() {
   } catch (e) {
     /* scenario absent */
   }
-
   fFitNameComponents();
 }
 
@@ -3812,6 +3811,21 @@ function fIsMultiLocantComponent(comp) {
 
 // ── fExplainNameComp ──────────────────────────────────────────────────────
 
+function fAlcoholOHNameComponent() {
+  if (typeof functionalGroupObj === 'undefined' || !functionalGroupObj ||
+      !functionalGroupObj.alcohol || !fSupportsAlkylBranchPrefixes()) return null;
+  const branched = fGetHydrocarbonSubstituentInfo().length > 0;
+  const db = multiBondsObj.CCd.length, tb = multiBondsObj.CCt.length;
+  if (branched && db && tb) return 'compSuffix';
+  if (db || tb) return db && tb ? null : 'compEndNumber';
+  return branched ? 'compBondPos' : 'compNumber1';
+}
+function fAlcoholOHPositionText() {
+  return functionalGroupObj.alcohol.O.length > 1
+    ? ' Δηλώνει τις θέσεις των υδροξυλομάδων (–OH).'
+    : ' Δηλώνει τη θέση της υδροξυλομάδας (–OH).';
+}
+
 function fExplainNameComp() {
   let myText, myClass, nStyle, countSubs, myCountText, myFG0, myFG1, myHTML;
   switch (nameAnalysisMode) {
@@ -3843,8 +3857,8 @@ function fExplainNameComp() {
           nameComponentsList[3].length > 0
         ) {
           myText = fIsMultiLocantComponent(nameComponentsList[0])
-            ? ` Δηλώνει τις θέσεις της πρώτης αλφαβητικά δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(1)}.`
-            : ` Δηλώνει τη θέση της πρώτης αλφαβητικά δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(1)}.`;
+          ? ` Δηλώνει τις θέσεις της πρώτης αλφαβητικά δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(1)}.`
+          : ` Δηλώνει τη θέση της πρώτης αλφαβητικά δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(1)}.`;
           fHighlightFG(1);
           fHighlightFG3D(1);
         } else {
@@ -3998,7 +4012,7 @@ function fExplainNameComp() {
       }
 
       break;
-    case "compNumber2": {
+    case "compNumber2":
       nStyle = "";
       myClass = "";
       const branchGroup_compNumber2 = fGetHydrocarbonBranchGroup(2);
@@ -4012,16 +4026,15 @@ function fExplainNameComp() {
         break;
       }
       myText = fIsMultiLocantComponent(nameComponentsList[2])
-        ? ` Δηλώνει τις θέσεις της δεύτερης αλφαβητικά δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(2)}.`
-        : ` Δηλώνει τη θέση της δεύτερης αλφαβητικά δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(2)}.`;
+          ? ` Δηλώνει τις θέσεις της δεύτερης αλφαβητικά δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(2)}.`
+          : ` Δηλώνει τη θέση της δεύτερης αλφαβητικά δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(2)}.`;
       numberingFlag = true;
 
       fHighlightFG(2);
       fHighlightFG3D(2);
       fShowNumbering(0);
       break;
-    }
-    case "compSecondSub2": {
+    case "compSecondSub2":
       nStyle = "";
       myClass = "";
       const branchGroup_compSecondSub2 = fGetHydrocarbonBranchGroup(2);
@@ -4034,16 +4047,23 @@ function fExplainNameComp() {
         break;
       }
       myText = fGetNameComponentMultiplier(nameComponentsList[3]) > 1
-        ? ` Δηλώνει το πλήθος των δευτερευουσών Χαρακτηριστικών Ομάδων${fGetSecondaryGroupNounSuffix(2)}.`
-        : ` Δηλώνει το όνομα  της δεύτερης αλφαβητικά δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(2)}.`;
+          ? ` Δηλώνει το πλήθος των δευτερευουσών Χαρακτηριστικών Ομάδων${fGetSecondaryGroupNounSuffix(2)}.`
+          : ` Δηλώνει το όνομα  της δεύτερης αλφαβητικά δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(2)}.`;
       numberingFlag = false;
       fHighlightFG(2);
       fHighlightFG3D(2);
       break;
-    }
     case "compBondPos":
       nStyle = "";
       myClass = "";
+      if (fAlcoholOHNameComponent() === 'compBondPos') {
+        myText = fAlcoholOHPositionText();
+        ruleTableHighlight = "r3-alcohols";
+        fHighlightFG(); fHighlightFG3D();
+        numberingFlag = true; fShowNumbering(0);
+        $("#ruleTheoryContainer").show();
+        break;
+      }
       switch (nameComponentsList[6]) {
         case "έν":
         case "εν":
@@ -4054,6 +4074,11 @@ function fExplainNameComp() {
         case "ιν":
           myText = " Δηλώνει τη θέση του τριπλού δεσμού.";
           ruleTableHighlight = "r2-triple";
+          break;
+        case "διέν":
+        case "διεν":
+          myText = " Δηλώνει τις θέσεις των διπλών δεσμών.";
+          ruleTableHighlight = "r2-didouble";
           break;
         default:
           myText = " Δηλώνει τη θέση του Πολλαπλού Δεσμού.";
@@ -4203,10 +4228,11 @@ function fExplainNameComp() {
     case "compEndNumber":
       nStyle = "";
       myClass = "";
-      if (nameComponentsList[8].length === 0) {
+      if (fAlcoholOHNameComponent() === 'compEndNumber' || nameComponentsList[8].length === 0) {
         fHighlightFG();
         fHighlightFG3D();
-        myText = ` Δηλώνει τη θέση της  Χαρακτηριστικής Ομάδας${fGetPrincipalGroupNounSuffix(false)}.`;
+        myText = fAlcoholOHNameComponent() === 'compEndNumber' ? fAlcoholOHPositionText()
+          : ` Δηλώνει τη θέση της  Χαρακτηριστικής Ομάδας${fGetPrincipalGroupNounSuffix(false)}.`;
       } else {
         myText = " Δηλώνει τη θέση του τριπλού δεσμού.";
         ruleTableHighlight = "r2-triple";
@@ -4276,7 +4302,10 @@ function fExplainNameComp() {
         if (_seriesKey === "aldehyde") ruleTableHighlight = "r3-aldehydes";
         else if (_seriesKey === "ketone") ruleTableHighlight = "r3-ketones";
       }
-      numberingFlag = false;
+      numberingFlag = fAlcoholOHNameComponent() === 'compSuffix';
+      if (numberingFlag) {
+        myText += fAlcoholOHPositionText();
+      }
       if (molTaxonomy != "Υδρογονάνθρακες") {
         if (Object.keys(functionalGroupObj).length > 1) {
           fHighlightFG(2);
@@ -4286,6 +4315,7 @@ function fExplainNameComp() {
           fHighlightFG3D();
         }
       }
+      if (numberingFlag) fShowNumbering(0);
       $("#ruleTheoryContainer").show();
       break;
     case "commonAlkyl1":
@@ -4396,6 +4426,7 @@ function fExplainNameComp() {
   fShowRule(nameAnalysisMode);
   myHTML = `<div class='explainText ${myClass} ' style='${nStyle}'  >${myText}</div>`;
   $("#nameAnalysisExplain").html(myHTML);
+  fFitNameComponents();
 }
 
 // ── fShowRule ─────────────────────────────────────────────────────────────
@@ -4403,6 +4434,10 @@ function fExplainNameComp() {
 function fShowRule(theRule) {
   let ruleText, ruleTable, ruleTitle, myStyle, myClass, myHTML;
   let alkylRows = null;
+  if (theRule === fAlcoholOHNameComponent()) {
+    theRule = 'compSuffix';
+    ruleTableHighlight = 'r3-alcohols';
+  }
   switch (theRule) {
     case "compNumber1":
     case "compNumber2": {
@@ -4484,7 +4519,10 @@ function fShowRule(theRule) {
       ruleTitle = "";
   }
 
-  if (ruleFlag) {
+  const pilotRule = typeof fScenarioShowComponentRule === "function" &&
+    fScenarioShowComponentRule(theRule);
+  if (pilotRule) $("#ruleTheoryContainer").show();
+  if (ruleFlag && !pilotRule) {
     myStyle = "display: block;";
     myClass = "open";
   } else {
@@ -4762,8 +4800,7 @@ function fChainStepperHTML() {
 // Match the same Greek-alphabetical prefix groups used by fGuessName.
 // Slot 2 represents all remaining groups, matching the fused comp2/comp3 boxes.
 function fGetHydrocarbonBranchGroup(slot) {
-  if (!functionalGroupObj || Object.keys(functionalGroupObj).length !== 1 ||
-      !functionalGroupObj.hydrocarbon) return null;
+  if (!functionalGroupObj || !fSupportsAlkylBranchPrefixes()) return null;
   const branches = fGetHydrocarbonSubstituentInfo();
   const names = [...new Set(branches.map(function (b) { return b.name; }))]
     .sort(function (a, b) { return a < b ? -1 : a > b ? 1 : 0; });
@@ -4780,6 +4817,16 @@ function fHydrocarbonBranchExplanation(group, positions) {
   const locants = [...new Set(group.members.map(function (b) { return b.locant; }))]
     .sort(function (a, b) { return a - b; }).join(", ");
   const names = group.names.map(function (name) { return alkylBranchNouns[name] || name; }).join(", ");
+  if (group.names.length > 1) {
+    const pairs = group.names.map(name => {
+      const nums = group.members.filter(b => b.name === name).map(b => b.locant)
+        .sort((a, b) => a - b).join(", ");
+      return `${alkylBranchNouns[name] || name} στις θέσεις ${nums}`;
+    }).join(" · ");
+    return positions
+      ? `Δηλώνει τη θέση ή τις θέσεις της πρώτης από τις υπόλοιπες ομάδες. Οι επόμενες θέσεις περιλαμβάνονται στο διπλανό συνθετικό (${pairs}).`
+      : `Ομαδοποιημένο συνθετικό με τα ονόματα των υπόλοιπων διακλαδώσεων και τις ενδιάμεσες θέσεις τους (${pairs}).`;
+  }
   if (positions) {
     return group.members.length === 1
       ? `Δηλώνει τη θέση ${locants} της ανθρακικής διακλάδωσης (${names}).`
@@ -4839,11 +4886,13 @@ function fGetHydrocarbonBranchHighlight(slot) {
       }
     }
 
-    // Match by live parent locant and branch size, not by molecule-specific IDs.
-    // This also maps the 2D name groups to the separately numbered 3D SDF.
+    // Match the attachment-rooted carbon graph at its live parent locant.
+    // Equal-sized straight/branched groups must never cross-highlight.
     const locant = mainChainAtomsList.indexOf(parent + 1) + 1;
+    const branch = group ? fDescribeCarbonBranches(mainChainAtomsList.map(n => n - 1),
+      atomConnectivityList, allAtomsTypeList).find(d => d.attach === i) : null;
     if (group && !group.members.some(function (b) {
-      return b.locant === locant && b.length === sideSet.size;
+      return branch && b.locant === locant && b.signature === branch.signature;
     })) continue;
 
     for (const node of sideSet) {
@@ -4932,11 +4981,13 @@ function fGetHydrocarbonBranchHighlight3D(slot) {
       }
     }
 
-    // Match by live parent locant and branch size, not by molecule-specific IDs.
-    // This also maps the 2D name groups to the separately numbered 3D SDF.
+    // Match the attachment-rooted carbon graph at its live parent locant.
+    // Equal-sized straight/branched groups must never cross-highlight.
     const locant = mainChainAtoms3D.indexOf(parent + 1) + 1;
+    const branch = group ? fDescribeCarbonBranches(mainChainAtoms3D.map(n => n - 1),
+      atomConnectivityList3D, allAtomsTypeList3D).find(d => d.attach === i) : null;
     if (group && !group.members.some(function (b) {
-      return b.locant === locant && b.length === sideSet.size;
+      return branch && b.locant === locant && b.signature === branch.signature;
     })) continue;
 
     for (const node of sideSet) {
@@ -5105,8 +5156,8 @@ function fGetEtherCommonParts() {
   const parentLen = Array.isArray(mainChainAtomsList) ? mainChainAtomsList.length : 0;
   const alkLen = (typeof etherInfo !== "undefined" && etherInfo && etherInfo.alkoxyLen) || 1;
   const _eI = (typeof etherInfo !== "undefined" && etherInfo) ? etherInfo : null;
-  const stemFor = function (n, attachC) {
-    const iso = (typeof fAlkylGroupName !== "undefined") ? fAlkylGroupName(n, attachC, "substituent") : null;
+  const stemFor = function (n, attachC, fragment) {
+    const iso = (typeof fAlkylGroupName !== "undefined") ? fAlkylGroupName(n, attachC, "substituent", fragment) : null;
     const full = iso || ((typeof alkylSubstituentNames !== "undefined" && alkylSubstituentNames[n]) || (nameMainCompList1[n - 1] || ""));
     return String(full).replace(/ο$/, "");
   };
@@ -5116,7 +5167,7 @@ function fGetEtherCommonParts() {
   const alkoxyChain3D = fGetEtherAlkoxyChain3D() || [];
   const symmetric = (typeof etherInfo !== "undefined" && etherInfo) ? !!etherInfo.symmetric : parentLen === alkLen;
   if (symmetric) {
-    const alkyl = stemFor(alkLen, _eI && _eI.alkoxyAttachC);
+    const alkyl = stemFor(alkLen, _eI && _eI.alkoxyAttachC, _eI && _eI.alkoxyFrag);
     const both = parentChain.concat(alkoxyChain.filter(function (a) { return parentChain.indexOf(a) < 0; }));
     const both3D = parentChain3D.concat(alkoxyChain3D.filter(function (a) { return parentChain3D.indexOf(a) < 0; }));
     return {
@@ -5128,7 +5179,7 @@ function fGetEtherCommonParts() {
       ],
     };
   }
-  const sP = stemFor(parentLen, _eI && _eI.parentAttachC), sA = stemFor(alkLen, _eI && _eI.alkoxyAttachC);
+  const sP = stemFor(parentLen, _eI && _eI.parentAttachC, _eI && _eI.parentFrag), sA = stemFor(alkLen, _eI && _eI.alkoxyAttachC, _eI && _eI.alkoxyFrag);
   const mk = function (label, len) {
     const isParent = len === parentLen && (parentLen !== alkLen || label === sP);
     return {
@@ -5436,15 +5487,16 @@ function fHighlightFG(FGno) {
   const fgKeys = Object.keys(functionalGroupObj).filter(function (k) {
     return k !== "hydrocarbon";
   });
+  const branch = fGetHydrocarbonBranchHighlight(fHydrocarbonBranchSlot());
   const allowBranchFallback = [
     "compNumber1",
     "compNumber2",
     "compSecondSub1",
     "compSecondSub2",
   ].includes(nameAnalysisMode);
-  const branch = fGetHydrocarbonBranchHighlight(fHydrocarbonBranchSlot());
 
-  if (fgKeys.length === 0) {
+  if (fgKeys.length === 0 || (allowBranchFallback &&
+      fSupportsAlkylBranchPrefixes() && branch.atoms.length > 0)) {
     if (!allowBranchFallback || branch.atoms.length === 0) {
       return;
     }
@@ -5861,17 +5913,18 @@ function fHighlightFG3D(FGno) {
   const fgKeys = Object.keys(functionalGroupObj3D).filter(function (k) {
     return k !== "hydrocarbon";
   });
+  const branch = fGetHydrocarbonBranchHighlight3D(fHydrocarbonBranchSlot());
   const allowBranchFallback = [
     "compNumber1",
     "compNumber2",
     "compSecondSub1",
     "compSecondSub2",
   ].includes(nameAnalysisMode);
-  const branch = fGetHydrocarbonBranchHighlight3D(fHydrocarbonBranchSlot());
 
   let highAtoms3D = [];
 
-  if (fgKeys.length === 0) {
+  if (fgKeys.length === 0 || (allowBranchFallback &&
+      fSupportsAlkylBranchPrefixes() && branch.atoms.length > 0)) {
     if (!allowBranchFallback || branch.atoms.length === 0) {
       // pure hydrocarbon or no branch match — clear any existing highlight
       Jmol.script(

@@ -1,0 +1,41 @@
+butadiene_1_2
+     RDKit          3D
+
+ 10  9  0  0  0  0  0  0  0  0999 V2000
+    2.0922    0.1195    0.0843 C   0  0  0  0  0  0  0  0  0  0  0  0
+    0.8249    0.3051   -0.1216 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -0.4454    0.4920   -0.3284 C   0  0  0  0  0  0  0  0  0  0  0  0
+   -1.5308   -0.4197    0.1377 C   0  0  0  0  0  0  0  0  0  0  0  0
+    2.6911   -0.4394   -0.6252 H   0  0  0  0  0  0  0  0  0  0  0  0
+    2.5722    0.5180    0.9705 H   0  0  0  0  0  0  0  0  0  0  0  0
+   -0.7533    1.3749   -0.8811 H   0  0  0  0  0  0  0  0  0  0  0  0
+   -2.2149    0.1209    0.7987 H   0  0  0  0  0  0  0  0  0  0  0  0
+   -2.1018   -0.7898   -0.7192 H   0  0  0  0  0  0  0  0  0  0  0  0
+   -1.1342   -1.2814    0.6843 H   0  0  0  0  0  0  0  0  0  0  0  0
+  1  2  2  0
+  2  3  2  0
+  3  4  1  0
+  1  5  1  0
+  1  6  1  0
+  3  7  1  0
+  4  8  1  0
+  4  9  1  0
+  4 10  1  0
+M  END
+
+> <NAMELECULE_SOURCE>
+Locally generated RDKit, not PubChem
+
+> <NAMELECULE_RDKIT_VERSION>
+2024.09.6
+
+> <NAMELECULE_METHOD>
+ETKDGv3, explicit H, MMFF94s; lowest energy converged sampled conformer
+
+> <NAMELECULE_SEED>
+20261025
+
+> <NAMELECULE_STEREOCHEMISTRY>
+Unspecified in requested name; one illustrative configuration; no E/Z or R/S claim
+
+$$$$

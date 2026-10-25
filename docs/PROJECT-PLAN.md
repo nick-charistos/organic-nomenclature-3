@@ -3,8 +3,8 @@
 ### Organic Chemistry Interactive Learning & Research Platform
 
 **Principal Investigator:** N. Charistos, Department of Chemistry, ΑΠΘ
-**Status:** Active development | v50 live (80 molecules — 80 `nameExamples` keys): presentation text position (top/left/right sticky rail) + persistent naming shell, with `Αλκάνια-Αιθάνιο-τεστ` as the default scenario; the MSc-student `thesis-work` import is retained (acyclic-alkane parent-chain fix, explicit terminal unsaturation locant, 73rd molecule, alkene scenarios, alkyl reference table/locant rule-table fixes), plus 7 additive alkynes (73 → 80 keys). `index.html` → v50, v49/v48/v47/v46/v45/v44 runnable at root, v43 frozen at tag `v43`, v42 frozen in repo2. Browser verification of the v50 additions is still pending. v51 is a parallel in-development fork (`mulermoc-nom-51.html`) with rich notes, rule-table components, and an authoring note dialog; it is not live.
-**Last updated:** 2026-10-24
+**Status:** Active development | v50 live (80 molecules — 80 `nameExamples` keys): presentation text position (top/left/right sticky rail) + persistent naming shell, with `Αλκάνια-Αιθάνιο-τεστ` as the default scenario; the MSc-student `thesis-work` import is retained (acyclic-alkane parent-chain fix, explicit terminal unsaturation locant, 73rd molecule, alkene scenarios, alkyl reference table/locant rule-table fixes), plus 7 additive alkynes (73 → 80 keys). `index.html` → v50, v49/v48/v47/v46/v45/v44 runnable at root, v43 frozen at tag `v43`, v42 frozen in repo2. Browser verification of the v50 additions is still pending. v51 is a parallel in-development fork (`mulermoc-nom-51.html`) with rich notes, rule-table components, an authoring note dialog, and an additive **98-molecule** data set (18 new: 9 alcohols, 6 dienes, 3 enynes); it is not live.
+**Last updated:** 2026-10-25
 
 > **2026-10 update:** vision is now twofold+1 (community tool + research publications + platform for isomerism/reactions) with four layers in LEARN-first order — LEARN → EXPLORE-lite → PRACTICE → PLAY. The static chemistry app is embedded in Drupal; logging is research-primary. Source of truth for layers: `docs/LAYERS-PLAN.md`. Team P1–P6 roles and timeline are defined there and in `README.md`. What follows below is the original plan text, kept for theory and history; version/count claims predating v44 are superseded.
 
@@ -73,6 +73,7 @@ Each step removes one scaffolding layer. Familiar representations constrain inte
 
 ### What exists
 - **80 molecules** (80 `nameExamples` keys: 69 curated + 4 alkene/alkane test entries + 7 alkynes, incl. 4 ethers + 4 esters + branched `dimethyl_2_3_butane`) covering homologous-series menu groups (series-first, rules secondary)
+- **v51 additive data (not live)** — 98 `nameExamples` keys: +18 molecules (9 alcohols, 6 dienes, 3 enynes), 54 embedded 2D forms and 18 runtime 3D SDFs, with bounded acyclic-alcohol branch naming; the existing 80 entries are unchanged. Branch prefixes are still limited to pure acyclic hydrocarbons/alcohols; other series need the generic branch/FG-profile refactor.
 - **Algorithmic IUPAC engine** — DFS main chain determination, 3-tier locant rules, Greek euphony; ester two-word naming + ether systematic/common toggle since v40/v41
 - **5 representation modes** — condensed, expanded, annotated skeletal (partial), skeletal, 3D
 - **Synchronized highlighting** — same atom/bond highlighted simultaneously in 2D and 3D
@@ -87,7 +88,7 @@ Each step removes one scaffolding layer. Familiar representations constrain inte
 ### Known gaps to fill (immediate work)
 - Annotated skeletal representation: `fMakeAnnotatedSkeletal()` — completes the fading sequence
 - Atom click targets: `fAddAtomClickTargets()` — enables PRACTICE/PLAY exercises (deferred to Phase 3 per `docs/LAYERS-PLAN.md`)
-- Branched molecule naming (alkyl substituents) — extends engine to full organic curriculum
+- Branched molecule naming (alkyl substituents) — v51 covers pure acyclic hydrocarbons/alcohols; generalizing branch detection, principal-group locant ranking, and prefix ordering to ketones/aldehydes/acids/amines/halides and mixed FGs remains open
 - Ether naming — saturated acyclic mono-ethers done in v40 (systematic + common, `ethyl_methyl_ether` + `dimethylether`); remaining: unsaturated ether chains
 - Ester naming — detection/naming/highlight done since v41 (`ethanoic_methyl_ester`, `propanoic_methyl_ester`); remaining: wider coverage, unsaturated chains
 

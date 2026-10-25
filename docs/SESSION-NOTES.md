@@ -2125,3 +2125,25 @@ follows; one Save → Present → Next → Exit round-trip.
 * Checks: CSS braces `217/217` scenario + `305/305` main; JS edits are two
   guarded class-toggle moves verified statically (no JS runtime in the review
   environment). Browser click-through still pending (add 900×700 landscape).
+
+## 2026-10-25 — v51 additive 18-molecule import
+
+* `js/jsme-nick-nomeclature-moc2-data_51.js`: 80 → 98 `nameExamples` keys.
+  Added 9 alcohols, 6 dienes and 3 enynes, each with three embedded 2D MOL forms,
+  a `reg()` MOL2D registration, and a runtime `mols/nomeclature-moc2/<key>_3D.sdf`.
+  Existing 80 entries/order unchanged. `index.html` remains v50.
+* Core: bounded acyclic-alcohol/branch support (alcohol graph detection, OH
+  locant ranking, fragment-aware isopropyl/propyl naming, branch alphabetization,
+  `ξ+δ→α`, numbered-chain/2D-3D matching). Branch prefixes remain limited to
+  pure acyclic hydrocarbons/alcohols; other-series generalization is deferred.
+* Molview: alcohol OH component/text helpers, alcohol rule/explanation cases,
+  branch grouping/highlighting/explanations, and ether common-name compatibility.
+  Kept v51 palette + `fFitNameComponents`; no lessons/library/theme,
+  `fFit2DSVG`, diene parallel drawing, 3D camera zoom, or label-plate changes.
+* Double-bond stereo: 12 new 2D double bonds changed `3` → `0`; all 293 embedded
+  2D blocks / 210 double bonds now 0. Also normalized 9 double bonds in six 3D
+  SDFs (tracked runtime propadiene plus Git-ignored `mols/homo`/`mols/nomeclature`
+  copies); all 175 local `.mol`/`.sdf` files / 213 records / 127 double bonds now 0.
+* Checks: 98 keys, no duplicates, all 18 keys have MOL2D registration + SDF;
+  data/double-bond scans clean. No JS runtime in this environment, so
+  `node --check` was not run; browser click-through pending.
