@@ -3,7 +3,7 @@
 ### Organic Chemistry Interactive Learning & Research Platform
 
 **Principal Investigator:** N. Charistos, Department of Chemistry, ΑΠΘ
-**Status:** Active development | v50 live (80 molecules — 80 `nameExamples` keys): presentation text position (top/left/right sticky rail) + persistent naming shell, with `Αλκάνια-Αιθάνιο-τεστ` as the default scenario; the MSc-student `thesis-work` import is retained (acyclic-alkane parent-chain fix, explicit terminal unsaturation locant, 73rd molecule, alkene scenarios, alkyl reference table/locant rule-table fixes), plus 7 additive alkynes (73 → 80 keys). `index.html` → v50, v49/v48/v47/v46/v45/v44 runnable at root, v43 frozen at tag `v43`, v42 frozen in repo2. Browser verification of the v50 additions is still pending. v51 is a parallel in-development fork (`mulermoc-nom-51.html`) with rich notes, rule-table components, an authoring note dialog, and an additive **98-molecule** data set (18 new: 9 alcohols, 6 dienes, 3 enynes); it is not live.
+**Status:** Active development | v51 live (98 molecules — 98 `nameExamples` keys): safe rich HTML notes (DOMPurify), rule-table components, a content-only authoring note dialog, a compact icon toolbar, and a Snap-free native `MuSVG` 2D overlay; the v50 presentation rails/persistent naming shell and the v49 MSc-student `thesis-work` import are retained. Default scenario: `Αλκάνια-Αιθάνιο-τεστ`. `index.html` → v51, v50/v49/v48/v47/v46/v45/v44 runnable at root, v43 frozen at tag `v43`, v42 frozen in repo2. Automated Chrome/Firefox matrices pass; `MuSVG.parse()` OOM/XML crash fixed. The two pre-existing skeletal JSmol failures and some manual coverage remain open.
 **Last updated:** 2026-10-25
 
 > **2026-10 update:** vision is now twofold+1 (community tool + research publications + platform for isomerism/reactions) with four layers in LEARN-first order — LEARN → EXPLORE-lite → PRACTICE → PLAY. The static chemistry app is embedded in Drupal; logging is research-primary. Source of truth for layers: `docs/LAYERS-PLAN.md`. Team P1–P6 roles and timeline are defined there and in `README.md`. What follows below is the original plan text, kept for theory and history; version/count claims predating v44 are superseded.
@@ -69,20 +69,20 @@ Each step removes one scaffolding layer. Familiar representations constrain inte
 
 ---
 
-## Module 1: Organic Nomenclature — Current State (v50 live; v37 text below kept for history)
+## Module 1: Organic Nomenclature — Current State (v51 live; v37 text below kept for history)
 
 ### What exists
-- **80 molecules** (80 `nameExamples` keys: 69 curated + 4 alkene/alkane test entries + 7 alkynes, incl. 4 ethers + 4 esters + branched `dimethyl_2_3_butane`) covering homologous-series menu groups (series-first, rules secondary)
-- **v51 additive data (not live)** — 98 `nameExamples` keys: +18 molecules (9 alcohols, 6 dienes, 3 enynes), 54 embedded 2D forms and 18 runtime 3D SDFs, with bounded acyclic-alcohol branch naming; the existing 80 entries are unchanged. Branch prefixes are still limited to pure acyclic hydrocarbons/alcohols; other series need the generic branch/FG-profile refactor.
+- **98 molecules** (98 `nameExamples` keys: the previous 80 incl. 4 ethers + 4 esters + branched `dimethyl_2_3_butane`, plus 18 v51 additions) covering homologous-series menu groups (series-first, rules secondary)
+- **v51 data (live)** — adds 18 molecules (9 alcohols, 6 dienes, 3 enynes), 54 embedded 2D forms and 18 runtime 3D SDFs, with bounded acyclic-alcohol branch naming; the existing 80 entries are unchanged. Branch prefixes are still limited to pure acyclic hydrocarbons/alcohols; other series need the generic branch/FG-profile refactor.
 - **Algorithmic IUPAC engine** — DFS main chain determination, 3-tier locant rules, Greek euphony; ester two-word naming + ether systematic/common toggle since v40/v41
 - **5 representation modes** — condensed, expanded, annotated skeletal (partial), skeletal, 3D
 - **Synchronized highlighting** — same atom/bond highlighted simultaneously in 2D and 3D
 - **Teaching layer** — rule-based explanations, component name boxes, TTS narration in Greek
-- **Didactic scenarios (current `-50`; scaffold since v43)** — additive `js/mulermoc-nom-scenario-50.js`: snapshot capture/validate/apply/export/import, `?scenario=&present=#step=` playback, exit restores full chrome; default preload is `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json`. The v50 additions are per-step text position (top/left/right rail) + persistent naming shell; browser verification is pending
+- **Didactic scenarios (current `-51`; scaffold since v43)** — additive `js/mulermoc-nom-scenario-51.js`: snapshot capture/validate/apply/export/import, `?scenario=&present=#step=` playback, exit restores full chrome; default preload is `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json`. v51 adds rich HTML notes, rule-table components, the content-only authoring note dialog, and the compact icon toolbar; it retains the v50 per-step text position (top/left/right rail) + persistent naming shell.
 - **Main-chain stepper (v47, done)** — FG-aware multiple-bond-first pool (max `C=C/C≡C` → max `C=C` → length) with settings-panel `‹ n/N ›` stepper, rank-parallel 2D+3D
-- **Fluid viewers + authoring pin-dock (v48, retained through v50)** — 2D/3D viewers fit their container (native `setSize`, container-derived heights); the scenario bar pins full-height beside the app (scoped horizontal scroll with cues) so name settings stay reachable while authoring; plus per-viewer single max-height and combined double-viewer height controls and a settings-panel UI pass (toggles consolidated, main-chain `Από δεδομένα` disabled without stored data)
-- **Student import (v49, retained in v50)** — acyclic-alkane parent-chain ranking (most carbon branches → lowest branch locants) with explicit terminal unsaturation locant (`3-μεθυλο-1-βουτένιο`); 73rd molecule `ethyl_3_dimethyl_2_5_hexane` + 3D SDF; stored chains for the alkene test molecules; alkene scenarios (`Αλκένια-Αιθένιο`, `Αλκένια-Ονοματολογία_και_διακλαδώσεις`); alkyl reference table for locants/branches and enyne `-ιν-` rule-table fix
-- **Presentation polish (v50 live)** — per-step text placement top/left/right as a fourth-column sticky rail, plus a persistent naming title/gear shell with a no-molecule placeholder and a zero-visible-box explain-line guard; browser verification pending
+- **Fluid viewers + authoring pin-dock (v48, retained through v51)** — 2D/3D viewers fit their container (native `setSize`, container-derived heights); the scenario bar pins full-height beside the app (scoped horizontal scroll with cues) so name settings stay reachable while authoring; plus per-viewer single max-height and combined double-viewer height controls and a settings-panel UI pass (toggles consolidated, main-chain `Από δεδομένα` disabled without stored data)
+- **Student import (v49, retained in v51)** — acyclic-alkane parent-chain ranking (most carbon branches → lowest branch locants) with explicit terminal unsaturation locant (`3-μεθυλο-1-βουτένιο`); 73rd molecule `ethyl_3_dimethyl_2_5_hexane` + 3D SDF; stored chains for the alkene test molecules; alkene scenarios (`Αλκένια-Αιθένιο`, `Αλκένια-Ονοματολογία_και_διακλαδώσεις`); alkyl reference table for locants/branches and enyne `-ιν-` rule-table fix
+- **Presentation polish (v51 live, added in v50)** — per-step text placement top/left/right as a fourth-column sticky rail, plus a persistent naming title/gear shell with a no-molecule placeholder and a zero-visible-box explain-line guard
 - **Technical validation** — algorithm verified against the curated set; tertiary-amine R3N classification fixed in v44 via the bond-order N-table; multi-substituent alkane naming (`2,3-διμεθυλοβουτάνιο`) fixed in v45 (browser verification pending)
 
 ### Known gaps to fill (immediate work)
@@ -253,10 +253,10 @@ RQ4: Learner strategies                    detection                    adaptive
                          ↓
 ┌──────────────────┬──────────────────┬───────────────────────┐
 │   VIEWER LAYER   │  TEACHING LAYER  │     QUIZ LAYER        │
-│  molview-50.js   │  teaching-50.js  │  (quiz-nom-1.js)      │
+│  molview-51.js   │  teaching-51.js  │  (quiz-nom-1.js)      │
 │  JSME (2D)       │  Rule text/tables│  5 scenarios          │
 │  JSmol (3D)      │  TTS narration   │  Session logging      │
-│  Snap.svg        │  Name boxes      │  Research mode        │
+│  native SVG      │  Name boxes      │  Research mode        │
 │  Highlighting    │  jQuery events   │  CSV export           │
 └──────────────────┴──────────────────┴───────────────────────┘
                          ↓

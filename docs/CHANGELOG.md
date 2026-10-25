@@ -4,9 +4,9 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ---
 
-## [v51] (rich presentation notes, safe HTML, rule-table components, authoring note dialog; `index.html` still v50)
+## [v51] (rich presentation notes, safe HTML, rule-table components, authoring note dialog, Snap-free viewer; live, `index.html` → v51)
 
-New parallel file set `mulermoc-nom-51.html` + `js/*-51.js` + `css/*-51.css`, forked from v50. `index.html` intentionally remains on v50 until browser verification.
+New parallel file set `mulermoc-nom-51.html` + `js/*-51.js` + `css/*-51.css`, forked from v50. v51 is now live: `index.html` points to `mulermoc-nom-51.html`; v50 and earlier remain runnable at root.
 
 ### Rich notes (`mulermoc-nom-note-51.js`, `scenario-51.js`, `scenario-51.css`)
 - Additive per-step `noteFormat`: missing/`"text"` keeps the escape-first simple-HTML renderer byte-for-byte; `"html"` uses DOMPurify 3.4.17 with an explicit tag/attribute/class allowlist.
@@ -30,29 +30,43 @@ New parallel file set `mulermoc-nom-51.html` + `js/*-51.js` + `css/*-51.css`, fo
 - Note CSS adds table scrolling, image sizing, blockquote/code/link/figure styling, `note-*` callouts, embed cards, the authoring modal editor, and two-column flow inside the note body (not the chrome).
 
 ### Dependencies / runtime
-- Vendored under `js/vendor/`: jQuery 4.0.0, DOMPurify 3.4.17, Snap.svg 0.5.1 (temporary, removed with Snap), licenses and hashes in `js/vendor/README.md`; `.gitignore` keeps the directory tracked.
+- Vendored under `js/vendor/`: jQuery 4.0.0, DOMPurify 3.4.17, licenses and hashes in `js/vendor/README.md`; `.gitignore` keeps the directory tracked.
 - Local JSmol updated to 16.4.23 (`JSmol.min.js` + `j2s/`, 48 MB, still Git-ignored). Public loads use the CDN; `?libs=local` switches the script, `j2sPath`, and `serverURL` to the local copy.
-- Snap is still used by `molview-51.js`; its removal remains the final v51 phase. jQuery 4.0.0 is vendored but needs a browser compatibility pass (no removed APIs were found by static grep).
+- Snap.svg has been removed from v51; the 2D overlay now uses the native `MuSVG` helper. jQuery 4.0.0 is vendored but needs a browser compatibility pass (no removed APIs were found by static grep).
 
 ### Docs / checks
 - Added `docs/Presentation-Step-Rich-Text-PLAN.md` (locked decisions, security model, phases) and refreshed `docs/didactic-scenario-plan.md`.
 - Static: `node --check` passes on all v51 JS; CSS brace balance `305/305` (`jsme-nick-51.css`) and `275/275` (`scenario-51.css`); local v51 HTML asset refs resolve; no duplicate ids in the v51 HTML.
-- Earlier runtime suite (Node 22 + jsdom 26 + the vendored DOMPurify/jQuery): 95/95 sanitizer checks and 38/38 scenario-integration checks passed before the presentation wide/focus controls were removed. Those tests still reference the removed `openFocus`/wide APIs, so update and rerun them before release. Coverage included tag/attribute/class stripping, links and images (including control-character and encoded `javascript:` variants), table wrapping, all five component keys, missing components, image error fallback, action registry, text/legacy fallback, fail-closed without DOMPurify, plain-text conversion, and jQuery 4 basics.
+- Earlier runtime suite (Node 22 + jsdom 26 + the vendored DOMPurify/jQuery): 95/95 sanitizer checks and 38/38 scenario-integration checks passed before the presentation wide/focus controls were removed. Those tests still reference the removed `openFocus`/wide APIs, so update and rerun them before reuse. Coverage included tag/attribute/class stripping, links and images (including control-character and encoded `javascript:` variants), table wrapping, all five component keys, missing components, image error fallback, action registry, text/legacy fallback, fail-closed without DOMPurify, plain-text conversion, and jQuery 4 basics.
 - Fixed during the runtime suite: remove `USE_PROFILES` so `ALLOWED_TAGS` is a strict allowlist (`<h2>` was previously retained); separate block/`<br>` text nodes with spaces (or newlines) in `toPlainText` (`<p>a</p><p>b</p>` was `ab`); reject control characters in note URLs; fail closed if post-clean/component expansion throws; title-only steps no longer render an empty note body; keep image alt text and component markers when converting a rich note to text.
-- Browser click-through still pending: real 2D/3D refit, the full molecule set, JSmol local/CDN loader, jQuery 4 in the complete app, rich notes, the authoring note dialog, and the icon dropdown/skip icons.
+- Automated Chrome/Firefox matrices now cover all 98 molecules in condensed mode plus the mode sample sweep; remaining manual coverage: 3D/highlights for the 18 new molecules, real 2D/3D refit, JSmol local/CDN loader, jQuery 4 in the complete app, rich notes, the authoring note dialog, and the icon dropdown/skip icons. The two pre-existing skeletal JSmol failures (`butadiene_1_3`, `propadiene`) remain open.
 
-### 2026-10-25 — Additive 18-molecule import (still v51, not live)
+### 2026-10-25 — Additive 18-molecule import (v51, promoted live later that day)
 - `js/jsme-nick-nomeclature-moc2-data_51.js`: **80 → 98 `nameExamples` keys**. Added 9 alcohols, 6 dienes and 3 enynes, each with the three embedded 2D MOL forms plus a runtime `mols/nomeclature-moc2/<key>_3D.sdf`; the existing 80 entries and their order are unchanged.
 - `js/mulermoc-nom-core-51.js`: bounded alcohol/branch support. Added `fIsAcyclicAlcoholGraph`, `fSupportsAlkylBranchPrefixes`, `fDescribeCarbonBranches`, `fCarbonBranchAlphabeticalKey`, `fNumberedChainSignature`, `fHorizontalEquivalentIndex`, `fMatchNumberedMainChain3D`; updated `fAlkylGroupName` (fragment-aware propyl/isopropyl), `fGetHydrocarbonSubstituentInfo`, `fRankChainPool` (OH locants, multiple-bond locants, branch alphabetization), `fCalcMainChain`/`fCalcMainChain3D`, `fOrientChainPath`/`fOrientChainPath3D`, and `fGuessName` (branched-alcohol slots plus `ξ+δ→α` euphony). Scope remains pure acyclic hydrocarbon/acyclic-alcohol; other homologous-series branch support is deferred.
 - `js/mulermoc-nom-molview-51.js`: added `fAlcoholOHNameComponent` / `fAlcoholOHPositionText`; updated alcohol explanation/rule handling, branch grouping and signature-based highlighting/explanations, `fHighlightFG`/`fHighlightFG3D` branch fallback, `fShowNameAnalysis` euphony, and `fGetEtherCommonParts` for the new alkyl-fragment argument. Kept v51 palette and `fFitNameComponents`; did not import `fFit2DSVG`, diene parallel-line drawing, `fLoadMol3D` zoom, or `fAddHydrogens2SVG` label changes.
 - Double-bond stereo normalization: the 12 crossed double bonds in the new 2D forms were changed from `3` to `0`; all **293 embedded 2D blocks / 210 double bonds** now have stereo `0`. The same normalization was applied to **9 double bonds in six 3D SDFs** (including the tracked runtime propadiene and Git-ignored local `mols/homo`/`mols/nomeclature` copies); all **175 local `.mol`/`.sdf` files / 213 records / 127 double bonds** now have stereo `0`.
-- Checks: 98 keys, no duplicate keys, all 18 have a MOL2D registration and 3D SDF; data/double-bond scans clean. No JS runtime is available in this environment, so `node --check` was not run for this import; browser click-through remains pending. `index.html` stays on **v50**.
+- Checks: 98 keys, no duplicate keys, all 18 have a MOL2D registration and 3D SDF; data/double-bond scans clean. No JS runtime was available in that environment, so `node --check` was not run for this import; browser click-through remained pending. `index.html` was still on **v50** at import time.
+
+### 2026-10-25 — Snap.svg removed from v51 (promoted live later that day)
+- Replaced the Snap wrapper in `js/mulermoc-nom-molview-51.js` with a native `MuSVG` helper: `select`, `selectAll`, `attr` (`text` ↔ `textContent`), `remove`, `append`, `.node`, `.toString()`, and `parse` (SVG-namespaced `DocumentFragment`).
+- Renamed the live SVG wrapper `molSnap` → `molSvg`; replaced all `Snap(...)`/`Snap.parse(...)` calls and removed Snap labels/comments.
+- Removed the vendored Snap script from `mulermoc-nom-51.html` and deleted `js/vendor/snap/`; updated `js/vendor/README.md`.
+- v50, older runnable versions, archive files, and the Git-ignored root `snap/` are untouched. `index.html` was still on v50 at removal time.
+- Verification: `node --check` passed on all v51 JS after migration; headless Chrome loaded the page with no JS exceptions, rendered the 2D SVG, and applied the colored-symbol class. Full 2D interaction matrix/browser click-through remained pending.
+
+### 2026-10-25 — v51 promoted live; `MuSVG.parse()` OOM/XML fix
+- Root cause of the reported Firefox tab crash: `MuSVG.parse()` moved XML-parsed label nodes with `document.importNode()`, which copies rather than removes the source node. The `while (doc.documentElement.firstChild)` loop never advanced and allocated until the content process hit `JSOutOfMemory` (`MozCrashReason: out of memory: 0x0000000000000080 bytes requested`).
+- The XML parser also logged `XML Parsing Error: not well-formed` for malformed JSME label markup; the calls returned `null`, but Firefox still reported the parse error.
+- Fix in `js/mulermoc-nom-molview-51.js`: parse generated markup with the tolerant `"text/html"` parser and move nodes with `document.adoptNode()`. Malformed labels are recovered instead of skipped, and the node-moving loop terminates.
+- Verification: `node --check` passes. Chrome CDP matrix: 98/98 condensed + mode sample sweep (128/130; the two failures are pre-existing skeletal JSmol errors). Firefox 158.0.1 headless WebDriver BiDi: same 128/130, zero XML/OOM/runtime errors. The same two pre-existing failures (`butadiene_1_3`, `propadiene` with `mode2D: "skeletal"`) occur on the Snap baseline at `1c81433`.
+- Owner promoted v51: `index.html` now points to `mulermoc-nom-51.html`; v50 and earlier remain runnable.
 
 ---
 
-## [v50] (presentation text rails left/right + persistent naming shell; live, `index.html` → v50)
+## [v50] (presentation text rails left/right + persistent naming shell; previous live, `index.html` → v50 before v51)
 
-New parallel file set `mulermoc-nom-50.html` + `js/*-50.js` + `css/*-50.css`, forked from v49 (the HTML row class was renamed `.HFlex` → `.mainApp3Columns`, inline styles moved to CSS, and the 7 asset refs updated). Adds per-step presentation text placement and a persistent naming shell; the chemistry engine is unchanged, and the molecule data was unchanged at fork time (a later additive update in this version adds 7 alkynes, 73 → 80 keys — see the 2026-10-22 entry below). v50 is now live: `index.html` points to `mulermoc-nom-50.html`; v49 remains runnable at root. Browser click-through is still pending (see Checks).
+New parallel file set `mulermoc-nom-50.html` + `js/*-50.js` + `css/*-50.css`, forked from v49 (the HTML row class was renamed `.HFlex` → `.mainApp3Columns`, inline styles moved to CSS, and the 7 asset refs updated). Adds per-step presentation text placement and a persistent naming shell; the chemistry engine is unchanged, and the molecule data was unchanged at fork time (a later additive update in this version adds 7 alkynes, 73 → 80 keys — see the 2026-10-22 entry below). v50 was live until v51: `index.html` pointed to `mulermoc-nom-50.html`; v49 remains runnable at root. Browser click-through is still pending for the v50 additions (see Checks).
 
 ### Default scenario
 - `MuLERMoCScenario.defaultScenarioUrl` now points to `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json` (7 steps; steps 5–7 place the note in a left rail with longer text). The previous `scenarios/Αλκάνια-Αιθάνιο.scenario.json` stays on disk for explicit `?scenario=` deep links but is no longer preloaded.

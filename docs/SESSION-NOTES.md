@@ -1,13 +1,15 @@
 # Session notes — 2026-10-03 (resume point for next session)
 
-> **Current baseline (2026-10-22): v50 live.** `index.html` →
-> `mulermoc-nom-50.html`, 80 `nameExamples` keys (69 curated + 4 alkene/alkane
-> test entries + 7 alkynes, 73 → 80). v50 adds per-step presentation text
-> position (top/left/right sticky rail) + a persistent naming shell; default
-> scenario `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json`. Browser
-> verification of the v50 additions is pending — see
-> `docs/SESSION-HANDOFF-2026-10-22.md`. The v43 header and body below are kept
-> as historical working notes.
+> **Current baseline (2026-10-25): v51 live.** `index.html` →
+> `mulermoc-nom-51.html`, 98 `nameExamples` keys (80 previous + 18 new alcohols/
+> dienes/enynes). v51 adds safe rich HTML notes, rule-table components, the
+> content-only authoring note dialog, the compact icon toolbar, and a Snap-free
+> native `MuSVG` 2D overlay; it retains the v50 per-step presentation text
+> position (top/left/right sticky rail) + persistent naming shell. Default
+> scenario `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json`. v50 and earlier
+> remain runnable. See the latest 2026-10-25 entry below and
+> `docs/SESSION-HANDOFF-2026-10-25-SNAP-REMOVAL.md`. The v43 header and body
+> below are kept as historical working notes.
 
 Working baseline (historical): **v43**, `index.html` → `mulermoc-nom-43.html`. Tree clean at `cb2460c`.
 No JS runtime in the assistant environment — all changes were verified statically
@@ -2147,3 +2149,41 @@ follows; one Save → Present → Next → Exit round-trip.
 * Checks: 98 keys, no duplicates, all 18 keys have MOL2D registration + SDF;
   data/double-bond scans clean. No JS runtime in this environment, so
   `node --check` was not run; browser click-through pending.
+
+## 2026-10-25 — v51 Snap.svg removal
+
+* Replaced Snap in `js/mulermoc-nom-molview-51.js` with a native `MuSVG`
+  helper (`select`, `selectAll`, `attr`, `remove`, `append`, `.node`,
+  `.toString()`, `parse`). `attr("text")` and `{text: ...}` map to
+  `textContent`; `parse` returns an SVG-namespaced `DocumentFragment`.
+* Renamed `molSnap`/`snapLogo` to `molSvg`/`jsmeLogo`; no Snap calls remain.
+* Removed the Snap `<script>` from `mulermoc-nom-51.html`, deleted
+  `js/vendor/snap/`, and removed Snap from `js/vendor/README.md`.
+* Scope stayed v51-only: v50, older runnable versions, archive files, and the
+  Git-ignored root `snap/` are untouched; `index.html` remains v50.
+* Checks: `node --check` passes on all v51 JS; headless Chrome loaded
+  `mulermoc-nom-51.html` without JS exceptions, rendered the 2D SVG, and
+  applied `svgAtomsColorized`. Full 2D click-through matrix still pending.
+
+## 2026-10-25 — v51 promoted live; MuSVG parser OOM/XML fix
+
+* Root cause of the Firefox tab crash: `MuSVG.parse()` moved XML-parsed label
+  nodes with `document.importNode()`, which copies instead of removing the
+  source node. The `while (doc.documentElement.firstChild)` loop never
+  advanced and allocated until the content process hit `JSOutOfMemory`
+  (`MozCrashReason: out of memory: 0x0000000000000080 bytes requested`).
+* The XML parser also logged `XML Parsing Error: not well-formed` for malformed
+  JSME label markup. The calls returned `null`, but Firefox still reported the
+  parse error.
+* Fix: parse generated markup with the tolerant `"text/html"` parser and move
+  nodes with `document.adoptNode()`; malformed labels are recovered and the
+  loop terminates.
+* Verification: `node --check` passes. Chrome CDP 128/130 cases and Firefox
+  158.0.1 headless WebDriver BiDi 128/130 cases pass; zero XML/OOM/runtime
+  errors in Firefox. The two failures are pre-existing skeletal JSmol errors
+  (`butadiene_1_3`, `propadiene`), identical on the Snap baseline `1c81433`.
+* Docs resynced from v50 live to v51 live: README, CHANGELOG, PROJECT-PLAN
+  EN/GR, Presentation plan, LAYERS, didactic plan, and the Snap-removal
+  handoff.
+* Owner promoted v51: `index.html` → `mulermoc-nom-51.html`. v50 and earlier
+  remain runnable.

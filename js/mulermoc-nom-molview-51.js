@@ -1,5 +1,5 @@
 // mulermoc-nom-molview-51.js
-// Molecule viewer layer — JSME (2D), JSmol (3D), Snap.svg, jQuery.
+// Molecule viewer layer — JSME (2D), JSmol (3D), native SVG DOM, jQuery.
 // Reads analysis results from mulermoc-nom-core-51.js globals.
 // Provides all display, highlighting, naming-panel, and save functions.
 
@@ -57,7 +57,117 @@ try {
 // B2 owned-shared viewer state: current MOL strings (fDeselectMol/fLoadMol2D).
 let myMol2D = null;
 let myMol3D = null;
-let molSnap;
+let molSvg;
+
+// ── MuSVG: minimal native SVG DOM helper (replaces the former SVG library) ──
+const MuSVG = (function () {
+  const SVG_NS = "http://www.w3.org/2000/svg";
+
+  class SvgElement {
+    constructor(node) {
+      this.node = node;
+    }
+
+    select(selector) {
+      return wrap(this.node.querySelector(selector));
+    }
+
+    selectAll(selector) {
+      return Array.prototype.map.call(
+        this.node.querySelectorAll(selector),
+        function (node) { return wrap(node); },
+      );
+    }
+
+    attr(name, value) {
+      if (name && typeof name === "object") {
+        for (const key in name) {
+          this.attr(key, name[key]);
+        }
+        return this;
+      }
+      if (arguments.length > 1) {
+        if (name === "text") {
+          this.node.textContent = value;
+        } else {
+          this.node.setAttribute(name, value);
+        }
+        return this;
+      }
+      if (name === "text") {
+        return this.node.textContent;
+      }
+      return this.node.getAttribute(name);
+    }
+
+    remove() {
+      if (this.node && this.node.parentNode) {
+        this.node.parentNode.removeChild(this.node);
+      }
+      return this;
+    }
+
+    append(child) {
+      const node = child && child.node ? child.node : child;
+      if (node) {
+        this.node.appendChild(node);
+      }
+      return this;
+    }
+
+    toString() {
+      if (this.node.nodeType === 1) {
+        return this.node.outerHTML;
+      }
+      if (this.node.childNodes) {
+        return Array.prototype.map.call(
+          this.node.childNodes,
+          function (node) {
+            return node.nodeType === 1 ? node.outerHTML : (node.textContent || "");
+          },
+        ).join("");
+      }
+      return String(this.node);
+    }
+  }
+
+  function wrap(node) {
+    return node ? new SvgElement(node) : null;
+  }
+
+  function MuSVG(target) {
+    if (typeof target === "string") {
+      return wrap(document.querySelector(target));
+    }
+    return wrap(target);
+  }
+
+  MuSVG.parse = function (markup) {
+    if (!markup) {
+      return null;
+    }
+    try {
+      const doc = new DOMParser().parseFromString(
+        '<svg xmlns="' + SVG_NS + '">' + markup + "</svg>",
+        "text/html",
+      );
+      const svg = doc.querySelector("svg");
+      if (!svg) {
+        return null;
+      }
+      const fragment = document.createDocumentFragment();
+      while (svg.firstChild) {
+        fragment.appendChild(document.adoptNode(svg.firstChild));
+      }
+      return wrap(fragment);
+    } catch (e) {
+      return null;
+    }
+  };
+
+  return MuSVG;
+})();
+
 let highAtoms;
 let nameAnalysisMode;
 let myNumberingTimeout;
@@ -1091,16 +1201,16 @@ function fAddHydrogens2SVG() {
   let tmpTexts, tmpRects, tmpBonds;
   let currText, currElement, currID, currHydrogensCount;
   let myLabel, myNo, rectX, textX, currString, newString, newStringElement;
-  molSnap = Snap("#jsmeNomeclatureSVG svg");
+  molSvg = MuSVG("#jsmeNomeclatureSVG svg");
 
-  tmpTexts = molSnap.selectAll("text");
-  tmpRects = molSnap.selectAll("rect");
-  tmpBonds = molSnap.selectAll("line");
+  tmpTexts = molSvg.selectAll("text");
+  tmpRects = molSvg.selectAll("rect");
+  tmpBonds = molSvg.selectAll("line");
   for (let i = 0; i < tmpBonds.length; i++) {}
 
   for (let i = 0; i < tmpTexts.length; i++) {
     currText = tmpTexts[i].attr("text");
-    currElement = molSnap.select("text:nth-of-type(" + (i + 1) + ")");
+    currElement = molSvg.select("text:nth-of-type(" + (i + 1) + ")");
 
     if (currText === "C") {
       currID = currText + (i + 1);
@@ -1141,14 +1251,16 @@ function fAddHydrogens2SVG() {
         [">C</text>"],
         `class="svgAtomLabel" id="${currID}"><tspan>C</tspan>${hydrogenTspan}</text>`,
       );
-      newStringElement = Snap.parse(newString);
+      newStringElement = MuSVG.parse(newString);
+      if (!newStringElement) continue;
       tmpTexts[i].remove();
-      molSnap.select("g").append(newStringElement);
+      molSvg.select("g").append(newStringElement);
     } else {
       currString = tmpTexts[i].toString();
-      newStringElement = Snap.parse(currString);
+      newStringElement = MuSVG.parse(currString);
+      if (!newStringElement) continue;
       tmpTexts[i].remove();
-      molSnap.select("g").append(newStringElement);
+      molSvg.select("g").append(newStringElement);
     }
   }
 }
@@ -1206,7 +1318,7 @@ function fGetRenderedAtomTextMap(
   includeHydrogens = false,
 ) {
   const atomTextMap = {};
-  const textEls = molSnap.selectAll("text");
+  const textEls = molSvg.selectAll("text");
   const skipIndices = fGetCompactedAtomSkipSet(includeCompactedAtoms);
 
   let textIdx = 0;
@@ -1231,7 +1343,7 @@ function fGetRenderedAtomRectMap(
   includeHydrogens = false,
 ) {
   const atomRectMap = {};
-  const rectEls = molSnap.selectAll("rect");
+  const rectEls = molSvg.selectAll("rect");
   const skipIndices = fGetCompactedAtomSkipSet(includeCompactedAtoms);
   let rectIdx = 1;
 
@@ -1342,7 +1454,7 @@ function fReplaceTextElementMarkup(el, markup, attrOverrides) {
   const newString = `<text${attrs}>${markup}</text>`;
   let newEl;
   try {
-    newEl = Snap.parse(newString);
+    newEl = MuSVG.parse(newString);
   } catch (e) {
     return null;
   }
@@ -1364,7 +1476,7 @@ function fReplaceTextElementMarkup(el, markup, attrOverrides) {
   }
 
   el.remove();
-  return insertedNode ? Snap(insertedNode) : null;
+  return insertedNode ? MuSVG(insertedNode) : null;
 }
 
 function fShouldReverseCompactLabel(anchorEl, attachedEls) {
@@ -1481,7 +1593,7 @@ function fFindNearestHighlightCircle(anchorEl, geometryHint) {
     return null;
   }
 
-  const circleEls = molSnap.selectAll("circle");
+  const circleEls = molSvg.selectAll("circle");
   let nearestCircle = null;
   let nearestDistSq = Infinity;
   for (let i = 0; i < circleEls.length; i++) {
@@ -1632,7 +1744,7 @@ function fCreateCompactLabelRect(anchorEl, geometryHint) {
 
   let newRect;
   try {
-    newRect = Snap.parse(rectMarkup);
+    newRect = MuSVG.parse(rectMarkup);
   } catch (e) {
     return null;
   }
@@ -1651,7 +1763,7 @@ function fCreateCompactLabelRect(anchorEl, geometryHint) {
     }
   }
 
-  return insertedNode ? Snap(insertedNode) : null;
+  return insertedNode ? MuSVG(insertedNode) : null;
 }
 
 function fResizeCompactLabelRect(
@@ -1752,7 +1864,7 @@ function fResizeCompactLabelRect(
 function fCollectHighlightRectsNearText(textEls) {
   const collectedRects = [];
   const seenRects = new Set();
-  const rectEls = molSnap.selectAll("rect");
+  const rectEls = molSvg.selectAll("rect");
 
   for (let i = 0; i < textEls.length; i++) {
     const textEl = textEls[i];
@@ -2028,7 +2140,7 @@ function fResolveParentSymbolForHydrogenTspan(tspanNode, fallbackParentSymbol) {
 
 function fBuildTextNodeAtomIndexMap() {
   const textNodeAtomIndexMap = new Map();
-  if (!molSnap || !Array.isArray(allAtomsTypeList) || mode2D === "condensed") {
+  if (!molSvg || !Array.isArray(allAtomsTypeList) || mode2D === "condensed") {
     return textNodeAtomIndexMap;
   }
 
@@ -2059,7 +2171,7 @@ function fIsHighlightFillColor(fillValue) {
 }
 
 function fBuildHighlightedTextNodeSet() {
-  if (!molSnap) {
+  if (!molSvg) {
     return new Set();
   }
 
@@ -2067,7 +2179,7 @@ function fBuildHighlightedTextNodeSet() {
   const highlightRects = [];
   const highlightCircles = [];
 
-  const rectEls = molSnap.selectAll("rect");
+  const rectEls = molSvg.selectAll("rect");
   for (let i = 0; i < rectEls.length; i++) {
     const rectEl = rectEls[i];
     if (!rectEl || !rectEl.node) {
@@ -2088,7 +2200,7 @@ function fBuildHighlightedTextNodeSet() {
     highlightRects.push({ x: x, y: y, width: width, height: height });
   }
 
-  const circleEls = molSnap.selectAll("circle");
+  const circleEls = molSvg.selectAll("circle");
   for (let i = 0; i < circleEls.length; i++) {
     const circleEl = circleEls[i];
     if (!circleEl || !circleEl.node) {
@@ -2112,7 +2224,7 @@ function fBuildHighlightedTextNodeSet() {
     return highlightedTextNodes;
   }
 
-  const textEls = molSnap.selectAll("text");
+  const textEls = molSvg.selectAll("text");
   for (let i = 0; i < textEls.length; i++) {
     const textEl = textEls[i];
     if (!textEl || !textEl.node) {
@@ -2166,14 +2278,14 @@ function fBuildHighlightedTextNodeSet() {
 }
 
 function fApplyAtomColors2DToSVGLabels() {
-  if (!svgAtomColors2DFlag || !molSnap) {
+  if (!svgAtomColors2DFlag || !molSvg) {
     return;
   }
 
   const highlightedTextNodes = fBuildHighlightedTextNodeSet();
   const textNodeAtomIndexMap = fBuildTextNodeAtomIndexMap();
 
-  const textEls = molSnap.selectAll("text");
+  const textEls = molSvg.selectAll("text");
   for (let i = 0; i < textEls.length; i++) {
     const textEl = textEls[i];
     if (!textEl || !textEl.node) {
@@ -2242,7 +2354,7 @@ function fApplyAtomColors2DToSVGLabels() {
 // fresh JSME SVG lines are black, so toggle-off needs no reset; green
 // highlight backgrounds are separate attributes and win where applied.
 function fApplyCHBondColors2D() {
-  if (!svgAtomColors2DFlag || !molSnap) {
+  if (!svgAtomColors2DFlag || !molSvg) {
     return;
   }
   if (mode2D !== "expanded") {
@@ -2252,7 +2364,7 @@ function fApplyCHBondColors2D() {
       typeof svgBondList === "undefined" || !atomColors2D || !atomColors2D.H) {
     return;
   }
-  const lineEls = molSnap.selectAll("line");
+  const lineEls = molSvg.selectAll("line");
   if (!lineEls || lineEls.length === 0) {
     return;
   }
@@ -2650,7 +2762,7 @@ function fCompactFunctionalGroups2D() {
     }
   }
 
-  const lineEls = molSnap.selectAll("line");
+  const lineEls = molSvg.selectAll("line");
   for (let i = 0; i < bondsToRemove.length; i++) {
     fRemoveBondLinesByBondIndex(bondsToRemove[i], lineEls);
   }
@@ -2701,11 +2813,11 @@ function fCompactFunctionalGroups2D() {
 // ── fMarkExpandedHydrogens ───────────────────────────────────────────────
 
 function fWrapStandaloneHydrogenTextsAsTspan() {
-  if (!molSnap) {
+  if (!molSvg) {
     return;
   }
 
-  const textEls = molSnap.selectAll("text");
+  const textEls = molSvg.selectAll("text");
   for (let i = 0; i < textEls.length; i++) {
     const textEl = textEls[i];
     if (!textEl || !textEl.node) {
@@ -2870,13 +2982,13 @@ function fUpdateSVG() {
   if (mode2D == "condensed" || mode2D == "condensedZigZag") {
     fAddHydrogens2SVG();
   }
-  molSnap = Snap("#jsmeNomeclatureSVG svg");
-  if (!molSnap) {
+  molSvg = MuSVG("#jsmeNomeclatureSVG svg");
+  if (!molSvg) {
     return; // empty SVG (molecule with missing representation): nothing to post-process
   }
-  const snapLogo = molSnap.select("polygon:last-of-type");
-  if (snapLogo) {
-    snapLogo.remove();
+  const jsmeLogo = molSvg.select("polygon:last-of-type");
+  if (jsmeLogo) {
+    jsmeLogo.remove();
   }
   if (mode2D === "expanded") {
     fMarkExpandedHydrogens();
@@ -2898,20 +3010,20 @@ function fUpdateSVG() {
 // ── patchtheNitrogen ──────────────────────────────────────────────────────
 
 function patchtheNitrogen() {
-  if (!functionalGroupObj || !molSnap) {
+  if (!functionalGroupObj || !molSvg) {
     return;
   }
 
   ////// NH2 special case PATCH //////
   if (functionalGroupObj.hasOwnProperty("amine")) {
-    molSnap.selectAll("text").forEach(function (el) {
-      var snapText = String(el.attr("text") || "").trim();
+    molSvg.selectAll("text").forEach(function (el) {
+      var labelText = String(el.attr("text") || "").trim();
       var rawText = (el.node.textContent || "").replace(/\s+/g, "");
       // JSME Bug 2: stroke-width absorbed the label → DOM value contains '>'
       var swAttr = el.node.getAttribute("stroke-width") || "";
       var hasBug2 = swAttr.indexOf(">") !== -1;
       var isTarget =
-        snapText === "2" || rawText === "2" || rawText === "NH2" || hasBug2;
+        labelText === "2" || rawText === "2" || rawText === "NH2" || hasBug2;
       if (!isTarget) {
         return;
       }
@@ -2947,7 +3059,7 @@ function patchtheNitrogen() {
         `<text ${attrs}>N<tspan class="svgHydrogenPart"${hydrogenFillAttr}>H<tspan dy="70" font-size=".8em">2</tspan></tspan></text>`;
       var newEl;
       try {
-        newEl = Snap.parse(newString);
+        newEl = MuSVG.parse(newString);
       } catch (e) {
         return;
       }
@@ -2965,7 +3077,7 @@ function patchtheNitrogen() {
   }
   ////// NO2 special case PATCH //////
   if (functionalGroupObj.hasOwnProperty("nitro")) {
-    molSnap.selectAll("text").forEach(function (el) {
+    molSvg.selectAll("text").forEach(function (el) {
       var txt = el.attr("text") || "";
       if (String(txt).trim() === "+") {
         el.attr({ text: "N+" });
@@ -6278,7 +6390,7 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
   clearInterval(myNumberingTimeout);
   numbersSVGElements = [];
 
-  molSnap = Snap("#jsmeNomeclatureSVG svg");
+  molSvg = MuSVG("#jsmeNomeclatureSVG svg");
   switch (mode2D) {
     case "condensed":
       highAtoms =
@@ -6391,7 +6503,7 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
         let _foundBond = false;
         for (let b = 0; b < bondList.length; b++) {
           if (highAtoms[i] == bondList[b][0]) {
-            currAtomTextElement = molSnap.select(
+            currAtomTextElement = molSvg.select(
               "line:nth-of-type(" + svgBondList[b] + ")",
             );
             x = parseInt(currAtomTextElement.attr("x1")) + numberOffset[0];
@@ -6401,7 +6513,7 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
             break;
           } else {
             if (highAtoms[i] == bondList[b][1]) {
-              currAtomTextElement = molSnap.select(
+              currAtomTextElement = molSvg.select(
                 "line:nth-of-type(" + svgBondList[b] + ")",
               );
               x = parseInt(currAtomTextElement.attr("x2")) + numberOffset[0];
@@ -6435,8 +6547,10 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
 
 function fShowNumber() {
   fShowNumber3D(currNumberEl);
-  let numberElement = Snap.parse(numbersSVGElements[currNumberEl]);
-  molSnap.select("g").append(numberElement);
+  const numberElement = MuSVG.parse(numbersSVGElements[currNumberEl]);
+  if (numberElement) {
+    molSvg.select("g").append(numberElement);
+  }
   currNumberEl += 1;
 
   if (currNumberEl >= numbersSVGElements.length) {
@@ -6971,7 +7085,7 @@ function fViewerHeights2D3D(raw) {
 // Fluid viewers: widths follow the viewer column (native re-depict —
 // coordinates correct by construction); heights are container-derived via
 // fViewerHeights2D3D (viewport minus chrome, split equally, floors hold).
-// Then rebuild the Snap overlay + replay numbering from the fresh graphics.
+// Then rebuild the SVG overlay + replay numbering from the fresh graphics.
 // Triggered by a debounced ResizeObserver on #viewerCol (installed in
 // jsmeOnLoad); the old window-resize listener below stays retired. Zoom
 // (molZoom2D, absolute, stored per step) composes on top, untouched — fit

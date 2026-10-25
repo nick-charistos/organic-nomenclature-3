@@ -86,11 +86,11 @@ progress tracking, server storage.
 }
 ```
 
-State notes (grounded in v50; v42–v49 identical unless noted):
+State notes (grounded in v51; v42–v50 identical unless noted):
 
 * `selectedMol`, `mode2D/modeSuffix`, `mainChainMode`,
   `etherNamingMode`, `nameAnalysisMode`, `selectedRule` mirror
-  `js/mulermoc-nom-molview-50.js` (`fSelectMol`, `fShowNameAnalysis`,
+  `js/mulermoc-nom-molview-51.js` (`fSelectMol`, `fShowNameAnalysis`,
   `fExplainNameComp`). (Older revisions cited `molview-42.js` line numbers;
   line refs are fragile — prefer function names.)
 * `mode2D` ∈ `condensed` / `expanded` / `skeletal` / `condensedZigZag`;
@@ -400,7 +400,7 @@ Visibility rules:
 ## 4. Playback UX + URL shape (frozen)
 
 * Canonical URL:
-  `mulermoc-nom-50.html?scenario=scenarios/<name>.json&present=1#step=3`
+  `mulermoc-nom-51.html?scenario=scenarios/<name>.json&present=1#step=3`
 * `?scenario=path.json`: which file. v1 allows same-origin
   `scenarios/*.json` only (reject `..`, non-`.json`,
   cross-origin). Fetched over `http(s)`; `file://` users must
@@ -511,7 +511,7 @@ Done in v43 (`mulermoc-nom-43.html`, last suffixed copy; carried through v44 int
    assertions (manual click-through pending).
 6. ✅ CHANGELOG v43 entry (`index.html` → 43 in repo3 only).
 
-Remaining: v50 is live (`index.html` → 50 — per-step presentation text position as a top/left/right fourth-column sticky rail + persistent naming shell; default preload `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json`; see `CHANGELOG.md [v50]`; browser verification pending). It retains the v49 MSc-student import (acyclic-alkane parent-chain fix, explicit terminal unsaturation locant, 73rd molecule, alkene scenarios, alkyl table/locant fixes; see `CHANGELOG.md [v49]`); `*49*`–`*44*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced. Then quizzes/games on the
+Remaining: v51 is live (`index.html` → 51 — safe rich HTML notes, rule-table components, content-only authoring note dialog, compact icon toolbar, 98 molecules, and a Snap-free native `MuSVG` 2D overlay; default preload `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json`; see `CHANGELOG.md [v51]`). It retains the v50 per-step presentation text position (top/left/right fourth-column sticky rail) + persistent naming shell and the v49 MSc-student import (see `CHANGELOG.md [v50]`/`[v49]`); `*50*`–`*44*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced. Then quizzes/games on the
 same reuse contract. The stepper's main-chain pool index is captured per step (`chainIdx`, v47 additive) and re-asserted on apply; only the transient EXPLORE walk UI position is not step state.
 
 ## 8. Open questions for development (moveto timing closed 2026-10-04)

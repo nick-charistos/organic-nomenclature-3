@@ -1,9 +1,12 @@
 # Presentation Step Rich Text — v51 Plan
 
-Status: rich-text implementation complete for v51; the content-only authoring
-note dialog and compact icon toolbar are in place. Real-browser verification
-and Snap.svg removal remain. `index.html` stays on v50 until v51 is verified.
-Scope: `v51` fork only; `index.html` stays on v50 until v51 is verified
+Status: rich-text implementation complete and **v51 is live**; the content-only
+authoring note dialog and compact icon toolbar are in place. Snap.svg has been
+removed from v51 in favour of the native `MuSVG` helper. The `MuSVG.parse()`
+OOM/XML crash was fixed on 2026-10-25; Chrome and Firefox automated matrices
+pass, with the two pre-existing skeletal JSmol failures still open. `index.html`
+now points to v51; v50 remains runnable.
+Scope: v51 release set live; v50 remains runnable at root
 Related: `didactic-scenario-plan.md`, `CHANGELOG.md`, `LAYERS-PLAN.md`
 
 ---
@@ -36,8 +39,9 @@ Non-goals for v51:
 
 ## 2. Locked decisions
 
-1. **v51 only.** Fork the full v50 set. Do not modify the live v50 files.
-2. **`index.html` remains on v50** until v51 passes browser verification.
+1. **v51 release set.** Forked from v50 without modifying the v50 files.
+2. **Superseded 2026-10-25:** v51 was promoted live after verification;
+   `index.html` now points to `mulermoc-nom-51.html` and v50 remains runnable.
 3. **DOMPurify** is the sanitizer; loaded locally, fail closed to the legacy
    renderer if unavailable.
 4. **Authoring note editor:** expand opens a content-only modal dialog; inline
@@ -49,8 +53,8 @@ Non-goals for v51:
    `table4`, `alkylTable`.
 7. **Images:** `<img>` only; no inline SVG. Relative/same-origin, `https:`, and
    `data:image/*` sources with security and size checks.
-8. **Snap.svg removal** is the last v51 phase, after the rich-text feature is
-   stable, using a small vanilla SVG helper.
+8. **Snap.svg removal** — completed 2026-10-25 with the native `MuSVG` helper;
+   `js/vendor/snap/` and the v51 Snap script are gone.
 9. **Small libs vendored; JSmol stays CDN for the public build** (local copy for
    Drupal/offline).
 
@@ -75,10 +79,10 @@ New:
   registry, image error handling
 - `js/vendor/dompurify/dompurify-3.4.17.min.js` + license
 - `js/vendor/jquery/jquery-4.0.0.min.js` + license (fallback candidate 3.7.1)
-- `js/vendor/snap/snap.svg-0.5.1.min.js` + license (temporary; removed with Snap)
 - `js/vendor/README.md` (versions, update procedure, hashes)
 
-`index.html`, the v50 files, and earlier versions remain untouched.
+The v50 files and earlier versions remain untouched; `index.html` was promoted
+to v51 on 2026-10-25.
 
 ---
 
@@ -89,7 +93,6 @@ New:
 | JSmol | CDN (rolling) | local `JSmol.min.js` + `j2s/` | Update local to 16.4.23; keep `j2s/` out of Git |
 | jQuery | vendored 4.0.0 | vendored 4.0.0 | Test jQuery 4; fall back to 3.7.1 if regressions |
 | DOMPurify | vendored 3.4.17 | vendored 3.4.17 | Security-critical; fail closed |
-| Snap.svg | vendored 0.5.1 | vendored 0.5.1 | Remove at the end of v51 |
 | JSME | local | local | unchanged |
 
 ### 4.1 Hosting policy
@@ -98,7 +101,7 @@ New:
   actively updated.
 - Drupal/offline deployments use local JSmol. The local copy must match the CDN
   version at release time; verify `j2s/Jmol.properties`.
-- jQuery, DOMPurify, and (temporarily) Snap are small enough to vendor.
+- jQuery and DOMPurify are small enough to vendor.
 - `LIBS_MODE` (`cdn` | `local`) is only needed for JSmol after the small libs are
   vendored. Add a `?libs=local` test override if useful.
 - Do not commit the 38 MB `j2s/` runtime by default. Deploy it with Drupal or a
@@ -109,7 +112,6 @@ New:
 Known current versions at plan time:
 
 - jQuery 4.0.0 (released 2026-01-18; 3.7.1 is the fallback)
-- Snap.svg 0.5.1 (latest; unmaintained)
 - DOMPurify 3.4.17
 - JSmol 16.4.23 (CDN, 2026-08-24); local was 16.1.47
 
@@ -118,8 +120,6 @@ their CDNs. Hashes of the committed files (SHA-512, base64):
 
 - jQuery 4.0.0:
   `8LENNbXmzI/Gbj+OwXmqR6V4QaUAw0/porPzy1+dQoJqC0JPHedWoe0DDOTL2uHA5XXJyIsPtiMHH86pVlay6A==`
-- Snap.svg 0.5.1:
-  `Gk+uNk8NWN235mIkS6B7/424TsDuPDaoAsUekJCKTWLKP6wlaPv+PBGfO7dbvZeibVPGW+mYidz0vL0XaWwz4w==`
 - DOMPurify 3.4.17:
   `2wT0W6vojz3cJuLoa/DxrPVQRinkfRjFWMWIDK4NghTqObEhpem1nEkeK0d9ZE+/hyvfMNuJZlfxM4LsRgeoSA==`
 
@@ -376,12 +376,12 @@ HTML:
 
 ---
 
-## 14. Snap.svg removal (final v51 phase)
+## 14. Snap.svg removal (completed 2026-10-25)
 
-Audit result: Snap is used only in `js/mulermoc-nom-molview-51.js`; about 43
+Audit result: Snap was used only in `js/mulermoc-nom-molview-51.js`; about 43
 calls, with no Snap-specific animation/matrix/path features.
 
-Replace with a small vanilla helper (`MuSVG`):
+Implemented native `MuSVG` helper:
 
 - `select`, `selectAll`, `parse`, `attr`, `remove`, `append`, `.node`,
   `.toString()`
@@ -389,26 +389,24 @@ Replace with a small vanilla helper (`MuSVG`):
   `toString()` → `outerHTML`; `parse` → `DocumentFragment` with `.firstChild`
 - return `null` when the root SVG is absent
 
-Migration:
+Migration completed:
 
-1. Add helper and replace Snap calls.
-2. Remove the Snap `<script>` tag and dependency references.
-3. Verify 2D rendering across the molecule set:
-   - condensed/expanded/skeletal/zigzag
-   - atom colors on/off, hydrogens, numbering, highlights
-   - functional-group compaction, nitrogen/nitro patches
-   - alkynes, allene, nitriles, empty representations
-4. Update README/CHANGELOG; no Snap license needed after removal.
+1. Added `MuSVG` and replaced all Snap calls; renamed the live wrapper to
+   `molSvg`.
+2. Removed the Snap `<script>` tag and deleted `js/vendor/snap/`.
+3. Removed Snap from `js/vendor/README.md` and the dependency/hash tables.
+4. Verified the v51 page loads in headless Chrome without JS exceptions; the
+   generated 2D SVG is present and color-class state is applied.
 
 Rollback: the phase is a separate commit; revert it without touching the
-rich-text feature.
+rich-text feature or v50.
 
 ---
 
 ## 15. Implementation phases
 
-1. **Plan doc + v51 fork** — this document, file copy, asset refs, `index.html`
-   stays v50.
+1. **Plan doc + v51 fork** — this document, file copy, asset refs; the fork
+   started on v50 and was promoted live on 2026-10-25.
 2. **Dependencies** — vendor DOMPurify/jQuery, update local JSmol, add vendor
    README/.gitignore exception; jQuery 4 compatibility spike.
 3. **Sanitizer + schema** — note module, `noteFormat`, legacy fallback,
@@ -419,8 +417,10 @@ rich-text feature.
 6. **Actions** — registry + delegated handler, zero public actions.
 7. **Authoring UX** — flattened inline toolbar, content-only expand dialog,
    live sync, icon-only step actions.
-8. **Snap removal** — vanilla helper + 2D regression pass.
-9. **Verification/docs** — static checks, browser matrix, CHANGELOG/README.
+8. **Snap removal** — completed 2026-10-25 (`MuSVG` + 2D smoke pass);
+   `MuSVG.parse()` OOM/XML fix applied after the Firefox crash.
+9. **Verification/docs** — static checks, Chrome/Firefox matrices,
+   CHANGELOG/README; v51 promoted live.
 
 ---
 
@@ -453,8 +453,24 @@ Functional/browser:
   restores focus and leaves the step live
 - inline toolbar keeps layout controls and the icon-only rule-table dropdown
   after expanding; `Go` uses the skip icon
-- all 80 molecules in all 2D modes after Snap removal
-- v50 remains live and unchanged
+- all 98 molecules in all 2D modes after Snap removal
+- v50 remains runnable and unchanged
+
+Completed 2026-10-25 (Snap removal + v51 live):
+
+- Removed the v51 Snap script and `js/vendor/snap/`; v50/older versions
+  remain runnable and unchanged.
+- Fixed the `MuSVG.parse()` OOM infinite loop (`importNode()` → tolerant
+  HTML parsing + `adoptNode()`); the XML parsing error is gone.
+- `node --check` passes on the v51 JS after the `MuSVG` migration.
+- Chrome CDP: 98 molecules in condensed mode + mode sample sweep (128/130);
+  Firefox 158.0.1 headless WebDriver BiDi: same 128/130, zero XML/OOM/runtime
+  errors. The two failures are pre-existing skeletal JSmol errors
+  (`butadiene_1_3`, `propadiene`) and also occur on the Snap baseline.
+- Owner promoted v51 live: `index.html` → `mulermoc-nom-51.html`.
+- Remaining manual coverage: 3D/highlights for the 18 new molecules, rich
+  notes, the authoring dialog, the icon dropdown/skip icons, 2D/3D refit, the
+  JSmol local/CDN loader, and jQuery 4.
 
 Completed 2026-10-24:
 
@@ -478,7 +494,7 @@ Completed 2026-10-24:
 
 | Date | Decision |
 |---|---|
-| 2026-10-24 | v51 fork; `index.html` stays v50 |
+| 2026-10-24 | v51 fork; `index.html` stays v50 (superseded 2026-10-25 by live promotion) |
 | 2026-10-24 | DOMPurify, curated HTML, no scripts |
 | 2026-10-24 | authoring modal editor; no presentation wide/focus mode |
 | 2026-10-24 | action registry now, zero public actions |
@@ -486,4 +502,6 @@ Completed 2026-10-24:
 | 2026-10-24 | `<img>` only, no inline SVG |
 | 2026-10-24 | local/vendored small libs; JSmol CDN public/local Drupal |
 | 2026-10-24 | remove Snap.svg in the final v51 phase |
+| 2026-10-25 | Snap.svg removed from v51 via native `MuSVG`; v50/older untouched |
 | 2026-10-24 | compact icon toolbar + `addPredefinedItem` dropdown + skip icon for `Go` |
+| 2026-10-25 | `MuSVG.parse()` OOM/XML fixed; v51 promoted live, `index.html` → 51 |
