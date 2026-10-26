@@ -201,11 +201,13 @@ const compactReverseOffsetScale = {
 };
 const compactForwardOffsetScale = {
   HCOOH: 0.55,
+  HCHO: 0.55,
 };
 const compactLabelWidths = {
   COOH: 900,
   HOOC: 900,
   HCOOH: 1000,
+  HCHO: 850,
   CHO: 650,
   OHC: 650,
   CN: 520,
@@ -1285,6 +1287,10 @@ function fGetCompactedAtomSkipSet(includeCompactedAtoms = false) {
   if (functionalGroupObj.hasOwnProperty("aldehyde")) {
     const aldehydeEntries = functionalGroupObj.aldehyde.O || [];
     for (let i = 0; i < aldehydeEntries.length; i++) {
+      const carbon = (atomConnectivityList[aldehydeEntries[i]] || [])[0];
+      const ns = atomConnectivityList[carbon] || [];
+      const methanal = ns.length === 1 && atomValenceList[carbon] === 2 && allAtomsTypeList[ns[0]] === "O";
+      if (!methanal && !ns.some(n => allAtomsTypeList[n] === "C")) continue;
       skipIndices.add(aldehydeEntries[i]);
     }
   }
@@ -1777,6 +1783,9 @@ function fResizeCompactLabelRect(
     return;
   }
 
+  // Methanal may have no highlight geometry at all; never invent a filled
+  // rectangle from its normal dark text colour merely to size HCHO.
+  if (labelKey === "HCHO" && !rectEl && !fFindNearestHighlightCircle(anchorEl, geometryHint)) return;
   const workingRectEl =
     rectEl || fCreateCompactLabelRect(anchorEl, geometryHint);
   if (!workingRectEl) {
@@ -2572,6 +2581,10 @@ function fCompactFunctionalGroups2D() {
         continue;
       }
 
+      // Methanal has only O as a heavy neighbour: retain BOTH H in HCHO.
+      const carbonNeighbours = atomConnectivityList[anchorIdx] || [];
+      const isMethanal = carbonNeighbours.length === 1 && atomValenceList[anchorIdx] === 2 && allAtomsTypeList[carbonNeighbours[0]] === "O";
+      if (!isMethanal && !carbonNeighbours.some(n => allAtomsTypeList[n] === "C")) continue;
       const anchorEl = atomTextMap[anchorIdx];
       const oxygenEl = atomTextMap[oxygenIdx];
       if (!anchorEl || !oxygenEl) {
@@ -2603,7 +2616,7 @@ function fCompactFunctionalGroups2D() {
         }
       }
       bondsToRemove.push(fFindBondIndexByAtoms(anchorIdx, oxygenIdx));
-      const reverseAldehyde = fShouldReverseAldehydeLabel(
+      const reverseAldehyde = !isMethanal && fShouldReverseAldehydeLabel(
         anchorEl,
         oxygenEl,
         anchorIdx,
@@ -2611,7 +2624,12 @@ function fCompactFunctionalGroups2D() {
         atomTextMap,
       );
       const aldehydeOFill = fGetDisplayAtomFill("O", oxygenEl, anchorEl);
-      const aldehydeMarkup = reverseAldehyde
+      const aldehydeMarkup = isMethanal
+        ? fBuildCompactAtomTspan("H", null, "svgHydrogenPart svgCarbonAttachedHydrogen") +
+          fBuildCompactAtomTspan("C") +
+          fBuildCompactAtomTspan("H", null, "svgHydrogenPart svgCarbonAttachedHydrogen") +
+          fBuildCompactAtomTspan("O", aldehydeOFill)
+        : reverseAldehyde
         ? fBuildCompactAtomTspan("O", aldehydeOFill) +
           fBuildCompactAtomTspan(
             "H",
@@ -2630,11 +2648,13 @@ function fCompactFunctionalGroups2D() {
         anchorIdx: anchorIdx,
         el: anchorEl,
         markup: aldehydeMarkup,
-        attrs: reverseAldehyde
+        attrs: isMethanal
+          ? fGetForwardCompactLabelAttrs(anchorEl, "HCHO")
+          : reverseAldehyde
           ? fGetReversedCompactLabelAttrs(anchorEl, "OHC")
           : null,
         rectEl: anchorRectEl,
-        labelKey: reverseAldehyde ? "OHC" : "CHO",
+        labelKey: isMethanal ? "HCHO" : reverseAldehyde ? "OHC" : "CHO",
         reverseLabel: reverseAldehyde,
         geometryHint: fBuildCompactGeometryHint(anchorEl, anchorRectEl),
       });
@@ -3102,13 +3122,19 @@ function fLoadMol3D() {
     selectedExample.hasOwnProperty("moveto") && selectedExample.moveto
       ? selectedExample.moveto + "; "
       : "";
+  // Optional model framing, applied after init-3.spt's shared zoom 80.
+  // Later user zoom and scenario camera commands retain control.
+  const initialZoom = selectedExample.initialZoom3D;
+  const zoomCmd = Number.isFinite(initialZoom) && initialZoom > 0
+    ? "zoom " + initialZoom + ";"
+    : "";
   Jmol.script(
     jmolAppletNomeclature,
     "frank off;load " +
       myMol3D +
       ";  select all; center selected;" +
       movetoCmd +
-      "script spt/init-3.spt;",
+      "script spt/init-3.spt;" + zoomCmd,
   );
   fSetMolVis3D();
   // A fresh load satisfies any pending one-shot exit reload (e.g. molecule
@@ -3155,7 +3181,7 @@ function fFetchAndParse3D() {
 
 // ── showAtomSymbols3D ─────────────────────────────────────────────────────
 
-function showAtomSymbols3D() {
+function showAtomSymbols3D(restoreNumbering) {
   if (atomSymbols3DFlag) {
     Jmol.script(
       jmolAppletNomeclature,
@@ -3168,7 +3194,7 @@ function showAtomSymbols3D() {
     );
   }
 
-  if (nameAnalysisMode == "compCarbonsCount") {
+  if (restoreNumbering !== false && nameAnalysisMode == "compCarbonsCount") {
     fShowNumbering3D();
   }
 }
@@ -3717,7 +3743,7 @@ function fClearHighlights() {
     jmolAppletNomeclature,
     "select all;  selectionHalos off; color bonds none; color atoms none;",
   );
-  showAtomSymbols3D();
+  showAtomSymbols3D(!fSequentialKetoneNumberingTarget());
   removeEcho3D();
   $("#ruleTheoryContainer").hide();
   $("#nameAnalysisExplain").html("");
@@ -3937,6 +3963,32 @@ function fAlcoholOHPositionText() {
     ? ' Δηλώνει τις θέσεις των υδροξυλομάδων (–OH).'
     : ' Δηλώνει τη θέση της υδροξυλομάδας (–OH).';
 }
+function fBranchedSaturatedKetonePosition() {
+  return typeof functionalGroupObj !== 'undefined' && functionalGroupObj &&
+    functionalGroupObj.ketone && fSupportsAlkylBranchPrefixes() &&
+    fIsAcyclicSaturatedMonoketoneGraph(atomConnectivityList, allAtomsTypeList, bondList) &&
+    fGetHydrocarbonSubstituentInfo().length > 0;
+}
+// Keep the existing numbering policy elsewhere; animate explicit analysis
+// of the new ketones, not instant zoom/resize overlay restoration.
+function fSequentialKetoneNumberingTarget() {
+  return ['pentanone_3', 'dimethyl_2_4_pentanone_3',
+    'trimethyl_3_4_4_pentanone_2',
+    'diethyl_4_5_dimethyl_2_6_heptanone_3',
+    'penten_1_yn_4_one_3', 'dimethyl_4_5_hexen_5_yn_1_one_3',
+    'methyl_6_hepten_3_dione_2_5', 'ethyl_3_methyl_4_octen_3_yn_5_dione_2_7',
+    'isopropyl_4_dimethyl_3_6_octen_3_yn_7_dione_2_5'].includes(selectedMol);
+}
+function fShowAnalysisNumbering(time, overrideAtoms, overrideAtoms3D) {
+  if (fSequentialKetoneNumberingTarget() && !Array.isArray(overrideAtoms)) {
+    currNumberEl = 0;
+    document.querySelectorAll('#jsmeNomeclatureSVG text[id^="number"]').forEach(el => el.remove());
+    removeEcho3D();
+    fShowNumbering(); // Existing 400ms timer appends one 2D/3D number per tick.
+    return;
+  }
+  fShowNumbering(time, overrideAtoms, overrideAtoms3D);
+}
 
 function fExplainNameComp() {
   let myText, myClass, nStyle, countSubs, myCountText, myFG0, myFG1, myHTML;
@@ -3959,7 +4011,7 @@ function fExplainNameComp() {
         numberingFlag = true;
         fHighlightFG(1);
         fHighlightFG3D(1);
-        fShowNumbering(0);
+        fShowAnalysisNumbering(0);
         $("#ruleTheoryContainer").show();
         break;
       }
@@ -4065,7 +4117,7 @@ function fExplainNameComp() {
         $("#ruleTheoryContainer").show();
       }
       numberingFlag = true;
-      fShowNumbering(0);
+      fShowAnalysisNumbering(0);
       break;
     case "compSecondSub1":
       numberingFlag = false;
@@ -4090,7 +4142,8 @@ function fExplainNameComp() {
         fHighlightFG(1);
         fHighlightFG3D(1);
         numberingFlag = true;
-        fShowNumbering(0, fGetEtherAlkoxyChain(), fGetEtherAlkoxyChain3D());
+        fShowAnalysisNumbering(0, fGetEtherAlkoxyChain(), fGetEtherAlkoxyChain3D());
+        $("#ruleTheoryContainer").show();
         break;
       }
       if (nameComponentsList[3] !== null && nameComponentsList[3].length > 0) {
@@ -4133,7 +4186,7 @@ function fExplainNameComp() {
         numberingFlag = true;
         fHighlightFG(2);
         fHighlightFG3D(2);
-        fShowNumbering(0);
+        fShowAnalysisNumbering(0);
         $("#ruleTheoryContainer").show();
         break;
       }
@@ -4144,7 +4197,7 @@ function fExplainNameComp() {
 
       fHighlightFG(2);
       fHighlightFG3D(2);
-      fShowNumbering(0);
+      fShowAnalysisNumbering(0);
       break;
     case "compSecondSub2":
       nStyle = "";
@@ -4168,11 +4221,19 @@ function fExplainNameComp() {
     case "compBondPos":
       nStyle = "";
       myClass = "";
+      if (fBranchedSaturatedKetonePosition()) {
+        myText = ' Δηλώνει τη θέση της καρβονυλομάδας (>C=O).';
+        ruleTableHighlight = 'r3-ketones';
+        fHighlightFG(); fHighlightFG3D();
+        numberingFlag = true; fShowAnalysisNumbering(0);
+        $('#ruleTheoryContainer').show();
+        break;
+      }
       if (fAlcoholOHNameComponent() === 'compBondPos') {
         myText = fAlcoholOHPositionText();
         ruleTableHighlight = "r3-alcohols";
         fHighlightFG(); fHighlightFG3D();
-        numberingFlag = true; fShowNumbering(0);
+        numberingFlag = true; fShowAnalysisNumbering(0);
         $("#ruleTheoryContainer").show();
         break;
       }
@@ -4198,7 +4259,7 @@ function fExplainNameComp() {
       fHighlightMultiBonds(1);
       fHighlightMultiBonds3D(1);
       numberingFlag = true;
-      fShowNumbering(0);
+      fShowAnalysisNumbering(0);
       $("#ruleTheoryContainer").show();
       break;
     case "compCarbonsCount":
@@ -4222,7 +4283,7 @@ function fExplainNameComp() {
           if (_acidChain && _acidChain.length > 0) fHighlightAtomChain(_acidChain, true, !_showB, !_showA);
           if (_acidChain3D && _acidChain3D.length > 0) fHighlightAtomChain3D(_acidChain3D, true, !_showB, !_showA);
         }
-        fShowNumbering(0, _acidChain, _acidChain3D);
+        fShowAnalysisNumbering(0, _acidChain, _acidChain3D);
         $("#ruleTheoryContainer").show();
         break;
       }
@@ -4242,7 +4303,7 @@ function fExplainNameComp() {
       if (_showA2) fHighLightMainChain();
       if (_showB2) fHighLightMainChainBonds();
       if (_showA2 || _showB2) fHighlightAtomChain3D(mainChainAtoms3D, true, !_showB2, !_showA2);
-      fShowNumbering();
+      fShowAnalysisNumbering();
       $("#ruleTheoryContainer").show();
       break;
     case "compBondType":
@@ -4340,6 +4401,17 @@ function fExplainNameComp() {
     case "compEndNumber":
       nStyle = "";
       myClass = "";
+      if (functionalGroupsList.length === 1 && functionalGroupsList[0] === 'ketone' &&
+          fIsAcyclicKetoneGraph(atomConnectivityList, allAtomsTypeList, bondList) &&
+          !fIsAcyclicSaturatedMonoketoneGraph(atomConnectivityList, allAtomsTypeList, bondList) &&
+          nameComponentsList[8].length === 0) {
+        myText = ' Δηλώνει ' + (functionalGroupObj.ketone.O.length > 1 ? 'τις θέσεις των καρβονυλομάδων' : 'τη θέση της καρβονυλομάδας') + ' (>C=O).';
+        ruleTableHighlight = 'r3-ketones';
+        fHighlightFG(); fHighlightFG3D();
+        numberingFlag = true; fShowAnalysisNumbering(0);
+        $('#ruleTheoryContainer').show();
+        break;
+      }
       if (fAlcoholOHNameComponent() === 'compEndNumber' || nameComponentsList[8].length === 0) {
         fHighlightFG();
         fHighlightFG3D();
@@ -4352,7 +4424,7 @@ function fExplainNameComp() {
         fHighlightMultiBonds(2);
       }
       numberingFlag = true;
-      fShowNumbering(0);
+      fShowAnalysisNumbering(0);
       break;
     case "compSuffix":
       // myText = "Ανήκει στη χημική τάξη " + molTaxonomy;
@@ -4414,8 +4486,12 @@ function fExplainNameComp() {
         if (_seriesKey === "aldehyde") ruleTableHighlight = "r3-aldehydes";
         else if (_seriesKey === "ketone") ruleTableHighlight = "r3-ketones";
       }
-      numberingFlag = fAlcoholOHNameComponent() === 'compSuffix';
-      if (numberingFlag) {
+      const ketoneSuffixLocants = functionalGroupsList.length === 1 && functionalGroupsList[0] === 'ketone' &&
+        fIsAcyclicKetoneGraph(atomConnectivityList, allAtomsTypeList, bondList) &&
+        multiBondsObj.CCd.length > 0 && multiBondsObj.CCt.length > 0;
+      numberingFlag = fAlcoholOHNameComponent() === 'compSuffix' || ketoneSuffixLocants;
+      if (ketoneSuffixLocants) myText += ' Δηλώνει ' + (functionalGroupObj.ketone.O.length > 1 ? 'τις θέσεις των καρβονυλομάδων' : 'τη θέση της καρβονυλομάδας') + ' (>C=O).';
+      if (fAlcoholOHNameComponent() === 'compSuffix') {
         myText += fAlcoholOHPositionText();
       }
       if (molTaxonomy != "Υδρογονάνθρακες") {
@@ -4427,7 +4503,7 @@ function fExplainNameComp() {
           fHighlightFG3D();
         }
       }
-      if (numberingFlag) fShowNumbering(0);
+      if (numberingFlag) fShowAnalysisNumbering(0);
       $("#ruleTheoryContainer").show();
       break;
     case "commonAlkyl1":
@@ -4459,7 +4535,7 @@ function fExplainNameComp() {
         fColorFragmentBonds3D(_chain3D, true);
       }
       numberingFlag = true;
-      fShowNumbering(
+      fShowAnalysisNumbering(
         0,
         _part ? _part.numberChain : null,
         _part ? _part.numberChain3D : null,
@@ -4480,7 +4556,7 @@ function fExplainNameComp() {
         fColorFragmentBonds3D(_alcChain3D, true);
       }
       numberingFlag = true;
-      fShowNumbering(0, _alcChain, _alcChain3D);
+      fShowAnalysisNumbering(0, _alcChain, _alcChain3D);
       break;
     }
     case "esterEster":
@@ -4546,6 +4622,7 @@ function fExplainNameComp() {
 function fShowRule(theRule) {
   let ruleText, ruleTable, ruleTitle, myStyle, myClass, myHTML;
   let alkylRows = null;
+  let alkoxyRow = null;
   if (theRule === fAlcoholOHNameComponent()) {
     theRule = 'compSuffix';
     ruleTableHighlight = 'r3-alcohols';
@@ -4591,6 +4668,11 @@ function fShowRule(theRule) {
       ruleTitle = "Κανόνας συνθετικού ανθρακικής αλυσίδας";
       break;
     case "compBondPos":
+      if (fBranchedSaturatedKetonePosition()) {
+        ruleText = namingRules.rule3; ruleTable = namingRules.table3;
+        ruleTitle = "Κανόνας συνθετικού χημικής τάξης";
+        break;
+      }
     case "compBondType":
     case "compBondType2":
     case "compEndNumber":
@@ -4631,6 +4713,23 @@ function fShowRule(theRule) {
       ruleTitle = "";
   }
 
+  if ((theRule === "compNumber1" || theRule === "compSecondSub1" ||
+       theRule === "compNumber2" || theRule === "compSecondSub2") &&
+      typeof selectedMol !== "undefined" && selectedMol &&
+      Array.isArray(atomConnectivityList) && Array.isArray(allAtomsTypeList) && Array.isArray(bondList) &&
+      typeof fIsAcyclicMonoetherGraph === "function" &&
+      fIsAcyclicMonoetherGraph(atomConnectivityList, allAtomsTypeList, bondList)) {
+    const etherGroups = fEtherPrefixGroups();
+    const alkoxy = etherGroups.find(g => g.kind === "alkoxy");
+    const slot = (theRule === "compSecondSub1" || theRule === "compNumber1") ? 1 : 2;
+    const selectedGroups = slot === 1 ? etherGroups.slice(0, 1) : etherGroups.slice(1);
+    if (alkoxy && selectedGroups.length === 1 && selectedGroups[0].kind === "alkoxy") {
+      ruleText = namingRules.alkoxyRule;
+      ruleTable = namingRules.alkoxyTable;
+      ruleTitle = "Ονόματα αλκοξυομάδων και προθέματα";
+      alkoxyRow = "alkoxy-" + alkoxy.name;
+    }
+  }
   const pilotRule = typeof fScenarioShowComponentRule === "function" &&
     fScenarioShowComponentRule(theRule);
   if (pilotRule) $("#ruleTheoryContainer").show();
@@ -4654,6 +4753,9 @@ function fShowRule(theRule) {
     alkylRows.forEach(function (key) {
       $("#ruleContainer [data-row='" + key + "']").addClass("selected");
     });
+  }
+  if (alkoxyRow) {
+    $("#ruleContainer [data-row='" + alkoxyRow + "']").addClass("selected");
   }
 
   // Key-based highlight: rows carry data-row="rN-key" (see fInitTheory tables).
@@ -4912,6 +5014,15 @@ function fChainStepperHTML() {
 // Match the same Greek-alphabetical prefix groups used by fGuessName.
 // Slot 2 represents all remaining groups, matching the fused comp2/comp3 boxes.
 function fGetHydrocarbonBranchGroup(slot) {
+  if (functionalGroupsList.length === 1 && functionalGroupsList[0] === 'ether') {
+    const groups = fEtherPrefixGroups();
+    const selected = slot === 2 ? groups.slice(1) : groups.slice(0, 1);
+    const members = selected.filter(g => g.kind === 'alkyl').flatMap(g => g.members);
+    return members.length ? {
+      names: selected.filter(g => g.kind === 'alkyl').map(g => g.name),
+      members: members
+    } : null;
+  }
   if (!functionalGroupObj || !fSupportsAlkylBranchPrefixes()) return null;
   const branches = fGetHydrocarbonSubstituentInfo();
   const names = [...new Set(branches.map(function (b) { return b.name; }))]
@@ -5265,7 +5376,7 @@ function fGetEtherGroupFragment3D() {
 function fGetEtherCommonParts() {
   if (!selectedMol || !nameExamples[selectedMol]) return null;
   if (nameExamples[selectedMol].classification?.chemicalClass !== "ethers") return null;
-  const parentLen = Array.isArray(mainChainAtomsList) ? mainChainAtomsList.length : 0;
+  const parentLen = etherInfo ? etherInfo.parentLen : (Array.isArray(mainChainAtomsList) ? mainChainAtomsList.length : 0);
   const alkLen = (typeof etherInfo !== "undefined" && etherInfo && etherInfo.alkoxyLen) || 1;
   const _eI = (typeof etherInfo !== "undefined" && etherInfo) ? etherInfo : null;
   const stemFor = function (n, attachC, fragment) {
@@ -5273,9 +5384,12 @@ function fGetEtherCommonParts() {
     const full = iso || ((typeof alkylSubstituentNames !== "undefined" && alkylSubstituentNames[n]) || (nameMainCompList1[n - 1] || ""));
     return String(full).replace(/ο$/, "");
   };
-  const parentChain = Array.isArray(mainChainAtomsList) ? mainChainAtomsList.slice() : [];
+  const parentChain = _eI ? _eI.parentFrag.map(c=>c+1) : (mainChainAtomsList || []).slice();
   const alkoxyChain = fGetEtherAlkoxyChain() || [];
-  const parentChain3D = Array.isArray(mainChainAtoms3D) ? mainChainAtoms3D.slice() : [];
+  const o3 = functionalGroupObj3D && functionalGroupObj3D.ether && functionalGroupObj3D.ether.O[0];
+  const alk3 = fGetEtherAlkoxyC3D();
+  const parentAttach3 = o3 == null ? null : (atomConnectivityList3D[o3] || []).find(c=>allAtomsTypeList3D[c]==='C' && c!==alk3);
+  const parentChain3D = parentAttach3 == null ? [] : fCarbonFragment(parentAttach3,atomConnectivityList3D,allAtomsTypeList3D).map(c=>c+1);
   const alkoxyChain3D = fGetEtherAlkoxyChain3D() || [];
   const symmetric = (typeof etherInfo !== "undefined" && etherInfo) ? !!etherInfo.symmetric : parentLen === alkLen;
   if (symmetric) {
@@ -5292,20 +5406,20 @@ function fGetEtherCommonParts() {
     };
   }
   const sP = stemFor(parentLen, _eI && _eI.parentAttachC, _eI && _eI.parentFrag), sA = stemFor(alkLen, _eI && _eI.alkoxyAttachC, _eI && _eI.alkoxyFrag);
-  const mk = function (label, len) {
-    const isParent = len === parentLen && (parentLen !== alkLen || label === sP);
+  const mk = function (label, isParent) {
     return {
       label: label,
       chain: isParent ? parentChain : alkoxyChain,
       chain3D: isParent ? parentChain3D : alkoxyChain3D,
       kind: "alkyl",
-      numberChain: isParent ? parentChain : alkoxyChain,
-      numberChain3D: isParent ? parentChain3D : alkoxyChain3D,
+      numberChain: isParent ? mainChainAtomsList.slice() : alkoxyChain,
+      numberChain3D: isParent ? mainChainAtoms3D.slice() : alkoxyChain3D,
     };
   };
-  const pair = [mk(sP, parentLen), mk(sA, alkLen)].sort(function (a, b) {
-    return a.label < b.label ? -1 : a.label > b.label ? 1 : 0;
+  const pair = [mk(sP, true), mk(sA, false)].sort(function (a, b) {
+    return fEtherNameSortKey(a.label) < fEtherNameSortKey(b.label) ? -1 : fEtherNameSortKey(a.label) > fEtherNameSortKey(b.label) ? 1 : 0;
   });
+  fEtherCommonLabels(pair.map(p=>p.label)).forEach((label,i)=>{pair[i].label=label;});
   pair.push({ label: "αιθέρας", chain: "ether", chain3D: "ether", kind: "ether", numberChain: null, numberChain3D: null });
   return { symmetric: false, parts: pair };
 }
@@ -5608,7 +5722,7 @@ function fHighlightFG(FGno) {
   ].includes(nameAnalysisMode);
 
   if (fgKeys.length === 0 || (allowBranchFallback &&
-      fSupportsAlkylBranchPrefixes() && branch.atoms.length > 0)) {
+      (fSupportsAlkylBranchPrefixes() || fEtherPrefixGroups().length > 0) && branch.atoms.length > 0)) {
     if (!allowBranchFallback || branch.atoms.length === 0) {
       return;
     }
@@ -6036,7 +6150,7 @@ function fHighlightFG3D(FGno) {
   let highAtoms3D = [];
 
   if (fgKeys.length === 0 || (allowBranchFallback &&
-      fSupportsAlkylBranchPrefixes() && branch.atoms.length > 0)) {
+      (fSupportsAlkylBranchPrefixes() || fEtherPrefixGroups().length > 0) && branch.atoms.length > 0)) {
     if (!allowBranchFallback || branch.atoms.length === 0) {
       // pure hydrocarbon or no branch match — clear any existing highlight
       Jmol.script(

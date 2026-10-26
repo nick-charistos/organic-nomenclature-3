@@ -46,7 +46,7 @@ Non-goals for v51:
 
 1. **v51 release set.** Forked from v50 without modifying the v50 files.
 2. **Superseded 2026-10-25:** v51 was promoted live after verification;
-   `index.html` now points to `mulermoc-nom-51.html` and v50 remains runnable.
+   `index.html` now points to `mulermoc-nom-52.html`; v51 and v50 remain runnable.
 3. **DOMPurify** is the sanitizer; loaded locally, fail closed to the legacy
    renderer if unavailable.
 4. **Authoring note editor (v52):** the inline drawer is a compact WYSIWYG
@@ -272,7 +272,7 @@ Rendering:
 ## 9. Predefined components (rule tables)
 
 `namingRules` is a trusted JS object of HTML templates built by `fInitTheory`
-(`js/mulermoc-nom-teaching-50.js`). Do not copy its HTML into scenario JSON.
+(`js/mulermoc-nom-teaching-52.js`). Do not copy its HTML into scenario JSON.
 Reference it through a small component registry.
 
 Syntax:
@@ -280,6 +280,7 @@ Syntax:
 ```html
 <div data-note-include="rule-table:3"></div>
 <div data-note-include="rule-table:alkyl"></div>
+<div data-note-include="rule-table:alkoxy"></div>
 ```
 
 v1 keys:
@@ -289,6 +290,7 @@ v1 keys:
 - `rule-table:3`
 - `rule-table:4`
 - `rule-table:alkyl`
+- `rule-table:alkoxy`
 
 Rendering:
 
@@ -302,13 +304,13 @@ Rendering:
 CSS:
 
 - audit which rule-table styles are scoped under `#ruleTheory` in
-  `css/jsme-nick-50.css`; add the needed scoped rules for `.note-embed` in v51
+  `css/jsme-nick-52.css`; add the needed scoped rules for `.note-embed` in v52
 - ensure tables scroll in the side rail and do not break the two-column note
 - static display only; no `data-row` interaction in v1
 
 Authoring:
 
-- icon-only “predefined content” dropdown in the expanded modal lists the five rule-table keys
+- icon-only “predefined content” dropdown in the expanded modal lists the six rule-table keys
 - no raw token typing required
 - no separate preview dialog; use the step preview/Go or Present for rendered
   output
@@ -432,7 +434,7 @@ rich-text feature or v50.
    import/render sanitize, fail-closed.
 4. **Rich content** — links/images/tables/figures/classes; CSS; play-bar plain
    text; `showNoteOn` fix.
-5. **Components** — five rule-table keys, icon-only insert dropdown.
+5. **Components** — six rule-table keys, icon-only insert dropdown.
 6. **Actions** — registry + delegated handler, zero public actions.
 7. **Authoring UX** — flattened inline toolbar, content-only expand dialog,
    live sync, icon-only step actions.
@@ -474,7 +476,7 @@ Functional/browser:
   image/table/predefined-content inserts; `Go` uses the skip icon
 - lists, per-block font size, alignment, image sizing dialog, source-mode
   disabling, top-card column alignment, and side-rail stretch (v52 refinement)
-- all 98 molecules in all 2D modes after Snap removal
+- all 98 v51 molecules in all 2D modes after Snap removal; v52 extends the live set to 126
 - v50 remains runnable and unchanged
 
 Completed 2026-10-25 (Snap removal + v51 live):
@@ -484,7 +486,7 @@ Completed 2026-10-25 (Snap removal + v51 live):
 - Fixed the `MuSVG.parse()` OOM infinite loop (`importNode()` → tolerant
   HTML parsing + `adoptNode()`); the XML parsing error is gone.
 - `node --check` passes on the v51 JS after the `MuSVG` migration.
-- Chrome CDP: 98 molecules in condensed mode + mode sample sweep (128/130);
+- Chrome CDP: 98 v51 molecules in condensed mode + mode sample sweep (128/130); v52 current set is 126.
   Firefox 158.0.1 headless WebDriver BiDi: same 128/130, zero XML/OOM/runtime
   errors. The two failures are pre-existing skeletal JSmol errors
   (`butadiene_1_3`, `propadiene`) and also occur on the Snap baseline.

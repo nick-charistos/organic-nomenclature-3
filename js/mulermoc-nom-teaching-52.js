@@ -84,6 +84,25 @@ function fBuildAlkylRuleTable() {
     "</div><p class='alkylRuleNote'>Τα ισο-, sec- και tert- εμφανίζονται εδώ ως συνήθεις ονομασίες, μαζί με τις αντίστοιχες συστηματικές.</p>";
 }
 
+// Same reference-table layout as alkyls; the left dash bonds through O.
+function fBuildAlkoxyRuleTable() {
+  const groups = [
+    ["μεθοξυ", "–O–CH<sub>3</sub>", "Μεθοξυομάδα", "μεθοξυ-"],
+    ["αιθοξυ", "–O–CH<sub>2</sub>–CH<sub>3</sub>", "Αιθοξυομάδα", "αιθοξυ-"],
+    ["προποξυ", "–O–CH<sub>2</sub>–CH<sub>2</sub>–CH<sub>3</sub>", "Προποξυομάδα", "προποξυ-"],
+    ["ισοπροποξυ", "–O–CH(CH<sub>3</sub>)<sub>2</sub>", "Ισοπροποξυομάδα", "ισοπροποξυ-"],
+    ["βουτοξυ", "–O–CH<sub>2</sub>–CH<sub>2</sub>–CH<sub>2</sub>–CH<sub>3</sub>", "Βουτοξυομάδα", "βουτοξυ-"],
+  ];
+  return "<div class='VFlex namingRuleTable ruleAlkyl ruleAlkoxy'>" +
+    "<div class='HFlex ruleRow'><div class='ruleCase ruleTableTitle'>Δομή / σύνδεση</div>" +
+    "<div class='ruleName ruleTableTitle'>Αλκοξυομάδα / πρόθεμα</div></div>" +
+    groups.map(function (g) {
+      return "<div class='HFlex ruleRow' data-row='alkoxy-" + g[0] + "'>" +
+        "<div class='ruleCase alkylFormula'>" + g[1] + "</div>" +
+        "<div class='ruleName'><strong>" + g[2] + "</strong><span class='alkylPrefix'>" + g[3] + "</span></div></div>";
+    }).join("") + "</div>";
+}
+
 function fInitTheory() {
   let r0, r1, r2, r3, r4, r1Table, r2Table, r3Table, r4Table;
   r0 =
@@ -277,6 +296,8 @@ function fInitTheory() {
     table4: r4Table,
     alkylRule: "Τα αλκύλια προκύπτουν τυπικά με αφαίρεση ενός ατόμου Η από αλκάνιο. Για το πρόθεμα της διακλάδωσης, το μεθύλιο γίνεται μεθυλο-, το αιθύλιο αιθυλο- κ.ο.κ. Η παύλα αριστερά στον τύπο δείχνει τον δεσμό με την κύρια αλυσίδα, όχι αρνητικό φορτίο.",
     alkylTable: fBuildAlkylRuleTable(),
+    alkoxyRule: "Η αλκοξυομάδα έχει τη μορφή –O–R, όπου R είναι αλκύλιο, και συνδέεται με την κύρια αλυσίδα μέσω του Ο. Το πρόθεμα ονομάζει ολόκληρη την αλκοξυομάδα, μαζί με το Ο. Η παύλα αριστερά δείχνει δεσμό σύνδεσης και όχι αρνητικό φορτίο. Τα προποξυ- και βουτοξυ- του πίνακα αφορούν ευθύγραμμα αλκύλια, ενώ το ισοπροποξυ- διατηρεί τη σχολική ονομασία της εφαρμογής.",
+    alkoxyTable: fBuildAlkoxyRuleTable(),
     rulesTheory_1_8: rulesTheory_1_8,
   };
 }
@@ -977,6 +998,15 @@ $(document).ready(function () {
       }
     }
     if (typeof fFitNameComponents === "function") fFitNameComponents();
+  });
+
+  // Supplemental reference remains independent of the selected component rule.
+  $(document).on("click", "#alkoxyRuleTitle", function () {
+    const title = $(this), content = $("#alkoxyRuleContainer");
+    const open = content.is(":visible");
+    content.stop(true, true).slideToggle();
+    title.toggleClass("open", !open).toggleClass("closed", open);
+    title.attr("aria-expanded", String(!open));
   });
 
   $(document).on("click", "#ruleTitle", function () {

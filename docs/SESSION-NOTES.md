@@ -1,7 +1,7 @@
 # Session notes — 2026-10-03 (resume point for next session)
 
 > **Current baseline (2026-10-26): v52 live.** `index.html` →
-> `mulermoc-nom-52.html`, 98 `nameExamples` keys. v52 has a unified rich note
+> `mulermoc-nom-52.html`, 126 `nameExamples` keys. v52 has a unified rich note
 > editor: inline WYSIWYG, modal WYSIWYG + HTML source view, staged Apply/Cancel
 > with dirty confirm, and lazy legacy-text upgrade. The 2026-10-26 refinement
 > adds block lists, per-block font size/alignment, an image sizing dialog, a
@@ -45,7 +45,16 @@
   didactic-scenario-plan, Presentation-Step-Rich-Text-PLAN, this file, and the
   v52 handoff. The 2026-10-25 rich-editor handoff is marked superseded.
 
-## 2026-10-26 — v52 note toolbar/refinement pass (live, uncommitted)
+## 2026-10-26 — v52 thesis-work data/engine port (live)
+
+- Data: 98 → 126 `nameExamples` keys from thesis-work `data_51`: +9 ketones/diones/ynones, +12 aldehydes/dials, +7 monoethers. Each addition has three embedded 2D MOL forms and a runtime 3D SDF; existing keys/order unchanged.
+- Core: replaced v52 core with the thesis-work v45–v51 lineage, preserving the version header and local viewer references. Adds acyclic aldehyde/ketone/monoether graph guards, ketone-locant preservation, C4 alkyl shapes, ether prefix/common-label grouping, and candidate-path filtering.
+- Viewer: methanal `HCHO` keeps both H and skips phantom compact-label rects; sequential ketone numbering wrapper + ketone explanation/rule cases; ether branch groups, `etherInfo`-based common-name parts, and ether branch-highlight fallbacks; optional `initialZoom3D`; 3D atom-symbol restoration guard. Thesis fitting/uniform-frame/palette changes were not ported.
+- Teaching: added `fBuildAlkoxyRuleTable` and `namingRules.alkoxyRule`/`alkoxyTable`, alongside the existing alkyl table; the note editor exposes `rule-table:alkoxy` as a sixth predefined component.
+- Feature brief for the thesis-work line: `docs/THESIS-WORK-V52-STEP-TEXT.md` (focus on the step-text/authoring upgrade).
+- Verification: data = 126/126 `nameExamples` + 126 `MOL2D`; headless Chrome named all 28 additions without exceptions; methanal renders `HCHO` and explains as an aldehyde; alkoxy/alkyl tables resolve. Ether checks: all 7 new monoethers produce correct common names (including `ισοβουτυλοϊσοπροπυλαιθέρας`), IUPAC locant/prefix and common alkyl clicks highlight/number, and alkoxy prefix selections populate/select the alkoxy table with the same collapsed-until-opened tile behavior as other rule tables. Guarded `fIsAcyclicMonoetherGraph` and the `fShowRule` alkoxy call site against missing analysis arrays; cold load and non-ether prefix clicks are clean. `git diff --check` clean.
+
+## 2026-10-26 — v52 note toolbar/refinement pass (live)
 
 - Toolbar: removed the whole-note `Font Size` and `Width` controls. Added UL/OL
   list buttons, a per-block font-size dropdown (`14/18/22/26`), and a

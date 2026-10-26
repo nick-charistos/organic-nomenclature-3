@@ -6,14 +6,16 @@
 > the live entry. This file supersedes
 > `docs/SESSION-HANDOFF-2026-10-25-RICH-NOTE-EDITOR.md` (that plan said “NOT
 > STARTED”; its working-tree note is stale). `index.html` now points to
-> `mulermoc-nom-52.html`. No commit was made in this session.
+> `mulermoc-nom-52.html`. The v52 base was committed as `0415c72`; the
+> 2026-10-26 thesis-work data/engine port and this documentation update are in
+> the current commit (see `git log`).
 
 ## 1. Repository state
 
 - Branch: `main`
-- HEAD before this work: `dc02933` — `file selection window for images`
+- Base v52 commit before the thesis-work port: `0415c72` — `v52: rich note editor, compact toolbar, tooltip polish`
 - Live entry: `index.html` → `mulermoc-nom-52.html`
-- v52 files are new/untracked; v51 and earlier files are byte-untouched.
+- v52 files are tracked from `0415c72`; v51 and earlier files are byte-untouched. The thesis-work data/SDF additions and doc updates are part of the current commit.
 - Do **not** use `git reset --hard` or `git clean -fdx`.
 - No Node runtime is installed in the environment; `python3` + a temporary
   `esprima` install under `/tmp/opencode/pylibs` were used for parsing. Headless
@@ -263,6 +265,17 @@ All v52 HTML asset/self references were changed from `-51` to `-52`; no `-51` /
 - Screenshots visually checked: inline drawer, modal toolbar, image dialog, and
   right side rail; alignment caret is visible. Icon rendering was checked at
   16px/64px on normal and white-currentColor hover backgrounds.
+
+## Thesis-work port (2026-10-26)
+
+> Feature brief for Γιάννης: `docs/THESIS-WORK-V52-STEP-TEXT.md` (step-text/authoring focus, Greek).
+
+- Source: `yanisken9/organic-nomenclature-3` branch `thesis-work`; only shared main-app JS/data was compared. Namecule shell/lessons/scenario docs and thesis fitting/palette experiments were excluded.
+- Data: `js/jsme-nick-nomeclature-moc2-data_52.js` now has **126 `nameExamples` keys** (98 + 9 ketones/diones/ynones, 12 aldehydes/dials, 7 monoethers). Three embedded 2D MOL forms per key plus 28 new `mols/nomeclature-moc2/<key>_3D.sdf` assets.
+- Core: `js/mulermoc-nom-core-52.js` replaced with the thesis-work v45–v51 lineage (header/version refs kept at v52). Adds acyclic aldehyde/ketone/monoether graph guards, ketone-locant preservation, C4 alkyl names, ether prefix/common-label grouping, candidate filtering.
+- Viewer: `js/mulermoc-nom-molview-52.js` adds methanal `HCHO` handling (both H retained; no phantom rect), sequential ketone numbering wrapper + ketone explanation/rule branches, ether branch groups / `etherInfo` common-name parts / ether branch-highlight fallbacks, optional `initialZoom3D`, and 3D atom-symbol restore guard.
+- Teaching: `js/mulermoc-nom-teaching-52.js` adds `fBuildAlkoxyRuleTable` + `namingRules.alkoxyRule`/`alkoxyTable`; existing alkyl table retained. `note-52.js`/`scenario-52.js` expose `rule-table:alkoxy` as a sixth predefined component, and `fShowRule` populates/selects the alkoxy table when an ether alkoxy prefix is selected; its tile keeps the same collapsed-until-clicked behavior as other rule tables.
+- Verification: 126/126 data+MOL2D keys; all 28 additions named in headless Chrome; methanal renders `HCHO`; alkoxy/alkyl tables resolve; all 7 new monoethers render correct common names (including `ισοβουτυλοϊσοπροπυλαιθέρας`), IUPAC locant/prefix and common alkyl clicks highlight/number, and alkoxy prefix selections populate/select the alkoxy table with the normal collapsed-until-opened behavior; `fIsAcyclicMonoetherGraph` and the `fShowRule` alkoxy call site are guarded for missing analysis arrays; cold load and non-ether prefix clicks are clean; no JS exceptions attributable to the port.
 
 ## 5. Follow-ups
 

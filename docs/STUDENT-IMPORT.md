@@ -24,6 +24,18 @@ The second import was **additive**, not another version fork:
   `fSupportsAlkylBranchPrefixes()` gate remains hydrocarbon/acyclic-alcohol
   only.
 
+## v52 in-place port (2026-10-26)
+
+The third import is an **in-place v52 port**, not a new version fork:
+
+- Data: appended 28 molecules to `js/jsme-nick-nomeclature-moc2-data_52.js` (98 → 126 keys): 9 ketones/diones/ynones, 12 aldehydes/dials and 7 monoethers, each with three embedded 2D MOL forms and a runtime `mols/nomeclature-moc2/<key>_3D.sdf`.
+- Core: replaced `js/mulermoc-nom-core-52.js` with the thesis-work v45–v51 lineage (header and `-52` refs kept), adding acyclic aldehyde/ketone/monoether graph guards, ketone-locant preservation, C4 alkyl names, ether prefix/common-label grouping, and candidate-path filtering.
+- Viewer: ported methanal `HCHO` handling, sequential ketone numbering/explanation, ether branch groups, `etherInfo`-based common-name parts, ether branch-highlight fallbacks, optional `initialZoom3D`, and the 3D atom-symbol restore guard. Kept local fitting/palette/numbering.
+- Teaching: added the alkoxy rule table and `rule-table:alkoxy` as a sixth predefined note component.
+- Scope: shared main-app JS/data only; excludes Namelecule shell/lessons/scenario gating, MOL-only rendering, uniform-frame/fit, palette/numbering-size experiments, and professor/publication docs.
+- Feature brief for the student: `docs/THESIS-WORK-V52-STEP-TEXT.md` (focus on the step-text/authoring upgrade).
+- Verification: 126/126 data+MOL2D keys; all 28 additions named in headless Chrome; ether common names/highlights and alkoxy table checked; `git diff --check` clean. Real-browser 3D/JSmol, Firefox and touch remain pending.
+
 ## Roles / policy
 
 - **Import** (student's own work): new molecules + `.sdf`/`.mol` sources, core

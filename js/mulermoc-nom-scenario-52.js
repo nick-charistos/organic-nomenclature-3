@@ -2599,7 +2599,8 @@ function fScenarioNoteContentBar(ctx, opts) {
       ["rule-table:2", "2ο συνθετικό"],
       ["rule-table:3", "3ο συνθετικό"],
       ["rule-table:4", "Σειρά ομάδων"],
-      ["rule-table:alkyl", "Αλκύλια"]
+      ["rule-table:alkyl", "Αλκύλια"],
+      ["rule-table:alkoxy", "Αλκοξυομάδες"]
     ];
     var icon = (window.MuLERIcons && (window.MuLERIcons.addPredefinedItem || window.MuLERIcons.book)) || null;
     var wrap = document.createElement("span");

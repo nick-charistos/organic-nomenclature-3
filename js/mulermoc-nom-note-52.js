@@ -59,6 +59,7 @@
     rule3: 1,
     rule4: 1,
     ruleAlkyl: 1,
+    ruleAlkoxy: 1,
     ruleRow: 1,
     ruleCase: 1,
     ruleName: 1,
@@ -74,7 +75,8 @@
     "rule-table:2": "table2",
     "rule-table:3": "table3",
     "rule-table:4": "table4",
-    "rule-table:alkyl": "alkylTable"
+    "rule-table:alkyl": "alkylTable",
+    "rule-table:alkoxy": "alkoxyTable"
   };
 
   var actions = Object.create(null);
