@@ -232,7 +232,9 @@ Allowed attributes:
 
 - `src`, `alt`, `title`, `loading`, `decoding`, numeric `width`/`height`,
   `class="note-img"` / `note--center`
-- authoring helper should require `alt`
+- authoring helper must require `alt`; the file picker embeds the selected
+  image as a capped data URI, while the URL helper keeps relative/`https:`
+  sources available
 
 Source policy:
 
@@ -344,11 +346,11 @@ Keep the textarea, add helpers:
 
 - format switch/indicator (`text` vs `html`)
 - B/I/sup/sub formatting plus clear
-- image and table inserts
+- image inserts from a local file picker or URL, plus table inserts
 - icon-only rule-table dropdown (`addPredefinedItem`)
 - expand button opening the content-only modal editor; live sync, no
   preview/Apply/Cancel, Esc/close returns focus to the expand button
-- image path prompt and optional data-URI paste/import
+- image file picker (PNG/JPEG/GIF/WebP, ≤500 KB) plus URL insert and optional data-URI paste/import
 - warnings for large data URIs, external images, unknown components
 - unbalanced-tag hint retained/adapted
 

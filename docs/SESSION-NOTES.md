@@ -2187,3 +2187,13 @@ follows; one Save → Present → Next → Exit round-trip.
   handoff.
 * Owner promoted v51: `index.html` → `mulermoc-nom-51.html`. v50 and earlier
   remain runnable.
+
+## 2026-10-25 — Step-note image file picker
+
+* Added a native image file picker to the step-note image tool: PNG/JPEG/GIF/
+  WebP, ≤500 KB, inserted as a data URI with required `alt`.
+* URL image insertion moved to an adjacent URL tool; relative/`https:` sources
+  and existing validation remain.
+* Verified in Chrome and Firefox 158.0.1 headless: PNG insertion, editor sync,
+  SVG rejection, oversized-file rejection, missing-`alt` rejection, and URL
+  insertion.

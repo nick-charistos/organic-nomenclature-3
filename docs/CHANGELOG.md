@@ -62,6 +62,11 @@ New parallel file set `mulermoc-nom-51.html` + `js/*-51.js` + `css/*-51.css`, fo
 - Verification: `node --check` passes. Chrome CDP matrix: 98/98 condensed + mode sample sweep (128/130; the two failures are pre-existing skeletal JSmol errors). Firefox 158.0.1 headless WebDriver BiDi: same 128/130, zero XML/OOM/runtime errors. The same two pre-existing failures (`butadiene_1_3`, `propadiene` with `mode2D: "skeletal"`) occur on the Snap baseline at `1c81433`.
 - Owner promoted v51: `index.html` now points to `mulermoc-nom-51.html`; v50 and earlier remain runnable.
 
+### 2026-10-25 — Step-note image file picker
+- The note image tool now opens a native file picker for PNG/JPEG/GIF/WebP files (≤500 KB) and embeds the selected image as a data URI; `alt` text remains required.
+- URL image insertion remains available from the adjacent URL tool (relative/`https:` sources, same policies).
+- SVG, unsupported types, oversized files, and missing `alt` are rejected; the inserted image is kept in sync with the inline/modal note editor.
+
 ---
 
 ## [v50] (presentation text rails left/right + persistent naming shell; previous live, `index.html` → v50 before v51)

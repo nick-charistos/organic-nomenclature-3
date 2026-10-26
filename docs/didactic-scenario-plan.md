@@ -285,8 +285,9 @@ Visibility rules:
   `<ul>`, `<ol>`, `<li>`, `<small>`, `<big>`); `noteFormat: "html"`
   uses DOMPurify with a curated allowlist (paragraphs, lists, links,
   tables, figures, images, `note-*` classes, and rule-table components).
-  Rich notes add a text/HTML toggle, image/table/rule-table helpers, and an
-  expand control that opens a content-only modal editor (live sync; no
+  Rich notes add a text/HTML toggle, image (file picker or URL), table, and
+  rule-table helpers, plus an expand control that opens a content-only modal
+  editor (live sync; no
   preview/Apply/Cancel). Presentation keeps the v50 top/left/right rails and
   has no separate wide/focus mode. Heading +
   text show automatically iff the step carries a title or note;
@@ -346,8 +347,8 @@ Visibility rules:
   above the field, defaults to the live Greek IUPAC name at Save —
   key fallback, `"menu"` for menu-only), per-step educational text
   (`note` textarea with formatting toolbar: text/HTML toggle,
-  `B I sup sub` buttons, clear, image/table and icon-only rule-table
-  inserts, expand-to-dialog, 1↔2 column toggle icon, whole-text size/width
+  `B I sup sub` buttons, clear, image (file picker or URL)/table and icon-only
+  rule-table inserts, expand-to-dialog, 1↔2 column toggle icon, whole-text size/width
   via per-step
   `Size (px)` input `styleText.fontSizePx`
   (12–28, empty = 18px) and `Width (px)` input `styleText.textWidthPx`

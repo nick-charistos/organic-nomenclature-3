@@ -1959,7 +1959,91 @@ function fScenarioSetNoteFormat(noteInput, st, format) {
   fScenarioCheckNoteTags(noteInput);
   return next;
 }
+var fScenarioNoteImageInputEl = null;
+var fScenarioNoteImagePending = null;
+function fScenarioGetNoteImageInput() {
+  if (fScenarioNoteImageInputEl && document.body.contains(fScenarioNoteImageInputEl)) {
+    return fScenarioNoteImageInputEl;
+  }
+  var input = document.getElementById("scNoteImageFile");
+  if (!input) {
+    input = document.createElement("input");
+    input.type = "file";
+    input.id = "scNoteImageFile";
+    input.accept = ".png,.jpg,.jpeg,.gif,.webp,image/png,image/jpeg,image/gif,image/webp";
+    input.style.display = "none";
+    input.setAttribute("aria-hidden", "true");
+    input.tabIndex = -1;
+    input.addEventListener("change", function () {
+      fScenarioReadNoteImageFile(input);
+    });
+    input.addEventListener("cancel", function () {
+      fScenarioNoteImagePending = null;
+      input.value = "";
+    });
+    document.body.appendChild(input);
+  }
+  fScenarioNoteImageInputEl = input;
+  return input;
+}
+function fScenarioReadNoteImageFile(input) {
+  var file = input.files && input.files[0] ? input.files[0] : null;
+  var pending = fScenarioNoteImagePending;
+  fScenarioNoteImagePending = null;
+  try { input.value = ""; } catch (e) { /* input reset best-effort */ }
+  if (!file || !pending) return;
+  if (file.type && !/^image\/(png|jpe?g|gif|webp)$/i.test(file.type)) {
+    fScenarioToast("Αποδεκτές μόνο εικόνες PNG, JPEG, GIF ή WebP.");
+    return;
+  }
+  if (file.size > 512000) {
+    fScenarioToast("Η εικόνα είναι πολύ μεγάλη (όριο ~500 KB).");
+    return;
+  }
+  if (!window.FileReader) {
+    fScenarioToast("Ο browser δεν υποστηρίζει ανάγνωση αρχείων εικόνας.");
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function () {
+    var url = String(reader.result || "");
+    if (!/^data:image\/(png|jpe?g|gif|webp);base64,/i.test(url)) {
+      fScenarioToast("Αποδεκτές μόνο εικόνες PNG, JPEG, GIF ή WebP.");
+      return;
+    }
+    if (url.length > 700000) {
+      fScenarioToast("Η εικόνα data URI είναι πολύ μεγάλη (όριο ~500 KB).");
+      return;
+    }
+    var defaultAlt = String(file.name || "").replace(/\.[^.]+$/, "");
+    var alt = window.prompt("Εναλλακτική περιγραφή εικόνας (υποχρεωτική)", defaultAlt);
+    if (alt === null) return;
+    alt = String(alt).trim();
+    if (!alt) {
+      fScenarioToast("Η εναλλακτική περιγραφή εικόνας είναι υποχρεωτική.");
+      return;
+    }
+    var snippet = '<img src="' + fScenarioEscapeNoteAttr(url) +
+      '" alt="' + fScenarioEscapeNoteAttr(alt) + '" class="note-img">';
+    fScenarioInsertNoteSnippet(pending.noteInput, pending.st, snippet);
+    // Async insert: notify the editor so the inline textarea/modal stay in sync.
+    try {
+      pending.noteInput.dispatchEvent(new Event("input", { bubbles: true }));
+    } catch (eSync) { /* input event best-effort */ }
+  };
+  reader.onerror = function () {
+    fScenarioToast("Αποτυχία ανάγνωσης της εικόνας.");
+  };
+  reader.readAsDataURL(file);
+}
 function fScenarioInsertNoteImage(noteInput, st) {
+  if (!noteInput) return;
+  var input = fScenarioGetNoteImageInput();
+  fScenarioNoteImagePending = { noteInput: noteInput, st: st };
+  try { input.value = ""; } catch (e) { /* input reset best-effort */ }
+  input.click();
+}
+function fScenarioInsertNoteImageByUrl(noteInput, st) {
   var url = window.prompt("URL εικόνας (https://…, σχετική διαδρομή ή data:image/…)", "");
   if (url === null) return;
   url = String(url).trim();
@@ -2088,14 +2172,17 @@ function fScenarioNoteContentBar(noteInput, st, opts) {
     };
     bar.appendChild(b);
   });
-  [["image", "Εικ.", "Εισαγωγή εικόνας", fScenarioInsertNoteImage],
+  [["image", "Εικ.", "Εικόνα από αρχείο (PNG/JPEG/GIF/WebP, ≤500 KB)", fScenarioInsertNoteImage],
+    ["imageUrl", "URL", "Εικόνα από URL", fScenarioInsertNoteImageByUrl],
     ["table", "Πίν.", "Εισαγωγή πίνακα", fScenarioInsertNoteTable]].forEach(function (def) {
     var b = document.createElement("button");
     b.type = "button";
     b.className = "scNoteBtn scNoteInsertBtn";
     var icon = def[0] === "image"
       ? (window.MuLERIcons && (window.MuLERIcons.image || window.MuLERIcons.saveImage))
-      : (window.MuLERIcons && window.MuLERIcons[def[0]]);
+      : def[0] === "imageUrl"
+        ? (window.MuLERIcons && window.MuLERIcons.link)
+        : (window.MuLERIcons && window.MuLERIcons[def[0]]);
     if (icon) b.innerHTML = icon;
     else b.textContent = def[1];
     b.setAttribute("data-tooltip", def[2]);
