@@ -1,0 +1,308 @@
+﻿<!doctype html>
+<html lang="el">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-1V8NWYY46Y"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+    gtag("js", new Date());
+
+    gtag("config", "G-1V8NWYY46Y");
+  </script>
+
+  <title>Κανόνες Ονοματολογίας Οργανικών Ενώσεων</title>
+
+  <link rel="stylesheet" href="css/jsme-nick-52.css" />
+  <link rel="stylesheet" href="css/mulermoc-nom-scenario-52.css" />
+
+  <script src="jsme/jsme.nocache.js"></script>
+  <script src="js/vendor/jquery/jquery-4.0.0.min.js"></script>
+  <script>
+    (function () {
+      var mode = "cdn";
+      try {
+        var m = /[?&]libs=(local|cdn)\b/.exec(location.search);
+        if (m) mode = m[1];
+      } catch (e) { /* no location */ }
+      window.MULER_LIBS_MODE = mode;
+      var src = mode === "local"
+        ? "JSmol.min.js"
+        : "https://chemapps.stolaf.edu/jmol/jsmol/JSmol.min.js";
+      document.write('<script src="' + src + '"><\/script>');
+    })();
+  </script>
+  <script src="js/vendor/dompurify/dompurify-3.4.17.min.js"></script>
+
+  <script>
+    // S3: JSmol readiness flag for scenario deep links (?scenario&present).
+    // fScenarioBoot waits for this before applying the first step so the
+    // per-step camera is not lost on a cold applet; author mode is unaffected.
+    jmol_isReady = function (applet) {
+      try {
+        window.JSmolReadyFlag = true;
+      } catch (e) {
+        /* no window */
+      }
+    };
+    var JSmol_Applet = {
+      width: "100%",
+      height: "100%",
+      debug: false,
+      color: "#FFFFFF",
+      use: "HTML5",
+      j2sPath: window.MULER_LIBS_MODE === "local"
+        ? "j2s"
+        : "https://chemapps.stolaf.edu/jmol/jsmol/j2s",
+      serverURL: window.MULER_LIBS_MODE === "local"
+        ? ""
+        : "https://chemapps.stolaf.edu/jmol/jsmol/php/jsmol.php",
+      readyFunction: jmol_isReady,
+      disableJ2SLoadMonitor: true,
+      disableInitialConsole: true,
+    };
+  </script>
+</head>
+
+<body>
+
+  <header></header>
+
+  <div id="pageContainer">
+    <h1 id="pageTitle">Ονοματολογία Οργανικών Ενώσεων</h1>
+    <div id="authorLayout">
+      <div id="mainAppContainer">
+        <div class="mainApp3Columns">
+          <!-- left column: MENU -->
+          <div id="menuCol" class="VFlex">
+            <button id="menuToggle" onclick="fToggleMenu()">☰ Μενού</button>
+            <div id="menuDrawer" class="menu-open">
+              <div id="nomeclature2Menu"></div>
+            </div>
+          </div>
+
+          <!-- middle column -->
+          <div id="viewerCol" class="VFlex">
+            <div class="panelTitle">
+              <div id="viewerVisBtns"></div>
+              <span>Μόριο</span>
+              <div id="viewerSettingsBtnDiv"></div>
+
+              <div id="viewerSettingsPanel">
+                <div class="settingTitle">Ρυθμίσεις</div>
+                <div id="radioChainMode" class="settingRow">
+                  <div class="settingLabel">Υπολογισμός κύριας αλυσίδας:</div>
+                  <div class="radioGroupContainer HFlex" style="align-items: center; gap: 0">
+                    <div class="radioCheckContainer unselectedRadio">
+                      Από δεδομένα<span class="radioCheck"></span>
+                    </div>
+                    <div class="radioCheckContainer selectedRadio">
+                      Αλγοριθμικά<span class="radioCheck"></span>
+                    </div>
+                  </div>
+                </div>
+                <div id="originalJSME" class="settingRow">
+                  <div class="settingLabel">
+                    Εμφάνιση αρχικής 2D αναπαράστασης JSME:
+                  </div>
+                  <div id="originalJSMECheck" class="checkBoxContainer unselectedCheck">
+                    &nbsp;<span class="checkBox"></span>
+                  </div>
+                </div>
+
+                <div id="highlightNumberingSetting" class="settingRow">
+                  <div class="settingLabel">
+                    Επισήμανση ατόμων κατά την αρίθμηση:
+                  </div>
+                  <div id="highlightNumberingCheck" class="checkBoxContainer selectedCheck">
+                    &nbsp;<span class="checkBox"></span>
+                  </div>
+                </div>
+                <div id="highlightNumberingBondsSetting" class="settingRow">
+                  <div class="settingLabel">
+                    Επισήμανση δεσμών κατά την αρίθμηση:
+                  </div>
+                  <div id="highlightNumberingBondsCheck" class="checkBoxContainer selectedCheck">
+                    &nbsp;<span class="checkBox"></span>
+                  </div>
+                </div>
+                <div id="bondAtomsSetting" class="settingRow">
+                  <div class="settingLabel">
+                    Επισήμανση ατόμων δεσμών:
+                  </div>
+                  <div id="bondAtomsCheck" class="checkBoxContainer unselectedCheck">
+                    &nbsp;<span class="checkBox"></span>
+                  </div>
+                </div>
+                <div id="atomColorModeRow" class="settingRow">
+                  <div class="settingLabel">Χρωματισμός ατόμων 2D:</div>
+                  <div id="svgAtomColorCheck" class="checkBoxContainer selectedCheck">
+                    &nbsp;<span class="checkBox"></span>
+                  </div>
+                  <div id="atomColorMode" class="HFlex" style="align-items: center">
+                    <div class="radioCheckContainer atomColorModeRadio selectedRadio" data-color-mode="atom">
+                      Κατά άτομο<span class="radioCheck"></span>
+                    </div>
+                    <div class="radioCheckContainer atomColorModeRadio unselectedRadio" data-color-mode="group">
+                      Κατά ομάδα<span class="radioCheck"></span>
+                    </div>
+                  </div>
+                </div>
+                <div id="atomSymbolsSetting" class="settingRow">
+                  <div class="settingLabel">Σύμβολα ατόμων 3D:</div>
+                  <div id="atomSymbolsCheck" class="checkBoxContainer selectedCheck">
+                    &nbsp;<span class="checkBox"></span>
+                  </div>
+                </div>
+                <div id="viewerMaxHeightSetting" class="settingRow">
+                  <div class="settingLabel">Όριο ύψους μεμονωμένου viewer:</div>
+                  <div id="viewerMaxHeightCheck" class="checkBoxContainer unselectedCheck">
+                    &nbsp;<span class="checkBox"></span>
+                  </div>
+                  <input id="viewerMaxHeightRange" class="viewerHeightRange" type="range" min="150" max="520" step="10"
+                    value="150" disabled />
+                  <span id="viewerMaxHeightVal" class="viewerHeightVal">Auto</span>
+                </div>
+                <div id="viewerBothHeightSetting" class="settingRow">
+                  <div class="settingLabel">Ύψος δύο viewers (σύνολο):</div>
+                  <div id="viewerBothHeightCheck" class="checkBoxContainer unselectedCheck">
+                    &nbsp;<span class="checkBox"></span>
+                  </div>
+                  <input id="viewerBothHeightRange" class="viewerHeightRange" type="range" min="300" max="1000"
+                    step="10" value="300" disabled />
+                  <span id="viewerBothHeightVal" class="viewerHeightVal">Auto</span>
+                </div>
+              </div>
+            </div>
+
+            <!--JSME 2D -->
+            <div id="jsmeNomeclatureDIV">
+              <div id="jsmeNomeclatureORGNL" class="hide"></div>
+              <div id="jsmeNomeclature" class="hide"></div>
+              <div id="jsmeNomeclatureSVG"></div>
+            </div>
+            <div id="radio2DMode">
+              <div class="radioGroupContainer HFlex">
+                <div class="HFlex" style="align-items: center">
+                  <div class="radioCheckContainer mode2DOption selectedRadio">
+                    Συνεπτυγμένος<span class="radioCheck"></span>
+                  </div>
+                  <div class="radioCheckContainer mode2DOption unselectedRadio">
+                    Ανεπτυγμένος<span class="radioCheck"></span>
+                  </div>
+                  <div class="radioCheckContainer mode2DOption unselectedRadio">
+                    Σκελετικός<span class="radioCheck"></span>
+                  </div>
+                  <div id="zigzagCheck" class="checkBoxContainer unselectedCheck" style="margin-left: 10px">
+                    Σύμβολα CH<sub>n</sub><span class="checkBox"></span>
+                  </div>
+                </div>
+                <div id="view2DTools" class="HFlex">
+                  <button id="zoomOutBtn" class="viewerToolBtn" onclick="fZoom2D(-1)" data-tooltip="Σμίκρυνση 2D">
+                    <span class="zoomIcon" data-icon="zoomOut"></span>
+                  </button>
+                  <button id="zoomInBtn" class="viewerToolBtn" onclick="fZoom2D(1)" data-tooltip="Μεγέθυνση 2D">
+                    <span class="zoomIcon" data-icon="zoomIn"></span>
+                  </button>
+                  <div id="save2DBtn" class="viewerToolBtn" onclick="fSave2DPng()" data-tooltip="Αποθήκευση εικόνας 2D">
+                    <span class="saveImgIcon" data-icon="saveImage"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="nomeclature3D" class="JmolContainer">
+              <script>
+                jmolAppletNomeclature = Jmol.getApplet(
+                  "jmolAppletNomeclature",
+                  JSmol_Applet,
+                );
+                Jmol.script(jmolAppletNomeclature, "frank off");
+              </script>
+            </div>
+            <div id="controls3D" class="HFlex">
+              <div class="HFlex" style="align-items: center">
+                <div id="hydrogensCheck" class="checkBoxContainer selectedCheck">
+                  Υδρογόνα <span style="color: #666">C</span>-H<span class="checkBox"></span>
+                </div>
+                <div id="dropMenu" style="margin-top: 2px"></div>
+                <div id="rotateCheck" class="checkBoxContainer unselectedCheck">
+                  Περιστροφή <span class="checkBox"></span>
+                </div>
+              </div>
+              <div id="view3DTools" class="HFlex">
+                <button id="zoomOut3DBtn" class="viewerToolBtn" onclick="fZoom3D(-1)" data-tooltip="Σμίκρυνση 3D">
+                  <span class="zoomIcon" data-icon="zoomOut"></span>
+                </button>
+                <button id="zoomIn3DBtn" class="viewerToolBtn" onclick="fZoom3D(1)" data-tooltip="Μεγέθυνση 3D">
+                  <span class="zoomIcon" data-icon="zoomIn"></span>
+                </button>
+                <div id="save3DBtn" class="viewerToolBtn" onclick="fSaveJmolPng()" data-tooltip="Αποθήκευση εικόνας 3D">
+                  <span class="saveImgIcon" data-icon="saveImage"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- right column -->
+          <div id="analysisCol" class="VFlex">
+            <div>
+              <div id="nameAnalysisContainer">
+                <div id="ruleTheory"></div>
+                <div id="nameAnalysis"></div>
+              </div>
+              <div id="nameAnalysisExplain"></div>
+              <div id="ruleTheoryContainer"></div>
+            </div>
+          </div>
+
+          <!-- debug -->
+          <!-- <div id="debug" style="max-height: 600px; overflow: auto;"></div> -->
+        </div>
+      </div>
+      <!-- <div id="scScrollFade" aria-hidden="true"></div> -->
+      <button id="scScrollLeft" data-tooltip="Κύλιση αριστερά">‹</button>
+      <button id="scScrollRight" data-tooltip="Κύλιση δεξιά">›</button>
+    </div>
+
+    <!-- <div id="creditsLib"></div> -->
+    <div id="creditsUs"></div>
+  </div>
+
+  <script src="js/jsme-nick-nomeclature-moc2-data_52.js"></script>
+  <script src="js/ui-icons.js"></script>
+  <script src="js/mulermoc-nom-core-52.js"></script>
+  <script src="js/mulermoc-nom-molview-52.js"></script>
+  <script src="js/mulermoc-nom-teaching-52.js"></script>
+  <script src="js/mulermoc-nom-note-52.js"></script>
+  <script src="js/mulermoc-nom-scenario-52.js"></script>
+  <script>
+    window.JSApplet = window.JSApplet || {};
+  </script>
+  <script src="jsme/96E40B969193BD74B8A621486920E79C.cache.js"></script>
+
+  <script>
+    function fToggleMenu() {
+      var drawer = document.getElementById("menuDrawer");
+      if (drawer.classList.contains("menu-open")) {
+        drawer.classList.remove("menu-open");
+        drawer.classList.add("menu-closed");
+      } else {
+        drawer.classList.remove("menu-closed");
+        drawer.classList.add("menu-open");
+      }
+    }
+
+    function fDismissRotatePrompt() {
+      var el = document.getElementById("rotatePrompt");
+      if (el) el.style.display = "none";
+    }
+  </script>
+</body>
+
+</html>

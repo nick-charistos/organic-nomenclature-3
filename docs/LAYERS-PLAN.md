@@ -2,7 +2,7 @@
 
 Source of truth for the four layers of the twofold+1 vision (see `README.md`):
 1. a useful community tool, 2. ongoing research publications, 3. (+1) platform for isomerism/reactions and beyond.
-Baseline: **v51 live** (`index.html` → v51 — 98 molecules, safe rich HTML notes, rule-table components, authoring note dialog, compact icon toolbar, and a Snap-free native `MuSVG` 2D overlay; default scenario `Αλκάνια-Αιθάνιο-τεστ`). The v50 per-step presentation text position (top/left/right sticky rail) + persistent naming shell and the v49 MSc-student import are retained; v50/v49/v48/v47/v46/v45/v44 runnable at root, v43 frozen at tag `v43`. The `MuSVG.parse()` OOM/XML crash was fixed on 2026-10-25; two pre-existing skeletal JSmol failures remain.
+Baseline: **v52 live** (`index.html` → v52 — 98 molecules, unified inline/modal rich note editor with WYSIWYG + HTML source and staged Apply/Cancel, safe rich HTML notes, rule-table components, compact icon toolbar, and a Snap-free native `MuSVG` 2D overlay; default scenario `Αλκάνια-Αιθάνιο-τεστ`). The v51 rich notes, v50 per-step presentation text position (top/left/right sticky rail) + persistent naming shell, and the v49 MSc-student import are retained; v51/v50/v49/v48/v47/v46/v45/v44 runnable at root, v43 frozen at tag `v43`. The `MuSVG.parse()` OOM/XML crash was fixed on 2026-10-25; two pre-existing skeletal JSmol failures remain.
 Hosting: **embedded static** — the chemistry app stays dependency-free static; Drupal owns scenarios, exercises/quizzes, users/sessions, logging, exports.
 
 ---

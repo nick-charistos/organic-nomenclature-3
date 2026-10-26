@@ -4,9 +4,50 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ---
 
-## [v51] (rich presentation notes, safe HTML, rule-table components, authoring note dialog, Snap-free viewer; live, `index.html` → v51)
+## [v52] (unified rich note editor: inline WYSIWYG, modal WYSIWYG + HTML source, lazy legacy text upgrade; live, `index.html` → v52)
 
-New parallel file set `mulermoc-nom-51.html` + `js/*-51.js` + `css/*-51.css`, forked from v50. v51 is now live: `index.html` points to `mulermoc-nom-51.html`; v50 and earlier remain runnable at root.
+New parallel file set `mulermoc-nom-52.html` + `js/*-52.js` + `css/*-52.css`, forked from v51. v52 is now live: `index.html` points to `mulermoc-nom-52.html`; v51 and earlier remain runnable at root. No scenario-schema change (`scenarioVersion` stays 1); `noteFormat` remains `"text"` / `"html"`.
+
+### Rich note editor (`scenario-52.js`, `note-52.js`, `scenario-52.css`)
+- The inline drawer is now a compact WYSIWYG `contenteditable` editor, not a textarea. It renders sanitized HTML via `renderEditable`, writes `st.note` live, and uses the existing expand button for the full modal. Long notes scroll inside a capped height.
+- The expanded modal has one WYSIWYG editor and one `WYSIWYG` / `HTML` source toggle. The earlier **Simple** / **Rich** modes are removed; Simple was only the legacy text storage/rendering path, not a meaningful authoring mode.
+- New steps default to `noteFormat: "html"`. Existing `noteFormat: "text"` notes render through a safe legacy conversion (literal `<` escaped, allowed simple tags preserved, newlines to `<br>`) without mutating the step. The first real edit upgrades the note to HTML; opening/closing or toggling source without editing leaves it as text.
+- WYSIWYG formatting uses the live DOM selection: `B`, `I`, `U`, `sup`, and `sub` map to `execCommand` where available, with a Range-based fallback that wraps or unwraps the selected nodes; `✕` unwraps formatting inside the preview.
+- The modal is staged: **Apply** commits the draft to the step, **Cancel** discards it, and Esc/close asks before discarding real changes. The confirm compares the current draft with the opening snapshot only after a real edit, so legacy notes and source-view toggles do not raise false dirty prompts. Focus returns to the expand button after close.
+- HTML source editing sanitizes when switching back to WYSIWYG and again on Apply. Apply fails closed if DOMPurify is unavailable. Pasting into the preview sanitizes clipboard HTML (plain text is escaped) before insertion.
+- Rule-table includes stay as `<div data-note-include="...">` placeholders in stored HTML; rendered embeds are `contenteditable="false"`, and `.note-table-scroll` wrappers are removed on serialization.
+- The inline drawer and modal share the context-based rich toolbar. Image file and table inserts take the editing context, so async file inserts are dropped safely if the target editor has closed. The inline `TXT` / `HTML` toggle is gone.
+- The modal source toggle is icon-only: `code` while HTML source mode is active and `itemDetails` while WYSIWYG is active, with Greek tooltips/aria that describe the click action; the modal title, footer, and placeholders remain Greek. New `code`, `orderedList`, `alignLeft`, `alignCenter`, and `alignRight` icons were added.
+- `note-52.js` adds `sanitizeHtml`, `renderEditable`, `serializeEditable`, and `legacyTextToHtml`; `cleanNoteFragment` unwraps table-scroll wrappers and accepts `expandIncludes` / `wrapTables` options. Editable rendering skips the image-error fallback so broken image sources survive editing and serialization.
+- Removed the obsolete textarea-format helpers and Simple-mode functions; `fScenarioSetNoteFormat` / `fScenarioNoteHtmlToText` are no longer used.
+
+### CSS
+- Added the compact inline `.snoteRich` editor (max-height, internal scroll, placeholder, focus ring) and the modal body/preview/source/footer layout with the WYSIWYG/HTML source toggle. Removed the Simple/Rich segmented-control and Simple-textarea styles. The existing `.mu-note` typography is reused for both editable surfaces.
+
+### Checks
+- `esprima` parse passes for `scenario-52.js`, `note-52.js`, and `core-52.js`; `molview-52.js` / `teaching-52.js` report the same pre-existing modern-syntax parse failures as their v51 copies and were not modified for v52. No Node runtime is installed in the environment.
+- Headless Chrome (file URL, no build step) loaded v52 with no JavaScript exceptions and passed smoke coverage for: legacy literal-`<` conversion, inline live upgrade, inline rule-table insert + non-editable embed, modal with no Simple/Rich controls, untouched legacy close without prompt, source toggle without upgrade/prompt, source edit upgrade, drawer live editing, and modal Apply refreshing the inline editor. A 1200×900 screenshot of the modal was visually checked.
+- v51 files are untouched. Manual browser click-through for real scenarios, touch devices, and Firefox remains pending.
+
+### 2026-10-26 — Note toolbar/layout refinement (v52, live)
+- Removed the whole-note `Font Size` and `Width` inputs. The shared inline/modal toolbar now has UL/OL list buttons, a per-block font-size dropdown (`14/18/22/26`), and a left/center/right alignment dropdown. Alignment is WYSIWYG-only; source mode disables size/alignment but keeps lists.
+- List alignment targets the list container: a selection inside an `<li>` applies `note-align-*` to its containing `ul`/`ol`, deduplicates multiple selected items from the same list, and clears stale per-item alignment classes. Font size still applies to the selected `<li>`. Centered lists use `list-style-position: inside` so bullets/numbers center with the text; left/right alignment is unchanged.
+- New rich helpers: `fScenarioRichBlockTargets`, `fScenarioRichSetBlockFontSize`, `fScenarioRichAlignBlocks`, `fScenarioRichAlignTargets`, `fScenarioRichClearAlign`, `fScenarioRichMakeList`, and `fScenarioRichLiftLists` (lifts `execCommand` lists out of invalid `<p>`/`<div>` wrappers). `fScenarioRichClean` strips the new classes too.
+- Image file insertion now opens a compact `<dialog>` with required alt and optional width/height (`16–2000` integer, blank = auto); the URL image tool and `fScenarioInsertNoteImageByUrl` are removed. `note-52.js` validates dimensions and removes invalid ones during sanitization.
+- Stored `note-fs-*` / `note-align-*` classes are allowlisted; images keep explicit `height` (CSS only forces `height:auto` when no height attribute exists).
+- Layout: the presentation top card now spans the union of the visible app columns (menu only when the step shows it, plus viewer + analysis) using measured `--scStepTextFitWidth` / `--scStepTextFitLeft` CSS vars, with a full-width fallback and the existing 1600px cap. Menu show/hide, viewer changes, and window resizes recompute it; the viewers refit when the card width changes. Side rails keep `align-self:stretch`, internal scrolling, and a JS max-height from the app row (no viewport cap). `styleText.textWidthPx` is still parsed for compatibility but no longer applied; `styleText.fontSizePx` remains the legacy base for old scenarios.
+- Source toggle is now an icon button showing the current mode: `code` in HTML source mode and `itemDetails` in WYSIWYG mode. New `code`, `orderedList`, `unorderedList`, `alignLeft`, `alignCenter`, and `alignRight` icons are registered. The ordered-list icon was refreshed from `imgs/ordered-list-svgrepo-com.svg`; the bullet-list button now uses `imgs/unordered-list-svgrepo-com.svg` instead of the generic `list` icon.
+- Inline toolbar scope: UL/OL stay inline; image, table, and predefined-content controls are now built only in the expanded modal (conditionally omitted, not CSS-hidden). The expand tooltip names the moved actions and now ends with “, κώδικας”; its bubble is left-anchored and wraps inside the step row. Inline spacing is compacted (`gap: 2px`) so the lighter toolbar stays on one row at the pinned 480px bar width.
+- Modal toolbar tooltips now use the shared tooltip skin/geometry; source-button bubbles are left-anchored and align-menu option bubbles open to the right.
+- The note font-size `<select>` is wrapped in `.scNoteFontSizeWrap` with the shared dark tooltip (native `title` removed); per-step `.sshow` toggles now use `data-tooltip` inside a new `.scShowRow` flex container, with wrapped left-anchored bubbles.
+- Toolbar icons: re-synced `orderedList` from the updated `imgs/ordered-list-svgrepo-com.svg`; `columns1` / `columns2` now use the new outline `imgs/one-columns-svgrepo-com.svg` / `imgs/two-columns-svgrepo-com.svg` sources with the white knockout rects dropped.
+- Verification: esprima parse OK for `scenario-52.js`, `note-52.js`, `ui-icons.js`; CSS braces `340/340` scenario / `305/305` main; headless Chrome at 1920×1080, 1400×900, and 1100×800 passed top-card column alignment with the menu hidden/shown, side-rail fallback, and 50+ earlier checks covering drawer/modal controls, font size, alignment, list lifting, source-mode disabling, image dialog insert, sanitizer classes/dimensions, list-container alignment, top-card fallback, and side-rail stretch; inline, modal, image-dialog, and right-rail screenshots were visually checked. Toolbar-scope checks: all 7 inline note bars had 2 list / 0 insert / 0 component controls; the modal had 2 list / 2 insert / 1 component; inline list clicks and modal image/component handlers fired; the pinned 480px inline toolbar measured 20px high on one row; actual inline and modal screenshots were checked. Centered-list checks passed for `#scStepText` and `.mu-note`: computed `list-style-position: inside`, zero left margin, and center text for UL/OL, with normal lists still outside/left; screenshot checked. Source-toggle check passed: WYSIWYG shows `itemDetails`, source mode shows `code`; active/`aria-pressed` and action tooltips follow the mode. Tooltip checks: the inline expand bubble is 320px wide, wraps to two lines, and stays within the pinned step row; modal source/component bubbles render with the expected left/centered geometry; the font-size wrapper and four `.sshow` hints use the dark skin with no native `title`; screenshots checked. Icon rendering was checked at 16px/64px on normal and white-currentColor hover backgrounds. Firefox/touch/screen-reader and real-scenario click-through remain pending.
+
+---
+
+## [v51] (rich presentation notes, safe HTML, rule-table components, authoring note dialog, Snap-free viewer; previous live, `index.html` → v51 before v52)
+
+New parallel file set `mulermoc-nom-51.html` + `js/*-51.js` + `css/*-51.css`, forked from v50. v51 was live until v52: `index.html` pointed to `mulermoc-nom-51.html`; v50 and earlier remain runnable at root.
 
 ### Rich notes (`mulermoc-nom-note-51.js`, `scenario-51.js`, `scenario-51.css`)
 - Additive per-step `noteFormat`: missing/`"text"` keeps the escape-first simple-HTML renderer byte-for-byte; `"html"` uses DOMPurify 3.4.17 with an explicit tag/attribute/class allowlist.
@@ -64,7 +105,7 @@ New parallel file set `mulermoc-nom-51.html` + `js/*-51.js` + `css/*-51.css`, fo
 
 ### 2026-10-25 — Step-note image file picker
 - The note image tool now opens a native file picker for PNG/JPEG/GIF/WebP files (≤500 KB) and embeds the selected image as a data URI; `alt` text remains required.
-- URL image insertion remains available from the adjacent URL tool (relative/`https:` sources, same policies).
+- URL image insertion remains available from the adjacent URL tool in v51 (relative/`https:` sources, same policies); the v52 refinement removes it in favour of the image sizing dialog.
 - SVG, unsupported types, oversized files, and missing `alt` are rejected; the inserted image is kept in sync with the inline/modal note editor.
 
 ---

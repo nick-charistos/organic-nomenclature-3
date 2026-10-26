@@ -33,8 +33,11 @@ progress tracking, server storage.
 > `menuGroups` is additive (`molecules` default = flat list, `chemclass` /
 > `series` classify the picked subset; unknown values coerce out, missing or
 > empty falls back to flat — no version bump). `styleText` is additive
-> (`fontSizePx` 12–28/null, `textWidthPx` 320–1200/null, `columns` 1|2/null,
-> `position` `"left"`/`"right"`/null (v50); null = theme defaults). `styleName.hidden` + `show.nameEye` carry
+> (`fontSizePx` 12–28/null is the legacy whole-note base, `textWidthPx`
+> 320–1200/null is still parsed but ignored by v52, `columns` 1|2/null,
+> `position` `"left"`/`"right"`/null (v50); null = theme defaults). Per-block
+> font size/alignment live in the note HTML as allowlisted `note-fs-*` /
+> `note-align-*` classes. `styleName.hidden` + `show.nameEye` carry
 > per-component visibility (see §2 visibility rules).
 
 ```json
@@ -86,7 +89,7 @@ progress tracking, server storage.
 }
 ```
 
-State notes (grounded in v51; v42–v50 identical unless noted):
+State notes (grounded in v52; v42–v51 identical unless noted):
 
 * `selectedMol`, `mode2D/modeSuffix`, `mainChainMode`,
   `etherNamingMode`, `nameAnalysisMode`, `selectedRule` mirror
@@ -285,10 +288,13 @@ Visibility rules:
   `<ul>`, `<ol>`, `<li>`, `<small>`, `<big>`); `noteFormat: "html"`
   uses DOMPurify with a curated allowlist (paragraphs, lists, links,
   tables, figures, images, `note-*` classes, and rule-table components).
-  Rich notes add a text/HTML toggle, image (file picker or URL), table, and
-  rule-table helpers, plus an expand control that opens a content-only modal
-  editor (live sync; no
-  preview/Apply/Cancel). Presentation keeps the v50 top/left/right rails and
+  Rich notes add UL/OL lists, per-block font size/alignment, image (file dialog
+  with required alt and optional width/height), table, and rule-table helpers,
+  plus an expand control that opens the modal editor. The inline drawer is a
+  compact WYSIWYG editor with live writes; the modal has a WYSIWYG/HTML source
+  toggle, DOM-selection formatting, sanitized paste, and staged Apply/Cancel
+  with a dirty-close confirm. New notes default to HTML; legacy text notes
+  render safely and upgrade on first edit. Presentation keeps the v50 top/left/right rails and
   has no separate wide/focus mode. Heading +
   text show automatically iff the step carries a title or note;
   clear both for a silent visual step (app title kept). Author
@@ -346,19 +352,16 @@ Visibility rules:
   stacked in `.scStepNumberWrap`, step title (`Τίτλος βήματος` label
   above the field, defaults to the live Greek IUPAC name at Save —
   key fallback, `"menu"` for menu-only), per-step educational text
-  (`note` textarea with formatting toolbar: text/HTML toggle,
-  `B I sup sub` buttons, clear, image (file picker or URL)/table and icon-only
-  rule-table inserts, expand-to-dialog, 1↔2 column toggle icon, whole-text size/width
-  via per-step
-  `Size (px)` input `styleText.fontSizePx`
-  (12–28, empty = 18px) and `Width (px)` input `styleText.textWidthPx`
-  (320–1200, empty = 980px default width; explicit values override up to the
-  card width); 1↔2 column toggle
-  `styleText.columns` (default 1; lists never split via `break-inside`,
-  small screens collapse to 1); `Θέση: Πάνω / Αριστερά / Δεξιά` icon
-  dropdown `styleText.position` (`"left"`/`"right"`, or null = top; v50);
-  `<ul>`/`<ol>`/
-  `<small>`/`<big>` still render in saved notes but are no longer inserted),
+  (`note` rich editor with formatting toolbar: `B I sup sub`, clear, UL/OL
+  lists, per-block font-size dropdown (`14/18/22/26`), left/center/right
+  alignment dropdown (WYSIWYG only), image file dialog/table and icon-only
+  rule-table inserts, expand-to-dialog, 1↔2 column toggle icon; the old
+  whole-text `Size (px)` / `Width (px)` inputs are removed, so
+  `styleText.fontSizePx` is only a legacy base and `styleText.textWidthPx` is
+  ignored; 1↔2 column toggle `styleText.columns` (default 1; lists never split
+  via `break-inside`, small screens collapse to 1); `Θέση: Πάνω / Αριστερά /
+  Δεξιά` icon dropdown `styleText.position` (`"left"`/`"right"`, or null = top;
+  v50); `<small>`/`<big>` still render in saved notes but are not inserted),
   per-step chrome
    checkboxes (`2D controls`, `3D controls`, `Name controls`,
    `Name interact`, `Ορατότητα συνθετικών`, plus `Ταξινομήσεις Μένου` (`Μόρια` default-checked,
@@ -378,7 +381,7 @@ Visibility rules:
   (rewrite the step's stored view snapshot from the current live view:
   Go → tweak molecule, 2D/3D modes + styles, naming clicks/toggles,
    camera, pick → Update; preserves `title`/`note` + the 4 chrome
-   checkboxes + `show.nameEye` + `menuGroups` + `styleText` (size/width/columns), refreshes everything visual incl. `nameAnalysisMode`,
+   checkboxes + `show.nameEye` + `menuGroups` + `styleText` (legacy size, parsed width, columns, position), refreshes everything visual incl. `nameAnalysisMode`,
    `styleName.hidden` (from the live eye toggles),
    `menuSubset`/`show.menu`/`show.viewers`; toasts kind/subset changes),
   `⧉` duplicate (deep-clone after, title + ` (αντίγραφο)`),
@@ -432,9 +435,14 @@ Visibility rules:
   `clamp(300px, 24vw, 420px)` rail beside the app at ≥1200px, as the first/last
   fourth flex item in `#mainAppContainer > .mainApp3Columns` (8px row gap;
   page max width `calc(1600px + rail + 8px)`). Below 1200px CSS falls back to
-  the top card before `#mainAppContainer`. The rail always renders one column
-  and its height is capped to the tallest visible app column / `100vh - 80px`;
-  `textWidthPx` applies to top mode only. Switching top↔side refits viewers;
+  the top card before `#mainAppContainer`. In presentation the top card spans
+  the union of the visible menu/viewer/analysis columns (menu only when the
+  step shows it), measured by JS into `--scStepTextFitWidth` /
+  `--scStepTextFitLeft`, clamped to `#authorLayout`, with a full-width fallback
+  and the 1600px cap. The rail always renders one column, stretches to the app
+  row (`align-self:stretch`) and scrolls internally; JS sets its max-height from
+  the tallest visible app column. `textWidthPx` is ignored in v52. Switching
+  top↔side refits viewers;
   `fViewerHeights2D3D` skips the note-height subtraction only while a side rail
   is actually applied.
 * `#menuCol` is hidden wholesale in presentation so the remaining
@@ -495,7 +503,7 @@ Kept untouched: v42 copies (`molview-42.js`, `jsme-nick-42.css` — frozen),
 * Legacy `#molInfo` in `functional-groups.html:80` is a
   different page and stays untouched (now in `archive/html/`).
 
-## 7. v1 build status (v43 done, v44 released, v50 current)
+## 7. v1 build status (v43 done, v44 released, v52 current)
 
 Done in v43 (`mulermoc-nom-43.html`, last suffixed copy; carried through v44 into v45 unchanged unless noted in `CHANGELOG.md [v44]`):
 
@@ -512,7 +520,7 @@ Done in v43 (`mulermoc-nom-43.html`, last suffixed copy; carried through v44 int
    assertions (manual click-through pending).
 6. ✅ CHANGELOG v43 entry (`index.html` → 43 in repo3 only).
 
-Remaining: v51 is live (`index.html` → 51 — safe rich HTML notes, rule-table components, content-only authoring note dialog, compact icon toolbar, 98 molecules, and a Snap-free native `MuSVG` 2D overlay; default preload `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json`; see `CHANGELOG.md [v51]`). It retains the v50 per-step presentation text position (top/left/right fourth-column sticky rail) + persistent naming shell and the v49 MSc-student import (see `CHANGELOG.md [v50]`/`[v49]`); `*50*`–`*44*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced. Then quizzes/games on the
+Remaining: v52 is live (`index.html` → 52 — unified inline/modal rich note editor with WYSIWYG + HTML source, lazy legacy-text upgrade, staged Apply/Cancel and dirty-close confirm; safe rich HTML notes, rule-table components, compact icon toolbar, 98 molecules, and a Snap-free native `MuSVG` 2D overlay; default preload `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json`; see `CHANGELOG.md [v52]`). It retains the v51 rich notes, the v50 per-step presentation text position (top/left/right fourth-column sticky rail) + persistent naming shell, and the v49 MSc-student import (see `CHANGELOG.md [v51]`/`[v50]`/`[v49]`); `*51*`–`*44*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced. Then quizzes/games on the
 same reuse contract. The stepper's main-chain pool index is captured per step (`chainIdx`, v47 additive) and re-asserted on apply; only the transient EXPLORE walk UI position is not step state.
 
 ## 8. Open questions for development (moveto timing closed 2026-10-04)

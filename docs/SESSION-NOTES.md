@@ -1,15 +1,124 @@
 # Session notes — 2026-10-03 (resume point for next session)
 
-> **Current baseline (2026-10-25): v51 live.** `index.html` →
-> `mulermoc-nom-51.html`, 98 `nameExamples` keys (80 previous + 18 new alcohols/
-> dienes/enynes). v51 adds safe rich HTML notes, rule-table components, the
-> content-only authoring note dialog, the compact icon toolbar, and a Snap-free
-> native `MuSVG` 2D overlay; it retains the v50 per-step presentation text
-> position (top/left/right sticky rail) + persistent naming shell. Default
-> scenario `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json`. v50 and earlier
-> remain runnable. See the latest 2026-10-25 entry below and
-> `docs/SESSION-HANDOFF-2026-10-25-SNAP-REMOVAL.md`. The v43 header and body
-> below are kept as historical working notes.
+> **Current baseline (2026-10-26): v52 live.** `index.html` →
+> `mulermoc-nom-52.html`, 98 `nameExamples` keys. v52 has a unified rich note
+> editor: inline WYSIWYG, modal WYSIWYG + HTML source view, staged Apply/Cancel
+> with dirty confirm, and lazy legacy-text upgrade. The 2026-10-26 refinement
+> adds block lists, per-block font size/alignment, an image sizing dialog, a
+> top card that spans the visible app columns, and a rail that stretches to the
+> app row. It
+> retains the v51 safe rich HTML notes, rule-table components, compact icon
+> toolbar, Snap-free native `MuSVG` 2D overlay, v50 presentation text rails, and
+> persistent naming shell.
+> Default scenario `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json`. v51 and earlier
+> remain runnable. See `docs/CHANGELOG.md [v52]` and
+> `docs/SESSION-HANDOFF-2026-10-26-RICH-NOTE-EDITOR-V52.md`. The v43 header and
+> body below are kept as historical working notes.
+
+## 2026-10-26 — v52 unified rich note editor (live)
+
+- Forked the full v52 file set from v51; v51 files are untouched. `index.html`
+  now points to `mulermoc-nom-52.html`.
+- Inline drawer is a compact WYSIWYG `contenteditable` editor with live writes,
+  capped height/internal scroll, sanitized paste, and the existing expand button.
+  The inline `TXT`/`HTML` toggle and the modal Simple/Rich modes are gone.
+- Modal note editor: WYSIWYG by default, one WYSIWYG/HTML source toggle,
+  DOM-selection bold/italic/underline/sup/sub, formatting clear, sanitized paste,
+  staged Apply/Cancel, dirty-close confirm, and focus restore.
+- New steps default to `noteFormat: "html"`. Legacy text notes render through
+  `legacyTextToHtml` without mutation and upgrade on first real edit; untouched
+  notes and source-only toggles stay text and do not prompt.
+- Note helpers: `sanitizeHtml`, `renderEditable`, `serializeEditable`,
+  `legacyTextToHtml`; includes remain placeholders in stored HTML, embeds are
+  non-editable, table-scroll wrappers are unwrapped, and editable rendering
+  preserves broken image sources.
+- Insert tools (image file dialog, table, rule-table component) use an editing
+  context shared by inline and modal; async image inserts are dropped if the
+  editor closed.
+- Checks: esprima parse passes for scenario/note/core; headless Chrome smoke
+  tests passed for legacy `<` conversion, inline live upgrade, include insert,
+  modal no-Simple/Rich, legacy close without prompt, source toggle without
+  upgrade, source edit upgrade, drawer live editing, and modal Apply refresh;
+  1200×900 screenshot checked. Node is not installed; Firefox/touch/real-scenario
+  click-through remains pending.
+- Docs updated: CHANGELOG, README, PROJECT-PLAN (EN/GR), LAYERS-PLAN,
+  didactic-scenario-plan, Presentation-Step-Rich-Text-PLAN, this file, and the
+  v52 handoff. The 2026-10-25 rich-editor handoff is marked superseded.
+
+## 2026-10-26 — v52 note toolbar/refinement pass (live, uncommitted)
+
+- Toolbar: removed the whole-note `Font Size` and `Width` controls. Added UL/OL
+  list buttons, a per-block font-size dropdown (`14/18/22/26`), and a
+  left/center/right alignment dropdown. The source toggle is now an icon button
+  showing the current mode (`code` in source, `itemDetails` in WYSIWYG); source
+  mode disables size/alignment but keeps lists. Tooltips/aria still describe the
+  click action.
+  The list buttons use the refreshed `orderedList` icon and the new
+  `unorderedList` icon from the corresponding `imgs/*-list-svgrepo-com.svg`
+  sources; the generic `list` icon remains for the steps drawer.
+- Inline toolbar scope: UL/OL stay inline; image, table, and predefined-content
+  controls are modal-only via `showInsert: false` / `showComponent: false` on
+  `fScenarioNoteContentBar` (not CSS-hidden). The expand tooltip now names the
+  moved actions and ends with “, κώδικας”; its bubble is left-anchored and
+  wraps inside the step row.
+- Tooltips: modal toolbar and align-menu options now use the shared skin;
+  source-button bubbles are left-anchored and menu-option bubbles open right.
+- Font-size and show toggles: the note size `<select>` is wrapped in
+  `.scNoteFontSizeWrap` for a shared dark tooltip (native `title` removed);
+  `.sshow` hints use `data-tooltip` in the new `.scShowRow` flex container,
+  with wrapped left-anchored bubbles.
+- Icons: `orderedList` was re-synced from the updated
+  `imgs/ordered-list-svgrepo-com.svg`; `columns1` / `columns2` now use the new
+  outline `imgs/one-columns-svgrepo-com.svg` /
+  `imgs/two-columns-svgrepo-com.svg` sources with white knockout rects dropped.
+- Rich helpers: `fScenarioRichBlockTargets`, `fScenarioRichSetBlockFontSize`,
+  `fScenarioRichAlignBlocks`, `fScenarioRichAlignTargets`,
+  `fScenarioRichClearAlign`, `fScenarioRichMakeList`, and
+  `fScenarioRichLiftLists` (unwraps `execCommand` lists from `<p>`/`<div>`).
+  `fScenarioRichClean` also removes `note-fs-*` / `note-align-*`.
+- List alignment targets the list container: a selection inside an `<li>` maps
+  to its containing `ul`/`ol`, multiple selected items from one list dedupe to a
+  single class, and stale `li.note-align-*` classes are cleared. Font size still
+  applies to the selected `<li>`. Centered lists set
+  `list-style-position: inside` and drop the left offset so bullets/numbers
+  center with the text; left/right alignment is unchanged.
+- Images: file insert opens a compact `<dialog>` with required alt, optional
+  width/height (integer `16–2000`, blank = auto); the URL image tool/helper is
+  removed. `note-52.js` validates dimensions and strips invalid ones.
+- Layout: the presentation top card now matches the union of visible
+  `#menuCol` (only when the step shows it), `#viewerCol`, and `#analysisCol`
+  via `fScenarioSyncStepTextWidth` + `--scStepTextFitWidth` /
+  `--scStepTextFitLeft`; it clamps to `#authorLayout`, falls back to full width,
+  and keeps the 1600px cap. Menu toggles, viewer changes, and resizes recompute
+  it; `fScenarioScheduleStepTextRefit` refits viewers when the card width
+  changes (which can change its height). Side rails keep `align-self:stretch` and internal scrolling, with JS
+  max-height from the app row. `styleText.textWidthPx` is parsed for
+  compatibility but no longer applied. `styleText.fontSizePx` remains the legacy
+  base; new blocks use stored classes.
+- CSS: new toolbar/select/alignment-menu/image-dialog styles; `note-fs-*` and
+  `note-align-*` rules; explicit image height is preserved unless omitted. The
+  inline toolbar uses `gap: 2px` so the lighter control set stays on one row at
+  the pinned 480px bar width.
+- Verification: esprima parse OK for scenario/note/core; CSS braces `340/340` scenario / `305/305` main;
+  headless Chrome at 1920×1080, 1400×900, and 1100×800 passed top-card column
+  alignment with menu hidden/shown plus 50+ checks (drawer/modal controls, font
+  size, alignment, lists, list-container alignment, source disable, image
+  dialog insert, sanitizer dims/classes, side-rail stretch) with screenshots of
+  inline, modal, image dialog, and right rail. Toolbar-scope checks: all 7 inline
+  note bars had 2 list / 0 insert / 0 component controls, the modal had 2 list /
+  2 insert / 1 component, inline list and modal image/component handlers fired,
+  and the pinned 480px inline toolbar measured 20px high on one row. Centered
+  lists in `#scStepText` and `.mu-note` computed `list-style-position: inside`,
+  zero left margin, and center text for UL/OL, while normal lists stayed
+  outside/left; screenshot checked. Source-toggle check: WYSIWYG shows
+  `itemDetails`, source mode shows `code`, and active/`aria-pressed` plus
+  action tooltips follow the mode. Tooltip checks: the inline expand bubble is
+  320px wide, wraps to two lines, and stays inside the step row; modal
+  source/component bubbles use the expected left/centered geometry. The
+  font-size wrapper and four `.sshow` hints use the dark skin with no native
+  `title`; the `.scShowRow` container groups five show labels. Icons were checked at 16px/64px on normal
+  and white-currentColor hover backgrounds.
+  Firefox/touch/screen-reader and real-scenario click-through remain pending.
 
 Working baseline (historical): **v43**, `index.html` → `mulermoc-nom-43.html`. Tree clean at `cb2460c`.
 No JS runtime in the assistant environment — all changes were verified statically

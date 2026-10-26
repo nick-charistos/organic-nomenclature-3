@@ -1,0 +1,2501 @@
+@import url("https://fonts.googleapis.com/css2?family=Didact+Gothic&family=Roboto+Condensed:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Source+Sans+3:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+:root {
+  --veryLightGray: #f3f3f3;
+
+  --lightBlue: #779ace;
+  --veryLightBlue: #c8d9ec;
+  --darkEarth: #dfa374;
+  --lightEarth: #f6d1ba;
+
+  --darkBlue: #1b275d;
+  --vibrantGreen: #5fad56;
+  --veryLightEarth: #fff1de;
+
+  --redAlert: #b90000;
+
+  --bodyBg: #faf7f5;
+
+  /* Manual tune: MINIMUM viewer column width while the scenario bar is pinned
+     (clamp floor; consumed by body.scPinned #viewerCol in the scenario
+     stylesheet). The pinned cap widens up to 620px on screens with room, so
+     the viewer keeps its original width when possible. Bounds min-width/
+     max-width hold. */
+  --viewerPinnedWidth: 400px;
+
+  /* Shared viewer min-height floor (v48). Single source of truth is the JS
+     `VIEWER_MIN_H` constant, pushed into this variable at load; the value here
+     is only the no-JS fallback. Consumed by .JmolContainer / #jsmeNomeclatureSVG
+     so the applet box and the DOM agree. */
+  --viewerMinH: 150px;
+}
+
+
+
+body {
+  font-family: "Roboto", sans-serif;
+  font-size: 1rem;
+  padding: 0;
+  margin: 0;
+  /* overflow-x: hidden; */
+  max-width: 100vw;
+  background-color: var(--bodyBg);
+}
+
+html,
+body {
+  overflow-x: hidden;
+  height: 100%;
+}
+
+sup,
+sub {
+  vertical-align: baseline;
+  position: relative;
+  top: -0.4em;
+}
+
+sub {
+  top: 0.2em;
+}
+
+div {
+  box-sizing: border-box;
+}
+
+h1 {
+  font-family: "Roboto Condensed", sans-serif;
+  font-weight: 700;
+  text-align: center;
+  color: var(--darkBlue);
+  /* margin-top: 10px; */
+}
+
+
+
+header {
+  height: 30px;
+  background-color: #fff;
+  border-bottom: 1px solid var(--veryLightBlue);
+  width: 100%;
+}
+
+#mainAppContainer {
+  max-width: 1600px;
+  margin: auto;
+  margin-top: 0;
+  margin-bottom: 20px;
+  /* overflow-x: hidden; */
+}
+
+#pageContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: calc(100% - 30px);
+}
+
+#fGroupsContainer {
+  width: 220px;
+
+  /* border: 1px solid #eee; */
+  border-right: 0;
+}
+
+.hide {
+  display: none !important;
+}
+
+/* #jsmeNomeclatureDIV {
+  width: 450px;
+} */
+
+#jsmeFunSVG,
+#jsmeMolSVG {
+  width: 400px;
+  height: 200px;
+}
+
+#jsmeHomoSeriesSVG {
+  width: 400px;
+  height: 200px;
+}
+
+.panelTitle {
+  position: relative;
+  font-family: "Roboto", sans-serif;
+  font-weight: 600;
+  text-align: center;
+  padding: 10px 0;
+  /* border-bottom: 1px solid #ccc; */
+  background-color: var(--lightBlue);
+  color: #fff;
+  font-size: 1rem;
+  min-height: 22px;
+  overflow: visible;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+/* ── Settings button in panelTitle ───────────────────────────────────────── */
+.settingsBtn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--veryLightEarth);
+  border: 2px solid var(--veryLightBlue);
+  color: var(--darkBlue);
+  cursor: pointer;
+  font-size: 0;
+  padding: 2px;
+  /* line-height: 1; */
+  border-radius: 4px;
+  transition: all 0.2s;
+  z-index: 300;
+  width: 20px;
+  height: 20px;
+  box-sizing: content-box;
+}
+
+.settingsBtn:hover {
+  background: var(--darkEarth);
+  color: #fff;
+}
+
+
+.settingsBtn.active {
+  background: var(--darkBlue);
+  color: #fff;
+}
+
+.settingsBtn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* Viewer title-bar button row: [2D][3D][gear]. Buttons lay out in a row;
+   .settingsBtn absolute positioning is neutralized inside the container. */
+#viewerVisBtns {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  z-index: 300;
+}
+
+#viewerVisBtns .settingsBtn {
+  position: static;
+  transform: none;
+}
+
+/* Text visibility toggles: bold label instead of an icon. */
+.settingsBtn.visBtn {
+  font-size: 1rem;
+  font-weight: bolder;
+  padding: 2px 4px;
+  font-family: "Roboto Condensed";
+}
+
+/* ── Settings dropdown panel ─────────────────────────────────────────────── */
+#viewerSettingsPanel {
+  position: absolute;
+  top: 100%;
+  left: -1px;
+  right: -1px;
+  z-index: 50;
+  background: #fff;
+  border: 1px solid var(--lightBlue);
+  border-top: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition:
+    max-height 0.22s ease,
+    padding 0.22s ease;
+  padding: 0 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+  background-color: var(--veryLightGray);
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+#viewerSettingsPanel.open {
+  max-height: min(70vh, 400px);
+  padding: 6px 8px;
+  overflow-y: auto;
+}
+
+/* Single-viewer max-height control (v48): checkbox + px slider + readout. */
+.viewerHeightRange {
+  flex: 1 1 90px;
+  min-width: 90px;
+  max-width: 150px;
+  accent-color: var(--darkBlue);
+  cursor: pointer;
+}
+
+.viewerHeightRange:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.viewerHeightVal {
+  font-family: "Roboto Condensed", sans-serif;
+  font-size: 0.813rem;
+  color: #333;
+  min-width: 44px;
+  text-align: right;
+}
+
+.settingRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  min-height: 30px;
+}
+
+.settingTitle {
+  font-family: "Roboto Condensed", sans-serif;
+  font-weight: 600;
+  color: #fff;
+  font-size: 0.938rem;
+  background: var(--darkEarth);
+  padding: 2px;
+  margin-bottom: 10px;
+  border-radius: 2px;
+}
+
+.settingLabel {
+  font-size: 0.813rem;
+  color: #333;
+  font-family: "Roboto Condensed", sans-serif;
+}
+
+#jsmeNomeclatureSVG:not(.svgAtomsColorized) text:not([id^="number"]),
+#jsmeNomeclatureSVG:not(.svgAtomsColorized) text:not([id^="number"]) tspan {
+  fill: #000 !important;
+}
+
+#radio2DMode,
+#controls3D {
+  position: relative;
+  background: #f3f3f3;
+  height: 36px;
+  display: flex;
+  border: 1px solid #ddd;
+  border-left: 0;
+  border-right: 0;
+}
+
+#controls3D {
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 6px;
+  border-bottom: 0;
+  /* Last child whenever 3D is visible: rounds the column's bottom corners
+     without clipping (4px = #viewerCol's 5px radius minus its 1px border). */
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+/* When 3D is hidden the 2D bar is the column's last visible child, so it
+   carries the rounded bottom corners. */
+#viewerCol:has(#controls3D.hide) #radio2DMode {
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.radioGroupContainer {
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 6px;
+}
+
+.ruleTheoryTitle .narrateBtn {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--veryLightEarth);
+  border: none;
+  color: var(--darkBlue);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 3px;
+  line-height: 1;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+
+/* .narrateBtn:hover {
+  background: var(--darkEarth);
+  color: #fff;
+
+} */
+
+/* In-flow collapsible name settings panel (sweeps following content) */
+#nameSettingsPanel {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  box-sizing: border-box;
+  max-height: 0;
+  overflow: hidden;
+  transition:
+    max-height 0.25s ease,
+    padding 0.25s ease;
+  padding: 0 8px;
+  background: var(--veryLightBlue);
+  will-change: max-height;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  border: 1px solid var(--lightBlue);
+}
+
+/* Top row: main-chain stepper alone (left-aligned), only in ether+stepper case. */
+#nameSettingsRowTop {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+#nameSettingsRowTop:empty {
+  display: none;
+}
+
+/* Main row: left group (stepper or ether radios, when present) spread from
+   the right-side name buttons — no empty half-rows in any molecule case. */
+#nameSettingsRowMain {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+#nameSettingsRowMain .nsLeft {
+  display: flex;
+  align-items: center;
+}
+
+#nameSettingsRowMain .nsRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+#nameSettingsPanel.open {
+  max-height: 260px;
+  /* tweak if your content needs more space */
+  padding: 6px 8px;
+  overflow: visible;
+
+}
+
+.nameContainer {
+  justify-content: center;
+  /* background-color: var(--veryLightEarth); */
+  padding: 2px 0 10px 0;
+  /* border: 1px solid var(--darkEarth); */
+}
+
+.nameEmptyHint {
+  flex: 1 1 100%;
+  min-width: 0;
+  padding: 8px 10px 10px;
+  color: #666;
+  font-size: 0.95rem;
+  font-style: italic;
+  line-height: 1.35;
+  text-align: center;
+  white-space: normal;
+  pointer-events: none;
+}
+
+.nameContainer.nameOverflow {
+  justify-content: flex-start !important;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--darkBlue) var(--veryLightBlue);
+}
+
+.narrateBtn,
+.nameStyleBox,
+.nameStyleCross,
+.nameStyleEye,
+.readNameBtn {
+  width: 19px;
+  height: 19px;
+  color: var(--darkBlue);
+  background-color: var(--veryLightEarth);
+  border: 2px solid var(--darkEarth);
+  padding: 2px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  z-index: 300;
+  /* overflow: hidden; */
+  box-sizing: content-box;
+}
+
+.narrateBtn:hover,
+.nameStyleBox:hover,
+.nameStyleCross:hover,
+.nameStyleEye:hover,
+.readNameBtn:hover {
+  color: #fff;
+  background-color: var(--darkEarth);
+}
+
+.nameStyleCross.active,
+.nameStyleBox.active,
+.nameStyleEye.active,
+.narrateBtn.active {
+  color: #fff;
+  background-color: var(--darkBlue);
+  border-color: var(--veryLightGray);
+}
+
+
+
+.readNameBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* Shared tooltip skin (single copy): text look for every [data-tooltip]
+   bubble on the page — panel buttons, eye toggles, author tab, pick toggle,
+   scenario bar/panel/step/toolbar buttons, type badge, drag handle.
+   Geometry (position/top/left/transform) and z-index stay in the per-family
+   rules below and in css/mulermoc-nom-scenario-52.css. Both stylesheets
+   always load together via mulermoc-nom-52.html, so scenario selectors are
+   covered here and not re-declared there. */
+.narrateBtn[data-tooltip]::after,
+.readNameBtn[data-tooltip]::after,
+.viewerToolBtn[data-tooltip]::after,
+.stepBtn[data-tooltip]::after,
+.settingsBtn[data-tooltip]::after,
+.nameStyleBox[data-tooltip]::after,
+.nameStyleCross[data-tooltip]::after,
+.nameStyleEye[data-tooltip]::after,
+#narrateAnalysisToggle[data-tooltip]::after,
+.compEye[data-tooltip]::after,
+#scenarioAuthorTab[data-tooltip]::after,
+#nomeclature2Menu .panelTitle #scPickToggle.unselectedCheck[data-tooltip]::after,
+#nomeclature2Menu .panelTitle #scPickToggle.selectedCheck[data-tooltip]::after,
+#scenarioPlayBarTitle button[data-tooltip]::after,
+#scenarioPlayBar button[data-tooltip]::after,
+.scenarioPanel button[data-tooltip]::after,
+.scNoteEditorToolbar button[data-tooltip]::after,
+.scNoteFontSizeWrap[data-tooltip]::after,
+.scShowRow .sshow[data-tooltip]::after,
+.scMolBadge[data-tooltip]::after,
+.scDragHandle[data-tooltip]::after {
+  content: attr(data-tooltip);
+  background: var(--darkBlue);
+  color: #fff;
+  font-weight: normal;
+  font-family: "Roboto Condensed", sans-serif;
+  font-size: 0.75rem;
+  line-height: normal;
+  padding: 5px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  transition: opacity 0.15s ease 0s;
+}
+
+.narrateBtn[data-tooltip]:hover::after,
+.readNameBtn[data-tooltip]:hover::after,
+.viewerToolBtn[data-tooltip]:hover::after,
+.stepBtn[data-tooltip]:hover::after,
+.settingsBtn[data-tooltip]:hover::after,
+.nameStyleBox[data-tooltip]:hover::after,
+.nameStyleCross[data-tooltip]:hover::after,
+.nameStyleEye[data-tooltip]:hover::after,
+#narrateAnalysisToggle[data-tooltip]:hover::after,
+.compEye[data-tooltip]:hover::after,
+#scenarioAuthorTab[data-tooltip]:hover::after,
+#nomeclature2Menu .panelTitle #scPickToggle.unselectedCheck[data-tooltip]:hover::after,
+#nomeclature2Menu .panelTitle #scPickToggle.selectedCheck[data-tooltip]:hover::after,
+#scenarioPlayBarTitle button[data-tooltip]:hover::after,
+#scenarioPlayBar button[data-tooltip]:hover::after,
+.scenarioPanel button[data-tooltip]:hover::after,
+.scNoteEditorToolbar button[data-tooltip]:hover::after,
+.scNoteFontSizeWrap[data-tooltip]:hover::after,
+.scShowRow .sshow[data-tooltip]:hover::after,
+.scMolBadge[data-tooltip]:hover::after,
+.scDragHandle[data-tooltip]:hover::after {
+  opacity: 1;
+  transition: opacity 0.15s ease 0.5s;
+}
+
+/* Geometry for the panel-button bubble: below, centered */
+.narrateBtn[data-tooltip]::after,
+.readNameBtn[data-tooltip]::after,
+.viewerToolBtn[data-tooltip]::after,
+.stepBtn[data-tooltip]::after,
+.settingsBtn[data-tooltip]::after,
+.nameStyleBox[data-tooltip]::after,
+.nameStyleCross[data-tooltip]::after,
+.nameStyleEye[data-tooltip]::after,
+#narrateAnalysisToggle[data-tooltip]::after {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 200;
+}
+
+/* Shared tooltip arrow base (single copy): transparent 6px triangle;
+   direction color and placement stay in the per-family geometry rules. */
+.narrateBtn[data-tooltip]::before,
+.readNameBtn[data-tooltip]::before,
+.viewerToolBtn[data-tooltip]::before,
+.stepBtn[data-tooltip]::before,
+.settingsBtn[data-tooltip]::before,
+.nameStyleBox[data-tooltip]::before,
+.nameStyleCross[data-tooltip]::before,
+.nameStyleEye[data-tooltip]::before,
+#narrateAnalysisToggle[data-tooltip]::before,
+.compEye[data-tooltip]::before,
+#scenarioAuthorTab[data-tooltip]::before,
+#nomeclature2Menu .panelTitle #scPickToggle[data-tooltip]::before,
+#scenarioPlayBarTitle button[data-tooltip]::before,
+#scenarioPlayBar button[data-tooltip]::before,
+.scenarioPanel button[data-tooltip]::before,
+.scNoteEditorToolbar button[data-tooltip]::before,
+.scNoteFontSizeWrap[data-tooltip]::before,
+.scShowRow .sshow[data-tooltip]::before,
+.scMolBadge[data-tooltip]::before,
+.scDragHandle[data-tooltip]::before {
+  content: "";
+  position: absolute;
+  border: 6px solid transparent;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease 0s;
+}
+
+.narrateBtn[data-tooltip]:hover::before,
+.readNameBtn[data-tooltip]:hover::before,
+.viewerToolBtn[data-tooltip]:hover::before,
+.stepBtn[data-tooltip]:hover::before,
+.settingsBtn[data-tooltip]:hover::before,
+.nameStyleBox[data-tooltip]:hover::before,
+.nameStyleCross[data-tooltip]:hover::before,
+.nameStyleEye[data-tooltip]:hover::before,
+#narrateAnalysisToggle[data-tooltip]:hover::before,
+.compEye[data-tooltip]:hover::before,
+#scenarioAuthorTab[data-tooltip]:hover::before,
+#nomeclature2Menu .panelTitle #scPickToggle[data-tooltip]:hover::before,
+#scenarioPlayBarTitle button[data-tooltip]:hover::before,
+#scenarioPlayBar button[data-tooltip]:hover::before,
+.scenarioPanel button[data-tooltip]:hover::before,
+.scNoteEditorToolbar button[data-tooltip]:hover::before,
+.scNoteFontSizeWrap[data-tooltip]:hover::before,
+.scShowRow .sshow[data-tooltip]:hover::before,
+.scMolBadge[data-tooltip]:hover::before,
+.scDragHandle[data-tooltip]:hover::before {
+  opacity: 1;
+  transition: opacity 0.15s ease 0.5s;
+}
+
+/* Geometry for the panel-button arrow: above the bubble, centered */
+.narrateBtn[data-tooltip]::before,
+.readNameBtn[data-tooltip]::before,
+.viewerToolBtn[data-tooltip]::before,
+.stepBtn[data-tooltip]::before,
+.settingsBtn[data-tooltip]::before,
+.nameStyleBox[data-tooltip]::before,
+.nameStyleCross[data-tooltip]::before,
+.nameStyleEye[data-tooltip]::before,
+#narrateAnalysisToggle[data-tooltip]::before {
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-bottom-color: var(--darkBlue);
+  z-index: 200;
+}
+
+/* Chain stepper sits in the top panel row with its bubble opening downward
+   onto the main button row below; equal z-index lets the later row paint
+   over it, so the stepper bubble + arrow render above (same 400 level as
+   the save/zoom/settings tooltips). */
+.stepBtn[data-tooltip]::after,
+.stepBtn[data-tooltip]::before {
+  z-index: 400;
+}
+
+/* Settings button tooltip: appear to the left of the button */
+.settingsBtn[data-tooltip]::after {
+  top: 50%;
+  bottom: auto;
+  left: auto;
+  right: calc(100% + 10px);
+  transform: translateY(-50%);
+  z-index: 400;
+}
+
+.settingsBtn[data-tooltip]::before {
+  top: 50%;
+  bottom: auto;
+  left: auto;
+  right: 100%;
+  transform: translateY(-50%);
+  border-bottom-color: transparent;
+  border-top-color: transparent;
+  border-right-color: transparent;
+  border-left-color: var(--darkBlue);
+  z-index: 400;
+}
+
+/* Save-image and zoom buttons sit at the right end of their rows and
+   #viewerCol is overflow:hidden, so a centered bubble would clip past the
+   column edge. Their bubbles render to the left-middle instead (skin:
+   shared rule above). */
+#save2DBtn[data-tooltip]::after,
+#save3DBtn[data-tooltip]::after,
+#zoomInBtn[data-tooltip]::after,
+#zoomOutBtn[data-tooltip]::after,
+#zoomIn3DBtn[data-tooltip]::after,
+#zoomOut3DBtn[data-tooltip]::after {
+  top: 50%;
+  bottom: auto;
+  left: auto;
+  right: calc(100% + 10px);
+  transform: translateY(-50%);
+  z-index: 400;
+}
+
+#save2DBtn[data-tooltip]::before,
+#save3DBtn[data-tooltip]::before,
+#zoomInBtn[data-tooltip]::before,
+#zoomOutBtn[data-tooltip]::before,
+#zoomIn3DBtn[data-tooltip]::before,
+#zoomOut3DBtn[data-tooltip]::before {
+  top: 50%;
+  bottom: auto;
+  left: auto;
+  right: 100%;
+  transform: translateY(-50%);
+  border-bottom-color: transparent;
+  border-top-color: transparent;
+  border-right-color: transparent;
+  border-left-color: var(--darkBlue);
+  z-index: 400;
+}
+
+/* 2D/3D title buttons: tooltip below EACH button (like #narrateAnalysisToggle).
+   relative positioning anchors each tooltip to its own button. */
+#viewerVisBtns .settingsBtn.visBtn {
+  position: relative;
+}
+
+.settingsBtn.visBtn[data-tooltip]::after {
+  top: calc(100% + 10px);
+  bottom: auto;
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+}
+
+.settingsBtn.visBtn[data-tooltip]::before {
+  top: 100%;
+  bottom: auto;
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-bottom-color: var(--darkBlue);
+}
+
+/* [2D] is the leftmost title button, so a centered bubble would spill past
+   the column's left edge (#viewerCol is overflow:hidden). Its bubble is
+   left-aligned instead, shifting it right into the column (skin: shared). */
+#view2DBtn[data-tooltip]::after {
+  left: 0;
+  right: auto;
+  transform: none;
+}
+
+#view2DBtn[data-tooltip]::before {
+  left: 12px;
+  right: auto;
+  transform: none;
+}
+
+.panelTitleSpan {
+  font-family: "Roboto Condensed", sans-serif;
+  font-weight: normal;
+  color: var(--darkBlue);
+  text-align: center;
+  /* font-size: 1rem; */
+}
+
+.VFlex {
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
+}
+
+.HFlex {
+  display: flex;
+  flex-direction: row;
+  /* width: 100%; */
+  box-sizing: border-box;
+}
+
+/* 
+.selectedLi::before {
+
+        background-color: var(--vibrantGreen) !important;
+} */
+
+#nomeclature2Menu {
+  border: 1px solid var(--lightBlue);
+  max-height: 600px;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.menuNomeclature2Container {
+  background-color: #FFF;
+  max-height: 440px;
+  overflow-x: auto;
+  overflow-y: auto;
+  padding-bottom: 10px;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+
+}
+
+.groupingMode {
+  background: var(--veryLightBlue);
+  border-bottom: 1px solid var(--lightBlue);
+  border-top: 0;
+  padding: 5px 0;
+}
+
+.menuContainer {
+  border-bottom: 1px solid var(--darkBlue);
+  height: 530px;
+  overflow: auto;
+  /* background-color: var(--veryLightEarth); */
+  box-shadow: inset 1px 1px 3px -2px rgba(0, 0, 0, 0.5);
+  padding: 0 0px 0 3px;
+  border-top: 0;
+}
+
+.menuLi {
+  font-family: "Roboto", sans-serif;
+  font-weight: normal;
+  padding: 5px 8px 5px 15px;
+  transition: all 0.2s;
+  color: #333;
+  position: relative;
+  height: 30px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: baseline;
+  /* gap: 6px; */
+  white-space: nowrap;
+  overflow: visible;
+  width: max-content;
+  min-width: 100%;
+}
+
+.selectedLi {
+  background-color: var(--darkBlue) !important;
+  /* padding-left: 20px; */
+  color: #fff;
+  transition: all 0.2s;
+  font-weight: bold;
+}
+
+#nomeclatureMenu .menuLi {
+  /* border: 1px solid var(--veryLightEarth); */
+  border-left: 0;
+  border-right: 0;
+}
+
+#nomeclatureMenu .menuLi:hover {
+  background-color: var(--veryLightEarth);
+  /* border-color: #ddd; */
+}
+
+#nomeclatureMenu .selectedLi {
+  font-weight: bold;
+  background-color: var(--veryLightEarth);
+  /* border: 1px solid var(--darkBlue) !important; */
+  /* border-left: 0 !important; */
+  /* border-right: 0 !important; */
+  margin-left: -3px;
+  padding-left: 18px;
+  /* box-shadow: 1px 1px 3px -2px rgba(0, 0, 0, 0.5); */
+}
+
+.crossMenuLi {
+  font-family: "Roboto", sans-serif;
+  font-weight: 500;
+  position: relative;
+  padding: 5px 5px 5px 32px;
+  transition: all 0.3s;
+  color: #333;
+}
+
+/* .menuLi::before {
+  content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background-color: #fff;
+    transition: all 0.3s;
+    position: absolute;
+    left: 5px;
+    top: 14px;
+} */
+
+.menuLi:hover::before {
+  transition: all 0.3s;
+  background-color: #fff;
+}
+
+.menuLi:hover {
+  cursor: pointer;
+  background-color: var(--veryLightEarth);
+  color: #111;
+  transition: all 0.3s;
+}
+
+.menuLi.selectedLi:hover {
+  /* cursor: pointer; */
+  background-color: var(--lightBlue);
+  color: #fff;
+  transition: all 0.3s;
+}
+
+.crossMenuLi::before {
+  content: "\203A";
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-block;
+  transition: all 0.3s;
+  color: #ccc;
+  font-size: 1.75rem;
+  line-height: 1;
+  background-color: transparent;
+}
+
+.crossMenuLi:hover::before {
+  color: var(--darkBlue);
+  transition: all 0.3s;
+  background-color: transparent;
+}
+
+.crossMenuLi:hover {
+  cursor: pointer;
+  background-color: var(--veryLightEarth);
+  color: #111;
+  transition: all 0.3s;
+}
+
+.crossMenuLi.selectedLi::before {
+  content: "\203A";
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+  transition: all 0.3s;
+  background-color: transparent !important;
+  color: #fff;
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.crossMenuLi.selectedLi {
+  background-color: var(--lightBlue) !important;
+  /* padding-left: 10px; */
+  color: #fff;
+  transition: all 0.2s;
+  font-weight: 600;
+  border: 1px solid var(--lightBlue);
+  border-bottom: 0;
+  font-size: 1rem;
+}
+
+.JmolContainer {
+  width: 480px;
+  /* height: 240px; */
+  border-top: 0;
+  z-index: 0;
+}
+
+.JmolContainer *:focus-visible {
+  outline: none;
+}
+
+.button {
+  max-width: 100px;
+  min-height: 25px;
+  padding: 10px;
+  background-color: #ddd;
+  cursor: pointer;
+  border: 1px solid #666;
+  border-radius: 2px;
+}
+
+.checkBoxContainer {
+  display: block;
+  position: relative;
+  padding-left: 25px;
+  margin: 0px 0px 0px 12px;
+  cursor: pointer;
+  font-family: "Roboto Condensed", sans-serif;
+  font-size: 0.85rem;
+  transition: all 0.3s;
+  color: #333;
+  font-weight: normal;
+}
+
+#rotateCheck.checkBoxContainer {
+  margin-left: 5px;
+  margin-right: 10px;
+}
+
+.inactive {
+  opacity: 0.3;
+}
+
+.checkBox,
+.unselectedCheck .checkBox {
+  box-sizing: border-box;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 18px;
+  width: 18px;
+  background-color: var(--veryLightEarth);
+  /* border: 1px solid var(--darkBlue); */
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+
+.checkBoxContainer.unselectedCheck:hover .checkBox,
+.checkBoxContainer.unselectedCheck:hover::after {
+  color: var(--darkEarth);
+
+  transition: all 0.3s;
+}
+
+.unselectedCheck::after {
+  content: "\2713";
+  width: 18px;
+  height: 18px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: var(--veryLightEarth);
+  color: transparent;
+  font-weight: bold;
+  /* padding: 0; */
+  font-family: "Roboto", sans-serif;
+  line-height: 18px;
+  font-size: 18px;
+  border-radius: 4px;
+  text-align: center;
+  border: 1px solid var(--darkBlue);
+  transition: all 0.3s;
+}
+
+.unselectedCheck:hover::after {
+  background-color: var(--veryLightEarth);
+}
+
+.selectedCheck::after {
+  content: "\2713";
+  width: 18px;
+  height: 18px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: var(--lightBlue);
+  color: #fff;
+  font-weight: bold;
+  /* padding: 0; */
+  font-family: "Roboto", sans-serif;
+  line-height: 18px;
+  font-size: 16px;
+  border-radius: 4px;
+  text-align: center;
+  border: 1px solid var(--darkBlue);
+  transition: all 0.3s;
+}
+
+/* .selectedCheck .checkBox {
+    border: 1px solid #666;
+    background-color: #fff;
+} */
+
+/* .radioMenuContainer {
+    padding-left: 15px;
+    border: 1px solid var(--darkBlue);
+
+} */
+
+.radioLabel {
+  font-family: "Roboto Condensed", sans-serif;
+  font-size: 0.85rem;
+  color: #333;
+  font-weight: normal;
+}
+
+.radioCheckContainer {
+  display: block;
+  position: relative;
+  margin: 5px 0 5px 12px;
+  cursor: pointer;
+  font-family: "Roboto Condensed", sans-serif;
+  color: #333;
+  font-weight: normal;
+  font-size: 0.85rem;
+  padding-left: 24px;
+  display: inline-block;
+  transition: all 0.3s;
+}
+
+.radioCheck,
+.unselectedRadio .radioCheck {
+  box-sizing: border-box;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 18px;
+  width: 18px;
+  background-color: var(--veryLightEarth);
+  border: 1px solid var(--darkBlue);
+  border-radius: 50%;
+  transition: all 0.3s;
+}
+
+.radioCheckContainer.unselectedRadio:hover .radioCheck {
+  /* border: 1px solid #999; */
+  transition: all 0.3s;
+}
+
+.radioCheckContainer.unselectedRadio .radioCheck::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  background-color: var(--veryLightEarth);
+  border-radius: 50%;
+  transition: all 0.3s;
+}
+
+.radioCheckContainer.unselectedRadio:hover .radioCheck::after {
+  background-color: var(--darkEarth);
+  transition: all 0.3s;
+}
+
+.radioCheckContainer.selectedRadio .radioCheck {
+  background-color: var(--veryLightEarth);
+  border-color: var(--darkBlue);
+  transition: all 0.3s;
+}
+
+.radioCheckContainer.selectedRadio .radioCheck::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  background-color: var(--darkBlue);
+  border-radius: 50%;
+  transition: all 0.3s;
+}
+
+.radioCheckContainer.disabledRadio,
+#zigzagCheck.disabledCheck {
+  opacity: 0.35;
+  pointer-events: none;
+  cursor: default;
+}
+
+.radioNoneContainer {
+  display: block;
+  position: relative;
+  padding: 7px 0px;
+  margin: 0 0 0 0px;
+  cursor: pointer;
+  /* font-family: 'Didact Gothic', sans-serif; */
+  /* font-size: 1.125rem; */
+  padding-left: 40px;
+  /* display: inline-block; */
+  transition: all 0.2s;
+  color: #444;
+}
+
+.radioNoneContainer.selectedRadio {
+  color: #000;
+  font-weight: bold;
+  /* font-size: 1.125rem;; */
+  background-color: #f4f4f4;
+  /* border-top: 1px solid #ccc; */
+  /* border-bottom: 1px solid #ccc; */
+}
+
+.radioNoneContainer .radioCheck,
+.radioNoneContainer.unselectedRadio .radioCheck {
+  box-sizing: border-box;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 24px;
+  width: 24px;
+  background-color: transparent;
+  border: 0px solid #ccc;
+  border-radius: 0;
+  transition: all 0.2s;
+  /* margin: 0; */
+}
+
+.radioNoneContainer.unselectedRadio:hover {
+  background-color: #f9f9f9;
+  color: #000;
+}
+
+.exmplContainer {
+  border-bottom: 1px solid var(--darkBlue);
+}
+
+.exmplContainer.closed {
+  display: none;
+}
+
+.menuListContainer {
+  max-height: 150px;
+  overflow: auto;
+}
+
+/* /////////////////////  SWITCH BUTTON ////////////////// */
+
+/* ///////////////////   DROP MENU ////////////////////////////////// */
+#dropMenu {
+  position: relative;
+  width: 150px;
+  margin-left: 5px;
+}
+
+#dropLiContainer.closed {
+  display: none;
+}
+
+#dropLiContainer {
+  background-color: #fff;
+  border: 1px solid var(--lightBlue);
+  position: absolute;
+  box-shadow: 1px 1px 6px -2px rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  left: 40%;
+  top: -85px;
+  width: 100%;
+  z-index: 100;
+  overflow: hidden;
+}
+
+#dropLabel {
+  position: relative;
+  padding: 10px;
+  padding-left: 30px;
+  padding-right: 5px;
+  cursor: pointer;
+  font-family: "Roboto Condensed", sans-serif;
+  font-size: 0.85rem;
+  color: #333;
+  font-weight: normal;
+  margin-left: 5px;
+}
+
+#dropLabel.open::after,
+#dropLabel.closed:hover::after {
+  background-color: var(--darkBlue);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+}
+
+#dropLabel::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  bottom: 7px;
+  display: block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--darkBlue);
+  box-sizing: border-box;
+  background-color: var(--veryLightEarth);
+  background-repeat: no-repeat;
+  background-size: 25px 30px;
+  background-position: center;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%231b275d' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  transition: all 0.3s;
+}
+
+.dropLi {
+  background-color: #fff;
+  border-bottom: 1px solid var(--lightBlue);
+  border-left: 0;
+  border-right: 0;
+  padding: 10px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.dropLi:hover {
+  background-color: var(--veryLightEarth);
+  /* border-color: var(--darkBlue); */
+  cursor: pointer;
+}
+
+.dropLi:first-of-type {
+  /* border-top-left-radius: 4px;
+  border-top-right-radius: 4px; */
+
+}
+
+.dropLi:last-of-type {
+  /* border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px; */
+  border-bottom: 0;
+}
+
+.info {
+  font-family: "Roboto", sans-serif;
+  font-weight: 400;
+  font-size: 1.125rem;
+  text-align: center;
+  padding: 5px;
+  background-color: #eee;
+  height: 25px;
+}
+
+.borderRight {
+  border-right: 1px solid #666;
+}
+
+.formula {
+  font-family: "Roboto Condensed", sans-serif;
+  /* font-weight: 600; */
+  display: inline-block;
+  /* margin-left: 10px; */
+}
+
+#homoMenuContainer {
+  width: 250px;
+  margin-right: 10px;
+}
+
+/* #homoMenuContainer .selectedLi {
+    font-size: 1.0rem;
+} */
+
+.infoPanelHomo {
+  min-width: 200px;
+  padding-left: 0px;
+  overflow: visible;
+  width: 250px;
+}
+
+.inlineblock {
+  display: inline-block !important;
+}
+
+.center {
+  text-align: center !important;
+}
+
+.zeroMargin {
+  margin: 0 !important;
+}
+
+.infoLegend {
+  font-family: "Roboto Condensed", sans-serif;
+  font-size: 0.875rem;
+  color: #666;
+  background-color: #eee;
+  padding: 4px 20px;
+  /* border-radius: 2px; */
+  /* display: inline-block; */
+  margin-bottom: 10px;
+}
+
+#infoGMT .infoLegend {
+  font-family: "Roboto", sans-serif;
+  font-size: 1rem;
+  color: #111;
+  background-color: #fff;
+  padding: 4px 20px;
+  text-align: center;
+  margin-top: 10px;
+}
+
+.infoHomoName {
+  font-size: 1.25rem;
+  margin-left: 20px;
+  margin-bottom: 10px;
+}
+
+.infoGMTFormula {
+  /* font-family: 'Roboto Condensed', sans-serif; */
+  font-size: 1.375rem;
+  /* margin-left: 20px; */
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.radioMenuContainer .infoGMTFormula {
+  font-size: 1.25rem;
+  margin: 0;
+  margin-left: 20px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.radioMenuContainer .infoN {
+  font-size: 1.25rem;
+}
+
+.infoN {
+  /* display: inline-block; */
+  font-size: 1.375rem;
+  text-align: center;
+
+  /* font-family: 'Roboto Condensed', sans-serif; */
+}
+
+.homo.formula {
+  font-family: "Roboto", sans-serif;
+  font-size: 1.375rem;
+  /* margin-left: 20px; */
+  /* margin-bottom: 10px; */
+  text-align: center;
+  display: block;
+}
+
+.bondSymbol {
+  display: inline-block;
+  margin-left: 2px;
+  margin-right: 2px;
+}
+
+.bondSymbol.large {
+  font-size: large;
+}
+
+.bondSymbol.small {
+  font-size: small;
+}
+
+/* //////////////   NOMECLATURE ////////////////////// */
+
+/* .nameAnalysisContainer {
+    display: flex;
+} */
+
+.nameCompContainer {
+  display: flex;
+  /* flex-wrap: wrap; */
+  /* margin-top: 10px; */
+  align-items: center;
+  justify-content: center;
+}
+
+.nameCompContainer.nameCompMeasuring .nameCompBox,
+.nameCompContainer.nameCompMeasuring .nameCompPlus {
+  transition: none !important;
+}
+
+.nameCompBox {
+  font-size: calc(1.1rem * var(--nameCompScale, 1));
+  font-weight: bold;
+  color: #000;
+   cursor: pointer;
+  transition: all 0.3s;
+  
+
+}
+
+
+
+
+.boxed {
+  padding: 5px 6px;
+  border: 2px solid var(--lightBlue);
+  margin-right: -2px;
+  background-color: #fff;
+}
+
+.unboxed {
+  padding: 5px 0;
+  /* border: 0; */
+  margin-right: 0;
+   background-color: #fff;
+   border-bottom: 1px solid var(--veryLightBlue);
+  border-top: 1px solid var(--veryLightBlue);
+}
+
+.nameCompContainer > .nameCompWrap:first-child > .nameCompBox.unboxed { 
+  padding-left: 7px;
+  border-left: 1px solid var(--veryLightBlue);
+}
+
+.nameCompContainer > .nameCompWrap:last-child > .nameCompBox.unboxed { 
+  padding-right: 7px;
+  border-right: 1px solid var(--veryLightBlue);
+}
+
+.euphonyLetter {
+  color: var(--lightBlue);
+}
+
+.selected .euphonyLetter {
+  color: rgba(200, 255, 255, 0.8);
+}
+
+.nameCompPlus {
+  font-size: calc(1.5rem * var(--nameCompScale, 1));
+  margin-left: 4px;
+  margin-right: 4px;
+  /* display: none; */
+  color: var(--lightBlue);
+}
+
+.nameCompSpace {
+  margin-left: 4px;
+  margin-right: 4px;
+}
+
+.nameCompBox:hover {
+  /* border-color: var(--vibrantGreen); */
+  z-index: 100;
+  background-color: var(--veryLightBlue);
+}
+
+.nameCompBox.selected {
+  color: #fff;
+  background-color: var(--vibrantGreen);
+  position: relative;
+  font-weight: bold;
+  border-color: var(--vibrantGreen);
+  /* box-shadow: 1px 1px 3px 0px rgba(0,0,0,0.5); */
+}
+
+.nameCompBox.selected.unboxed {
+  padding: 5px 4px;
+}
+
+.nameCompBox.selected::after {
+  content: "";
+  position: absolute;
+  left: calc(50% - 3px);
+  top: 100%;
+  width: 6px;
+  height: 22px;
+  background-color: var(--vibrantGreen);
+  /* box-shadow: 1px 1px 3px 0px rgba(0,0,0,0.5); */
+}
+
+/* Per-component name visibility (eye toggles): each box lives in a
+   .nameCompWrap column with a fixed-height eye slot above it. The slot
+   reserves space whether eyes are shown or not, so every wrap has the same
+   height and the outside "+" separators align uniformly. Hidden boxes
+   render a dash on a lightBlue fill and ignore clicks (JS .comp-hidden). */
+.nameCompWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.nameCompEyeRow {
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Separators sit outside the wraps: pinned to the wrap bottom and padded up
+   so the "+" centers on the (fixed-height) box. Tune padding-bottom by eye
+   if fonts change: (boxHeight − plusHeight) / 2 ≈ 3px. */
+.nameCompPlus,
+.nameCompSpace {
+  align-self: flex-end;
+  padding-bottom: 3px;
+}
+
+.compEye {
+  color: var(--darkBlue);
+  background-color: transparent;
+  border: 0;
+  padding: 1px 3px;
+  border-radius: 2px;
+  cursor: pointer;
+  position: relative;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+
+.compEye:hover {
+  color: #fff;
+  background-color: var(--darkEarth);
+}
+
+.compEye.off-state {
+  /* Dimmed via color, not opacity: opacity < 1 would create a stacking
+     context on the button and trap its tooltip below the panel again. */
+  /* color: var(--veryLightBlue); */
+}
+
+.compEye.off-state:hover {
+  color: #fff;
+}
+
+.nameCompBox.comp-hidden {
+  background-color: var(--veryLightBlue);
+  border-color: var(--lightBlue);
+  color: #fff;
+  cursor: default;
+  min-width: 1.2em;
+  text-align: center;
+}
+
+.nameCompBox.comp-hidden:hover {
+  background-color: var(--veryLightBlue);
+}
+
+/* Eye tooltip above the button (skin: shared rule at the top of this file) */
+.compEye[data-tooltip]::after {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 400;
+}
+
+.compEye[data-tooltip]::before {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-top-color: var(--darkBlue);
+  z-index: 400;
+}
+
+#nameAnalysis {
+  /* border: 1px solid var(--darkBlue); */
+}
+
+#nameAnalysisExplain {
+  /* margin-top: -1px; */
+  /* border: 1px solid var(--darkBlue); */
+  /* border-top: 0; */
+}
+
+.explainText {
+  padding: 10px 10px;
+  font-weight: bold;
+  font-size: 1rem;
+  color: var(--darkBlue);
+  background-color: #fff;
+  border: 3px solid var(--vibrantGreen);
+  z-index: 100;
+  position: relative;
+  border-radius: 5px;
+
+}
+
+.shadow1 {
+  box-shadow: 1px 1px 3px 0px rgba(0, 0, 0, 0.5);
+}
+
+/* .namingRuleTable {
+  max-width: 320px;
+  padding-bottom: 20px;
+} */
+
+.ruleCase,
+.ruleName {
+  color: #333;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* .ruleCase {} */
+
+.ruleRow {
+  padding: 5px;
+  border-bottom: 1px solid #ddd;
+}
+
+.ruleRow.selected {
+  font-weight: bold;
+  background-color: var(--darkBlue);
+  /* color: var(--darkBlue); */
+}
+
+.ruleRow.selectedA {
+  font-weight: bold;
+  color: var(--darkBlue) !important;
+  background-color: var(--veryLightBlue);
+  position: relative;
+}
+
+.ruleRow.selectedA::before {
+  content: "A";
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--darkBlue);
+  color: #fff;
+  font-weight: bold;
+  font-size: 1rem;
+  left: 12px;
+  position: absolute;
+  text-align: center;
+  top: calc(50% - 10px);
+}
+
+.ruleRow.selectedB {
+  font-weight: bold;
+  color: #fff !important;
+  /* background-color: var(--lightBlue); */
+  position: relative;
+}
+
+.ruleRow.selectedB::before {
+  content: "B";
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--lightBlue);
+  color: #fff;
+  font-weight: bold;
+  font-size: 1rem;
+  left: 12px;
+  position: absolute;
+  text-align: center;
+  top: calc(50% - 10px);
+}
+
+.rule4 .ruleRow.selectedB .ruleCase,
+.rule4 .ruleRow.selectedB .ruleName {
+  color: #fff;
+}
+
+.orderNo {
+  font-weight: bold;
+  color: var(--darkBlue);
+}
+
+.selectedB .orderNo {
+  color: #fff;
+}
+
+.hideTopRow {
+  padding: 0 !important;
+  border-width: 1px 0 0 0 !important;
+}
+
+.ruleRow.selected .ruleCase,
+.ruleRow.selected .ruleName {
+  color: #fff;
+}
+
+.ruleRow.selected.selectedA .ruleCase,
+.ruleRow.selected.selectedA .ruleName {
+  color: var(--darkBlue);
+}
+
+.rule1 .ruleCase,
+.rule1 .ruleName {
+  text-align: center;
+  width: 50%;
+}
+
+.rule2 .ruleCase {
+  width: 60%;
+}
+
+.rule2 .ruleName {
+  width: 40%;
+}
+
+.rule3 .ruleCase {
+  width: 67%;
+}
+
+.ruleTheory {
+  margin-top: 0px;
+}
+
+.rule3 .ruleName {
+  width: 33%;
+}
+
+.rule4 .ruleCase {
+  text-align: left;
+  padding-left: 40px;
+  width: 60%;
+}
+
+.rule4 .ruleName {
+  width: 40%;
+}
+
+.ruleTable {
+  box-sizing: border-box;
+  width: 100%;
+  /* padding-left: 10px; */
+  background-color: #fff;
+  border: 1px solid var(--darkBlue);
+  border-top: 0;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.ruleAlkyl .ruleCase {
+  width: 60%;
+  padding-left: 5px;
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.ruleAlkyl .ruleName {
+  width: 40%;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  text-align: left;
+}
+
+.ruleAlkyl .ruleCase.ruleTableTitle,
+.ruleAlkyl .ruleName.ruleTableTitle {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.ruleAlkyl .alkylFormula {
+  /* font-size: 0.78rem;
+  overflow-wrap: anywhere; */
+}
+
+.ruleAlkyl .alkylPrefix,
+.ruleAlkyl small {
+  display: block;
+  margin-top: 3px;
+}
+
+.ruleAlkyl small {
+  font-size: 0.7rem;
+  overflow-wrap: anywhere;
+  color: #333;
+}
+
+.ruleAlkyl .ruleRow.selected .alkylPrefix,
+.ruleAlkyl .ruleRow.selected small {
+  color: #fff;
+}
+
+.alkylRuleNote {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  padding: 0px 10px;
+  color: #666;
+  font-style: italic;
+}
+
+.ruleTile {
+  font-weight: bold;
+  font-family: "Roboto Condensed", sans-serif;
+  font-size: 0.938rem;
+  color: var(--darkBlue);
+  background-color: transparent;
+  padding: 10px;
+  padding-bottom: 5px;
+  padding-left: 35px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s;
+  /* border-bottom: 1px solid #fff; */
+  /* padding-bottom: 0; */
+}
+
+/* .ruleTile:hover {
+    border-bottom: 1px solid #ddd;
+} */
+
+.ruleTile.open {
+  border-bottom: 1px solid #ddd;
+}
+
+.ruleTile::before,
+#ruleTheory .ruleTheoryTitle::before {
+  content: "";
+  font-weight: normal;
+  background: var(--veryLightEarth);
+  border-radius: 2px;
+  position: absolute;
+  left: 4px;
+  top: 8px;
+  width: 20px;
+  height: 20px;
+  font-size: 1.5rem;
+  /* border-radius: 50%; */
+  line-height: 19px;
+  color: var(--darkBlue);
+  text-align: center;
+  border: 1px solid #fff;
+  transition: all 0.3s;
+}
+
+.ruleTile:hover::before,
+#ruleTheory .ruleTheoryTitle:has(.ruleTheoryToggleBtn:hover)::before {
+  background-color: var(--darkEarth);
+  color: #fff;
+}
+
+/* dark panelTitle: invert indicator colors */
+#ruleTheory .ruleTheoryTitle::before {
+  left: 8px;
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.ruleTile.closed::before,
+#ruleTheory .ruleTheoryTitle.closed::before {
+  content: "+";
+  /* border-radius: 50%; */
+  /* animation: blink 3s ease-out 1s infinite; */
+}
+
+.ruleTile.closed::before {
+  border-color: var(--darkBlue);
+}
+
+.ruleTile.closed:hover:before {
+  /* animation: none; */
+  background-color: var(--darkEarth);
+  color: #fff;
+}
+
+@keyframes blink {
+
+  0%,
+  100% {
+    color: var(--vibrantGreen);
+    background-color: #fff;
+  }
+
+  /* 25%, 75% {
+        color: var(--darkBlue);
+    } */
+  50% {
+    background-color: #ddd;
+    /* color: #fff; */
+  }
+}
+
+.ruleTile.open::before,
+#ruleTheory .ruleTheoryTitle.open::before {
+  content: "\2014";
+  /* border-radius: 50%; */
+}
+
+.ruleTile.open::before {
+  border-color: var(--darkBlue);
+}
+
+.ruleTile.open:hover::before {
+  /* content: "-"; */
+  /* border-radius: 50%; */
+
+  border-color: var(--darkBlue);
+  color: #fff;
+  background-color: var(--darkEarth);
+}
+
+.ruleTextMenu {
+  padding: 7px;
+  color: #000;
+  background-color: var(--veryLightEarth);
+  border-bottom: 1px solid var(--darkBlue);
+  font-size: 0.969rem;
+  /* font-family: 'Roboto Condensed', sans-serif; */
+  /* border-top: 0; */
+}
+
+.ruleTextCenter {
+  box-sizing: border-box;
+  padding: 10px;
+  color: #000;
+  background-color: var(--veryLightEarth);
+  border: 1px solid var(--darkBlue);
+  font-size: 0.969rem;
+  width: 100%;
+  max-width: 452px;
+
+  /* border-top: 0; */
+}
+
+.ruleText {
+  box-sizing: border-box;
+  padding: 10px;
+  color: #000;
+  background-color: var(--veryLightEarth);
+  border: 1px solid var(--darkBlue);
+  font-size: 0.969rem;
+
+  /* border-top: 0; */
+}
+
+/* ── ruleTheory accordion ──────────────────────────────────────────────── */
+#ruleTheory .ruleTheoryTitle {
+  padding-left: 28px;
+}
+
+#ruleTheory .ruleTheoryToggleBtn {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 30px;
+  height: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 1;
+}
+
+.ruleTableTitle {
+  text-align: center;
+  font-weight: bold;
+  color: var(--darkBlue);
+}
+
+#ruleTheoryContainer {
+  display: none;
+}
+
+/* //////////// CREDITS ////////////// */
+
+#creditsLib {
+  position: fixed;
+  bottom: 36px;
+  color: #666;
+  font-size: 0.85rem;
+  padding: 10px;
+  background-color: var(--veryLightEarth);
+  width: 100%;
+  border-top: 1px solid #ccc;
+}
+
+.creditsContainer {
+  display: flex;
+  gap: 10px 10px;
+  justify-content: center;
+  padding: 5px;
+}
+
+.creditsContainer a {
+  color: var(--veryLightBlue);
+  text-decoration: none;
+  font-weight: bold;
+  transition: all 0.2s;
+  display: inline-block;
+  border-bottom: 1px solid #fff;
+  padding-bottom: 1px;
+}
+
+.creditsContainer a:hover {
+  color: #fff;
+  border-color: #fff;
+  transition: all 0.2s;
+}
+
+#creditsUs {
+  /* position: fixed;
+    bottom: 0; */
+  color: var(--veryLightBlue);
+  font-size: 0.85rem;
+  padding: 10px;
+  background-color: var(--darkBlue);
+  width: 100%;
+  height: 80px;
+}
+
+/* Viewer tool buttons (2D zoom cluster + 2D/3D save buttons): one shared look.
+   The 2D trio shares a single absolutely-positioned container, so no
+   hand-synced offsets between neighbors. */
+#view2DTools {
+  position: absolute;
+  right: 5px;
+  bottom: 41px;
+  display: flex;
+  gap: 4px;
+}
+
+.viewerToolBtn {
+  background-color: transparent;
+  cursor: pointer;
+  padding: 0px;
+  opacity: 1.0;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+  color: var(--darkBlue);
+}
+
+.viewerToolBtn img,
+.viewerToolBtn svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+.viewerToolBtn:hover {
+  opacity: 1;
+  background-color: var(--lightBlue);
+  border-color: var(--lightBlue);
+  color: #fff;
+}
+
+/* The 3D trio (zoom pair + save) shares one anchored cluster, symmetric
+   with the 2D tools. */
+#view3DTools {
+  position: absolute;
+  right: 5px;
+  bottom: 41px;
+  display: flex;
+  gap: 4px;
+}
+
+/* ── Responsive layout ─────────────────────────────────────────────────── */
+/* Primary target: landscape orientation on all devices.
+   Portrait phones get a "rotate device" prompt; a stacked fallback is
+   shown underneath if dismissed. */
+
+/* Menu toggle — only shown in portrait fallback, hidden everywhere else */
+#menuToggle {
+  display: none;
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 1rem;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 6px;
+  text-align: left;
+}
+
+#menuToggle:hover {
+  background-color: var(--darkBlue);
+}
+
+.mainApp3Columns {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  box-sizing: border-box;
+  justify-content: safe center;
+  gap: 10px;
+}
+
+
+/* Column widths — base (desktop + landscape tablets) */
+#menuCol {
+  width: 230px;
+  min-width: 120px;
+  /* never collapses below this */
+  flex-shrink: 0;
+ 
+}
+
+#viewerCol {
+  background-color: #fff;
+  flex: 1 1 0;
+  /* fills remaining space; never pushes row past viewport */
+  min-width: 0;
+  /* overrides flex default min-width:auto */
+  max-width: 620px;
+  min-width: 290px;
+  border: 1px solid var(--lightBlue);
+  border-radius: 5px;
+  /* No overflow clip: it would chop the settings dropdown (#viewerSettingsPanel
+     is absolutely positioned below .panelTitle) whenever the column is short
+     (no viewer visible). Corner rounding is enforced on the bottom bar(s)
+     instead — see #controls3D / #radio2DMode below. */
+  overflow: visible;
+  /* Query container for the narrow-viewer fluid UI text below (the panel's
+     own containing block stays .panelTitle, which is nearer/positioned). */
+  container-type: inline-size;
+  container-name: viewer;
+}
+
+/* ── Narrow-viewer fluid UI text ────────────────────────────────────────────
+   Eases the settings/control text down to a 0.75rem floor as the viewer
+   column narrows (e.g. the ~400px pinned width). cqi resolves against
+   #viewerCol; at its 620px max the clamps land on the current sizes, so wide
+   layout is unchanged. Scoped to #viewerCol so the left/right menus and the
+   scenario bar (which share these classes) are untouched. Browsers without
+   container units ignore the declarations and keep the base sizes. */
+#viewerCol .settingLabel {
+  font-size: clamp(0.75rem, 2.1cqi, 0.813rem);
+}
+
+#viewerCol .radioCheckContainer,
+#viewerCol .checkBoxContainer {
+  font-size: clamp(0.75rem, 2.2cqi, 0.85rem);
+}
+
+#viewerCol #dropLabel,
+#viewerCol .dropLi {
+  font-size: clamp(0.75rem, 2.2cqi, 0.85rem);
+}
+
+#viewerCol .viewerHeightVal {
+  font-size: clamp(0.75rem, 2.1cqi, 0.813rem);
+}
+
+#analysisCol {
+  width: 350px;
+  min-width: 300px;
+  flex-shrink: 0;
+   justify-content: space-between;
+}
+
+/* Collapsible menu drawer */
+#menuDrawer {
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+#menuDrawer.menu-closed {
+  max-height: 0;
+}
+
+#menuDrawer.menu-open {
+  max-height: 600px;
+}
+
+/* JSmol container — base height (220px) kept so JSmol inits at non-zero size.
+   fResizeViewers() corrects dimensions via Jmol.resizeApplet() after load.
+   min-height mirrors the JS VIEWER_MIN_H floor (via --viewerMinH). */
+.JmolContainer {
+  width: 100% !important;
+  min-height: var(--viewerMinH, 150px);
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+/* JSME SVG */
+#jsmeNomeclatureSVG {
+  width: 100% !important;
+  /* max-width: 450px; */
+  height: auto;
+  min-height: var(--viewerMinH, 150px);
+}
+
+/* ── "Rotate device" prompt ──────────────────────────────────────────── */
+#rotatePrompt {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(25, 63, 143, 0.95);
+  color: #fff;
+  z-index: 9999;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  gap: 1.2rem;
+}
+
+#rotatePrompt p {
+  font-size: 1.05rem;
+  margin: 0;
+  line-height: 1.6;
+}
+
+#rotatePromptIcon {
+  width: 72px;
+  height: 72px;
+  animation: rotateHint 2.6s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes rotateHint {
+
+  0%,
+  25% {
+    transform: rotate(0deg);
+  }
+
+  55%,
+  80% {
+    transform: rotate(-90deg);
+  }
+
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+#rotatePromptDismiss {
+  margin-top: 0.4rem;
+  padding: 8px 24px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+#rotatePromptDismiss:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+/* ── Landscape ≤999px: 3-column, scaled down (tablets / large phones & Galaxy A14) ── */
+@media (max-width: 999px) and (orientation: landscape) {
+  h1 {
+    display: none;
+  }
+
+  #mainAppContainer {
+    margin-top: 6px;
+    margin-bottom: 6px;
+  }
+
+  #menuCol {
+    width: 150px;
+    min-width: 120px;
+    margin-right: 0 !important;
+  }
+
+  #analysisCol {
+    width: 350px;
+    min-width: 350px;
+    margin-left: 0 !important;
+  }
+
+  .menuLi {
+    font-size: 0.82rem;
+    padding-left: 8px;
+  }
+
+  .menuContainer {
+    height: auto;
+    max-height: calc(100vh - 100px);
+  }
+
+  #creditsUs {
+    font-size: 0.7rem;
+    padding: 4px 10px;
+  }
+
+  #creditsLib {
+    font-size: 0.7rem;
+    padding: 4px 10px;
+  }
+
+  .creditsContainer {
+    gap: 4px 6px;
+  }
+}
+
+/* ── Landscape ≤599px: compact 3-column (small phones) ──────────────── */
+@media (max-width: 599px) and (orientation: landscape) {
+  #menuCol {
+    width: 120px;
+    min-width: 100px;
+    margin-right: 0 !important;
+  }
+
+  #analysisCol {
+    width: 300px;
+    min-width: 300px;
+    margin-left: 0 !important;
+  }
+
+  .menuLi {
+    font-size: 0.76rem;
+    padding-left: 6px;
+    white-space: nowrap;
+    overflow: visible;
+  }
+
+  .menuContainer {
+    height: auto;
+    max-height: calc(100vh - 80px);
+  }
+}
+
+/* ── Portrait phones ≤768px: show rotate prompt + stacked fallback ───── */
+@media (max-width: 768px) and (orientation: portrait) {
+  #rotatePrompt {
+    display: flex;
+  }
+
+  #menuToggle {
+    display: block;
+  }
+
+  #menuDrawer {
+    max-height: 0;
+  }
+
+  #menuCol {
+    width: 100%;
+    min-width: unset;
+    flex-shrink: unset;
+  }
+
+  #mainAppContainer .mainApp3Columns,
+  #mainAppContainer .HFlex {
+    flex-wrap: wrap;
+  }
+
+  #viewerCol,
+  #analysisCol {
+    flex: 1 1 100%;
+    width: 100% !important;
+  }
+
+  .menuContainer {
+    height: auto;
+    max-height: 400px;
+  }
+}
+
+
+.menuLiCounter {
+  margin-left: -10px;
+  margin-right: 5px;
+  color: var(--darkBlue);
+  font-weight: 500;
+  font-family: "Roboto Condensed", sans-serif;
+  flex: 0 0 auto;
+  min-width: 25px;
+  text-align: right;
+}
+
+.selectedLi .menuLiCounter {
+  color: #fff;
+}
+
+.menuLiFormula {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  overflow: visible;
+}
+
+/* Main-chain stepper (v47, in the name-settings panel). */
+#chainStepperBox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0px;
+  position: relative;
+  /* background: var(--veryLightGray); */
+  /* padding: 4px 4px; */
+  /* border-radius: 2px; */
+}
+
+#chainStepperBox .settingLabel {
+
+  margin-right: 5px;
+
+}
+
+#chainStepLabel {
+  text-align: center;
+  font-family: "Roboto Condensed", sans-serif;
+  font-size: 0.813rem;
+  color: #fff;
+  font-weight: bold;
+  background: var(--darkEarth);
+  padding: 3px 4px;
+  margin: 0;
+  border: 1px solid var(--darkEarth);
+  /* height: 22px; */
+}
+
+.stepBtn {
+  width: 18px;
+  height: 22px;
+  padding: 0;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  background: var(--veryLightEarth);
+  border: 1px solid var(--darkEarth);
+  /* border-radius: 2px; */
+  position: relative;
+  transition: all 0.3s;
+}
+
+#chainPrevBtn.stepBtn {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
+#chainNextBtn.stepBtn {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.stepBtn:hover {
+  color: #fff;
+  background-color: var(--darkEarth);
+}
+
+.stepBtn svg {
+  width: 12px;
+  height: 12px;
+  display: block;
+}
+
+.stepBtn:disabled {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}

@@ -1,9 +1,10 @@
 # Session handoff — 2026-10-25 — Rich note editor (preview selection mapping)
 
-> **Status: NOT STARTED.** This file preserves the planning session for
-> continuation on 2026-10-26. No code was changed for this feature yet.
-> The working tree already contains the previously completed step-note image
-> file-picker changes; do not discard them.
+> **Status: SUPERSEDED (2026-10-26).** The feature was implemented in the v52
+> file set and promoted live; see
+> `docs/SESSION-HANDOFF-2026-10-26-RICH-NOTE-EDITOR-V52.md`. This file is kept
+> as the original planning record. The “NOT STARTED” status and working-tree
+> notes below are historical and no longer current.
 
 ## 1. Current repository state
 
