@@ -968,6 +968,11 @@ $(document).ready(function () {
         case "comp9":
           nameAnalysisMode = "compSuffix";
           break;
+        case "comp9loc":
+          // Split-off suffix locants (e.g. "-2,7-"): positions mode — the
+          // class sentence stays on the suffix box (comp9 → compSuffix).
+          nameAnalysisMode = "compSuffixLocants";
+          break;
         case "comp10":
           nameAnalysisMode =
             nameExamples[selectedMol]?.classification?.chemicalClass === "esters"

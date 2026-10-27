@@ -1472,6 +1472,12 @@ header {
   color: #000;
    cursor: pointer;
   transition: all 0.3s;
+  /* One line per component, always: locant runs ("-2,7-") contain soft
+     wrap opportunities (comma/hyphen), and a squeezed flex row would wrap
+     them — which then defeats fFitNameComponents' scrollWidth measurement.
+     Forbid wrapping instead, so overflow resolves through the scale-down
+     and the nameOverflow horizontal scroll as designed. */
+  white-space: nowrap;
   
 
 }
@@ -1519,11 +1525,13 @@ header {
   margin-right: 4px;
   /* display: none; */
   color: var(--lightBlue);
+  white-space: nowrap;
 }
 
 .nameCompSpace {
   margin-left: 4px;
   margin-right: 4px;
+  white-space: nowrap;
 }
 
 .nameCompBox:hover {

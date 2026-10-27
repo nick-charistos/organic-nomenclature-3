@@ -3776,6 +3776,36 @@ function fShowNameAnalysis() {
     }
 
     compBox = fNameCompBox("comp" + i, boxClass, displayComp);
+    // Locants are always their own component: the suffix slot (index 9)
+    // fuses them only on the db+tb ketone/polyol paths ("-2,7-διόνη"), so
+    // split that shape here at render time — locants first, suffix keeping
+    // the slot id so every id-driven behavior (click mode, restore, hidden
+    // sets, eye toggles) is unchanged. Data list, euphony boundaries and
+    // the joined name are identical to the fused string.
+    if (i === 9) {
+      try {
+        var _singleFG = (typeof functionalGroupsList !== "undefined" &&
+          Array.isArray(functionalGroupsList) && functionalGroupsList.length === 1)
+          ? functionalGroupsList[0] : null;
+        // Both C=C and C≡C present (same globals the suffix explain path
+        // already reads): only those two fusion sites ever merge locants
+        // into the suffix slot.
+        var _hasDB = false, _hasTB = false;
+        try {
+          _hasDB = !!(typeof multiBondsObj !== "undefined" && multiBondsObj &&
+            multiBondsObj.CCd && multiBondsObj.CCd.length > 0);
+          _hasTB = !!(typeof multiBondsObj !== "undefined" && multiBondsObj &&
+            multiBondsObj.CCt && multiBondsObj.CCt.length > 0);
+        } catch (eBonds) { _hasDB = false; _hasTB = false; }
+        if ((_singleFG === "ketone" || _singleFG === "alcohol") && _hasDB && _hasTB) {
+          var _sm = String(displayComp).match(/^(-\d[\d,]*-)([\u0370-\u03ff\u1f00-\u1fff]+)$/);
+          if (_sm) {
+            compBox = fNameCompBox("comp9loc", boxClass, _sm[1]);
+            compBox += fNameCompBox("comp" + i, boxClass, _sm[2]);
+          }
+        }
+      } catch (eSplit) { /* fused single box fallback */ }
+    }
     if (_nextIdx >= 0) {
       // Esters: two-word name — blank space after ικός instead of +.
       if (_isEsterWordBoundary && i < 10 && _nextIdx >= 10) {
@@ -3815,6 +3845,7 @@ function fShowNameAnalysis() {
       compEndNumber: "comp7",
       compBondType2: "comp8",
       compSuffix: "comp9",
+      compSuffixLocants: "comp9loc",
       commonAlkyl1: "comp10",
       commonAlkyl2: "comp11",
       commonEther: "comp12",
@@ -4075,6 +4106,15 @@ function fAlcoholOHPositionText() {
   return functionalGroupObj.alcohol.O.length > 1
     ? ' Δηλώνει τις θέσεις των υδροξυλομάδων (–OH).'
     : ' Δηλώνει τη θέση της υδροξυλομάδας (–OH).';
+}
+// Split suffix locants ("-2,7-" beside "διόνη", db+tb ketones/polyols):
+// true once the render has emitted the standalone locants box, which keeps
+// the suffix slot id for the name itself. The suffix explanation then stays
+// a class statement; positions move to the new compSuffixLocants mode.
+function fSplitSuffixLocantsActive() {
+  try {
+    return !!(typeof document !== "undefined" && document.getElementById("comp9loc"));
+  } catch (eD) { return false; }
 }
 function fBranchedSaturatedKetonePosition() {
   return typeof functionalGroupObj !== 'undefined' && functionalGroupObj &&
@@ -4539,6 +4579,42 @@ function fExplainNameComp() {
       numberingFlag = true;
       fShowAnalysisNumbering(0);
       break;
+    case "compSuffixLocants": {
+      // Split-off suffix locants ("-2,7-" beside "διόνη"): positions only.
+      // The class sentence stays on the suffix box (compSuffix mode).
+      nStyle = "";
+      myClass = "";
+      const _locKetone = typeof functionalGroupsList !== "undefined" && functionalGroupsList &&
+        functionalGroupsList.length === 1 && functionalGroupsList[0] === 'ketone' &&
+        fIsAcyclicKetoneGraph(atomConnectivityList, allAtomsTypeList, bondList) &&
+        multiBondsObj.CCd.length > 0 && multiBondsObj.CCt.length > 0;
+      if (_locKetone) {
+        const _locN = functionalGroupObj.ketone.O.length;
+        myText = _locN > 1
+          ? 'Δηλώνει τις θέσεις των ' + _locN + ' καρβονυλομάδων (>C=O).'
+          : 'Δηλώνει τη θέση της καρβονυλομάδας (>C=O).';
+        ruleTableHighlight = "r3-ketones";
+      } else if (fAlcoholOHNameComponent() === 'compSuffix') {
+        myText = fAlcoholOHPositionText().trim();
+        ruleTableHighlight = 'r3-alcohols';
+      } else {
+        // Defensive: locants box without a split parent — class statement.
+        myText = "Ανήκει στη Χημική Τάξη " + molTaxonomy + ".";
+      }
+      if (molTaxonomy != "Υδρογονάνθρακες") {
+        if (Object.keys(functionalGroupObj).length > 1) {
+          fHighlightFG(2);
+          fHighlightFG3D(2);
+        } else {
+          fHighlightFG();
+          fHighlightFG3D();
+        }
+      }
+      numberingFlag = true;
+      fShowAnalysisNumbering(0);
+      $("#ruleTheoryContainer").show();
+      break;
+    }
     case "compSuffix":
       // myText = "Ανήκει στη χημική τάξη " + molTaxonomy;
       const chemicalClass =
@@ -4603,8 +4679,13 @@ function fExplainNameComp() {
         fIsAcyclicKetoneGraph(atomConnectivityList, allAtomsTypeList, bondList) &&
         multiBondsObj.CCd.length > 0 && multiBondsObj.CCt.length > 0;
       numberingFlag = fAlcoholOHNameComponent() === 'compSuffix' || ketoneSuffixLocants;
-      if (ketoneSuffixLocants) myText += ' Δηλώνει ' + (functionalGroupObj.ketone.O.length > 1 ? 'τις θέσεις των καρβονυλομάδων' : 'τη θέση της καρβονυλομάδας') + ' (>C=O).';
-      if (fAlcoholOHNameComponent() === 'compSuffix') {
+      // Split suffix: the positions sentences live on the standalone
+      // locants box (compSuffixLocants mode) — the suffix keeps the class
+      // statement, the highlight, and no numbering.
+      const _splitLoc = fSplitSuffixLocantsActive();
+      if (_splitLoc) numberingFlag = false;
+      if (!_splitLoc && ketoneSuffixLocants) myText += ' Δηλώνει ' + (functionalGroupObj.ketone.O.length > 1 ? 'τις θέσεις των καρβονυλομάδων' : 'τη θέση της καρβονυλομάδας') + ' (>C=O).';
+      if (!_splitLoc && fAlcoholOHNameComponent() === 'compSuffix') {
         myText += fAlcoholOHPositionText();
       }
       if (molTaxonomy != "Υδρογονάνθρακες") {
@@ -4794,6 +4875,7 @@ function fShowRule(theRule) {
       ruleTitle = "Κανόνας συνθετικού τύπου δεσμών";
       break;
     case "compSuffix":
+    case "compSuffixLocants":
       ruleText = namingRules.rule3;
       ruleTable = namingRules.table3;
       ruleTitle = "Κανόνας συνθετικού χημικής τάξης";

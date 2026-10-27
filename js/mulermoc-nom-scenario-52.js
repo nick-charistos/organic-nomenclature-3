@@ -157,6 +157,7 @@ var fScenarioModeToCompId = {
   compEndNumber: "comp7",
   compBondType2: "comp8",
   compSuffix: "comp9",
+  compSuffixLocants: "comp9loc",
   commonAlkyl1: "comp10",
   esterAlkyl: "comp10",
   commonAlkyl2: "comp11",
