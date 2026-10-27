@@ -881,10 +881,10 @@
    appearance: none;
    -webkit-appearance: none;
    position: absolute;
-   left: -40px;
+   left: -60px;
    top: -2px;
-   width: 40px;
-   /* height: 80px; */
+   width: 60px;
+   height: 120px;
    /* z-index: -10; */
    display: flex;
    flex-direction: column;
@@ -950,7 +950,7 @@
 
 #scenarioAuthorTab .scTabText {
    writing-mode: vertical-rl;
-   font-size: 1.0rem;
+   font-size: 1.125rem;
    font-weight: 600;
    letter-spacing: .06em;
    line-height: 1.2;
