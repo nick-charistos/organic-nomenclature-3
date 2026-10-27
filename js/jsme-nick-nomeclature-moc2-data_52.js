@@ -4,8 +4,8 @@ let nameExamples = {
     mainChain_Condensed: [1],
     mainChain_Expanded: [1],
     mainChain3D: [1],
-    moveto:
-      "moveto 0.0 { 17 896 -444 35.17} 65.75 0.0 0.0 {0.000020000000000020002 0.0000199999999999978 0} 2.290012662678742 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { 17 896 -444 35.17} 65.75 0.0 0.0 {0.000020000000000020002 0.0000199999999999978 0} 2.290012662678742 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   methanoicacid: {
@@ -13,8 +13,8 @@ let nameExamples = {
     mainChain_Condensed: [1],
     mainChain_Expanded: [1],
     mainChain3D: [3],
-    moveto:
-      "moveto 0.0 { -7 8 -1000 146.49} 65.75 0.0 0.0 {-0.000020000000000042208 -0.000019999999999975594 0} 3.2159247919339533 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -7 8 -1000 146.49} 65.75 0.0 0.0 {-0.000020000000000042208 -0.000019999999999975594 0} 3.2159247919339533 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   ethane: {
@@ -22,8 +22,8 @@ let nameExamples = {
     mainChain_Condensed: [1, 2],
     mainChain_Expanded: [1, 2],
     mainChain3D: [1, 2],
-    moveto:
-      "moveto 0.0 { -994 113 11 18.79} 57.18 0.0 0.0 {0.000020000000000020002 0.0000199999999999978 0} 2.290012662678742 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -994 113 11 18.79} 57.18 0.0 0.0 {0.000020000000000020002 0.0000199999999999978 0} 2.290012662678742 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   ethene: {
@@ -31,8 +31,8 @@ let nameExamples = {
     mainChain_Condensed: [1, 2],
     mainChain_Expanded: [1, 2],
     mainChain3D: [1, 2],
-    moveto:
-      "moveto 0.0 {0 0 1 0} 86.96 0.0 0.0 {0.000016666666666701836 0 0} 2.7361211020872602 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 {0 0 1 0} 86.96 0.0 0.0 {0.000016666666666701836 0 0} 2.7361211020872602 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   ethanal: {
@@ -40,8 +40,8 @@ let nameExamples = {
     mainChain_Condensed: [1, 3],
     mainChain_Expanded: [2, 1],
     mainChain3D: [3, 2],
-    moveto:
-      "moveto 0.0 { 7 34 999 22.89} 100.0 0.0 0.0 {-0.6607714285714287 -0.07847142857142855 -0.00007142857142855872} 3.533159210104741 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { 7 34 999 22.89} 100.0 0.0 0.0 {-0.6607714285714287 -0.07847142857142855 -0.00007142857142855872} 3.533159210104741 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   ethanenitrile: {
@@ -49,8 +49,8 @@ let nameExamples = {
     mainChain_Condensed: [2, 1],
     mainChain_Expanded: [2, 1],
     mainChain3D: [3, 2],
-    moveto:
-      "moveto 0.0 { -999 -11 -30 133.25} 100.0 0.0 0.0 {0.10060000000000001 0 0} 3.4119 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -999 -11 -30 133.25} 100.0 0.0 0.0 {0.10060000000000001 0 0} 3.4119 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   propane: {
@@ -58,8 +58,8 @@ let nameExamples = {
     mainChain_Condensed: [1, 2, 3],
     mainChain_Expanded: [2, 3, 4],
     mainChain3D: [2, 1, 3],
-    moveto:
-      "moveto 0.0 {0 0 1 0} 75.61 0.0 0.0 {4.0371746350005693e-17 0.050663636363636376 1.0092936587501423e-17} 3.384924315405361 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 {0 0 1 0} 75.61 0.0 0.0 {4.0371746350005693e-17 0.050663636363636376 1.0092936587501423e-17} 3.384924315405361 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   propene: {
@@ -67,8 +67,8 @@ let nameExamples = {
     mainChain_Condensed: [3, 2, 1],
     mainChain_Expanded: [3, 2, 1],
     mainChain3D: [3, 2, 1],
-    moveto:
-      "moveto 0.0 { -2 1000 24 179.48} 65.75 0.0 0.0 {0.000016666666666701836 0 0} 2.7361211020872602 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -2 1000 24 179.48} 65.75 0.0 0.0 {0.000016666666666701836 0 0} 2.7361211020872602 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   propadiene: {
@@ -76,8 +76,8 @@ let nameExamples = {
     mainChain_Condensed: [1, 2, 3],
     mainChain_Expanded: [1, 2, 3],
     mainChain3D: [2, 3, 1],
-    moveto:
-      "moveto 0.0 { 998 45 -40 90.39} 85.0 0.0 0.0 {0 0 0} 3.2125 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { 998 45 -40 90.39} 85.0 0.0 0.0 {0 0 0} 3.2125 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   propionicacid: {
@@ -85,8 +85,8 @@ let nameExamples = {
     mainChain_Condensed: [3, 2, 1],
     mainChain_Expanded: [3, 2, 1],
     mainChain3D: [5, 3, 4],
-    moveto:
-      "moveto 0.0 { -22 1000 14 176.44} 80.0 0.0 0.0 {0.5374909090909091 -0.18744545454545455 0.0006454545454545474} 4.189507676651848 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -22 1000 14 176.44} 80.0 0.0 0.0 {0.5374909090909091 -0.18744545454545455 0.0006454545454545474} 4.189507676651848 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   butane: {
@@ -94,8 +94,8 @@ let nameExamples = {
     mainChain_Condensed: [1, 2, 3, 4],
     mainChain_Expanded: [2, 3, 4, 5],
     mainChain3D: [3, 1, 2, 4],
-    moveto:
-      "moveto 0.0 { -997 53 47 84.63} 80.0 0.0 0.0 {0 -0.000028571428571449215 -0.0012142857142857075} 3.986991881610577 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -997 53 47 84.63} 80.0 0.0 0.0 {0 -0.000028571428571449215 -0.0012142857142857075} 3.986991881610577 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   butanal: {
@@ -103,8 +103,8 @@ let nameExamples = {
     mainChain_Condensed: [4, 3, 2, 1],
     mainChain_Expanded: [4, 3, 2, 1],
     mainChain3D: [5, 3, 2, 4],
-    moveto:
-      "moveto 0.0 { 133 83 -988 20.71} 100.0 0.0 0.0 {-0.6192615384615386 0.14843076923076923 0.0009692307692307773} 4.353122046887492 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { 133 83 -988 20.71} 100.0 0.0 0.0 {-0.6192615384615386 0.14843076923076923 0.0009692307692307773} 4.353122046887492 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   butanenitrile: {
@@ -112,8 +112,8 @@ let nameExamples = {
     mainChain_Condensed: [4, 3, 2, 1],
     mainChain_Expanded: [4, 3, 2, 1],
     mainChain3D: [5, 3, 2, 4],
-    moveto:
-      "moveto 0.0 { -182 -190 -965 12.07} 100.25 0.0 0.0 {-0.9161166666666667 0.05558333333333333 0.0004583333333333397} 5.169826848992529 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -182 -190 -965 12.07} 100.25 0.0 0.0 {-0.9161166666666667 0.05558333333333333 0.0004583333333333397} 5.169826848992529 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   pentane: {
@@ -121,8 +121,8 @@ let nameExamples = {
     mainChain_Condensed: [1, 2, 3, 4, 5],
     mainChain_Expanded: [1, 2, 3, 4, 5],
     mainChain3D: [5, 3, 1, 2, 4],
-    moveto:
-      "moveto 0.0 { 1000 10 -11 87.6} 80.0 0.0 0.0 {5.224578939412501e-17 0.03930000000000003 0.0017823529411764767} 4.626672223680974 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { 1000 10 -11 87.6} 80.0 0.0 0.0 {5.224578939412501e-17 0.03930000000000003 0.0017823529411764767} 4.626672223680974 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   butene_1: {
@@ -131,8 +131,8 @@ let nameExamples = {
     mainChain_Expanded: [4, 3, 2, 1],
     mainChain3D: [4, 3, 1, 2],
     mainChain_Skeletal: [4, 3, 2, 1],
-    moveto:
-      "moveto 0.0 { -60 -844 -532 175.79} 100.0 0.0 0.0 {0.20107500000000003 -0.06646666666666665 -0.022833333333333344} 4.05245318942261 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -60 -844 -532 175.79} 100.0 0.0 0.0 {0.20107500000000003 -0.06646666666666665 -0.022833333333333344} 4.05245318942261 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   propanol_1: {
@@ -141,8 +141,8 @@ let nameExamples = {
     mainChain_Expanded: [3, 2, 1],
     mainChain3D: [3, 2, 4],
     mainChain_Skeletal: [3, 2, 1],
-    moveto:
-      "moveto 0.0 { -994 -74 -81 87.87} 100.0 0.0 0.0 {-0.38661666666666666 0.01949999999999999 0.06695833333333334} 3.9330918092815965 {0 0 0} 0 0 0 3.0 0.0 0.0; ",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -994 -74 -81 87.87} 100.0 0.0 0.0 {-0.38661666666666666 0.01949999999999999 0.06695833333333334} 3.9330918092815965 {0 0 0} 0 0 0 3.0 0.0 0.0; ",
   },
 
   penten_4_ol_2: {
@@ -151,8 +151,8 @@ let nameExamples = {
     mainChain_Expanded: [1, 2, 3, 4, 5],
     mainChain3D: [4, 2, 3, 5, 6],
     mainChain_Skeletal: [1, 2, 4, 5, 6],
-    moveto:
-      "moveto 0.0 { -94 -306 -947 175.58} 100.0 0.0 0.0 {0.13626250000000004 -0.19146250000000004 -0.043137499999999995} 4.888075063189299 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -94 -306 -947 175.58} 100.0 0.0 0.0 {0.13626250000000004 -0.19146250000000004 -0.043137499999999995} 4.888075063189299 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   penten_1_one_3: {
@@ -161,8 +161,8 @@ let nameExamples = {
     mainChain_Expanded: [5, 4, 3, 2, 1],
     mainChain3D: [6, 5, 4, 2, 3],
     mainChain_Skeletal: [5, 4, 3, 2, 1],
-    moveto:
-      "moveto 0.0 {0 0 1 0} 100.0 0.0 0.0 {-0.26767857142857143 0.23657857142857147 -0.0016714285714285744} 4.883273360596189 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 {0 0 1 0} 100.0 0.0 0.0 {-0.26767857142857143 0.23657857142857147 -0.0016714285714285744} 4.883273360596189 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   butanol_1: {
@@ -171,8 +171,8 @@ let nameExamples = {
     mainChain_Expanded: [4, 3, 2, 1],
     mainChain3D: [4, 2, 3, 5],
     mainChain_Skeletal: [4, 3, 2, 1],
-    moveto:
-      "moveto 0.0 { -6 8 1000 178.64} 100.0 0.0 0.0 {0.3884133333333333 -0.00525999999999999 -0.05360666666666667} 4.529751947519232 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -6 8 1000 178.64} 100.0 0.0 0.0 {0.3884133333333333 -0.00525999999999999 -0.05360666666666667} 4.529751947519232 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   pentanone_2: {
@@ -181,8 +181,8 @@ let nameExamples = {
     mainChain_Expanded: [5, 4, 3, 2, 1],
     mainChain3D: [6, 5, 3, 2, 4],
     mainChain_Skeletal: [5, 4, 3, 2, 1],
-    moveto:
-      "moveto 0.0 { -35 -92 -995 7.42} 100.0 0.0 0.0 {-0.3290937500000001 0.3106 0.0017499999999999998} 4.706893784752978 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -35 -92 -995 7.42} 100.0 0.0 0.0 {-0.3290937500000001 0.3106 0.0017499999999999998} 4.706893784752978 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   butene_2: {
@@ -191,8 +191,8 @@ let nameExamples = {
     mainChain_Expanded: [4, 3, 2, 1],
     mainChain3D: [4, 2, 1, 3],
     mainChain_Skeletal: [4, 3, 2, 1],
-    moveto:
-      "moveto 0.0 { -49 998 25 174.81} 80.0 0.0 0.0 {-0.3290937500000001 0.3106 0.0017499999999999998} 4.706893784752978 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -49 998 25 174.81} 80.0 0.0 0.0 {-0.3290937500000001 0.3106 0.0017499999999999998} 4.706893784752978 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   pentadiene_1_3: {
@@ -201,8 +201,8 @@ let nameExamples = {
     mainChain_Expanded: [5, 4, 3, 2, 1],
     mainChain3D: [5, 4, 3, 1, 2],
     mainChain_Skeletal: [5, 4, 3, 2, 1],
-    moveto:
-      "moveto 0.0 {0 0 1 0} 100.0 0.0 0.0 {-0.20437692307692298 0.05618461538461538 0.00004615384615384192} 4.79304076501412 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 {0 0 1 0} 100.0 0.0 0.0 {-0.20437692307692298 0.05618461538461538 0.00004615384615384192} 4.79304076501412 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   propyne: {
@@ -211,8 +211,8 @@ let nameExamples = {
     mainChain_Expanded: [3, 2, 1],
     mainChain3D: [3, 2, 1],
     mainChain_Skeletal: [3, 2, 1],
-    moveto:
-      "moveto 0.0 {0 0 1 0} 100.0 0.0 0.0 {0.0873 -0.0002 0.0001} 3.4654000750419343 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 {0 0 1 0} 100.0 0.0 0.0 {0.0873 -0.0002 0.0001} 3.4654000750419343 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   propanal: {
@@ -221,8 +221,8 @@ let nameExamples = {
     mainChain_Expanded: [3, 2, 1],
     mainChain3D: [4, 2, 3],
     mainChain_Skeletal: [3, 2, 1],
-    moveto:
-      "moveto 0.0 { -234 -972 -6 176.29} 100.0 0.0 0.0 {0.54952 0.11701 -0.0012599999999999972} 3.735341191078292 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -234 -972 -6 176.29} 100.0 0.0 0.0 {0.54952 0.11701 -0.0012599999999999972} 3.735341191078292 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   butanoic_acid: {
@@ -231,8 +231,8 @@ let nameExamples = {
     mainChain_Expanded: [4, 3, 2, 1],
     mainChain3D: [6, 4, 3, 5],
     mainChain_Skeletal: [4, 3, 2, 1],
-    moveto:
-      "moveto 0.0 { 823 140 551 11.37} 100.0 0.0 0.0 {-0.6947142857142857 -0.1373714285714286 0.0004714285714285643} 4.884675116960927 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { 823 140 551 11.37} 100.0 0.0 0.0 {-0.6947142857142857 -0.1373714285714286 0.0004714285714285643} 4.884675116960927 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   propanenitrile: {
@@ -241,8 +241,8 @@ let nameExamples = {
     mainChain_Expanded: [3, 2, 1],
     mainChain3D: [4, 2, 3],
     mainChain_Skeletal: [3, 2, 1],
-    moveto:
-      "moveto 0.0 {0 0 1 0} 100.0 0.0 0.0 {-0.8523555555555555 -0.020800000000000003 0.000044444444444427215} 4.4752938541461 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 {0 0 1 0} 100.0 0.0 0.0 {-0.8523555555555555 -0.020800000000000003 0.000044444444444427215} 4.4752938541461 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   pentanoic_acid: {
@@ -251,8 +251,8 @@ let nameExamples = {
     mainChain_Expanded: [5, 4, 3, 2, 1],
     mainChain3D: [7, 5, 3, 4, 6],
     mainChain_Skeletal: [5, 4, 3, 2, 1],
-    moveto:
-      "moveto 0.0 { -7 17 1000 175.72} 100.0 0.0 0.0 {0.7673823529411764 -0.10584117647058826 -0.0010941176470588218} 5.541346185192858 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -7 17 1000 175.72} 100.0 0.0 0.0 {0.7673823529411764 -0.10584117647058826 -0.0010941176470588218} 5.541346185192858 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   pentanal: {
@@ -261,8 +261,8 @@ let nameExamples = {
     mainChain_Expanded: [5, 4, 3, 2, 1],
     mainChain3D: [6, 4, 2, 3, 5],
     mainChain_Skeletal: [5, 4, 3, 2, 1],
-    moveto:
-      "moveto 0.0 { -996 94 -5 179.86} 100.0 0.0 0.0 {-0.61283125 -0.13466250000000002 0.00013750000000000242} 4.826256094278101 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -996 94 -5 179.86} 100.0 0.0 0.0 {-0.61283125 -0.13466250000000002 0.00013750000000000242} 4.826256094278101 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   butene_3_ol_2: {
@@ -271,8 +271,8 @@ let nameExamples = {
     mainChain_Expanded: [4, 3, 2, 1],
     mainChain3D: [3, 2, 4, 5],
     mainChain_Skeletal: [5, 3, 2, 1],
-    moveto:
-      "moveto 0.0 { 9 368 930 150.98} 100.0 0.0 0.0 {-0.08393846153846152 -0.24908461538461535 0.061176923076923066} 4.280578988777057 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { 9 368 930 150.98} 100.0 0.0 0.0 {-0.08393846153846152 -0.24908461538461535 0.061176923076923066} 4.280578988777057 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   penten_2_ol_1: {
@@ -281,8 +281,8 @@ let nameExamples = {
     mainChain_Expanded: [5, 4, 3, 2, 1],
     mainChain3D: [6, 5, 3, 2, 4],
     mainChain_Skeletal: [5, 4, 3, 2, 1],
-    moveto:
-      "moveto 0.0 { -63 518 853 172.36} 100.0 0.0 0.0 {0.2935125000000001 -0.004893749999999988 0.02916875000000003} 5.059175863435337 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -63 518 853 172.36} 100.0 0.0 0.0 {0.2935125000000001 -0.004893749999999988 0.02916875000000003} 5.059175863435337 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   pentyn_4_one_2: {
@@ -291,8 +291,8 @@ let nameExamples = {
     mainChain_Expanded: [5, 4, 3, 2, 1],
     mainChain3D: [2, 3, 5, 6, 4],
     mainChain_Skeletal: [5, 4, 3, 2, 1],
-    moveto:
-      "moveto 0.0 { -408 -846 -344 178.29} 86.96 0.0 0.0 {-0.32399999999999995 -0.40674166666666667 0.00017500000000000848} 4.601720696521621 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -408 -846 -344 178.29} 86.96 0.0 0.0 {-0.32399999999999995 -0.40674166666666667 0.00017500000000000848} 4.601720696521621 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   propenoic_acid: {
@@ -301,8 +301,8 @@ let nameExamples = {
     mainChain_Expanded: [3, 2, 1],
     mainChain3D: [4, 3, 5],
     mainChain_Skeletal: [3, 2, 1],
-    moveto:
-      "moveto 0.0 { 25 -999 -32 179.92} 100.0 0.0 0.0 {0.36175555555555555 -0.15610000000000007 -0.00006666666666666667} 3.996410987871135 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { 25 -999 -32 179.92} 100.0 0.0 0.0 {0.36175555555555555 -0.15610000000000007 -0.00006666666666666667} 3.996410987871135 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   propynal: {
@@ -311,8 +311,8 @@ let nameExamples = {
     mainChain_Expanded: [3, 2, 1],
     mainChain3D: [2, 3, 4],
     mainChain_Skeletal: [3, 2, 1],
-    moveto:
-      "moveto 0.0 { -125 992 33 176.85} 100.0 0.0 0.0 {0.30560000000000004 -0.18216666666666664 0.00008333333333333334} 3.791606078230683 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -125 992 33 176.85} 100.0 0.0 0.0 {0.30560000000000004 -0.18216666666666664 0.00008333333333333334} 3.791606078230683 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   penten_3_yne_1: {
@@ -321,8 +321,8 @@ let nameExamples = {
     mainChain_Expanded: [1, 2, 3, 4, 5],
     mainChain3D: [5, 4, 3, 2, 1],
     mainChain_Skeletal: [1, 2, 3, 4, 5],
-    moveto:
-      "moveto 0.0 {0 0 1 0} 100.0 0.0 0.0 {0 0 0} 4.69067850854243 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 {0 0 1 0} 100.0 0.0 0.0 {0 0 0} 4.69067850854243 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   hexen_1_yne_4: {
@@ -331,8 +331,8 @@ let nameExamples = {
     mainChain_Expanded: [6, 5, 4, 3, 2, 1],
     mainChain3D: [5, 2, 1, 3, 6, 4],
     mainChain_Skeletal: [6, 5, 4, 3, 2, 1],
-    moveto:
-      "moveto 0.0 { 995 -17 95 71.5} 100.0 0.0 0.0 {-0.025399999999999992 0.08172857142857143 -0.013678571428571444} 5.021484686572104 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { 995 -17 95 71.5} 100.0 0.0 0.0 {-0.025399999999999992 0.08172857142857143 -0.013678571428571444} 5.021484686572104 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   buten_1_yne_3: {
@@ -341,8 +341,8 @@ let nameExamples = {
     mainChain_Expanded: [4, 3, 2, 1],
     mainChain3D: [2, 1, 3, 4],
     mainChain_Skeletal: [4, 3, 2, 1],
-    moveto:
-      "moveto 0.0 { -112 -991 -68 174.76} 100.0 0.0 0.0 {-0.30090000000000006 0.059224999999999986 0.00009999999999999999} 4.3545985799503875 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -112 -991 -68 174.76} 100.0 0.0 0.0 {-0.30090000000000006 0.059224999999999986 0.00009999999999999999} 4.3545985799503875 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   hexen_2_yne_4: {
@@ -351,8 +351,8 @@ let nameExamples = {
     mainChain_Expanded: [6, 5, 4, 3, 2, 1],
     mainChain3D: [2, 1, 3, 5, 6, 4],
     mainChain_Skeletal: [6, 5, 4, 3, 2, 1],
-    moveto:
-      "moveto 0.0 { 254 60 -965 13.45} 100.0 0.0 0.0 {0.16382142857142856 -0.08611428571428571 -0.00005714285714287464} 5.344100830590377 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { 254 60 -965 13.45} 100.0 0.0 0.0 {0.16382142857142856 -0.08611428571428571 -0.00005714285714287464} 5.344100830590377 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   chlorobutane_1: {
@@ -361,8 +361,8 @@ let nameExamples = {
     mainChain_Expanded: [4, 3, 2, 1],
     mainChain3D: [4, 2, 3, 5],
     mainChain_Skeletal: [4, 3, 2, 1],
-    moveto:
-      "moveto 0.0 { 748 92 -657 5.43} 132.25 0.0 0.0 {-0.6320928571428572 0.07022142857142856 -0.0014999999999999853} 5.321491144115054 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { 748 92 -657 5.43} 132.25 0.0 0.0 {-0.6320928571428572 0.07022142857142856 -0.0014999999999999853} 5.321491144115054 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   bromopropane_2: {
@@ -371,8 +371,8 @@ let nameExamples = {
     mainChain_Expanded: [1, 2, 3],
     mainChain3D: [4, 2, 3],
     mainChain_Skeletal: [4, 2, 1],
-    moveto:
-      "moveto 0.0 { -674 663 326 143.87} 100.0 0.0 0.0 {-0.5439636363636364 0.00012727272727271327 -0.019936363636363603} 4.389998932061536 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -674 663 326 143.87} 100.0 0.0 0.0 {-0.5439636363636364 0.00012727272727271327 -0.019936363636363603} 4.389998932061536 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   bromo_4_butene_1: {
@@ -381,8 +381,8 @@ let nameExamples = {
     mainChain_Expanded: [1, 2, 3, 4],
     mainChain3D: [5, 4, 2, 3],
     mainChain_Skeletal: [1, 2, 3, 4],
-    moveto:
-      "moveto 0.0 { -98 -879 -467 177.78} 115.0 0.0 0.0 {0.42289166666666667 0.06189999999999997 0.0022750000000000084} 5.327011763850231 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -98 -879 -467 177.78} 115.0 0.0 0.0 {0.42289166666666667 0.06189999999999997 0.0022750000000000084} 5.327011763850231 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   bromo_3_chloropentane_1: {
@@ -391,8 +391,8 @@ let nameExamples = {
     mainChain_Expanded: [5, 4, 3, 2, 1],
     mainChain3D: [6, 4, 3, 5, 7],
     mainChain_Skeletal: [6, 5, 3, 2, 1],
-    moveto:
-      "moveto 0.0 { -38 -980 -196 175.08} 115.0 0.0 0.0 {0.4578470588235295 0.33304117647058823 0.0710705882352941} 5.6706514010944264 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -38 -980 -196 175.08} 115.0 0.0 0.0 {0.4578470588235295 0.33304117647058823 0.0710705882352941} 5.6706514010944264 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   bromo_2_chlorobutane_3: {
@@ -401,8 +401,8 @@ let nameExamples = {
     mainChain_Expanded: [1, 2, 3, 4],
     mainChain3D: [5, 3, 4, 6],
     mainChain_Skeletal: [6, 4, 2, 1],
-    moveto:
-      "moveto 0.0 { -987 33 -157 110.6} 132.25 0.0 0.0 {0.2809357142857143 -0.5459142857142858 0.02150714285714288} 4.885284753863067 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -987 33 -157 110.6} 132.25 0.0 0.0 {0.2809357142857143 -0.5459142857142858 0.02150714285714288} 4.885284753863067 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   propanediol_1_2: {
@@ -411,8 +411,8 @@ let nameExamples = {
     mainChain_Expanded: [3, 2, 1],
     mainChain3D: [4, 3, 5],
     mainChain_Skeletal: [4, 2, 1],
-    moveto:
-      "moveto 0.0 { -996 -78 52 48.13} 100.0 0.0 0.0 {-0.34616153846153846 0.16600769230769236 -0.015023076923076934} 3.989388932527346 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -996 -78 52 48.13} 100.0 0.0 0.0 {-0.34616153846153846 0.16600769230769236 -0.015023076923076934} 3.989388932527346 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   propanedioic_acid: {
@@ -421,8 +421,8 @@ let nameExamples = {
     mainChain_Expanded: [3, 2, 1],
     mainChain3D: [6, 5, 7],
     mainChain_Skeletal: [2, 4, 5],
-    moveto:
-      "moveto 0.0 { 996 83 -9 9.63} 100.0 0.0 0.0 {0.0013181818181818143 0.3129818181818182 0.0017727272727272717} 4.396995191588708 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { 996 83 -9 9.63} 100.0 0.0 0.0 {0.0013181818181818143 0.3129818181818182 0.0017727272727272717} 4.396995191588708 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   propanetriol: {
@@ -431,8 +431,8 @@ let nameExamples = {
     mainChain_Expanded: [3, 2, 1],
     mainChain3D: [5, 4, 6],
     mainChain_Skeletal: [2, 3, 5],
-    moveto:
-      "moveto 0.0 { 1000 8 4 59.4} 100.0 0.0 0.0 {-0.06002857142857147 0.21227857142857137 0.17838571428571426} 4.342661921737165 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { 1000 8 4 59.4} 100.0 0.0 0.0 {-0.06002857142857147 0.21227857142857137 0.17838571428571426} 4.342661921737165 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   dichlorobutane_2_2: {
@@ -441,8 +441,8 @@ let nameExamples = {
     mainChain_Expanded: [1, 2, 3, 4],
     mainChain3D: [5, 3, 4, 6],
     mainChain_Skeletal: [1, 2, 5, 6],
-    moveto:
-      "moveto 0.0 { 242 970 2 9.89} 100.0 0.0 0.0 {0.2790142857142857 0.00020714285714286605 -0.4407} 4.160085917485747 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { 242 970 2 9.89} 100.0 0.0 0.0 {0.2790142857142857 0.00020714285714286605 -0.4407} 4.160085917485747 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   trichloropentane_1_1_2: {
@@ -451,8 +451,8 @@ let nameExamples = {
     mainChain_Expanded: [5, 4, 3, 2, 1],
     mainChain3D: [7, 5, 4, 6, 8],
     mainChain_Skeletal: [5, 4, 3, 2, 1],
-    moveto:
-      "moveto 0.0 { -46 -108 993 178.15} 115.0 0.0 0.0 {1.0008411764705885 0.1231764705882353 -0.19661176470588237} 6.006412446865542 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -46 -108 993 178.15} 115.0 0.0 0.0 {1.0008411764705885 0.1231764705882353 -0.19661176470588237} 6.006412446865542 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   hydroxypropanoic_acid_2: {
@@ -461,8 +461,8 @@ let nameExamples = {
     mainChain_Expanded: [3, 2, 1],
     mainChain3D: [6, 4, 5],
     mainChain_Skeletal: [4, 2, 1],
-    moveto:
-      "moveto 0.0 { 959 279 -59 133.43} 100.0 0.0 0.0 {-0.33398333333333335 -0.3167499999999999 0.01656666666666667} 4.027161258321774 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { 959 279 -59 133.43} 100.0 0.0 0.0 {-0.33398333333333335 -0.3167499999999999 0.01656666666666667} 4.027161258321774 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   hydroxybutanenitrile_2: {
@@ -471,8 +471,8 @@ let nameExamples = {
     mainChain_Expanded: [4, 3, 2, 1],
     mainChain3D: [6, 4, 3, 5],
     mainChain_Skeletal: [5, 3, 2, 1],
-    moveto:
-      "moveto 0.0 { -87 -278 -957 175.69} 115.0 0.0 0.0 {0.6581923076923077 -0.031615384615384656 0.0765153846153846} 4.633466587478547 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -87 -278 -957 175.69} 115.0 0.0 0.0 {0.6581923076923077 -0.031615384615384656 0.0765153846153846} 4.633466587478547 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   Oxopropanoic_acid: {
@@ -481,8 +481,8 @@ let nameExamples = {
     mainChain_Expanded: [3, 2, 1],
     mainChain3D: [6, 4, 5],
     mainChain_Skeletal: [3, 2, 1],
-    moveto:
-      "moveto 0.0 { 153 -987 52 179.04} 100.0 0.0 0.0 {0.32159 0.30856000000000006 0.0029900000000000013} 4.1796362556191315 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { 153 -987 52 179.04} 100.0 0.0 0.0 {0.32159 0.30856000000000006 0.0029900000000000013} 4.1796362556191315 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   aminobutanoic_acid_3: {
@@ -491,8 +491,8 @@ let nameExamples = {
     mainChain_Expanded: [4, 3, 2, 1],
     mainChain3D: [7, 5, 4, 6],
     mainChain_Skeletal: [5, 4, 2, 1],
-    moveto:
-      "moveto 0.0 { 996 44 76 43.25} 100.0 0.0 0.0 {-0.45260624999999993 -0.11909375 0.118325} 4.631305652838745 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { 996 44 76 43.25} 100.0 0.0 0.0 {-0.45260624999999993 -0.11909375 0.118325} 4.631305652838745 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   hydroxypropanenitrile_2: {
@@ -501,8 +501,8 @@ let nameExamples = {
     mainChain_Expanded: [3, 2, 1],
     mainChain3D: [5, 3, 4],
     mainChain_Skeletal: [3, 2, 1],
-    moveto:
-      "moveto 0.0 { -947 -233 -222 121.27} 115.0 0.0 0.0 {-0.5775 -0.23924000000000004 0.07578000000000001} 4.472712277014008 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -947 -233 -222 121.27} 115.0 0.0 0.0 {-0.5775 -0.23924000000000004 0.07578000000000001} 4.472712277014008 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   oxobutanoic_acid: {
@@ -511,8 +511,8 @@ let nameExamples = {
     mainChain_Expanded: [4, 3, 2, 1],
     mainChain3D: [6, 4, 5, 7],
     mainChain_Skeletal: [2, 3, 5, 6],
-    moveto:
-      "moveto 0.0 { 153 -987 52 179.04} 100.0 0.0 0.0 {0.11022307692307687 0.09013846153846156 -0.002015384615384622} 4.715473262911911 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { 153 -987 52 179.04} 100.0 0.0 0.0 {0.11022307692307687 0.09013846153846156 -0.002015384615384622} 4.715473262911911 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   dihydroxybutanedioic_acid_2_3: {
@@ -521,8 +521,8 @@ let nameExamples = {
     mainChain_Expanded: [6, 5, 2, 1],
     mainChain3D: [10, 8, 7, 9],
     mainChain_Skeletal: [5, 4, 3, 2],
-    moveto:
-      "moveto 0.0 { -96 -48 -994 179.82} 100.0 0.0 0.0 {0.00010624999999997442 0.07223125000000001 -0.013687499999999991} 4.739415414114579 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -96 -48 -994 179.82} 100.0 0.0 0.0 {0.00010624999999997442 0.07223125000000001 -0.013687499999999991} 4.739415414114579 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   ethanol: {
@@ -531,8 +531,8 @@ let nameExamples = {
     mainChain_Expanded: [2, 1],
     mainChain_Skeletal: [2, 1],
     mainChain3D: [2, 3],
-    moveto:
-      "moveto 0.0 { -56 994 -89 178.0} 115.0 0.0 0.0 {0.3654555555555556 -0.011722222222222214 0.08863333333333333} 3.2703980274730853 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -56 994 -89 178.0} 115.0 0.0 0.0 {0.3654555555555556 -0.011722222222222214 0.08863333333333333} 3.2703980274730853 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   propanone: {
@@ -541,8 +541,8 @@ let nameExamples = {
     mainChain_Expanded: [3, 2, 1],
     mainChain_Skeletal: [3, 2, 1],
     mainChain3D: [3, 2, 4],
-    moveto:
-      "moveto 0.0 {0 0 1 0} 100.0 0.0 0.0 {-0.0001200000000000534 0.53408 -0.00015999999999999348} 3.5511800480774416 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 {0 0 1 0} 100.0 0.0 0.0 {-0.0001200000000000534 0.53408 -0.00015999999999999348} 3.5511800480774416 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   butanone: {
@@ -551,8 +551,8 @@ let nameExamples = {
     mainChain_Expanded: [4, 3, 2, 1],
     mainChain_Skeletal: [4, 3, 2, 1],
     mainChain3D: [5, 3, 2, 4],
-    moveto:
-      "moveto 0.0 { 872 -443 209 2.75} 100.0 0.0 0.0 {-0.1591384615384615 0.3527615384615385 -0.002230769230769233} 4.0313838970310725 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { 872 -443 209 2.75} 100.0 0.0 0.0 {-0.1591384615384615 0.3527615384615385 -0.002230769230769233} 4.0313838970310725 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   nitroethane: {
@@ -561,8 +561,8 @@ let nameExamples = {
     mainChain_Expanded: [2, 1],
     mainChain_Skeletal: [2, 1],
     mainChain3D: [4, 5],
-    moveto:
-      "moveto 0.0 { -266 -961 76 10.76} 100.0 0.0 0.0 {-0.80876 0.006739999999999981 -0.03645} 3.8825827699539825 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -266 -961 76 10.76} 100.0 0.0 0.0 {-0.80876 0.006739999999999981 -0.03645} 3.8825827699539825 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   nitropropane_2: {
@@ -571,8 +571,8 @@ let nameExamples = {
     mainChain_Expanded: [3, 2, 1],
     mainChain_Skeletal: [3, 2, 1],
     mainChain3D: [6, 4, 5],
-    moveto:
-      "moveto 0.0 { 436 401 -806 102.19} 100.0 0.0 0.0 {-0.7402 -0.0005846153846154739 -0.048838461538461594} 4.212636983059641 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { 436 401 -806 102.19} 100.0 0.0 0.0 {-0.7402 -0.0005846153846154739 -0.048838461538461594} 4.212636983059641 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   // Branched Hydrocarbones
@@ -582,7 +582,8 @@ let nameExamples = {
     mainChain_Expanded: [],
     mainChain_Skeletal: [],
     mainChain3D: [],
-    moveto: "moveto 0.0 { -993 107 40 170.04} 69.57 0.0 0.0 {0.018154999999999945 0.015150000000000045 0.04406499999999999} 4.830360556026081 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { -993 107 40 170.04} 69.57 0.0 0.0 {0.018154999999999945 0.015150000000000045 0.04406499999999999} 4.830360556026081 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   dimethyl_2_3_butane: {
@@ -673,7 +674,8 @@ let nameExamples = {
     mainChain_Expanded: [],
     mainChain_Skeletal: [],
     mainChain3D: [],
-    moveto: "moveto 0.0 { 23 -25 999 179.99} 69.57 0.0 0.0 {-0.06443636363636365 0.21650909090909093 -0.00010909090909091726} 3.8970839838672164 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
+    //   "moveto 0.0 { 23 -25 999 179.99} 69.57 0.0 0.0 {-0.06443636363636365 0.21650909090909093 -0.00010909090909091726} 3.8970839838672164 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
   
   propanoic_methyl_ester: {

@@ -96,6 +96,11 @@ New parallel file set `mulermoc-nom-52.html` + `js/*-52.js` + `css/*-52.css`, fo
 - Owner CSS tweak carried in this commit: `body.scPinned #scenarioAuthorBar` `top: 0` → `-31px` (`css/mulermoc-nom-scenario-52.css`).
 - Checks: `git diff --check` clean; JS brace/paren balance `0/0` on both edited files (no Node runtime for `node --check`); manual browser verification pending (console `fScenarioGetMoveto()`, capture → export `view3D.moveto`, molecule switch keeps stored framing, step apply jumps instantly).
 
+### 2026-10-27 — Data moveto disabled, step moveto kept (v52, live)
+- All 61 active `moveto` entries in `js/jsme-nick-nomeclature-moc2-data_52.js` are now `//` comments (values preserved in place with a `disabled 2026-10-27` note; 3 already-commented entries left as-is). Molecule loads fall back to the shared `spt/init-3.spt` framing (`zoom 50`) via the existing `hasOwnProperty("moveto")` guard in `fLoadMol3D()` — no logic change needed.
+- Custom cameras stay available as the per-step `view3D.moveto` parameter (capture/validate/export/apply unchanged, always instant `0.0`).
+- Checks: `git diff --check` clean; data-file brace/paren/bracket balance `0/0/0`, zero active `moveto:` lines; manual browser check pending (molecule switch uses `zoom 50`, step with `view3D.moveto` still applies).
+
 ---
 
 ## [v51] (rich presentation notes, safe HTML, rule-table components, authoring note dialog, Snap-free viewer; previous live, `index.html` → v51 before v52)
