@@ -251,6 +251,37 @@ header {
   text-align: right;
 }
 
+/* "Full" viewport-height toggle beside the viewer-height sliders (v52):
+   small outline button, lit while the live global holds the "full"
+   sentinel (mirrors the active checkbox/2D-mode look). */
+.viewerFullBtn {
+  font-family: "Roboto Condensed", sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--lightBlue);
+  background: transparent;
+  color: var(--darkBlue);
+  cursor: pointer;
+}
+
+.viewerFullBtn:hover {
+  background: var(--veryLightBlue);
+}
+
+.viewerFullBtn.active {
+  background: var(--darkBlue);
+  border-color: var(--darkBlue);
+  color: #fff;
+}
+
+.viewerFullBtn:focus-visible {
+  outline: 2px solid var(--darkBlue);
+  outline-offset: 1px;
+}
+
 .settingRow {
   display: flex;
   align-items: center;

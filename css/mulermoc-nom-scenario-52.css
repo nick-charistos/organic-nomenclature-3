@@ -719,6 +719,38 @@
    justify-content: center;
 }
 
+/* Present identity, full left: scenario name followed by the author.
+   Mirrors #scExit (absolute right) so the centered step controls never
+   shift; long names truncate with an ellipsis (full text in title attr). */
+#scScenarioId {
+   position: absolute;
+   left: 20px;
+   top: 50%;
+   transform: translateY(-50%);
+   max-width: 30vw;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   white-space: nowrap;
+   font-weight: bold;
+}
+
+#scScenarioId .scScenarioIdAuthor {
+   font-weight: normal;
+   opacity: .75;
+}
+
+/* Narrow screens: keep the name, drop the author so the step counter
+   and Exit stay clear. */
+@media (max-width: 700px) {
+   #scScenarioId {
+      max-width: 34vw;
+   }
+   #scScenarioId .scScenarioIdAuthor,
+   #scScenarioId .scScenarioIdSep {
+      display: none;
+   }
+}
+
 /* #scenarioPlayBar .snote {
    opacity: .5;
    font-size: .8rem;
@@ -1163,6 +1195,24 @@
    transform: none;
 }
 
+/* Inline toolbar right edge: the column toggle and the alignment/text-position
+   triggers sit at the end of the row, where centered bubbles spill past the
+   drawer's clip box. Right-anchor them like .scDelete; vertical stays below. */
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar button.scColsToggle[data-tooltip]::after,
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar button.scTextPosBtn[data-tooltip]::after {
+   left: auto;
+   right: 0;
+   transform: none;
+}
+
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar button.scColsToggle[data-tooltip]::before,
+#scenarioAuthorBar .scenarioDrawer .scNoteToolbar button.scTextPosBtn[data-tooltip]::before {
+   left: auto;
+   /* 6px = half the shared 12px arrow; keeps the tip under the button. */
+   right: calc(50% - 6px);
+   transform: none;
+}
+
 /* Step-row show toggles: left-anchor and wrap the long English hints so the
    dark bubbles stay inside the drawer instead of clipping at the edges. */
 #scenarioAuthorBar .scenarioDrawer .scShowRow .sshow[data-tooltip]::after {
@@ -1260,9 +1310,35 @@
    footer to the bottom. Base #pageContainer uses justify-content:space-between
    (jsme-nick-52.css), which spreads every child across the full height; here
    the last child's margin-top:auto absorbs the free space instead, so the
-   footer stays on the bottom without spreading the rest. */
+   footer stays on the bottom without spreading the rest. The chain below
+   (authorLayout > mainAppContainer > mainApp3Columns) is flex:1 so the row
+   fills the viewport down to the credits; side rails stretch into that
+   height and internal-scroll (see fScenarioSyncStepTextHeight). */
 #pageContainer.presenting {
    justify-content: flex-start;
+   height: auto;
+   min-height: calc(100vh - 30px);
+}
+
+#pageContainer.presenting #authorLayout {
+   flex: 1 0 auto;
+   display: flex;
+   flex-direction: column;
+   min-height: 0;
+   width: 100%;
+}
+
+#pageContainer.presenting #mainAppContainer {
+   flex: 1 0 auto;
+   display: flex;
+   flex-direction: column;
+   min-height: 0;
+   width: 100%;
+}
+
+#pageContainer.presenting #mainAppContainer > .mainApp3Columns {
+   flex: 1 0 auto;
+   min-height: 0;
 }
 
 /* The shared ≤999px landscape rule hides h1 for the compact explorer;
@@ -1781,7 +1857,11 @@
    #pageContainer.presenting.scTextLeft .mainApp3Columns>#scStepText,
    #pageContainer.presenting.scTextRight .mainApp3Columns>#scStepText {
       flex: 0 0 clamp(300px, 24vw, 420px);
-      align-self: stretch;
+      /* Fit the content up to the JS max-height cap (tallest column or
+         creditsTop − railTop − 20px): short rails hug their text instead
+         of stretching the row, long rails internal-scroll at the cap. */
+      align-self: flex-start;
+      height: auto;
       position: sticky;
       /* Clear the fixed play bar (#scenarioPlayBar) while scrolling. */
       top: 50px;
@@ -2411,6 +2491,7 @@ body.scPinned #mainAppContainer:focus-visible {
 }
 
 .mu-note .note-embed .namingRuleTable {
+font-family: "Roboto Condensed", sans-serif; 
    width: 100%;
    min-width: 280px;
 }

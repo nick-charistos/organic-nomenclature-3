@@ -169,14 +169,17 @@ Visibility rules:
   or both. A hidden viewer is not rendered at all (skip
   `fLoadMol2D` / `fLoadMol3D`, `display:none`), reusing the
   scope of `fToggleViewer2D` and `fToggleViewer3D`.
-* `show.viewerMaxHeight` (additive, v48; number px | `null`, default
+* `show.viewerMaxHeight` (additive, v48; number px | `"full"` | `null`, default
   `null` = Auto) caps a **single visible** viewer's height. Auto caps it at
   the both-visible share (`fViewerHeights2D3D`), so hiding the other viewer
-  never resizes the survivor; an explicit value (clamped
-  `VIEWER_MIN_H`–`VIEWER_MAX_H`, live 150–2000; silently sanitized, `warning`
+  never resizes the survivor; an explicit value (px clamped
+  `VIEWER_MIN_H`–`VIEWER_MAX_H`, live 150–2000, silently sanitized; `"full"`
+  fills the live viewport on whatever screen plays the step, resolved per
+  screen and stored as the string, never as px; `warning`
   on non-empty invalid input) overrides. The author
-  sets it in the Ρυθμίσεις panel (unchecked = Auto, checked = slider px,
-  slider `max` = `min(live full single-viewer height, VIEWER_MAX_H)`). Applied in playback
+  sets it in the Ρυθμίσεις panel (unchecked = Auto, checked = slider px with
+  a fixed 150–1000px range, or the `Full` toggle for the viewport-relative
+  height). Applied in playback
   too (via `fScenarioApplyViewerMaxHeight`), stashed/restored around
   Present like the other live settings. Both viewers share a min-height floor
   (`VIEWER_MIN_H`, live **150px** — owner-tuned down from 240; the CSS
@@ -189,18 +192,23 @@ Visibility rules:
   v50 side layout skips that subtraction only while a left/right side
   rail is actually applied (the card is a fourth flex item beside the app,
   not above it); narrow-screen/top fallback still subtracts.
-* `show.viewerBothHeight` (additive, v48; number px | `null`, default
+* `show.viewerBothHeight` (additive, v48; number px | `"full"` | `null`, default
   `null` = Auto) sets the **combined** 2D+3D height of the viewers when
   **two** are visible — each viewer takes half. Auto keeps the equal split
-  (`fViewerHeights2D3D`); an explicit value (clamped 300–1000, silently
+  (`fViewerHeights2D3D`); an explicit value (px clamped 300–1000; `"full"`
+  fills the live viewport instead, resolved per playback screen; silently
   sanitized, `warning` on non-empty invalid input) **overrides** the split for
   both, so 300 → 150px each and 1000 → 500px each (the page scrolls if the total
   no longer fits; the `<430px` phone cap still trims). The author sets it in the
-  Ρυθμίσεις panel (unchecked = Auto, checked = fixed 300–1000px slider, live
-  re-fit on drag). Applied in playback too (via
+  Ρυθμίσεις panel (unchecked = Auto, checked = fixed 300–1000px slider, or the
+  `Full` toggle, live re-fit on drag). Applied in playback too (via
   `fScenarioApplyViewerMaxHeight`), stashed/restored around Present like the
   other live settings; independent of the single-viewer cap (each governs its
-  own visibility case).
+  own visibility case). The viewport budget (`total` in `fViewerHeights2D3D`)
+  subtracts the header, the `h1`, the visible `#creditsUs`, the top note card
+  (unless a side rail is applied), and — while presenting — the fixed
+  `#scenarioPlayBar`, so `Full` clears the title, the presentation navigation,
+  and the footer on any playback screen.
 * `show.controls.2D` toggles `#radio2DMode`
   (`Συνεπτυγμένος/Ανεπτυγμένος/Σκελετικός`, `Σύμβολα CHn`).
   Per-step drawer checkbox `2D controls` (default unchecked; disabled
@@ -433,7 +441,11 @@ Visibility rules:
   `▶` starts presentation at that step instead; both enter the same player
   and write `#step=N`. Exit returns to authoring with the card's drawer
   (if open) scrolled to the step that was on stage.
-* `Prev [3/8] Next` bar with step title + note; keyboard: `←`/`→`
+* Fixed present bar (`#scenarioPlayBar`): full left shows the scenario identity
+  (`#scScenarioId` ← `title · author`, author via `fScenarioValidAuthor`;
+  ellipsis-truncated with the full string in the hover title, author hidden
+  under 700px), center keeps the `Prev [3/8] Next` step counter, right keeps
+  `Exit ✕`. Keyboard: `←`/`→`
   walk steps (clamped, no wrap), `ESC` exits. Keys ignore modifiers
   and typing focus; JSmol arrow-rotate under applet focus is a known
   overlap (mouse-drag is the normal rotate path).
@@ -441,8 +453,8 @@ Visibility rules:
   and the educational text div below it (`#scStepText` ← `note`,
   simple-HTML subset), automatically iff the step carries a title or
   note — otherwise the app title is kept and nothing shows. The
-  PlayBar pill keeps only the one-line title/note as a progress
-  indicator (same subset rendering).
+  fixed play bar keeps the step counter plus the scenario identity
+  (`#scScenarioId`); the old per-step title/note pill nodes are retired.
 * v50 text position (live): default `styleText.position: null` keeps the top
   card. `"left"`/`"right"` move the note into a sticky, internally scrolling
   `clamp(300px, 24vw, 420px)` rail beside the app at ≥1200px, as the first/last
@@ -452,9 +464,15 @@ Visibility rules:
   the union of the visible menu/viewer/analysis columns (menu only when the
   step shows it), measured by JS into `--scStepTextFitWidth` /
   `--scStepTextFitLeft`, clamped to `#authorLayout`, with a full-width fallback
-  and the 1600px cap. The rail always renders one column, stretches to the app
-  row (`align-self:stretch`) and scrolls internally; JS sets its max-height from
-  the tallest visible app column. `textWidthPx` is ignored in v52. Switching
+  and the 1600px cap. The rail always renders one column and fits its content
+  up to a max-height cap (`align-self:flex-start`, `height:auto` on a
+  full-height `authorLayout > mainAppContainer > mainApp3Columns` chain);
+  long rails internal-scroll capped 20px above `#creditsUs` and never push
+  the footer down. JS sets the inline max-height to the larger of the tallest
+  visible app column and the scroll-invariant available space
+  (`window.innerHeight` minus rail document-top minus footer height minus a
+  20px gap — live viewport rects would ratchet, growing but never shrinking
+  while the page scrolls). `textWidthPx` is ignored in v52. Switching
   top↔side refits viewers;
   `fViewerHeights2D3D` skips the note-height subtraction only while a side rail
   is actually applied.

@@ -39,6 +39,11 @@ let viewerBothH = null;
 // fixed 300–1000px range regardless of the live single-viewer ceiling.
 const VIEWER_BOTH_MIN = 300;
 const VIEWER_BOTH_MAX = 1000;
+// Manual single-viewer slider bounds (v52): a fixed 150–1000px range. The old
+// screen-derived ceiling (live full height, taller on tall displays) is gone
+// — predictable authoring on any screen; taller needs the "full" sentinel,
+// which resolves live per playback screen instead of storing px.
+const VIEWER_SINGLE_MAX = 1000;
 // Sanity ceiling for stored single-viewer heights (show.viewerMaxHeight): the
 // live slider ceiling is screen-derived and can exceed 1000 on tall displays,
 // so scenario validation must not silently rewrite those values. Values applied
@@ -634,11 +639,50 @@ document.addEventListener("click", function (e) {
 // ── single-viewer max-height control (v48) ───────────────────────────────
 // Ρυθμίσεις row: a checkbox (unchecked = Auto, checked = Manual) plus a px
 // slider. Auto caps a lone viewer at the both-visible height; Manual uses the
-// slider value. Only the live global `viewerMaxH` is set here — scenario
-// steps own persistence (show.viewerMaxHeight). fResizeViewers() recomputes.
+// slider value; "full" (the Full toggle) resolves per playback screen.
+// Only the live global `viewerMaxH` is set here — scenario steps own
+// persistence (show.viewerMaxHeight). fResizeViewers() recomputes.
+//
+// `fViewerMaxHeightFull` (below) no longer ceilings the slider — it documents
+// the live full single-viewer height the "full" sentinel resolves to.
 function fViewerMaxHeightFull() {
   try { return Math.max(VIEWER_MIN_H, Math.round(fViewerHeights2D3D(true).full || 0)); }
   catch (eF) { return VIEWER_MIN_H; }
+}
+
+function fViewerMaxHeightEnsureFullBtn() {
+  var row = null;
+  try { row = document.getElementById("viewerMaxHeightSetting"); } catch (eR) { /* no DOM */ }
+  if (!row || document.getElementById("viewerMaxHeightFull")) return;
+  var b = document.createElement("button");
+  b.type = "button";
+  b.id = "viewerMaxHeightFull";
+  b.className = "viewerFullBtn";
+  b.textContent = "Full";
+  b.title = "Πλήρες ύψος οθόνης — προσαρμόζεται σε κάθε οθόνη προβολής";
+  b.setAttribute("aria-label", "Πλήρες ύψος οθόνης — προσαρμόζεται σε κάθε οθόνη προβολής");
+  b.setAttribute("aria-pressed", "false");
+  b.addEventListener("click", function (ev) {
+    if (ev && ev.preventDefault) ev.preventDefault();
+    fViewerMaxHeightToggleFull();
+  });
+  row.appendChild(b);
+}
+
+function fViewerMaxHeightToggleFull() {
+  if (viewerMaxH === "full") {
+    var rng = null;
+    try { rng = document.getElementById("viewerMaxHeightRange"); } catch (eR) { /* no DOM */ }
+    var v = rng ? parseInt(rng.value, 10) : NaN;
+    if (isNaN(v)) v = VIEWER_SINGLE_MAX;
+    if (v < VIEWER_MIN_H) v = VIEWER_MIN_H;
+    if (v > VIEWER_SINGLE_MAX) v = VIEWER_SINGLE_MAX;
+    viewerMaxH = v;
+  } else {
+    viewerMaxH = "full";
+  }
+  fViewerMaxHeightSync();
+  try { fResizeViewers(); } catch (eR) { /* resize best-effort */ }
 }
 
 function fViewerMaxHeightSync() {
@@ -646,27 +690,40 @@ function fViewerMaxHeightSync() {
   var rng = document.getElementById("viewerMaxHeightRange");
   var val = document.getElementById("viewerMaxHeightVal");
   if (!chk || !rng) return;
+  fViewerMaxHeightEnsureFullBtn();
+  var full = viewerMaxH === "full";
   var manual = viewerMaxH != null;
   try {
     chk.classList.toggle("selectedCheck", manual);
     chk.classList.toggle("unselectedCheck", !manual);
   } catch (eC) { /* class toggle best-effort */ }
-  var full = fViewerMaxHeightFull();
-  // Keep the slider and the live global within the persisted range, even
-  // when the measured row height exceeds VIEWER_MAX_H on very tall screens.
-  var maxShown = Math.min(full, VIEWER_MAX_H);
+  var btn = null;
+  try { btn = document.getElementById("viewerMaxHeightFull"); } catch (eB) { /* no DOM */ }
+  if (btn) {
+    try {
+      btn.classList.toggle("active", full);
+      btn.setAttribute("aria-pressed", full ? "true" : "false");
+    } catch (eA) { /* button state best-effort */ }
+  }
+  // Fixed ceiling (v52): the slider no longer follows the screen height.
   rng.min = String(VIEWER_MIN_H);
-  rng.max = String(maxShown);
-  rng.disabled = !manual;
+  rng.max = String(VIEWER_SINGLE_MAX);
+  rng.disabled = !manual || full;
+  if (full) {
+    // Park the slider at max while Full owns the value; the readout names it.
+    rng.value = String(VIEWER_SINGLE_MAX);
+    if (val) val.textContent = "Full";
+    return;
+  }
   var shown;
   if (manual) {
     shown = Math.round(viewerMaxH);
   } else {
     var vh = fViewerHeights2D3D();
-    shown = Math.round(vh.h2 || vh.h3 || Math.round(full / 2));
+    shown = Math.round(vh.h2 || vh.h3 || Math.round(fViewerMaxHeightFull() / 2));
   }
   if (shown < VIEWER_MIN_H) shown = VIEWER_MIN_H;
-  if (shown > maxShown) shown = maxShown;
+  if (shown > VIEWER_SINGLE_MAX) shown = VIEWER_SINGLE_MAX;
   rng.value = String(shown);
   if (val) val.textContent = shown + "px";
 }
@@ -676,12 +733,15 @@ function fViewerMaxHeightFromUi() {
   var rng = document.getElementById("viewerMaxHeightRange");
   if (!chk || !rng) return;
   if (chk.classList.contains("selectedCheck")) {
-    var v = parseInt(rng.value, 10);
-    if (isNaN(v)) v = VIEWER_MIN_H;
-    if (v < VIEWER_MIN_H) v = VIEWER_MIN_H;
-    var limit = Math.min(fViewerMaxHeightFull(), VIEWER_MAX_H);
-    if (v > limit) v = limit;
-    viewerMaxH = v;
+    // The Full toggle owns the value while active — a checkbox tick from the
+    // generic handler must not overwrite it with the parked slider value.
+    if (viewerMaxH !== "full") {
+      var v = parseInt(rng.value, 10);
+      if (isNaN(v)) v = VIEWER_MIN_H;
+      if (v < VIEWER_MIN_H) v = VIEWER_MIN_H;
+      if (v > VIEWER_SINGLE_MAX) v = VIEWER_SINGLE_MAX;
+      viewerMaxH = v;
+    }
   } else {
     viewerMaxH = null;
   }
@@ -716,22 +776,72 @@ function fInitViewerMaxHeight() {
 // Ρυθμίσεις row: a checkbox (unchecked = Auto = the equal split both viewers
 // get today, checked = Manual) plus a fixed slider (see VIEWER_BOTH_MIN/MAX).
 // When two viewers are visible, Manual sets their COMBINED height — each
-// viewer takes half.
+// viewer takes half. "full" (the Full toggle) fills the live viewport instead.
 // Only the live global `viewerBothH` is set here — scenario steps own
 // persistence (show.viewerBothHeight). fResizeViewers() recomputes.
+function fViewerBothHeightEnsureFullBtn() {
+  var row = null;
+  try { row = document.getElementById("viewerBothHeightSetting"); } catch (eR) { /* no DOM */ }
+  if (!row || document.getElementById("viewerBothHeightFull")) return;
+  var b = document.createElement("button");
+  b.type = "button";
+  b.id = "viewerBothHeightFull";
+  b.className = "viewerFullBtn";
+  b.textContent = "Full";
+  b.title = "Πλήρες ύψος οθόνης — προσαρμόζεται σε κάθε οθόνη προβολής";
+  b.setAttribute("aria-label", "Πλήρες ύψος οθόνης — προσαρμόζεται σε κάθε οθόνη προβολής");
+  b.setAttribute("aria-pressed", "false");
+  b.addEventListener("click", function (ev) {
+    if (ev && ev.preventDefault) ev.preventDefault();
+    fViewerBothHeightToggleFull();
+  });
+  row.appendChild(b);
+}
+
+function fViewerBothHeightToggleFull() {
+  if (viewerBothH === "full") {
+    var rng = null;
+    try { rng = document.getElementById("viewerBothHeightRange"); } catch (eR) { /* no DOM */ }
+    var v = rng ? parseInt(rng.value, 10) : NaN;
+    if (isNaN(v)) v = VIEWER_BOTH_MAX;
+    if (v < VIEWER_BOTH_MIN) v = VIEWER_BOTH_MIN;
+    if (v > VIEWER_BOTH_MAX) v = VIEWER_BOTH_MAX;
+    viewerBothH = v;
+  } else {
+    viewerBothH = "full";
+  }
+  fViewerBothHeightSync();
+  try { fResizeViewers(); } catch (eR) { /* resize best-effort */ }
+}
+
 function fViewerBothHeightSync() {
   var chk = document.getElementById("viewerBothHeightCheck");
   var rng = document.getElementById("viewerBothHeightRange");
   var val = document.getElementById("viewerBothHeightVal");
   if (!chk || !rng) return;
+  fViewerBothHeightEnsureFullBtn();
+  var full = viewerBothH === "full";
   var manual = viewerBothH != null;
   try {
     chk.classList.toggle("selectedCheck", manual);
     chk.classList.toggle("unselectedCheck", !manual);
   } catch (eC) { /* class toggle best-effort */ }
+  var btn = null;
+  try { btn = document.getElementById("viewerBothHeightFull"); } catch (eB) { /* no DOM */ }
+  if (btn) {
+    try {
+      btn.classList.toggle("active", full);
+      btn.setAttribute("aria-pressed", full ? "true" : "false");
+    } catch (eA) { /* button state best-effort */ }
+  }
   rng.min = String(VIEWER_BOTH_MIN);
   rng.max = String(VIEWER_BOTH_MAX);
-  rng.disabled = !manual;
+  rng.disabled = !manual || full;
+  if (full) {
+    rng.value = String(VIEWER_BOTH_MAX);
+    if (val) val.textContent = "Full";
+    return;
+  }
   var shown;
   if (manual) {
     shown = Math.round(viewerBothH);
@@ -751,11 +861,14 @@ function fViewerBothHeightFromUi() {
   var rng = document.getElementById("viewerBothHeightRange");
   if (!chk || !rng) return;
   if (chk.classList.contains("selectedCheck")) {
-    var v = parseInt(rng.value, 10);
-    if (isNaN(v)) v = VIEWER_BOTH_MIN;
-    if (v < VIEWER_BOTH_MIN) v = VIEWER_BOTH_MIN;
-    if (v > VIEWER_BOTH_MAX) v = VIEWER_BOTH_MAX;
-    viewerBothH = v;
+    // The Full toggle owns the value while active — see single-viewer note.
+    if (viewerBothH !== "full") {
+      var v = parseInt(rng.value, 10);
+      if (isNaN(v)) v = VIEWER_BOTH_MIN;
+      if (v < VIEWER_BOTH_MIN) v = VIEWER_BOTH_MIN;
+      if (v > VIEWER_BOTH_MAX) v = VIEWER_BOTH_MAX;
+      viewerBothH = v;
+    }
   } else {
     viewerBothH = null;
   }
@@ -7104,6 +7217,16 @@ function fViewerHeights2D3D(raw) {
       total -= (sTxtH + sTxtMT + sTxtMB);
     }
     total -= 30; // page margins / gaps
+    // Presentation navigation: the fixed play bar overlays the top of the
+    // viewport without taking flow space, so carve it out of the budget
+    // while presenting — "full" heights then clear the h1, the play bar,
+    // and the credits footer on any playback screen.
+    try {
+      if (typeof MuLERMoCScenario !== "undefined" && MuLERMoCScenario && MuLERMoCScenario.present) {
+        var pb = document.getElementById("scenarioPlayBar");
+        if (pb && pb.offsetParent !== null && pb.offsetHeight > 0) total -= (pb.offsetHeight + 8);
+      }
+    } catch (ePb) { /* play-bar probe unavailable */ }
     var vc = document.getElementById("viewerCol");
     var chrome = 0;
     var show2D = false, show3D = false;
@@ -7159,7 +7282,8 @@ function fViewerHeights2D3D(raw) {
       window.innerHeight < 430 ? Math.floor(window.innerHeight * 0.3) : Infinity;
     // Single visible viewer: cap its height. Default (viewerMaxH == null) is
     // the both-visible share so hiding the other viewer never resizes the
-    // survivor; an explicit px cap overrides. The cap is clamped into
+    // survivor; an explicit px cap — or "full" for the whole single share —
+    // overrides. The cap is clamped into
     // [floor, single share], so it can neither squash below the CSS minimum
     // nor exceed the space one viewer can actually take. `raw` skips the cap
     // (used to measure the full height for the slider ceiling).
@@ -7170,20 +7294,28 @@ function fViewerHeights2D3D(raw) {
     // (viewerBothH == null) keeps the split. The phone cap still trims.
     var each2 = each, each3 = each;
     if (!raw && n === 2 && viewerBothH != null) {
-      var bothTotal = Math.round(viewerBothH);
-      if (bothTotal < VIEWER_BOTH_MIN) bothTotal = VIEWER_BOTH_MIN;
-      if (bothTotal > VIEWER_BOTH_MAX) bothTotal = VIEWER_BOTH_MAX;
+      // "full" fills the live viewport instead of a stored px total.
+      var bothTotal = viewerBothH === "full"
+        ? Math.round(total - chrome)
+        : Math.round(viewerBothH);
+      if (viewerBothH !== "full") {
+        if (bothTotal < VIEWER_BOTH_MIN) bothTotal = VIEWER_BOTH_MIN;
+        if (bothTotal > VIEWER_BOTH_MAX) bothTotal = VIEWER_BOTH_MAX;
+      }
       each2 = each3 = Math.round(bothTotal / 2);
     } else if (n === 1 && !raw) {
       var autoCap = shareFor(2);
       if (show2D) {
-        cap2 = viewerMaxH != null ? viewerMaxH : autoCap;
+        // "full" resolves to the whole single share: Infinity collapses to
+        // single2 through the clamp below — never below the CSS minimum,
+        // never beyond what one viewer can actually take.
+        cap2 = viewerMaxH === "full" ? Infinity : (viewerMaxH != null ? viewerMaxH : autoCap);
         var single2 = Math.max(each, VIEWER_MIN_H);
         if (cap2 < VIEWER_MIN_H) cap2 = VIEWER_MIN_H;
         if (cap2 > single2) cap2 = single2;
       }
       if (show3D) {
-        cap3 = viewerMaxH != null ? viewerMaxH : autoCap;
+        cap3 = viewerMaxH === "full" ? Infinity : (viewerMaxH != null ? viewerMaxH : autoCap);
         var single3 = Math.max(each, VIEWER_MIN_H);
         if (cap3 < VIEWER_MIN_H) cap3 = VIEWER_MIN_H;
         if (cap3 > single3) cap3 = single3;

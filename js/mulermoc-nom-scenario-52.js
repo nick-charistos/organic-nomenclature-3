@@ -596,10 +596,13 @@ function fScenarioValidChainIdx(v) {
 }
 // Single-viewer max height (v48): additive optional show.viewerMaxHeight.
 // null/empty = Auto (cap a lone viewer at the both-visible height). Absolute
-// px, clamped to the live floor/ceiling (VIEWER_MIN_H–VIEWER_MAX_H); invalid
-// → null. No schema change (scenarioVersion 1).
+// px, clamped to the live floor/ceiling (VIEWER_MIN_H–VIEWER_MAX_H); the
+// string "full" fills the live viewport on whatever screen plays the step
+// (resolved per screen, never stored as px). Invalid → null. No schema
+// change (scenarioVersion 1).
 function fScenarioValidViewerMaxHeight(v) {
   if (v === null || typeof v === "undefined" || v === "") return null;
+  if (typeof v === "string" && v.trim().toLowerCase() === "full") return "full";
   var n = parseInt(v, 10);
   if (isNaN(n)) return null;
   if (n < VIEWER_MIN_H) return VIEWER_MIN_H;
@@ -609,9 +612,11 @@ function fScenarioValidViewerMaxHeight(v) {
 // Double-viewer height (v48): additive optional show.viewerBothHeight. null/
 // empty = Auto (the equal split both viewers get today). COMBINED 2D+3D height
 // when two are visible (each viewer takes half), clamped to the VIEWER_BOTH_MIN
-// –VIEWER_BOTH_MAX range; invalid → null. No schema change (scenarioVersion 1).
+// –VIEWER_BOTH_MAX range; "full" fills the live viewport instead (resolved
+// per playback screen). Invalid → null. No schema change (scenarioVersion 1).
 function fScenarioValidViewerBothHeight(v) {
   if (v === null || typeof v === "undefined" || v === "") return null;
+  if (typeof v === "string" && v.trim().toLowerCase() === "full") return "full";
   var n = parseInt(v, 10);
   if (isNaN(n)) return null;
   if (n < VIEWER_BOTH_MIN) return VIEWER_BOTH_MIN;
@@ -684,7 +689,31 @@ function fScenarioSyncStepTextHeight() {
     try { h = el.getBoundingClientRect().height; } catch (eH) { h = 0; }
     if (h > maxH) maxH = h;
   }
-  var next = maxH > 0 ? Math.round(maxH) + "px" : "";
+  // Full-height rail: fit content up to a viewport-derived cap, then
+  // internal-scroll. The flex chain (#pageContainer.presenting > #authorLayout
+  // > #mainAppContainer > .mainApp3Columns) fills the viewport, so the free
+  // space below the tallest column belongs to the rail too. Available is
+  // measured scroll-invariant — rail document-top plus footer height against
+  // window.innerHeight — so shrinking the window shrinks the cap even while
+  // the page scrolls (live viewport rects would freeze: a scrolled layout
+  // recomputes the same creditsTop − railTop, a ratchet that grows but never
+  // shrinks). Take the larger of columns vs available so short columns still
+  // reach the footer while tall columns keep working.
+  var avail = 0;
+  try {
+    var r = p.getBoundingClientRect();
+    var railTopDoc = (r.top || 0) + (window.scrollY || window.pageYOffset || 0);
+    var credH = 80;
+    try {
+      var cred = document.getElementById("creditsUs");
+      if (cred && cred.offsetHeight) credH = cred.offsetHeight;
+    } catch (eCred) { /* no DOM */ }
+    var vh = window.innerHeight || 0;
+    if (vh > 0) avail = Math.round(vh - railTopDoc - credH - 20);
+  } catch (eA) { avail = 0; }
+  var target = maxH;
+  if (avail > target) target = avail;
+  var next = target > 0 ? Math.round(target) + "px" : "";
   try {
     if (p.style.maxHeight !== next) p.style.maxHeight = next;
   } catch (eS) { /* no style */ }
@@ -861,10 +890,16 @@ function fInitStepTextSideResize() {
   try {
     window.addEventListener("resize", function () {
       fScenarioSyncStepTextLayout();
+      // Height-only drags move neither the card nor its fit width, but the
+      // viewer budget is viewport-derived — refit unconditionally (rAF-
+      // coalesced inside) so viewers track the window live, exactly like
+      // the rail cap already does via the layout sync above.
+      try { fScenarioScheduleStepTextRefit(); } catch (eRe) { /* refit best-effort */ }
       if (timer) clearTimeout(timer);
       timer = setTimeout(function () {
         timer = null;
         fScenarioSyncStepTextLayout();
+        try { fScenarioScheduleStepTextRefit(); } catch (eRe2) { /* refit best-effort */ }
       }, 120);
     });
   } catch (eRz) { /* resize unavailable */ }
@@ -4666,6 +4701,7 @@ function fScenarioBuildUi() {
     pb.id = "scenarioPlayBar";
     pb.style.display = "none";
     pb.innerHTML =
+      "<span id='scScenarioId' aria-label='Σενάριο παρουσίασης'></span>" +
       "<div id='scenarioPlayBarNextPrevContainer'>" +
       "<button id='scPrev' data-tooltip='Προηγούμενο βήμα'>◀</button><span id='scPos'>1/1</span><button id='scNext' data-tooltip='Επόμενο βήμα'>▶</button>" +
       "</div>" +
@@ -5518,7 +5554,7 @@ function fScenarioRenumber(id) {
   fScenarioRenderList(s.id);
 }
 
-function fScenarioPlayUi() {
+  function fScenarioPlayUi() {
   var ps = fScenarioPresent();
   var st = ps.steps[ps.index];
   var pos = document.getElementById("scPos");
@@ -5531,6 +5567,34 @@ function fScenarioPlayUi() {
       ? MuLERMoCNote.toPlainText(st.note, st.noteFormat, false)
       : String((st && st.note) || "").replace(/<[^>]*>/g, "").trim();
   }
+  // Present identity, full left: scenario name followed by the author
+  // (textContent only — both are free-typed). Runs on begin + every step
+  // turn, so renames always arrive with the next presentation.
+  try {
+    var idEl = document.getElementById("scScenarioId");
+    if (idEl) {
+      var sc = (ps && ps.id && typeof fScenarioGet === "function") ? fScenarioGet(ps.id) : null;
+      var title = (sc && sc.title) || "";
+      var author = (typeof fScenarioValidAuthor === "function")
+        ? fScenarioValidAuthor(sc && sc.author)
+        : (String((sc && sc.author) || "").trim() || "Unknown");
+      while (idEl.firstChild) idEl.removeChild(idEl.firstChild);
+      var tSpan = document.createElement("span");
+      tSpan.className = "scScenarioIdTitle";
+      tSpan.textContent = title;
+      var sep = document.createElement("span");
+      sep.className = "scScenarioIdSep";
+      sep.setAttribute("aria-hidden", "true");
+      sep.textContent = " · ";
+      var aSpan = document.createElement("span");
+      aSpan.className = "scScenarioIdAuthor";
+      aSpan.textContent = author;
+      idEl.appendChild(tSpan);
+      idEl.appendChild(sep);
+      idEl.appendChild(aSpan);
+      idEl.setAttribute("title", title + " · " + author);
+    }
+  } catch (eId) { /* present identity best-effort */ }
 }
 
 // ── Go/Jump pick alignment (authoring) ───────────────────────────────────
