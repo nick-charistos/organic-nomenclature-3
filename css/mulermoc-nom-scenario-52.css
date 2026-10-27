@@ -298,6 +298,35 @@
    font-family: "Roboto Condensed", sans-serif;
 }
 
+/* Scenario metadata row (v52): optional author, blank → "Unknown" stored. */
+.scenarioPanel .scenarioMeta {
+   display: flex;
+   gap: 6px;
+   align-items: center;
+   padding: 0 8px 6px 8px;
+   background: #fff;
+}
+
+.scenarioPanel .scenarioMeta .scenarioAuthorLabel {
+   font-size: .75rem;
+   font-weight: bold;
+   color: var(--darkBlue);
+   white-space: nowrap;
+   flex: none;
+}
+
+.scenarioPanel .scenarioMeta .scenarioAuthor {
+   flex: 1;
+   min-width: 0;
+   font-size: .8rem;
+   font-family: "Roboto Condensed", sans-serif;
+   color: var(--darkBlue);
+}
+
+.scenarioPanel.is-empty .scenarioAuthor {
+   opacity: .6;
+}
+
 .scenarioButtonPanel {
    background: var(--veryLightGray);
 }

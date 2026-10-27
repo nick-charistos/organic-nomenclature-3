@@ -46,6 +46,8 @@ progress tracking, server storage.
   "app": "mulermoc-nom-44",
   "scenario": "esters-intro",
   "title": "...",
+  "author": "Nick Charistos",
+  "created": "2026-10-27T09:15:00.000Z",
   "steps": [
     {
       "n": 1,
@@ -91,6 +93,15 @@ progress tracking, server storage.
 
 State notes (grounded in v52; v42–v51 identical unless noted):
 
+* `author` (v52, additive, no version bump) is optional free text on the
+  scenario card: blank/whitespace-only/absent → `"Unknown"` (trimmed, capped at
+  120 chars). `created` (v52, additive) is the ISO timestamp stamped when the
+  card is created (`+ New`/Import/deep-link preload); import keeps the file's
+  value when it parses. Both are edited in the card's `Author:` row and always
+  written by Export. Legacy files without either field load as
+  `author: "Unknown"` + the card's creation time; a non-string author or an
+  unparseable date is dropped with an import warning. Presentation ignores both
+  (metadata only).
 * `selectedMol`, `mode2D/modeSuffix`, `mainChainMode`,
   `etherNamingMode`, `nameAnalysisMode`, `selectedRule` mirror
   `js/mulermoc-nom-molview-51.js` (`fSelectMol`, `fShowNameAnalysis`,
@@ -337,7 +348,9 @@ Visibility rules:
   the scenario — `fScenarioConfirm`).
 * Scenario cards (`.scenarioPanel[data-scenario-id]`, explicit active
   card): per-card title rename, step count, delete (`deleteStep`
-  icon, confirm-guarded); button panel
+  icon, confirm-guarded); the optional `Author:` row (`.scenarioMeta` /
+  `.scenarioAuthor`, v52) sits under the header and blank stores `"Unknown"`;
+  button panel
   (`Add step`, `Steps`, `Export`, `Play ▶` — no Import; Play always
   starts at step 1); in-flow
   drawer (down/up via `.open`, accordion: one open at a time,
@@ -468,6 +481,12 @@ Visibility rules:
   a JS variable; `Export .json` downloads a Blob (same pattern
   as `fSave2DPng`), `Import .json` reads via file input. Reload
   without export loses unsaved steps by design.
+  Export (v52) first tries the browser Save window
+  (`showSaveFilePicker`, Chromium secure origins) so the author can choose
+  folder + filename (suggested name = sanitized title + `.scenario.json`,
+  reserved characters → `_`); cancelling is silent and any picker failure,
+  Firefox/Safari, or an insecure origin falls back to the original
+  `<a download>` Blob click.
 * Follow-up (not v1): `localStorage` scratch draft
   (`mulermoc.scenario.draft.v1`) with resume/discard UI for
   crash-safe authoring.

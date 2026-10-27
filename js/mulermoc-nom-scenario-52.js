@@ -10,6 +10,8 @@ var MuLERMoCScenario = {
   steps: [], // legacy mirror of the active scenario (kept in sync; use fScenarioActive())
   index: 0, // legacy mirror of active.index
   title: "untitled-scenario", // legacy mirror of active.title
+  author: "Unknown", // legacy mirror of active.author
+  created: null, // legacy mirror of active.created (ISO timestamp)
   menuPick: [], // legacy mirror of active.menuPick
   scenarios: [], // multi-scenario: [{id, title, steps[], index, menuPick[]}]
   activeId: null, // explicit active card; Save/pick/Present follow it
@@ -29,9 +31,33 @@ var MuLERMoCScenario = {
 };
 
 // ── multi-scenario state manager ─────────────────────────────────────
-// Each scenario card: {id, title, steps[], index, menuPick[]}.
+// Each scenario card: {id, title, author, created, steps[], index, menuPick[]}.
 // The legacy singletons (MuLERMoCScenario.steps/title/index/menuPick)
 // mirror the active card so older playback paths keep working.
+
+// Scenario metadata (v52, additive — no scenarioVersion bump):
+// `author` is free text, blank/absent → "Unknown"; `created` is the ISO
+// timestamp stamped when the card is created (New/Import) and preserved on
+// import when the file carries a valid one.
+function fScenarioNowIso() {
+  try {
+    return new Date().toISOString();
+  } catch (e) {
+    return null;
+  }
+}
+function fScenarioValidAuthor(v) {
+  if (typeof v !== "string") return "Unknown";
+  var s = v.replace(/^\s+|\s+$/g, "");
+  if (!s) return "Unknown";
+  return s.length > 120 ? s.slice(0, 120) : s;
+}
+function fScenarioValidCreated(v) {
+  if (typeof v !== "string" || !v) return null;
+  var d = new Date(v);
+  if (isNaN(d.getTime())) return null;
+  return d.toISOString();
+}
 function fScenarioNewId() {
   MuLERMoCScenario.seq = (MuLERMoCScenario.seq || 0) + 1;
   return "s" + MuLERMoCScenario.seq;
@@ -48,6 +74,8 @@ function fScenarioSyncLegacy() {
   MuLERMoCScenario.steps = a.steps;
   MuLERMoCScenario.index = a.index;
   MuLERMoCScenario.title = a.title;
+  MuLERMoCScenario.author = a.author;
+  MuLERMoCScenario.created = a.created;
   MuLERMoCScenario.menuPick = a.menuPick;
 }
 function fScenarioActive() {
@@ -65,7 +93,15 @@ function fScenarioPresent() {
   return p || fScenarioActive();
 }
 function fScenarioNew(title, silent) {
-  var scen = { id: fScenarioNewId(), title: title || ("scenario-" + (MuLERMoCScenario.seq)), steps: [], index: 0, menuPick: [] };
+  var scen = {
+    id: fScenarioNewId(),
+    title: title || ("scenario-" + (MuLERMoCScenario.seq)),
+    author: "Unknown",
+    created: fScenarioNowIso(),
+    steps: [],
+    index: 0,
+    menuPick: []
+  };
   MuLERMoCScenario.scenarios.push(scen);
   MuLERMoCScenario.activeId = scen.id;
   fScenarioSyncLegacy();
@@ -1025,7 +1061,27 @@ function fScenarioValidate(obj) {
     steps.push(st);
   });
   if (!steps.length) return { ok: false, warnings: warnings.concat(["No valid steps left."]) };
-  return { ok: true, steps: steps, title: obj.title || obj.scenario || "scenario", warnings: warnings };
+  // Scenario metadata (additive, no version bump): author defaults to
+  // "Unknown" when blank/absent/invalid; a valid creation date is kept,
+  // an invalid one is dropped with a warning (the card stamps its own).
+  var _author = fScenarioValidAuthor(obj.author);
+  if (typeof obj.author !== "undefined" && obj.author !== null &&
+    typeof obj.author !== "string") {
+    warnings.push("Invalid author discarded (Unknown used).");
+  }
+  var _created = fScenarioValidCreated(obj.created);
+  if (typeof obj.created !== "undefined" && obj.created !== null &&
+    obj.created !== "" && !_created) {
+    warnings.push("Invalid creation date discarded.");
+  }
+  return {
+    ok: true,
+    steps: steps,
+    title: obj.title || obj.scenario || "scenario",
+    author: _author,
+    created: _created,
+    warnings: warnings
+  };
 }
 
 // ── apply ──────────────────────────────────────────────────────────────
@@ -4019,6 +4075,73 @@ function fScenarioSyncAuthorUi() {
 
 // ── file export / import (memory + file, decision A) ────────────────────
 // Export is per scenario card (v1 schema unchanged); Import adds a panel.
+
+// Suggested download name: title → filesystem-safe stem + .scenario.json.
+// Sanitizes the characters Windows/macOS reject so the Save window and the
+// download fallback both start from a valid name.
+function fScenarioSuggestFilename(title) {
+  var stem = String(title == null ? "" : title)
+    .replace(/[\\/:*?"<>|\u0000-\u001f]+/g, "_")
+    .replace(/\s+/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "");
+  if (!stem) stem = "scenario";
+  return stem + ".scenario.json";
+}
+
+// Original delivery path: <a download> blob click. Used everywhere the Save
+// picker is unavailable (Firefox, Safari, file://, insecure origins) and as
+// the fallback when the picker throws. Unchanged behavior for offline/Import.
+function fScenarioSaveBlobDownload(filename, blob) {
+  try {
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () {
+      URL.revokeObjectURL(a.href);
+      a.remove();
+    }, 500);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+// Save delivery (v52): on Chromium over http(s) the File System Access API
+// opens the real Save window (folder + editable name). Cancelling it is a
+// silent no-op; any other failure falls back to the download path so Export
+// never loses the file. Same JSON bytes either way — no schema change.
+function fScenarioSaveBlob(filename, blob) {
+  var usePicker = false;
+  try {
+    // The API itself only exists in secure contexts; `isSecureContext !== false`
+    // keeps jsdom/older engines (property undefined) on the picker path while
+    // honouring an explicit insecure report (file://).
+    usePicker = typeof window.showSaveFilePicker === "function" && window.isSecureContext !== false;
+  } catch (e) {
+    usePicker = false;
+  }
+  if (!usePicker) return Promise.resolve(fScenarioSaveBlobDownload(filename, blob));
+  return window.showSaveFilePicker({
+    suggestedName: filename,
+    types: [{ description: "Scenario JSON", accept: { "application/json": [".json"] } }],
+  }).then(function (handle) {
+    return handle.createWritable().then(function (writable) {
+      return writable.write(blob).then(function () {
+        return writable.close();
+      });
+    });
+  }).then(function () {
+    return true;
+  }).catch(function (err) {
+    // AbortError: the author dismissed the Save window on purpose.
+    if (err && err.name === "AbortError") return false;
+    return fScenarioSaveBlobDownload(filename, blob);
+  });
+}
+
 function fScenarioExport(id) {
   var scen = (id && fScenarioGet(id)) || fScenarioActive();
   if (!scen) return;
@@ -4027,18 +4150,12 @@ function fScenarioExport(id) {
     app: "mulermoc-nom-44",
     scenario: scen.title,
     title: scen.title,
+    author: fScenarioValidAuthor(scen.author),
+    created: scen.created || fScenarioNowIso(),
     steps: scen.steps,
   };
   var blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json;charset=utf-8" });
-  var a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = String(scen.title || "scenario").replace(/\s+/g, "_") + ".scenario.json";
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(function () {
-    URL.revokeObjectURL(a.href);
-    a.remove();
-  }, 500);
+  return fScenarioSaveBlob(fScenarioSuggestFilename(scen.title), blob);
 }
 
 function fScenarioImportFile(file) {
@@ -4051,6 +4168,8 @@ function fScenarioImportFile(file) {
       var scen = fScenarioNew(res.title || "imported-scenario", true);
       scen.steps = res.steps;
       scen.index = 0;
+      scen.author = res.author || "Unknown";
+      scen.created = res.created || scen.created;
       fScenarioSyncLegacy();
       fScenarioBuildPanels();
       fScenarioToast("Imported " + res.steps.length + " steps as '" + scen.title + "'.");
@@ -4366,6 +4485,17 @@ function fScenarioBuildUi() {
         fScenarioSyncLegacy();
       }
     });
+    // Author is optional: blank → "Unknown" (stored, so Export never emits
+    // an empty author). `input` keeps an in-focus field in sync with the
+    // card while typing; `change` normalizes the visible value on blur.
+    $(document).on("change input", ".scenarioPanel .scenarioAuthor", function (e) {
+      var id = fScenarioPanelIdFromEl(this);
+      var s = (id && fScenarioGet(id)) || fScenarioActive();
+      if (!s) return;
+      s.author = fScenarioValidAuthor(this.value);
+      if (e && e.type === "change" && this.value !== s.author) this.value = s.author;
+      fScenarioSyncLegacy();
+    });
   }
   if (!document.getElementById("scenarioAuthorBar")) {
     var bar = document.createElement("div");
@@ -4605,6 +4735,11 @@ function fScenarioBuildPanels() {
       "<span class='scCount'>0</span>" +
       "<button class='scDelete' data-tooltip='Διαγραφή σεναρίου'>✕</button>" +
       "</div>" +
+      "<div class='scenarioMeta'>" +
+      "<label class='scenarioAuthorLabel' for=''>Author:</label>" +
+      "<input type='text' class='scenarioAuthor' value='' placeholder='Unknown' " +
+      "data-tooltip='Συγγραφέας σεναρίου (προαιρετικό)' aria-label='Συγγραφέας σεναρίου'>" +
+      "</div>" +
       "<div class='scenarioButtonPanel'>" +
       "<button class='scSave' data-tooltip='Αποθήκευση προβολής ως βήμα'>Add step</button>" +
       "<button class='scList' data-tooltip='Εμφάνιση/Απόκρυψη βημάτων'>Steps</button>" +
@@ -4616,6 +4751,8 @@ function fScenarioBuildPanels() {
       "</div>";
     var ti = panel.querySelector(".scenarioTitle");
     if (ti) ti.value = scen.title || "";
+    var ai = panel.querySelector(".scenarioAuthor");
+    if (ai) ai.value = scen.author || "";
     fScenarioPaintIconTextBtn(panel.querySelector(".scSave"), "addTask", "Add step");
     fScenarioPaintIconTextBtn(panel.querySelector(".scExport"), "downloadList", "Export");
     fScenarioPaintIconTextBtn(panel.querySelector(".scPresent"), "screen", "Play");
@@ -4717,6 +4854,9 @@ function fScenarioRenderOne(scen) {
   });
   var ti = panel.querySelector(".scenarioTitle");
   if (ti && document.activeElement !== ti && ti.value !== scen.title) ti.value = scen.title || "";
+  var ai = panel.querySelector(".scenarioAuthor");
+  var _authorShown = scen.author || "";
+  if (ai && document.activeElement !== ai && ai.value !== _authorShown) ai.value = _authorShown;
   box.innerHTML = "";
   scen.steps.forEach(function (st, i) {
     var row = document.createElement("div");
@@ -5604,6 +5744,8 @@ function fScenarioBoot() {
           var scen = fScenarioNew(res.title || "imported-scenario", true);
           scen.steps = res.steps;
           scen.index = 0;
+          scen.author = res.author || "Unknown";
+          scen.created = res.created || scen.created;
           fScenarioSyncLegacy();
           fScenarioBuildPanels();
           MuLERMoCScenario.presentId = scen.id;
@@ -5634,6 +5776,8 @@ function fScenarioBoot() {
           }
           var s1 = fScenarioActive();
           s1.title = res.title;
+          s1.author = res.author || "Unknown";
+          s1.created = res.created || s1.created;
           s1.steps = res.steps;
           s1.index = 0;
           s1.menuPick = [];
