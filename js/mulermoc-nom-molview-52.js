@@ -3233,21 +3233,23 @@ function fLoadMol3D() {
   let myMol3D = selectedExample.file3D;
   let movetoCmd =
     selectedExample.hasOwnProperty("moveto") && selectedExample.moveto
-      ? selectedExample.moveto + "; "
+      ? String(selectedExample.moveto).trim().replace(/;?\s*$/, "; ")
       : "";
-  // Optional model framing, applied after init-3.spt's shared zoom 80.
+  // Optional model framing, applied after init-3.spt's shared zoom 50.
   // Later user zoom and scenario camera commands retain control.
+  // IMPORTANT: init-3.spt ends with `zoom 50`, so a data-file moveto must run
+  // AFTER it (moveto encodes its own zoom/orientation); when moveto is
+  // present the generic initialZoom3D is skipped to avoid overwriting it.
   const initialZoom = selectedExample.initialZoom3D;
-  const zoomCmd = Number.isFinite(initialZoom) && initialZoom > 0
+  const zoomCmd = (!movetoCmd && Number.isFinite(initialZoom) && initialZoom > 0)
     ? "zoom " + initialZoom + ";"
     : "";
   Jmol.script(
     jmolAppletNomeclature,
     "frank off;load " +
       myMol3D +
-      ";  select all; center selected;" +
-      movetoCmd +
-      "script spt/init-3.spt;" + zoomCmd,
+      "; select all; center selected;" +
+      "script spt/init-3.spt;" + zoomCmd + movetoCmd,
   );
   fSetMolVis3D();
   // A fresh load satisfies any pending one-shot exit reload (e.g. molecule

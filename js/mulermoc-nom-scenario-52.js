@@ -383,22 +383,81 @@ function fScenarioWhenReady(cb) {
   })();
 }
 
-// ── 3D camera via `show moveto` (S1: scriptWait-only) ────────────────────
-// The old Jmol.getPropertyAsString(applet, "show moveto") branch is gone on
-// purpose: the property API answered with a `getProperty ERROR … Options
-// include: …` dump starting with `moveto\t"` that passed the old prefix
-// check and poisoned stored steps ("always loads the default").
-// scriptWait("show moveto") returns the real script output ("" when 3D is
-// unavailable). Capture with `rotate off` — a spinning view drifts.
+// ── 3D camera via orientationInfo.moveTo + `show moveto` fallback ─────────
+// Primary source is JSmol's own orientation API (the same one JSmol uses
+// internally for _saveOrientation): Jmol.getPropertyAsArray(applet,
+// "orientationInfo", "info").moveTo. It is synchronous and does not depend
+// on parsing `show` console output, which is why `scriptWait("show moveto")`
+// alone kept returning "" (capture always null) on some builds.
+// Fallbacks: scriptWait("show moveto") and scriptEcho("show moveto").
+// The old Jmol.getPropertyAsString(applet, "show moveto") branch stays gone:
+// the property API answered with a `getProperty ERROR … Options
+// include: …` dump that poisoned stored steps.
+// Capture with `rotate off` — a spinning view drifts.
+// Stored cameras are always instant: the first token after `moveto` is the
+// flight time in seconds (JSmol defaults it to 1.0); we rewrite it to 0.0.
+function fScenarioMovetoInstant(s) {
+  if (typeof s !== "string") return s;
+  return s.replace(/^(\s*moveto\s+)\S+/i, "$10.0");
+}
+function fScenarioExtractMoveto(raw) {
+  if (raw == null) return null;
+  var s = String(raw);
+  // Unwrap JSON-stringified payloads (\" , \n, outer quotes).
+  if (s.indexOf('\\"') >= 0 || s.indexOf("\\n") >= 0) {
+    try {
+      var un = JSON.parse('"' + s.replace(/"/g, '\\"').replace(/\n/g, "\\n") + '"');
+      if (typeof un === "string" && un) s = un;
+    } catch (eJson) {
+      s = s.replace(/\\n/g, "\n").replace(/\\"/g, '"');
+    }
+  }
+  var lines = s.replace(/\r/g, "").split("\n");
+  for (var i = 0; i < lines.length; i++) {
+    var l = lines[i].trim().replace(/^"+|"+$/g, "").trim();
+    if (/^moveto\b/i.test(l) && /getProperty\s+ERROR/i.test(l) === false) {
+      var cand = l.trim();
+      if (cand && /;?\s*$/.test(cand)) return fScenarioMovetoInstant(cand);
+    }
+  }
+  return null;
+}
 function fScenarioGetMoveto() {
   try {
-    if (typeof Jmol === "undefined" || typeof Jmol.scriptWait === "undefined" ||
-      typeof jmolAppletNomeclature === "undefined") return null;
-    var w = String(Jmol.scriptWait(jmolAppletNomeclature, "show moveto") || "").trim();
-    var line = w.split("\n").filter(function (l) {
-      return /^moveto\b/i.test(l.trim());
-    })[0];
-    if (line) return line.trim();
+    if (typeof Jmol === "undefined" ||
+      typeof jmolAppletNomeclature === "undefined" || !jmolAppletNomeclature) return null;
+    // 1. orientationInfo.moveTo — most reliable.
+    try {
+      if (typeof Jmol.getPropertyAsArray !== "undefined") {
+        var info = Jmol.getPropertyAsArray(jmolAppletNomeclature, "orientationInfo", "info");
+        var mt = info && info.moveTo;
+        if (typeof mt === "string" && /^moveto\b/i.test(mt.trim())) return fScenarioMovetoInstant(mt.trim());
+        if (info && typeof info === "object" && typeof info["moveTo"] === "string" &&
+          /^moveto\b/i.test(info["moveTo"].trim())) return fScenarioMovetoInstant(info["moveTo"].trim());
+      }
+    } catch (eInfo) {
+      /* fall through to show moveto */
+    }
+    // 2. scriptWait("show moveto").
+    try {
+      if (typeof Jmol.scriptWait !== "undefined") {
+        var w = String(Jmol.scriptWait(jmolAppletNomeclature, "show moveto") || "");
+        var line = fScenarioExtractMoveto(w);
+        if (line) return line;
+      }
+    } catch (eWait) {
+      /* fall through */
+    }
+    // 3. scriptEcho channel — `show` output sometimes lands here.
+    try {
+      if (typeof Jmol.scriptEcho !== "undefined") {
+        var ec = String(Jmol.scriptEcho(jmolAppletNomeclature, "show moveto") || "");
+        var line2 = fScenarioExtractMoveto(ec);
+        if (line2) return line2;
+      }
+    } catch (eEcho) {
+      /* 3D unavailable */
+    }
   } catch (e) {
     /* 3D unavailable */
   }
@@ -420,7 +479,7 @@ function fScenarioValidMoveto(s) {
   if (/[a-df-zA-DF-Z]/.test(body)) return null; // letters other than e/E
   var nums = body.match(/-?\d(\.\d+)?([eE][+\-]?\d+)?/g) || [];
   if (nums.length < 5) return null; // not a real camera vector
-  return line;
+  return fScenarioMovetoInstant(line);
 }
 
 // ── capture ────────────────────────────────────────────────────────────
@@ -466,7 +525,12 @@ function fScenarioCapture() {
   var subset = showMenu ? pick.slice() : [];
   if (showMenu && mol && subset.indexOf(mol) < 0) subset.unshift(mol);
   var spin = !!fScenarioG("rotateFlag", false);
-  var moveto = !menuOnly && !adopted && fScenarioViewerOn("3D") ? fScenarioGetMoveto() : null;
+  var moveto = null;
+  try {
+    var _rawMoveto = (!menuOnly && !adopted && fScenarioViewerOn("3D")) ? fScenarioGetMoveto() : null;
+    moveto = fScenarioValidMoveto(_rawMoveto);
+    if (_rawMoveto && !moveto) fScenarioToast("3D view not captured — re-capture with rotate off.");
+  } catch (eCap) { moveto = null; }
   // Default step title: the live Greek IUPAC name when the loaded
   // molecule matches the capture (fresh `currentMolName`); the dataset
   // key when nothing is loaded (adopted pick); "menu" for menu-only.

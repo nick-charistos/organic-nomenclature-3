@@ -2060,7 +2060,7 @@ body.scPinned #viewerCol {
 body.scPinned #scenarioAuthorBar {
    position: absolute;
    right: 0;
-   top: 0;
+   top: -31px;
    bottom: 0;
    width: 480px;
    max-width: 480px;
