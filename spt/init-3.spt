@@ -20,8 +20,12 @@
  background [xffffff]
 
  frank off;
+
+ rotate best;
  
- zoom 50;
+ zoom 0;
+
+ zoomto 0.0 out;
 
  
 

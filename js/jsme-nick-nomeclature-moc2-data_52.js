@@ -5,7 +5,7 @@ let nameExamples = {
     mainChain_Expanded: [1],
     mainChain3D: [1],
     // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
-    //   "moveto 0.0 { 17 896 -444 35.17} 65.75 0.0 0.0 {0.000020000000000020002 0.0000199999999999978 0} 2.290012662678742 {0 0 0} 0 0 0 3.0 0.0 0.0;",
+    // moveto: "moveto 0.0 { 17 896 -444 35.17} 65.75 0.0 0.0 {0.000020000000000020002 0.0000199999999999978 0} 2.290012662678742 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
 
   methanoicacid: {
@@ -677,7 +677,7 @@ let nameExamples = {
     // moveto (disabled 2026-10-27: init-3.spt zoom 50 is the shared default; use per-step view3D.moveto):
     //   "moveto 0.0 { 23 -25 999 179.99} 69.57 0.0 0.0 {-0.06443636363636365 0.21650909090909093 -0.00010909090909091726} 3.8970839838672164 {0 0 0} 0 0 0 3.0 0.0 0.0;",
   },
-  
+
   propanoic_methyl_ester: {
     formula: "CH3CH2COOCH3",
     mainChain_Condensed: [],
@@ -760,719 +760,720 @@ let nameExamples = {
     mainChain3D: [1, 2, 3, 4, 5, 6, 7],
   },
 
-  butadiene_1_2: {"formula": "CH2=C=CHCH3", "mainChain_Condensed": [1, 2, 3, 4], "mainChain_Expanded": [1, 2, 3, 4], "mainChain_Skeletal": [1, 2, 3, 4], "mainChain3D": [1, 2, 3, 4]},
+  butadiene_1_2: { "formula": "CH2=C=CHCH3", "mainChain_Condensed": [1, 2, 3, 4], "mainChain_Expanded": [1, 2, 3, 4], "mainChain_Skeletal": [1, 2, 3, 4], "mainChain3D": [1, 2, 3, 4] },
 
 
-  butadiene_1_3: {"formula": "CH2=CHCH=CH2", "mainChain_Condensed": [1, 2, 3, 4], "mainChain_Expanded": [1, 2, 3, 4], "mainChain_Skeletal": [1, 2, 3, 4], "mainChain3D": [3, 1, 2, 4]},
+  butadiene_1_3: { "formula": "CH2=CHCH=CH2", "mainChain_Condensed": [1, 2, 3, 4], "mainChain_Expanded": [1, 2, 3, 4], "mainChain_Skeletal": [1, 2, 3, 4], "mainChain3D": [3, 1, 2, 4] },
 
 
-  butanol_2: {"formula": "CH3CH2CH(OH)CH3", "mainChain_Condensed": [1, 2, 3, 4], "mainChain_Expanded": [1, 2, 3, 4], "mainChain_Skeletal": [1, 2, 3, 4], "mainChain3D": [4, 2, 3, 5]},
+  butanol_2: { "formula": "CH3CH2CH(OH)CH3", "mainChain_Condensed": [1, 2, 3, 4], "mainChain_Expanded": [1, 2, 3, 4], "mainChain_Skeletal": [1, 2, 3, 4], "mainChain3D": [4, 2, 3, 5] },
 
-  dimethyl_2_2_pentanol_3: {"formula": "CH3CH2CH(OH)C(CH3)2CH3", "mainChain_Condensed": [1, 2, 3, 4, 5], "mainChain_Expanded": [1, 2, 3, 4, 5], "mainChain_Skeletal": [1, 2, 3, 4, 5], "mainChain3D": [5, 2, 3, 4, 8]},
+  dimethyl_2_2_pentanol_3: { "formula": "CH3CH2CH(OH)C(CH3)2CH3", "mainChain_Condensed": [1, 2, 3, 4, 5], "mainChain_Expanded": [1, 2, 3, 4, 5], "mainChain_Skeletal": [1, 2, 3, 4, 5], "mainChain3D": [5, 2, 3, 4, 8] },
 
-  dimethyl_2_3_pentadiene_1_3: {"formula": "CH2=C(CH3)C(CH3)=CHCH3", "mainChain_Condensed": [1, 2, 3, 4, 5], "mainChain_Expanded": [1, 2, 3, 4, 5], "mainChain_Skeletal": [1, 2, 3, 4, 5], "mainChain3D": [7, 2, 1, 4, 6]},
-
-
-  dimethyl_2_3_penten_1_yne_4: {"formula": "CH_CCH(CH3)C(CH3)=CH2", "mainChain_Condensed": [1, 2, 3, 4, 5], "mainChain_Expanded": [1, 2, 3, 4, 5], "mainChain_Skeletal": [1, 2, 3, 4, 5], "mainChain3D": [5, 2, 1, 6, 7]},
-
-  ethyl_3_dimethyl_4_5_hexadiene_1_4: {"formula": "CH2=CHCH(CH2CH3)C(CH3)=C(CH3)CH3", "mainChain_Condensed": [1, 2, 3, 4, 5, 6], "mainChain_Expanded": [1, 2, 3, 4, 5, 6], "mainChain_Skeletal": [1, 2, 3, 4, 5, 6], "mainChain3D": [10, 5, 1, 2, 4, 8]},
+  dimethyl_2_3_pentadiene_1_3: { "formula": "CH2=C(CH3)C(CH3)=CHCH3", "mainChain_Condensed": [1, 2, 3, 4, 5], "mainChain_Expanded": [1, 2, 3, 4, 5], "mainChain_Skeletal": [1, 2, 3, 4, 5], "mainChain3D": [7, 2, 1, 4, 6] },
 
 
-  ethyl_3_methyl_4_hexen_3_yn_5_ol_2: {"formula": "CH_CC(CH3)=C(CH2CH3)CH(OH)CH3", "mainChain_Condensed": [1, 2, 3, 4, 5, 6], "mainChain_Expanded": [1, 2, 3, 4, 5, 6], "mainChain_Skeletal": [1, 2, 3, 4, 5, 6], "mainChain3D": [1, 2, 3, 4, 5, 6], "initialZoom3D": 65},
+  dimethyl_2_3_penten_1_yne_4: { "formula": "CH_CCH(CH3)C(CH3)=CH2", "mainChain_Condensed": [1, 2, 3, 4, 5], "mainChain_Expanded": [1, 2, 3, 4, 5], "mainChain_Skeletal": [1, 2, 3, 4, 5], "mainChain3D": [5, 2, 1, 6, 7] },
 
-  ethyl_4_dimethyl_2_3_hepten_2_yne_5: {"formula": "CH3C_CCH(CH2CH3)C(CH3)=C(CH3)CH3", "mainChain_Condensed": [1, 2, 3, 4, 5, 6, 7], "mainChain_Expanded": [1, 2, 3, 4, 5, 6, 7], "mainChain_Skeletal": [1, 2, 3, 4, 5, 6, 7], "mainChain3D": [1, 2, 3, 4, 5, 6, 7]},
-
-
-  isopropyl_4_dimethyl_3_5_heptanol_2: {"initialZoom3D": 65, "formula": "CH3CH2CH(CH3)CH(CH(CH3)2)CH(CH3)CH(OH)CH3", "mainChain_Condensed": [1, 2, 3, 4, 5, 6, 7], "mainChain_Expanded": [1, 2, 3, 4, 5, 6, 7], "mainChain_Skeletal": [1, 2, 3, 4, 5, 6, 7], "mainChain3D": [1, 2, 3, 4, 5, 6, 7]},
-
-  methyl_2_buten_1_yne_3: {"formula": "CH_CC(CH3)=CH2", "mainChain_Condensed": [1, 2, 3, 4], "mainChain_Expanded": [1, 2, 3, 4], "mainChain_Skeletal": [1, 2, 3, 4], "mainChain3D": [3, 2, 4, 5]},
-
-  methyl_2_propanediol_1_2: {"formula": "CH3C(CH3)(OH)CH2OH", "mainChain_Condensed": [1, 2, 3], "mainChain_Expanded": [1, 2, 3], "mainChain_Skeletal": [1, 2, 3], "mainChain3D": [4, 3, 5]},
-
-  methyl_3_buten_3_ol_2: {"formula": "CH2=C(CH3)CH(OH)CH3", "mainChain_Condensed": [1, 2, 3, 4], "mainChain_Expanded": [1, 2, 3, 4], "mainChain_Skeletal": [1, 2, 3, 4], "mainChain3D": [4, 2, 3, 6]},
-
-  methyl_3_pentadiene_1_3: {"formula": "CH2=CHC(CH3)=CHCH3", "mainChain_Condensed": [1, 2, 3, 4, 5], "mainChain_Expanded": [1, 2, 3, 4, 5], "mainChain_Skeletal": [1, 2, 3, 4, 5], "mainChain3D": [6, 5, 1, 2, 4]},
+  ethyl_3_dimethyl_4_5_hexadiene_1_4: { "formula": "CH2=CHCH(CH2CH3)C(CH3)=C(CH3)CH3", "mainChain_Condensed": [1, 2, 3, 4, 5, 6], "mainChain_Expanded": [1, 2, 3, 4, 5, 6], "mainChain_Skeletal": [1, 2, 3, 4, 5, 6], "mainChain3D": [10, 5, 1, 2, 4, 8] },
 
 
-  methyl_3_pentyn_4_ol_2: {"formula": "CH_CCH(CH3)CH(OH)CH3", "mainChain_Condensed": [1, 2, 3, 4, 5], "mainChain_Expanded": [1, 2, 3, 4, 5], "mainChain_Skeletal": [1, 2, 3, 4, 5], "mainChain3D": [5, 3, 2, 6, 7]},
+  ethyl_3_methyl_4_hexen_3_yn_5_ol_2: { "formula": "CH_CC(CH3)=C(CH2CH3)CH(OH)CH3", "mainChain_Condensed": [1, 2, 3, 4, 5, 6], "mainChain_Expanded": [1, 2, 3, 4, 5, 6], "mainChain_Skeletal": [1, 2, 3, 4, 5, 6], "mainChain3D": [1, 2, 3, 4, 5, 6], "initialZoom3D": 65 },
 
-  methyl_4_pentanol_2: {"formula": "CH3CH(CH3)CH2CH(OH)CH3", "mainChain_Condensed": [1, 2, 3, 4, 5], "mainChain_Expanded": [1, 2, 3, 4, 5], "mainChain_Skeletal": [1, 2, 3, 4, 5], "mainChain3D": [7, 4, 3, 2, 5]},
+  ethyl_4_dimethyl_2_3_hepten_2_yne_5: { "formula": "CH3C_CCH(CH2CH3)C(CH3)=C(CH3)CH3", "mainChain_Condensed": [1, 2, 3, 4, 5, 6, 7], "mainChain_Expanded": [1, 2, 3, 4, 5, 6, 7], "mainChain_Skeletal": [1, 2, 3, 4, 5, 6, 7], "mainChain3D": [1, 2, 3, 4, 5, 6, 7] },
 
-  methyl_4_penten_4_yn_2_ol_1: {"formula": "CH2=C(CH3)C_CCH2OH", "mainChain_Condensed": [1, 2, 3, 4, 5], "mainChain_Expanded": [1, 2, 3, 4, 5], "mainChain_Skeletal": [1, 2, 3, 4, 5], "mainChain3D": [4, 7, 5, 2, 6]},
 
-  pentadiene_1_4: {"formula": "CH2=CHCH2CH=CH2", "mainChain_Condensed": [1, 2, 3, 4, 5], "mainChain_Expanded": [1, 2, 3, 4, 5], "mainChain_Skeletal": [1, 2, 3, 4, 5], "mainChain3D": [4, 2, 1, 3, 5]},
+  isopropyl_4_dimethyl_3_5_heptanol_2: { "initialZoom3D": 65, "formula": "CH3CH2CH(CH3)CH(CH(CH3)2)CH(CH3)CH(OH)CH3", "mainChain_Condensed": [1, 2, 3, 4, 5, 6, 7], "mainChain_Expanded": [1, 2, 3, 4, 5, 6, 7], "mainChain_Skeletal": [1, 2, 3, 4, 5, 6, 7], "mainChain3D": [1, 2, 3, 4, 5, 6, 7] },
+
+  methyl_2_buten_1_yne_3: { "formula": "CH_CC(CH3)=CH2", "mainChain_Condensed": [1, 2, 3, 4], "mainChain_Expanded": [1, 2, 3, 4], "mainChain_Skeletal": [1, 2, 3, 4], "mainChain3D": [3, 2, 4, 5] },
+
+  methyl_2_propanediol_1_2: { "formula": "CH3C(CH3)(OH)CH2OH", "mainChain_Condensed": [1, 2, 3], "mainChain_Expanded": [1, 2, 3], "mainChain_Skeletal": [1, 2, 3], "mainChain3D": [4, 3, 5] },
+
+  methyl_3_buten_3_ol_2: { "formula": "CH2=C(CH3)CH(OH)CH3", "mainChain_Condensed": [1, 2, 3, 4], "mainChain_Expanded": [1, 2, 3, 4], "mainChain_Skeletal": [1, 2, 3, 4], "mainChain3D": [4, 2, 3, 6] },
+
+  methyl_3_pentadiene_1_3: { "formula": "CH2=CHC(CH3)=CHCH3", "mainChain_Condensed": [1, 2, 3, 4, 5], "mainChain_Expanded": [1, 2, 3, 4, 5], "mainChain_Skeletal": [1, 2, 3, 4, 5], "mainChain3D": [6, 5, 1, 2, 4] },
+
+
+  methyl_3_pentyn_4_ol_2: { "formula": "CH_CCH(CH3)CH(OH)CH3", "mainChain_Condensed": [1, 2, 3, 4, 5], "mainChain_Expanded": [1, 2, 3, 4, 5], "mainChain_Skeletal": [1, 2, 3, 4, 5], "mainChain3D": [5, 3, 2, 6, 7] },
+
+  methyl_4_pentanol_2: { "formula": "CH3CH(CH3)CH2CH(OH)CH3", "mainChain_Condensed": [1, 2, 3, 4, 5], "mainChain_Expanded": [1, 2, 3, 4, 5], "mainChain_Skeletal": [1, 2, 3, 4, 5], "mainChain3D": [7, 4, 3, 2, 5] },
+
+  methyl_4_penten_4_yn_2_ol_1: { "formula": "CH2=C(CH3)C_CCH2OH", "mainChain_Condensed": [1, 2, 3, 4, 5], "mainChain_Expanded": [1, 2, 3, 4, 5], "mainChain_Skeletal": [1, 2, 3, 4, 5], "mainChain3D": [4, 7, 5, 2, 6] },
+
+  pentadiene_1_4: { "formula": "CH2=CHCH2CH=CH2", "mainChain_Condensed": [1, 2, 3, 4, 5], "mainChain_Expanded": [1, 2, 3, 4, 5], "mainChain_Skeletal": [1, 2, 3, 4, 5], "mainChain3D": [4, 2, 1, 3, 5] },
 
 
 
   pentanone_3: {
-  "formula": "CH3CH2COCH2CH3",
-  "mainChain_Condensed": [
-    1,
-    2,
-    3,
-    4,
-    5
-  ],
-  "mainChain_Expanded": [
-    1,
-    2,
-    3,
-    4,
-    5
-  ],
-  "mainChain_Skeletal": [
-    1,
-    2,
-    3,
-    4,
-    5
-  ],
-  "mainChain3D": [
-    5,
-    2,
-    4,
-    3,
-    6
-  ]
-},
+    "formula": "CH3CH2COCH2CH3",
+    "mainChain_Condensed": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "mainChain_Expanded": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "mainChain_Skeletal": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "mainChain3D": [
+      5,
+      2,
+      4,
+      3,
+      6
+    ]
+  },
 
   dimethyl_2_4_pentanone_3: {
-  "formula": "CH3CH(CH3)COCH(CH3)CH3",
-  "mainChain_Condensed": [
-    1,
-    2,
-    3,
-    4,
-    5
-  ],
-  "mainChain_Expanded": [
-    1,
-    2,
-    3,
-    4,
-    5
-  ],
-  "mainChain_Skeletal": [
-    1,
-    2,
-    3,
-    4,
-    5
-  ],
-  "mainChain3D": [
-    5,
-    2,
-    4,
-    3,
-    7
-  ]
-},
+    "formula": "CH3CH(CH3)COCH(CH3)CH3",
+    "mainChain_Condensed": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "mainChain_Expanded": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "mainChain_Skeletal": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "mainChain3D": [
+      5,
+      2,
+      4,
+      3,
+      7
+    ]
+  },
 
   trimethyl_3_4_4_pentanone_2: {
-  "formula": "CH3C(CH3)2CH(CH3)COCH3",
-  "mainChain_Condensed": [
-    1,
-    2,
-    3,
-    4,
-    5
-  ],
-  "mainChain_Expanded": [
-    1,
-    2,
-    3,
-    4,
-    5
-  ],
-  "mainChain_Skeletal": [
-    1,
-    2,
-    3,
-    4,
-    5
-  ],
-  "mainChain3D": [
-    9,
-    8,
-    3,
-    2,
-    4
-  ]
-},
+    "formula": "CH3C(CH3)2CH(CH3)COCH3",
+    "mainChain_Condensed": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "mainChain_Expanded": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "mainChain_Skeletal": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "mainChain3D": [
+      9,
+      8,
+      3,
+      2,
+      4
+    ]
+  },
 
   diethyl_4_5_dimethyl_2_6_heptanone_3: {
-  "initialZoom3D": 60,
-  "formula": "CH3CH(CH3)CH(CH2CH3)CH(CH2CH3)COCH(CH3)CH3",
-  "mainChain_Condensed": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-  ],
-  "mainChain_Expanded": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-  ],
-  "mainChain_Skeletal": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-  ],
-  "mainChain3D": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-  ]
-},
+    "initialZoom3D": 60,
+    "formula": "CH3CH(CH3)CH(CH2CH3)CH(CH2CH3)COCH(CH3)CH3",
+    "mainChain_Condensed": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "mainChain_Expanded": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "mainChain_Skeletal": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "mainChain3D": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
 
   penten_1_yn_4_one_3: {
-  "formula": "HC≡CCOCH=CH2",
-  "mainChain_Condensed": [
-    1,
-    2,
-    3,
-    4,
-    5
-  ],
-  "mainChain_Expanded": [
-    1,
-    2,
-    3,
-    4,
-    5
-  ],
-  "mainChain_Skeletal": [
-    1,
-    2,
-    3,
-    4,
-    5
-  ],
-  "mainChain3D": [
-    4,
-    2,
-    3,
-    5,
-    6
-  ]
-},
+    "formula": "HC≡CCOCH=CH2",
+    "mainChain_Condensed": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "mainChain_Expanded": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "mainChain_Skeletal": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "mainChain3D": [
+      4,
+      2,
+      3,
+      5,
+      6
+    ]
+  },
 
   dimethyl_4_5_hexen_5_yn_1_one_3: {
-  "formula": "CH2=C(CH3)CH(CH3)COC≡CH",
-  "mainChain_Condensed": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6
-  ],
-  "mainChain_Expanded": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6
-  ],
-  "mainChain_Skeletal": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6
-  ],
-  "mainChain3D": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6
-  ]
-},
+    "formula": "CH2=C(CH3)CH(CH3)COC≡CH",
+    "mainChain_Condensed": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "mainChain_Expanded": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "mainChain_Skeletal": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "mainChain3D": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ]
+  },
 
   methyl_6_hepten_3_dione_2_5: {
-  "formula": "CH3CH(CH3)COCH=CHCOCH3",
-  "mainChain_Condensed": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-  ],
-  "mainChain_Expanded": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-  ],
-  "mainChain_Skeletal": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7
-  ],
-  "mainChain3D": [
-    10,
-    9,
-    8,
-    7,
-    6,
-    3,
-    4
-  ]
-},
+    "formula": "CH3CH(CH3)COCH=CHCOCH3",
+    "mainChain_Condensed": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "mainChain_Expanded": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "mainChain_Skeletal": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "mainChain3D": [
+      10,
+      9,
+      8,
+      7,
+      6,
+      3,
+      4
+    ]
+  },
 
   ethyl_3_methyl_4_octen_3_yn_5_dione_2_7: {
-  "formula": "CH3COC≡CC(CH3)=C(CH2CH3)COCH3",
-  "mainChain_Condensed": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8
-  ],
-  "mainChain_Expanded": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8
-  ],
-  "mainChain_Skeletal": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8
-  ],
-  "mainChain3D": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8
-  ]
-},
+    "formula": "CH3COC≡CC(CH3)=C(CH2CH3)COCH3",
+    "mainChain_Condensed": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "mainChain_Expanded": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "mainChain_Skeletal": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "mainChain3D": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
 
   isopropyl_4_dimethyl_3_6_octen_3_yn_7_dione_2_5: {
-  "formula": "HC≡CCH(CH3)COC(CH(CH3)2)=C(CH3)COCH3",
-  "mainChain_Condensed": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8
-  ],
-  "mainChain_Expanded": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8
-  ],
-  "mainChain_Skeletal": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8
-  ],
-  "mainChain3D": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8
-  ]
-},
+    "formula": "HC≡CCH(CH3)COC(CH(CH3)2)=C(CH3)COCH3",
+    "mainChain_Condensed": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "mainChain_Expanded": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "mainChain_Skeletal": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "mainChain3D": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ]
+  },
 
   methanal: {
     "formula": "HCHO",
     "mainChain_Condensed": [
-        1
+      1
     ],
     "mainChain_Expanded": [
-        1
+      1
     ],
     "mainChain_Skeletal": [
-        1
+      1
     ],
     "mainChain3D": [
-        2
-    ]
-},
+      2
+    ],
+    // moveto: "moveto 0.0 { 1000 0 0 81.0} 50.0 0.0 0.0 {-0.6 0.00005000000000000143 0} 2.912300001031098 {0 0 0} 0 0 0 3.0 0.0 0.0;"
+  },
 
   propenal: {
-  "formula": "CH2=CHCHO",
-  "mainChain_Condensed": [
-    1,
-    2,
-    3
-  ],
-  "mainChain_Expanded": [
-    1,
-    2,
-    3
-  ],
-  "mainChain_Skeletal": [
-    1,
-    2,
-    3
-  ],
-  "mainChain3D": [
-    3,
-    2,
-    4
-  ]
-},
+    "formula": "CH2=CHCHO",
+    "mainChain_Condensed": [
+      1,
+      2,
+      3
+    ],
+    "mainChain_Expanded": [
+      1,
+      2,
+      3
+    ],
+    "mainChain_Skeletal": [
+      1,
+      2,
+      3
+    ],
+    "mainChain3D": [
+      3,
+      2,
+      4
+    ]
+  },
 
   methyl_2_propenal: {
-  "formula": "CH2=C(CH3)CHO",
-  "mainChain_Condensed": [
-    1,
-    2,
-    3
-  ],
-  "mainChain_Expanded": [
-    1,
-    2,
-    3
-  ],
-  "mainChain_Skeletal": [
-    1,
-    2,
-    3
-  ],
-  "mainChain3D": [
-    4,
-    2,
-    5
-  ]
-},
+    "formula": "CH2=C(CH3)CHO",
+    "mainChain_Condensed": [
+      1,
+      2,
+      3
+    ],
+    "mainChain_Expanded": [
+      1,
+      2,
+      3
+    ],
+    "mainChain_Skeletal": [
+      1,
+      2,
+      3
+    ],
+    "mainChain3D": [
+      4,
+      2,
+      5
+    ]
+  },
 
   methyl_2_propanal: {
     "formula": "CH3CH(CH3)CH=O",
     "mainChain_Condensed": [
-        1,
-        2,
-        3
+      1,
+      2,
+      3
     ],
     "mainChain_Expanded": [
-        1,
-        2,
-        3
+      1,
+      2,
+      3
     ],
     "mainChain_Skeletal": [
-        1,
-        2,
-        3
+      1,
+      2,
+      3
     ],
     "mainChain3D": [
-        5,
-        2,
-        3
+      5,
+      2,
+      3
     ]
-},
+  },
 
   dimethyl_2_3_butanal: {
     "formula": "CH3CH(CH3)CH(CH3)CH=O",
     "mainChain_Condensed": [
-        1,
-        2,
-        3,
-        4
+      1,
+      2,
+      3,
+      4
     ],
     "mainChain_Expanded": [
-        1,
-        2,
-        3,
-        4
+      1,
+      2,
+      3,
+      4
     ],
     "mainChain_Skeletal": [
-        1,
-        2,
-        3,
-        4
+      1,
+      2,
+      3,
+      4
     ],
     "mainChain3D": [
-        7,
-        3,
-        2,
-        4
+      7,
+      3,
+      2,
+      4
     ]
-},
+  },
 
   ethyl_2_methyl_3_pentanal: {
     "formula": "CH3CH2CH(CH3)CH(CH2CH3)CH=O",
     "mainChain_Condensed": [
-        1,
-        2,
-        3,
-        4,
-        5
+      1,
+      2,
+      3,
+      4,
+      5
     ],
     "mainChain_Expanded": [
-        1,
-        2,
-        3,
-        4,
-        5
+      1,
+      2,
+      3,
+      4,
+      5
     ],
     "mainChain_Skeletal": [
-        1,
-        2,
-        3,
-        4,
-        5
+      1,
+      2,
+      3,
+      4,
+      5
     ],
     "mainChain3D": [
-        7,
-        3,
-        2,
-        4,
-        8
+      7,
+      3,
+      2,
+      4,
+      8
     ]
-},
+  },
 
   ethyl_4_isopropyl_3_methyl_2_hexanal: {
     "initialZoom3D": 60,
     "formula": "CH3CH2CH(CH2CH3)CH[CH(CH3)2]CH(CH3)CH=O",
     "mainChain_Condensed": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
     ],
     "mainChain_Expanded": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
     ],
     "mainChain_Skeletal": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
     ],
     "mainChain3D": [
-        1,
-        2,
-        3,
-        4,
-        5,
-        6
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
     ]
-},
+  },
 
   ethyl_4_penten_4_yn_2_al: {
-  "formula": "CH2=C(CH2CH3)C≡CCHO",
-  "mainChain_Condensed": [
-    1,
-    2,
-    3,
-    4,
-    5
-  ],
-  "mainChain_Expanded": [
-    1,
-    2,
-    3,
-    4,
-    5
-  ],
-  "mainChain_Skeletal": [
-    1,
-    2,
-    3,
-    4,
-    5
-  ],
-  "mainChain3D": [
-    1,
-    2,
-    3,
-    4,
-    5
-  ]
-},
+    "formula": "CH2=C(CH2CH3)C≡CCHO",
+    "mainChain_Condensed": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "mainChain_Expanded": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "mainChain_Skeletal": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "mainChain3D": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
 
   propanedial: {
-  "formula": "OHCCH2CHO",
-  "mainChain_Condensed": [
-    1,
-    2,
-    3
-  ],
-  "mainChain_Expanded": [
-    1,
-    2,
-    3
-  ],
-  "mainChain_Skeletal": [
-    1,
-    2,
-    3
-  ],
-  "mainChain3D": [
-    4,
-    3,
-    5
-  ]
-},
+    "formula": "OHCCH2CHO",
+    "mainChain_Condensed": [
+      1,
+      2,
+      3
+    ],
+    "mainChain_Expanded": [
+      1,
+      2,
+      3
+    ],
+    "mainChain_Skeletal": [
+      1,
+      2,
+      3
+    ],
+    "mainChain3D": [
+      4,
+      3,
+      5
+    ]
+  },
 
   methyl_3_penten_2_dial: {
-  "formula": "OHCCH2C(CH3)=CHCHO",
-  "mainChain_Condensed": [
-    1,
-    2,
-    3,
-    4,
-    5
-  ],
-  "mainChain_Expanded": [
-    1,
-    2,
-    3,
-    4,
-    5
-  ],
-  "mainChain_Skeletal": [
-    1,
-    2,
-    3,
-    4,
-    5
-  ],
-  "mainChain3D": [
-    8,
-    6,
-    3,
-    4,
-    7
-  ]
-},
+    "formula": "OHCCH2C(CH3)=CHCHO",
+    "mainChain_Condensed": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "mainChain_Expanded": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "mainChain_Skeletal": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "mainChain3D": [
+      8,
+      6,
+      3,
+      4,
+      7
+    ]
+  },
 
   isopropyl_2_buten_2_dial: {
-  "formula": "OHCCH=C[CH(CH3)2]CHO",
-  "mainChain_Condensed": [
-    1,
-    2,
-    3,
-    4
-  ],
-  "mainChain_Expanded": [
-    1,
-    2,
-    3,
-    4
-  ],
-  "mainChain_Skeletal": [
-    1,
-    2,
-    3,
-    4
-  ],
-  "mainChain3D": [
-    8,
-    4,
-    7,
-    9
-  ]
-},
+    "formula": "OHCCH=C[CH(CH3)2]CHO",
+    "mainChain_Condensed": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "mainChain_Expanded": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "mainChain_Skeletal": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "mainChain3D": [
+      8,
+      4,
+      7,
+      9
+    ]
+  },
 
   ethyl_2_methyl_3_hexen_2_yn_4_dial: {
-  "formula": "OHCC≡CC(CH3)=C(CH2CH3)CHO",
-  "mainChain_Condensed": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6
-  ],
-  "mainChain_Expanded": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6
-  ],
-  "mainChain_Skeletal": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6
-  ],
-  "mainChain3D": [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6
-  ]
-},
+    "formula": "OHCC≡CC(CH3)=C(CH2CH3)CHO",
+    "mainChain_Condensed": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "mainChain_Expanded": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "mainChain_Skeletal": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "mainChain3D": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ]
+  },
 
   methyl_propyl_ether: {
     "formula": "CH3CH2CH2OCH3",
@@ -5536,8 +5537,8 @@ let butanenitrile_2D_Skeletal =
   "  1  5  3  0  0  0  0\n" +
   "M  END\n";
 
-  //// Branced Molecules 23-09-26
-  let methyl_2_pentane_2D_Condensed =
+//// Branced Molecules 23-09-26
+let methyl_2_pentane_2D_Condensed =
   "CCCC(C)C\n" +
   "  ChemDraw09232616462D\n" +
   "\n" +
@@ -5556,51 +5557,51 @@ let butanenitrile_2D_Skeletal =
   "M  END\n";
 
 let methyl_2_pentane_2D_Expanded =
- "CCCC(C)C\n" +
-	"  ChemDraw09282620572D\n" +
-	"\n" +
-	" 20 19  0  0  0  0  0  0  0  0999 V2000\n" +
-	"   -1.6500   -0.3713    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -0.8250   -0.3713    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.0000   -0.3713    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.8250   -0.3713    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -0.8250    0.4537    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    1.6500   -0.3713    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -1.6500    0.2475    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -1.6500   -0.9900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -2.2687   -0.3713    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -0.8250   -0.9900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.0000   -0.9900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.0000    0.2475    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.8250   -0.9900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.8250    0.2475    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    2.2687   -0.3713    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    1.6500    0.2475    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    1.6500   -0.9900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -1.3332    0.4537    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -0.3168    0.4537    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -0.8250    0.9900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"  1  2  1  0      \n" +
-	"  2  3  1  0      \n" +
-	"  3  4  1  0      \n" +
-	"  2  5  1  0      \n" +
-	"  4  6  1  0      \n" +
-	"  1  7  1  0      \n" +
-	"  1  8  1  0      \n" +
-	"  1  9  1  0      \n" +
-	"  2 10  1  0      \n" +
-	"  3 11  1  0      \n" +
-	"  3 12  1  0      \n" +
-	"  4 13  1  0      \n" +
-	"  4 14  1  0      \n" +
-	"  6 15  1  0      \n" +
-	"  6 16  1  0      \n" +
-	"  6 17  1  0      \n" +
-	"  5 18  1  0      \n" +
-	"  5 19  1  0      \n" +
-	"  5 20  1  0      \n" +
-	"M  END\n" +
-	"\n";
+  "CCCC(C)C\n" +
+  "  ChemDraw09282620572D\n" +
+  "\n" +
+  " 20 19  0  0  0  0  0  0  0  0999 V2000\n" +
+  "   -1.6500   -0.3713    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.8250   -0.3713    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.0000   -0.3713    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.8250   -0.3713    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.8250    0.4537    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.6500   -0.3713    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.6500    0.2475    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.6500   -0.9900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -2.2687   -0.3713    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.8250   -0.9900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.0000   -0.9900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.0000    0.2475    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.8250   -0.9900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.8250    0.2475    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    2.2687   -0.3713    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.6500    0.2475    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.6500   -0.9900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.3332    0.4537    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.3168    0.4537    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.8250    0.9900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0      \n" +
+  "  2  3  1  0      \n" +
+  "  3  4  1  0      \n" +
+  "  2  5  1  0      \n" +
+  "  4  6  1  0      \n" +
+  "  1  7  1  0      \n" +
+  "  1  8  1  0      \n" +
+  "  1  9  1  0      \n" +
+  "  2 10  1  0      \n" +
+  "  3 11  1  0      \n" +
+  "  3 12  1  0      \n" +
+  "  4 13  1  0      \n" +
+  "  4 14  1  0      \n" +
+  "  6 15  1  0      \n" +
+  "  6 16  1  0      \n" +
+  "  6 17  1  0      \n" +
+  "  5 18  1  0      \n" +
+  "  5 19  1  0      \n" +
+  "  5 20  1  0      \n" +
+  "M  END\n" +
+  "\n";
 
 let methyl_2_pentane_2D_Skeletal =
   "CCCC(C)C\n" +
@@ -5621,69 +5622,69 @@ let methyl_2_pentane_2D_Skeletal =
   "M  END\n";
 
 let dimethyl_2_3_butane_2D_Condensed =
-  "dimethyl_2_3_butane_2D_Condensed.mol\n"+
-  "  ChemDraw10152618512D\n"+
-  "\n"+
-  "  6  5  0  0  0  0  0  0  0  0999 V2000\n"+
-  "   -1.2740   -0.0066    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -0.4490    0.0026    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.4490   -0.0026    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    1.2740   -0.0066    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -0.4479   -0.8224    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.4327    0.8224    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "  1  2  1  0      \n"+
-  "  2  3  1  0      \n"+
-  "  3  4  1  0      \n"+
-  "  2  5  1  0      \n"+
-  "  3  6  1  0      \n"+
-  "M  END\n"+
+  "dimethyl_2_3_butane_2D_Condensed.mol\n" +
+  "  ChemDraw10152618512D\n" +
+  "\n" +
+  "  6  5  0  0  0  0  0  0  0  0999 V2000\n" +
+  "   -1.2740   -0.0066    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.4490    0.0026    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.4490   -0.0026    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.2740   -0.0066    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.4479   -0.8224    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.4327    0.8224    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0      \n" +
+  "  2  3  1  0      \n" +
+  "  3  4  1  0      \n" +
+  "  2  5  1  0      \n" +
+  "  3  6  1  0      \n" +
+  "M  END\n" +
   "\n";
 
 let dimethyl_2_3_butane_2D_Expanded =
-  "dimethyl_2_3_butane_2D_Expanded.mol\n"+
-  "  ChemDraw10152618582D\n"+
-  "\n"+
-  " 20 19  0  0  0  0  0  0  0  0999 V2000\n"+
-  "   -1.6988   -0.0089    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -0.5987    0.0033    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.5987   -0.0037    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    1.6988   -0.0089    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -0.5972   -1.0968    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.5976    1.0964    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -2.5238   -0.0097    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -1.6846    0.8161    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -1.6923   -0.7790    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    2.5238    0.0108    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    1.6972   -0.8338    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    1.6949    0.7611    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.6065    1.9214    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -0.1725    1.0900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    1.3554    1.0954    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -0.5923   -1.9214    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -1.3672   -1.0932    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.1727   -1.0867    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -0.6009    0.8283    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.5943   -0.8287    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "  1  2  1  0      \n"+
-  "  2  3  1  0      \n"+
-  "  3  4  1  0      \n"+
-  "  2  5  1  0      \n"+
-  "  3  6  1  0      \n"+
-  "  1  7  1  0      \n"+
-  "  1  8  1  0      \n"+
-  "  1  9  1  0      \n"+
-  "  4 10  1  0      \n"+
-  "  4 11  1  0      \n"+
-  "  4 12  1  0      \n"+
-  "  6 13  1  0      \n"+
-  "  6 14  1  0      \n"+
-  "  6 15  1  0      \n"+
-  "  5 16  1  0      \n"+
-  "  5 17  1  0      \n"+
-  "  5 18  1  0      \n"+
-  "  2 19  1  0      \n"+
-  "  3 20  1  0      \n"+
-  "M  END\n"+
+  "dimethyl_2_3_butane_2D_Expanded.mol\n" +
+  "  ChemDraw10152618582D\n" +
+  "\n" +
+  " 20 19  0  0  0  0  0  0  0  0999 V2000\n" +
+  "   -1.6988   -0.0089    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.5987    0.0033    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.5987   -0.0037    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.6988   -0.0089    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.5972   -1.0968    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.5976    1.0964    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -2.5238   -0.0097    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.6846    0.8161    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.6923   -0.7790    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    2.5238    0.0108    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.6972   -0.8338    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.6949    0.7611    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.6065    1.9214    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.1725    1.0900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.3554    1.0954    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.5923   -1.9214    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.3672   -1.0932    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.1727   -1.0867    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.6009    0.8283    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.5943   -0.8287    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0      \n" +
+  "  2  3  1  0      \n" +
+  "  3  4  1  0      \n" +
+  "  2  5  1  0      \n" +
+  "  3  6  1  0      \n" +
+  "  1  7  1  0      \n" +
+  "  1  8  1  0      \n" +
+  "  1  9  1  0      \n" +
+  "  4 10  1  0      \n" +
+  "  4 11  1  0      \n" +
+  "  4 12  1  0      \n" +
+  "  6 13  1  0      \n" +
+  "  6 14  1  0      \n" +
+  "  6 15  1  0      \n" +
+  "  5 16  1  0      \n" +
+  "  5 17  1  0      \n" +
+  "  5 18  1  0      \n" +
+  "  2 19  1  0      \n" +
+  "  3 20  1  0      \n" +
+  "M  END\n" +
   "\n";
 
 let dimethyl_2_3_butane_2D_Skeletal =
@@ -5702,522 +5703,522 @@ let dimethyl_2_3_butane_2D_Skeletal =
   "  3  4  1  0\n" +
   "  2  5  1  0\n" +
   "  3  6  1  0\n" +
-  "M  END\n"+
+  "M  END\n" +
   "\n";
 
-let ethyl_methyl_ether_2D_Condensed = 
+let ethyl_methyl_ether_2D_Condensed =
   "CCOC\n" +
-	"  ChemDraw09292618412D\n" +
-	"\n" +
-	"  4  3  0  0  0  0  0  0  0  0999 V2000\n" +
-	"   -1.2375    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -0.4125    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.4125    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    1.2375    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"  1  2  1  0      \n" +
-	"  2  3  1  0      \n" +
-	"  3  4  1  0      \n" +
-	"M  END\n";
+  "  ChemDraw09292618412D\n" +
+  "\n" +
+  "  4  3  0  0  0  0  0  0  0  0999 V2000\n" +
+  "   -1.2375    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.4125    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.4125    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.2375    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0      \n" +
+  "  2  3  1  0      \n" +
+  "  3  4  1  0      \n" +
+  "M  END\n";
 
-  let ethyl_methyl_ether_2D_Skeletal = "CCOC\n" +
-	"  ChemDraw09292620182D\n" +
-	"\n" +
-	"  4  3  0  0  0  0  0  0  0  0999 V2000\n" +
-	"    1.0717    0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.3572   -0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -0.3572    0.2062    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -1.0717   -0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"  1  2  1  0      \n" +
-	"  2  3  1  0      \n" +
-	"  3  4  1  0      \n" +
-	"M  END\n";
+let ethyl_methyl_ether_2D_Skeletal = "CCOC\n" +
+  "  ChemDraw09292620182D\n" +
+  "\n" +
+  "  4  3  0  0  0  0  0  0  0  0999 V2000\n" +
+  "    1.0717    0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.3572   -0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.3572    0.2062    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.0717   -0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0      \n" +
+  "  2  3  1  0      \n" +
+  "  3  4  1  0      \n" +
+  "M  END\n";
 
-  let ethyl_methyl_ether_2D_Expanded = "CCOC\n" +
-	"  ChemDraw09292620182D\n" +
-	"\n" +
-	" 12 11  0  0  0  0  0  0  0  0999 V2000\n" +
-	"   -1.2375    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -0.4125    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.4125    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    1.2375    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -1.2375    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -1.2375   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.4125    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.4125   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    1.2375    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    1.2375   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    2.0625    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -2.0625    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"  1  2  1  0      \n" +
-	"  2  3  1  0      \n" +
-	"  3  4  1  0      \n" +
-	"  1  5  1  0      \n" +
-	"  1  6  1  0      \n" +
-	"  3  7  1  0      \n" +
-	"  3  8  1  0      \n" +
-	"  4  9  1  0      \n" +
-	"  4 10  1  0      \n" +
-	"  4 11  1  0      \n" +
-	"  1 12  1  0      \n" +
-	"M  END\n" +
-	"\n";
+let ethyl_methyl_ether_2D_Expanded = "CCOC\n" +
+  "  ChemDraw09292620182D\n" +
+  "\n" +
+  " 12 11  0  0  0  0  0  0  0  0999 V2000\n" +
+  "   -1.2375    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.4125    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.4125    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.2375    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.2375    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.2375   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.4125    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.4125   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.2375    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.2375   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    2.0625    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -2.0625    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0      \n" +
+  "  2  3  1  0      \n" +
+  "  3  4  1  0      \n" +
+  "  1  5  1  0      \n" +
+  "  1  6  1  0      \n" +
+  "  3  7  1  0      \n" +
+  "  3  8  1  0      \n" +
+  "  4  9  1  0      \n" +
+  "  4 10  1  0      \n" +
+  "  4 11  1  0      \n" +
+  "  1 12  1  0      \n" +
+  "M  END\n" +
+  "\n";
 
-  let dimethylether_2D_Condensed = "COC\n" +
-	"  ChemDraw09302610432D\n" +
-	"\n" +
-	"  3  2  0  0  0  0  0  0  0  0999 V2000\n" +
-	"   -0.8250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.0000    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.8250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"  1  2  1  0      \n" +
-	"  2  3  1  0      \n" +
-	"M  END\n";
+let dimethylether_2D_Condensed = "COC\n" +
+  "  ChemDraw09302610432D\n" +
+  "\n" +
+  "  3  2  0  0  0  0  0  0  0  0999 V2000\n" +
+  "   -0.8250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.0000    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.8250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0      \n" +
+  "  2  3  1  0      \n" +
+  "M  END\n";
 
 let dimethylether_2D_Expanded = "COC\n" +
-	"  ChemDraw09302610492D\n" +
-	"\n" +
-	"  9  8  0  0  0  0  0  0  0  0999 V2000\n" +
-	"   -0.8250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.0000    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.8250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -0.8250    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -0.8250   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -1.6500    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.8250    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.8250   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    1.6500    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"  1  2  1  0      \n" +
-	"  2  3  1  0      \n" +
-	"  1  4  1  0      \n" +
-	"  1  5  1  0      \n" +
-	"  1  6  1  0      \n" +
-	"  3  7  1  0      \n" +
-	"  3  8  1  0      \n" +
-	"  3  9  1  0      \n" +
-	"M  END\n";
+  "  ChemDraw09302610492D\n" +
+  "\n" +
+  "  9  8  0  0  0  0  0  0  0  0999 V2000\n" +
+  "   -0.8250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.0000    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.8250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.8250    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.8250   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.6500    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.8250    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.8250   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.6500    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0      \n" +
+  "  2  3  1  0      \n" +
+  "  1  4  1  0      \n" +
+  "  1  5  1  0      \n" +
+  "  1  6  1  0      \n" +
+  "  3  7  1  0      \n" +
+  "  3  8  1  0      \n" +
+  "  3  9  1  0      \n" +
+  "M  END\n";
 
-  let dimethylether_2D_Skeletal = "COC\n" +
-	"  ChemDraw09302610502D\n" +
-	"\n" +
-	"  3  2  0  0  0  0  0  0  0  0999 V2000\n" +
-	"    0.7145   -0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.0000    0.2062    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -0.7145   -0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"  1  2  1  0      \n" +
-	"  2  3  1  0      \n" +
-	"M  END\n";
+let dimethylether_2D_Skeletal = "COC\n" +
+  "  ChemDraw09302610502D\n" +
+  "\n" +
+  "  3  2  0  0  0  0  0  0  0  0999 V2000\n" +
+  "    0.7145   -0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.0000    0.2062    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.7145   -0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0      \n" +
+  "  2  3  1  0      \n" +
+  "M  END\n";
 
-  
 
-  let ethanoic_methyl_ester_2D_Condensed = "CC(=O)OC\n" +
-	"  ChemDraw09302616322D\n" +
-	"\n" +
-	"  5  4  0  0  0  0  0  0  0  0999 V2000\n" +
-	"   -1.2375   -0.4125    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -0.4125   -0.4125    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -0.4125    0.4125    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.4125   -0.4125    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    1.2375   -0.4125    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"  1  2  1  0      \n" +
-	"  2  3  2  0      \n" +
-	"  2  4  1  0      \n" +
-	"  4  5  1  0      \n" +
-	"M  END\n" +
-	"\n";
 
- let ethanoic_methyl_ester_2D_Expanded = "ethanoic_methyl_ester.mol\n" +
-	"  ChemDraw09302618232D\n" +
-	"\n" +
-	" 11 10  0  0  0  0  0  0  0  0999 V2000\n" +
-	"   -1.2375    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -0.4125    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -0.4125    0.8250    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.4125    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    1.2375    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -1.2375   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -2.0625    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -1.2375    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    1.2375    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    1.2375   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    2.0625    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"  1  2  1  0      \n" +
-	"  2  3  2  0      \n" +
-	"  2  4  1  0      \n" +
-	"  4  5  1  0      \n" +
-	"  1  6  1  0      \n" +
-	"  1  7  1  0      \n" +
-	"  1  8  1  0      \n" +
-	"  5  9  1  0      \n" +
-	"  5 10  1  0      \n" +
-	"  5 11  1  0      \n" +
-	"M  END\n";
+let ethanoic_methyl_ester_2D_Condensed = "CC(=O)OC\n" +
+  "  ChemDraw09302616322D\n" +
+  "\n" +
+  "  5  4  0  0  0  0  0  0  0  0999 V2000\n" +
+  "   -1.2375   -0.4125    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.4125   -0.4125    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.4125    0.4125    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.4125   -0.4125    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.2375   -0.4125    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0      \n" +
+  "  2  3  2  0      \n" +
+  "  2  4  1  0      \n" +
+  "  4  5  1  0      \n" +
+  "M  END\n" +
+  "\n";
 
-  let ethanoic_methyl_ester_2D_Skeletal = "propanoic_methyl_ester_DIAG.mol\n" +
-	"  ChemDraw09302618212D\n" +
-	"\n" +
-	"  5  4  0  0  0  0  0  0  0  0999 V2000\n" +
-	"   -1.0717   -0.6188    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -0.3572   -0.2063    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -0.3572    0.6188    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.3572   -0.6187    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    1.0717   -0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"  1  2  1  0      \n" +
-	"  2  3  2  0      \n" +
-	"  2  4  1  0      \n" +
-	"  4  5  1  0      \n" +
-	"M  END\n" +
-	"\n";
+let ethanoic_methyl_ester_2D_Expanded = "ethanoic_methyl_ester.mol\n" +
+  "  ChemDraw09302618232D\n" +
+  "\n" +
+  " 11 10  0  0  0  0  0  0  0  0999 V2000\n" +
+  "   -1.2375    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.4125    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.4125    0.8250    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.4125    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.2375    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.2375   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -2.0625    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.2375    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.2375    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.2375   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    2.0625    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0      \n" +
+  "  2  3  2  0      \n" +
+  "  2  4  1  0      \n" +
+  "  4  5  1  0      \n" +
+  "  1  6  1  0      \n" +
+  "  1  7  1  0      \n" +
+  "  1  8  1  0      \n" +
+  "  5  9  1  0      \n" +
+  "  5 10  1  0      \n" +
+  "  5 11  1  0      \n" +
+  "M  END\n";
 
-  let propanoic_methyl_ester_2D_Condensed = "CCC(=O)OC\n" +
-	"  ChemDraw09302616402D\n" +
-	"\n" +
-	"  6  5  0  0  0  0  0  0  0  0999 V2000\n" +
-	"   -0.8250   -0.4125    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.0000   -0.4125    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.0000    0.4125    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.8250   -0.4125    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    1.6500   -0.4125    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -1.6500   -0.4125    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"  1  2  1  0      \n" +
-	"  2  3  2  0      \n" +
-	"  2  4  1  0      \n" +
-	"  4  5  1  0      \n" +
-	"  1  6  1  0      \n" +
-	"M  END\n";
+let ethanoic_methyl_ester_2D_Skeletal = "propanoic_methyl_ester_DIAG.mol\n" +
+  "  ChemDraw09302618212D\n" +
+  "\n" +
+  "  5  4  0  0  0  0  0  0  0  0999 V2000\n" +
+  "   -1.0717   -0.6188    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.3572   -0.2063    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.3572    0.6188    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.3572   -0.6187    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.0717   -0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0      \n" +
+  "  2  3  2  0      \n" +
+  "  2  4  1  0      \n" +
+  "  4  5  1  0      \n" +
+  "M  END\n" +
+  "\n";
 
-  let propanoic_methyl_ester_2D_Skeletal = "propanoic_methyl_ester_Diag.mol\n" +
-	"  ChemDraw09302618212D\n" +
-	"\n" +
-	"  6  5  0  0  0  0  0  0  0  0999 V2000\n" +
-	"   -1.4289   -0.2063    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -0.7145   -0.6188    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.0000   -0.2063    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.0000    0.6188    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.7145   -0.6187    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    1.4289   -0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"  1  2  1  0      \n" +
-	"  2  3  1  0      \n" +
-	"  3  4  2  0      \n" +
-	"  3  5  1  0      \n" +
-	"  5  6  1  0      \n" +
-	"M  END\n";
+let propanoic_methyl_ester_2D_Condensed = "CCC(=O)OC\n" +
+  "  ChemDraw09302616402D\n" +
+  "\n" +
+  "  6  5  0  0  0  0  0  0  0  0999 V2000\n" +
+  "   -0.8250   -0.4125    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.0000   -0.4125    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.0000    0.4125    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.8250   -0.4125    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.6500   -0.4125    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.6500   -0.4125    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0      \n" +
+  "  2  3  2  0      \n" +
+  "  2  4  1  0      \n" +
+  "  4  5  1  0      \n" +
+  "  1  6  1  0      \n" +
+  "M  END\n";
 
-  let propanoic_methyl_ester_2D_Expanded = "propanoic_methyl_ester_EXP.mol\n" +
-	"  ChemDraw09302618182D\n" +
-	"\n" +
-	" 14 13  0  0  0  0  0  0  0  0999 V2000\n" +
-	"   -0.8250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.0000    0.8250    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    0.8250    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    1.6500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -1.6500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -0.8250    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -0.8250   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -2.4750    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -1.6500    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"   -1.6500   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    2.4750    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    1.6500    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"    1.6500   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
-	"  1  2  1  0      \n" +
-	"  2  3  2  0      \n" +
-	"  2  4  1  0      \n" +
-	"  4  5  1  0      \n" +
-	"  1  6  1  0      \n" +
-	"  1  7  1  0      \n" +
-	"  1  8  1  0      \n" +
-	"  6  9  1  0      \n" +
-	"  6 10  1  0      \n" +
-	"  6 11  1  0      \n" +
-	"  5 12  1  0      \n" +
-	"  5 13  1  0      \n" +
-	"  5 14  1  0      \n" +
-	"M  END\n";
+let propanoic_methyl_ester_2D_Skeletal = "propanoic_methyl_ester_Diag.mol\n" +
+  "  ChemDraw09302618212D\n" +
+  "\n" +
+  "  6  5  0  0  0  0  0  0  0  0999 V2000\n" +
+  "   -1.4289   -0.2063    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.7145   -0.6188    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.0000   -0.2063    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.0000    0.6188    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.7145   -0.6187    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.4289   -0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0      \n" +
+  "  2  3  1  0      \n" +
+  "  3  4  2  0      \n" +
+  "  3  5  1  0      \n" +
+  "  5  6  1  0      \n" +
+  "M  END\n";
 
-  
+let propanoic_methyl_ester_2D_Expanded = "propanoic_methyl_ester_EXP.mol\n" +
+  "  ChemDraw09302618182D\n" +
+  "\n" +
+  " 14 13  0  0  0  0  0  0  0  0999 V2000\n" +
+  "   -0.8250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.0000    0.8250    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.8250    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.6500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.6500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.8250    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.8250   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -2.4750    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.6500    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.6500   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    2.4750    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.6500    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.6500   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0      \n" +
+  "  2  3  2  0      \n" +
+  "  2  4  1  0      \n" +
+  "  4  5  1  0      \n" +
+  "  1  6  1  0      \n" +
+  "  1  7  1  0      \n" +
+  "  1  8  1  0      \n" +
+  "  6  9  1  0      \n" +
+  "  6 10  1  0      \n" +
+  "  6 11  1  0      \n" +
+  "  5 12  1  0      \n" +
+  "  5 13  1  0      \n" +
+  "  5 14  1  0      \n" +
+  "M  END\n";
+
+
 
 
 let diethyl_ether_2D_Condensed =
-  "diethyl_ether_2D_Condensed.mol\n"+
-  "  ChemDraw10152617342D\n"+
-  "\n"+
-  "  5  4  0  0  0  0  0  0  0  0999 V2000\n"+
-  "    0.0000    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.8250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    1.6500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -0.8250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -1.6500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "  1  2  1  0      \n"+
-  "  2  3  1  0      \n"+
-  "  1  4  1  0      \n"+
-  "  4  5  1  0      \n"+
-  "M  END\n"+
+  "diethyl_ether_2D_Condensed.mol\n" +
+  "  ChemDraw10152617342D\n" +
+  "\n" +
+  "  5  4  0  0  0  0  0  0  0  0999 V2000\n" +
+  "    0.0000    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.8250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.6500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.8250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.6500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0      \n" +
+  "  2  3  1  0      \n" +
+  "  1  4  1  0      \n" +
+  "  4  5  1  0      \n" +
+  "M  END\n" +
   "\n";
 
 let diethyl_ether_2D_Expanded =
-  "diethyl_ether_2D_Expanded.mol\n"+
-  "  ChemDraw10152617352D\n"+
-  "\n"+
-  " 15 14  0  0  0  0  0  0  0  0999 V2000\n"+
-  "    0.0000    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.8250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    1.6500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -0.8250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -1.6500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -0.8250    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -0.8250   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -1.6500   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -1.6500    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -2.4750    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.8250    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.8250   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    2.4750    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    1.6500    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    1.6500   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "  1  2  1  0      \n"+
-  "  2  3  1  0      \n"+
-  "  1  4  1  0      \n"+
-  "  4  5  1  0      \n"+
-  "  4  6  1  0      \n"+
-  "  4  7  1  0      \n"+
-  "  5  8  1  0      \n"+
-  "  5  9  1  0      \n"+
-  "  5 10  1  0      \n"+
-  "  2 11  1  0      \n"+
-  "  2 12  1  0      \n"+
-  "  3 13  1  0      \n"+
-  "  3 14  1  0      \n"+
-  "  3 15  1  0      \n"+
-  "M  END\n"+
+  "diethyl_ether_2D_Expanded.mol\n" +
+  "  ChemDraw10152617352D\n" +
+  "\n" +
+  " 15 14  0  0  0  0  0  0  0  0999 V2000\n" +
+  "    0.0000    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.8250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.6500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.8250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.6500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.8250    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.8250   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.6500   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.6500    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -2.4750    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.8250    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.8250   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    2.4750    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.6500    0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.6500   -0.8250    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0      \n" +
+  "  2  3  1  0      \n" +
+  "  1  4  1  0      \n" +
+  "  4  5  1  0      \n" +
+  "  4  6  1  0      \n" +
+  "  4  7  1  0      \n" +
+  "  5  8  1  0      \n" +
+  "  5  9  1  0      \n" +
+  "  5 10  1  0      \n" +
+  "  2 11  1  0      \n" +
+  "  2 12  1  0      \n" +
+  "  3 13  1  0      \n" +
+  "  3 14  1  0      \n" +
+  "  3 15  1  0      \n" +
+  "M  END\n" +
   "\n";
 
 let diethyl_ether_2D_Skeletal =
-  "diethyl_ether_2D_Skeletal.mol\n"+
-  "  ChemDraw10152617362D\n"+
-  "\n"+
-  "  5  4  0  0  0  0  0  0  0  0999 V2000\n"+
-  "   -1.4289   -0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -0.7145    0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -0.0000   -0.2062    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.7145    0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    1.4289   -0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "  1  2  1  0      \n"+
-  "  2  3  1  0      \n"+
-  "  3  4  1  0      \n"+
-  "  4  5  1  0      \n"+
-  "M  END\n"+
+  "diethyl_ether_2D_Skeletal.mol\n" +
+  "  ChemDraw10152617362D\n" +
+  "\n" +
+  "  5  4  0  0  0  0  0  0  0  0999 V2000\n" +
+  "   -1.4289   -0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.7145    0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.0000   -0.2062    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.7145    0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.4289   -0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0      \n" +
+  "  2  3  1  0      \n" +
+  "  3  4  1  0      \n" +
+  "  4  5  1  0      \n" +
+  "M  END\n" +
   "\n";
 
 let isopropyl_methyl_ether_2D_Condensed =
-  "isopropyl_methyl_ether_2D_Condensed.mol\n"+
-  "  ChemDraw10152619132D\n"+
-  "\n"+
-  "  5  4  0  0  0  0  0  0  0  0999 V2000\n"+
-  "   -0.4125   -0.4139    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.4125   -0.4111    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -1.2375   -0.4122    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    1.2375   -0.4106    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.4109    0.4139    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "  1  2  1  0      \n"+
-  "  1  3  1  0      \n"+
-  "  2  4  1  0      \n"+
-  "  2  5  1  0      \n"+
-  "M  END\n"+
+  "isopropyl_methyl_ether_2D_Condensed.mol\n" +
+  "  ChemDraw10152619132D\n" +
+  "\n" +
+  "  5  4  0  0  0  0  0  0  0  0999 V2000\n" +
+  "   -0.4125   -0.4139    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.4125   -0.4111    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.2375   -0.4122    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.2375   -0.4106    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.4109    0.4139    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0      \n" +
+  "  1  3  1  0      \n" +
+  "  2  4  1  0      \n" +
+  "  2  5  1  0      \n" +
+  "M  END\n" +
   "\n";
 
 let isopropyl_methyl_ether_2D_Expanded =
-  "isopropyl_methyl_ether_2D_Condensed.mol\n"+
-  "  ChemDraw10152619242D\n"+
-  "\n"+
-  " 15 14  0  0  0  0  0  0  0  0999 V2000\n"+
-  "   -0.4125   -0.4147    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.4125   -0.4119    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -1.2375   -0.4130    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    1.2375   -0.4114    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.4109    0.4131    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -1.2337    0.2057    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -1.2346   -1.0318    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -1.8562   -0.4070    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.4141   -1.0307    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.4160    1.0318    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -0.2079    0.4148    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.9884    0.4113    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    1.8562   -0.4106    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    1.2368    0.2073    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    1.2381   -1.0302    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "  1  2  1  0      \n"+
-  "  1  3  1  0      \n"+
-  "  2  4  1  0      \n"+
-  "  2  5  1  0      \n"+
-  "  3  6  1  0      \n"+
-  "  3  7  1  0      \n"+
-  "  3  8  1  0      \n"+
-  "  2  9  1  0      \n"+
-  "  5 10  1  0      \n"+
-  "  5 11  1  0      \n"+
-  "  5 12  1  0      \n"+
-  "  4 13  1  0      \n"+
-  "  4 14  1  0      \n"+
-  "  4 15  1  0      \n"+
-  "M  END\n"+
+  "isopropyl_methyl_ether_2D_Condensed.mol\n" +
+  "  ChemDraw10152619242D\n" +
+  "\n" +
+  " 15 14  0  0  0  0  0  0  0  0999 V2000\n" +
+  "   -0.4125   -0.4147    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.4125   -0.4119    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.2375   -0.4130    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.2375   -0.4114    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.4109    0.4131    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.2337    0.2057    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.2346   -1.0318    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.8562   -0.4070    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.4141   -1.0307    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.4160    1.0318    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.2079    0.4148    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.9884    0.4113    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.8562   -0.4106    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.2368    0.2073    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.2381   -1.0302    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0      \n" +
+  "  1  3  1  0      \n" +
+  "  2  4  1  0      \n" +
+  "  2  5  1  0      \n" +
+  "  3  6  1  0      \n" +
+  "  3  7  1  0      \n" +
+  "  3  8  1  0      \n" +
+  "  2  9  1  0      \n" +
+  "  5 10  1  0      \n" +
+  "  5 11  1  0      \n" +
+  "  5 12  1  0      \n" +
+  "  4 13  1  0      \n" +
+  "  4 14  1  0      \n" +
+  "  4 15  1  0      \n" +
+  "M  END\n" +
   "\n";
 
 let isopropyl_methyl_ether_2D_Skeletal =
-  "isopropyl_methyl_ether_2D_Skeletal.mol\n"+
-  "  ChemDraw10152617572D\n"+
-  "\n"+
-  "  5  4  0  0  0  0  0  0  0  0999 V2000\n"+
-  "   -1.0717   -0.2063    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -0.3572   -0.6188    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.3572   -0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.3572    0.6188    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    1.0717   -0.6188    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "  1  2  1  0      \n"+
-  "  2  3  1  0      \n"+
-  "  3  4  1  0      \n"+
-  "  3  5  1  0      \n"+
-  "M  END\n"+
+  "isopropyl_methyl_ether_2D_Skeletal.mol\n" +
+  "  ChemDraw10152617572D\n" +
+  "\n" +
+  "  5  4  0  0  0  0  0  0  0  0999 V2000\n" +
+  "   -1.0717   -0.2063    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.3572   -0.6188    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.3572   -0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.3572    0.6188    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.0717   -0.6188    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0      \n" +
+  "  2  3  1  0      \n" +
+  "  3  4  1  0      \n" +
+  "  3  5  1  0      \n" +
+  "M  END\n" +
   "\n";
 
 let methyl_methanoate_2D_Condensed =
-  "methyl_methanoate_2D_Condensed.mol\n"+
-  "  ChemDraw10152618172D\n"+
-  "\n"+
-  "  5  4  0  0  0  0  0  0  0  0999 V2000\n"+
-  "   -0.4454   -0.4056    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.3795   -0.3942    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    1.2251   -0.4033    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -1.2251   -0.4088    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -0.4462    0.4088    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "  1  2  1  0      \n"+
-  "  2  3  1  0      \n"+
-  "  1  4  1  0      \n"+
-  "  5  1  2  0      \n"+
-  "M  END\n"+
+  "methyl_methanoate_2D_Condensed.mol\n" +
+  "  ChemDraw10152618172D\n" +
+  "\n" +
+  "  5  4  0  0  0  0  0  0  0  0999 V2000\n" +
+  "   -0.4454   -0.4056    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.3795   -0.3942    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.2251   -0.4033    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.2251   -0.4088    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.4462    0.4088    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0      \n" +
+  "  2  3  1  0      \n" +
+  "  1  4  1  0      \n" +
+  "  5  1  2  0      \n" +
+  "M  END\n" +
   "\n";
 
 let methyl_methanoate_2D_Expanded =
-  "methyl_methanoate_2D_Expanded.mol\n"+
-  "  ChemDraw10152618172D\n"+
-  "\n"+
-  "  8  7  0  0  0  0  0  0  0  0999 V2000\n"+
-  "   -0.8836   -0.0634    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -0.0110   -0.0524    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.8832   -0.0621    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -1.7082   -0.0656    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -0.8639    0.7983    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.8881    0.7175    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.8807   -0.7983    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    1.7082   -0.0710    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "  1  2  1  0      \n"+
-  "  2  3  1  0      \n"+
-  "  1  4  1  0      \n"+
-  "  5  1  2  0      \n"+
-  "  3  6  1  0      \n"+
-  "  3  7  1  0      \n"+
-  "  3  8  1  0      \n"+
-  "M  END\n"+
+  "methyl_methanoate_2D_Expanded.mol\n" +
+  "  ChemDraw10152618172D\n" +
+  "\n" +
+  "  8  7  0  0  0  0  0  0  0  0999 V2000\n" +
+  "   -0.8836   -0.0634    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.0110   -0.0524    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.8832   -0.0621    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.7082   -0.0656    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.8639    0.7983    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.8881    0.7175    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.8807   -0.7983    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.7082   -0.0710    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0      \n" +
+  "  2  3  1  0      \n" +
+  "  1  4  1  0      \n" +
+  "  5  1  2  0      \n" +
+  "  3  6  1  0      \n" +
+  "  3  7  1  0      \n" +
+  "  3  8  1  0      \n" +
+  "M  END\n" +
   "\n";
 
 let methyl_methanoate_2D_Skeletal =
-  "methyl_methanoate_2D_Skeletal.mol\n"+
-  "  ChemDraw10152617552D\n"+
-  "\n"+
-  "  5  4  0  0  0  0  0  0  0  0999 V2000\n"+
-  "   -0.3572   -0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.3572   -0.6188    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    1.0717   -0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -1.0717   -0.6188    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -0.3572    0.6188    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "  1  2  1  0      \n"+
-  "  2  3  1  0      \n"+
-  "  1  4  1  0      \n"+
-  "  5  1  2  0      \n"+
-  "M  END\n"+
+  "methyl_methanoate_2D_Skeletal.mol\n" +
+  "  ChemDraw10152617552D\n" +
+  "\n" +
+  "  5  4  0  0  0  0  0  0  0  0999 V2000\n" +
+  "   -0.3572   -0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.3572   -0.6188    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.0717   -0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.0717   -0.6188    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.3572    0.6188    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0      \n" +
+  "  2  3  1  0      \n" +
+  "  1  4  1  0      \n" +
+  "  5  1  2  0      \n" +
+  "M  END\n" +
   "\n";
 
 let isopropyl_ethanoate_2D_Condensed =
-  "isopropyl_ethanoate_2D_Condensed.mol\n"+
-  "  ChemDraw10152618092D\n"+
-  "\n"+
-  "  7  6  0  0  0  0  0  0  0  0999 V2000\n"+
-  "   -0.0035   -0.4125    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.8286   -0.4076    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    1.6535   -0.4076    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.8272    0.3209    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -0.8285   -0.4125    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -1.6535   -0.4124    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -0.8284    0.4125    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "  1  2  1  0      \n"+
-  "  2  3  1  0      \n"+
-  "  2  4  1  0      \n"+
-  "  1  5  1  0      \n"+
-  "  5  6  1  0      \n"+
-  "  5  7  2  0      \n"+
-  "M  END\n"+
+  "isopropyl_ethanoate_2D_Condensed.mol\n" +
+  "  ChemDraw10152618092D\n" +
+  "\n" +
+  "  7  6  0  0  0  0  0  0  0  0999 V2000\n" +
+  "   -0.0035   -0.4125    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.8286   -0.4076    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.6535   -0.4076    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.8272    0.3209    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.8285   -0.4125    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.6535   -0.4124    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.8284    0.4125    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0      \n" +
+  "  2  3  1  0      \n" +
+  "  2  4  1  0      \n" +
+  "  1  5  1  0      \n" +
+  "  5  6  1  0      \n" +
+  "  5  7  2  0      \n" +
+  "M  END\n" +
   "\n";
 
 let isopropyl_ethanoate_2D_Expanded =
-  "isopropyl_ethanoate_2D_Expanded.mol\n"+
-  "  ChemDraw10152618152D\n"+
-  "\n"+
-  " 17 16  0  0  0  0  0  0  0  0999 V2000\n"+
-  "   -1.1227   -0.5978    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -2.4444   -0.5881    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.0879   -0.6062    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    1.3444   -0.6023    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    1.3420   -1.4325    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    1.3423    0.6077    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    2.4444   -0.6021    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -1.1241    0.5020    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -3.2692   -0.6079    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -2.4435    0.2369    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -2.4437   -1.4130    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    3.2692   -0.6058    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    2.4461    0.2229    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    2.4427   -1.4269    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    1.3569    1.4325    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.5173    0.5933    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    2.1671    0.6011    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "  1  2  1  0      \n"+
-  "  1  3  1  0      \n"+
-  "  3  4  1  0      \n"+
-  "  4  5  1  0      \n"+
-  "  4  6  1  0      \n"+
-  "  4  7  1  0      \n"+
-  "  1  8  2  0      \n"+
-  "  2  9  1  0      \n"+
-  "  2 10  1  0      \n"+
-  "  2 11  1  0      \n"+
-  "  7 12  1  0      \n"+
-  "  7 13  1  0      \n"+
-  "  7 14  1  0      \n"+
-  "  6 15  1  0      \n"+
-  "  6 16  1  0      \n"+
-  "  6 17  1  0      \n"+
-  "M  END\n"+
+  "isopropyl_ethanoate_2D_Expanded.mol\n" +
+  "  ChemDraw10152618152D\n" +
+  "\n" +
+  " 17 16  0  0  0  0  0  0  0  0999 V2000\n" +
+  "   -1.1227   -0.5978    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -2.4444   -0.5881    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.0879   -0.6062    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.3444   -0.6023    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.3420   -1.4325    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.3423    0.6077    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    2.4444   -0.6021    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.1241    0.5020    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -3.2692   -0.6079    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -2.4435    0.2369    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -2.4437   -1.4130    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    3.2692   -0.6058    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    2.4461    0.2229    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    2.4427   -1.4269    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.3569    1.4325    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.5173    0.5933    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    2.1671    0.6011    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  1  2  1  0      \n" +
+  "  1  3  1  0      \n" +
+  "  3  4  1  0      \n" +
+  "  4  5  1  0      \n" +
+  "  4  6  1  0      \n" +
+  "  4  7  1  0      \n" +
+  "  1  8  2  0      \n" +
+  "  2  9  1  0      \n" +
+  "  2 10  1  0      \n" +
+  "  2 11  1  0      \n" +
+  "  7 12  1  0      \n" +
+  "  7 13  1  0      \n" +
+  "  7 14  1  0      \n" +
+  "  6 15  1  0      \n" +
+  "  6 16  1  0      \n" +
+  "  6 17  1  0      \n" +
+  "M  END\n" +
   "\n";
 
 let isopropyl_ethanoate_2D_Skeletal =
-  "isopropyl_ethanoate_2D_Skeletal.mol\n"+
-  "  ChemDraw10152617502D\n"+
-  "\n"+
-  "  7  6  0  0  0  0  0  0  0  0999 V2000\n"+
-  "   -0.7145   -0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -0.7145    0.6188    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -1.4289   -0.6188    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "   -0.0000   -0.6188    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.7145   -0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    1.4289   -0.6188    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "    0.7145    0.6188    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n"+
-  "  2  1  2  0      \n"+
-  "  1  3  1  0      \n"+
-  "  1  4  1  0      \n"+
-  "  4  5  1  0      \n"+
-  "  5  6  1  0      \n"+
-  "  5  7  1  0      \n"+
-  "M  END\n"+
+  "isopropyl_ethanoate_2D_Skeletal.mol\n" +
+  "  ChemDraw10152617502D\n" +
+  "\n" +
+  "  7  6  0  0  0  0  0  0  0  0999 V2000\n" +
+  "   -0.7145   -0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.7145    0.6188    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -1.4289   -0.6188    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "   -0.0000   -0.6188    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.7145   -0.2062    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    1.4289   -0.6188    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "    0.7145    0.6188    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n" +
+  "  2  1  2  0      \n" +
+  "  1  3  1  0      \n" +
+  "  1  4  1  0      \n" +
+  "  4  5  1  0      \n" +
+  "  5  6  1  0      \n" +
+  "  5  7  1  0      \n" +
+  "M  END\n" +
   "\n";
 // ── MOL2D registry (T3 hardening, additive) ──────────────────────────
 // Replaces eval(prop + "_2D_Condensed" / "_2D_Expanded" / "_2D_Skeletal") in fInitData.
@@ -6263,13 +6264,13 @@ window.MOL2D = window.MOL2D || {};
   const butyne_1_2D_Skeletal = "butyne_1_2D_Skeletal.mol\n  Namelecule        2D\n\n  4  3  0  0  0  0  0  0  0  0999 V2000\n   -1.4555    0.3900    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.7800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  2  3  1  0  0  0  0\n  3  4  3  0  0  0  0\nM  END\n";
   reg("butyne_1", butyne_1_2D_Condensed, butyne_1_2D_Expanded, butyne_1_2D_Skeletal);
 
-const methyl_3_butene_1_2D_Condensed = "methyl_3_butene_1_2D_Condensed.mol\n  Namelecule        2D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n   -1.7550    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5850    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.7550    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850   -1.0349    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  2  3  1  0  0  0  0\n  3  4  2  0  0  0  0\n  2  5  1  0  0  0  0\nM  END\n";
-const methyl_3_butene_1_2D_Expanded = "methyl_3_butene_1_2D_Expanded.mol\n  Namelecule        2D\n\n 15 14  0  0  0  0  0  0  0  0999 V2000\n   -1.7550    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5850    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.7550    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850   -1.0349    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.7550    0.9151    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.5350    0.1351    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.7550   -0.6449    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850    0.9151    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5850    0.9151    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.7550    0.9151    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.5350    0.1351    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850   -1.8149    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.3650   -1.0349    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.1950   -1.0349    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  2  3  1  0  0  0  0\n  3  4  2  0  0  0  0\n  2  5  1  0  0  0  0\n  1  6  1  0  0  0  0\n  1  7  1  0  0  0  0\n  1  8  1  0  0  0  0\n  2  9  1  0  0  0  0\n  3 10  1  0  0  0  0\n  4 11  1  0  0  0  0\n  4 12  1  0  0  0  0\n  5 13  1  0  0  0  0\n  5 14  1  0  0  0  0\n  5 15  1  0  0  0  0\nM  END\n";
-const methyl_3_butene_1_2D_Skeletal = "methyl_3_butene_1_2D_Skeletal.mol\n  Namelecule        2D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n   -0.7999    0.5478    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.1244    0.1578    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5511    0.5478    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.2266    0.1578    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.1244   -0.6222    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  2  3  1  0  0  0  0\n  3  4  2  0  0  0  0\n  2  5  1  0  0  0  0\nM  END\n";
+  const methyl_3_butene_1_2D_Condensed = "methyl_3_butene_1_2D_Condensed.mol\n  Namelecule        2D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n   -1.7550    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5850    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.7550    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850   -1.0349    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  2  3  1  0  0  0  0\n  3  4  2  0  0  0  0\n  2  5  1  0  0  0  0\nM  END\n";
+  const methyl_3_butene_1_2D_Expanded = "methyl_3_butene_1_2D_Expanded.mol\n  Namelecule        2D\n\n 15 14  0  0  0  0  0  0  0  0999 V2000\n   -1.7550    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5850    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.7550    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850   -1.0349    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.7550    0.9151    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.5350    0.1351    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.7550   -0.6449    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850    0.9151    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5850    0.9151    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.7550    0.9151    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.5350    0.1351    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850   -1.8149    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.3650   -1.0349    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.1950   -1.0349    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  2  3  1  0  0  0  0\n  3  4  2  0  0  0  0\n  2  5  1  0  0  0  0\n  1  6  1  0  0  0  0\n  1  7  1  0  0  0  0\n  1  8  1  0  0  0  0\n  2  9  1  0  0  0  0\n  3 10  1  0  0  0  0\n  4 11  1  0  0  0  0\n  4 12  1  0  0  0  0\n  5 13  1  0  0  0  0\n  5 14  1  0  0  0  0\n  5 15  1  0  0  0  0\nM  END\n";
+  const methyl_3_butene_1_2D_Skeletal = "methyl_3_butene_1_2D_Skeletal.mol\n  Namelecule        2D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n   -0.7999    0.5478    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.1244    0.1578    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5511    0.5478    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.2266    0.1578    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.1244   -0.6222    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  2  3  1  0  0  0  0\n  3  4  2  0  0  0  0\n  2  5  1  0  0  0  0\nM  END\n";
   reg("methyl_3_butene_1", methyl_3_butene_1_2D_Condensed, methyl_3_butene_1_2D_Expanded, methyl_3_butene_1_2D_Skeletal);
-const methyl_2_propene_2D_Condensed = "KingDraw KingDraw.mol\nKingDraw2D\n\n  4  3  0  0  0  0  0  0  0  0999 V2000\n   -1.1700    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -1.0349    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  2  4  1  0\nM  END";
-const methyl_2_propene_2D_Expanded = "KingDraw KingDraw.mol\nKingDraw2D\n\n 12 11  0  0  0  0  0  0  0  0999 V2000\n   -1.1701    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1701    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1701    0.9151    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.9502    0.1351    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -1.0350    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -1.8152    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.7800   -1.0350    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800   -1.0350    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1701    0.9151    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9502    0.1351    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1701   -0.6449    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  3  4  1  0\n  3  5  1  0\n  2  6  1  0\n  6  7  1  0\n  6  8  1  0\n  6  9  1  0\n  1 10  1  0\n  1 11  1  0\n  1 12  1  0\nM  END";
-const methyl_2_propene_2D_Skeletal = "KingDraw KingDraw.mol\nKingDraw2D\n\n  4  3  0  0  0  0  0  0  0  0999 V2000\n   -0.7999    0.5478    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.1244    0.1578    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5510    0.5478    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.1241   -0.6221    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  2  4  1  0\nM  END";
+  const methyl_2_propene_2D_Condensed = "KingDraw KingDraw.mol\nKingDraw2D\n\n  4  3  0  0  0  0  0  0  0  0999 V2000\n   -1.1700    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -1.0349    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  2  4  1  0\nM  END";
+  const methyl_2_propene_2D_Expanded = "KingDraw KingDraw.mol\nKingDraw2D\n\n 12 11  0  0  0  0  0  0  0  0999 V2000\n   -1.1701    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1701    0.1351    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1701    0.9151    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.9502    0.1351    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -1.0350    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -1.8152    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.7800   -1.0350    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800   -1.0350    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1701    0.9151    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9502    0.1351    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1701   -0.6449    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  3  4  1  0\n  3  5  1  0\n  2  6  1  0\n  6  7  1  0\n  6  8  1  0\n  6  9  1  0\n  1 10  1  0\n  1 11  1  0\n  1 12  1  0\nM  END";
+  const methyl_2_propene_2D_Skeletal = "KingDraw KingDraw.mol\nKingDraw2D\n\n  4  3  0  0  0  0  0  0  0  0999 V2000\n   -0.7999    0.5478    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.1244    0.1578    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5510    0.5478    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.1241   -0.6221    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  2  4  1  0\nM  END";
   reg("methyl_2_propene", methyl_2_propene_2D_Condensed, methyl_2_propene_2D_Expanded, methyl_2_propene_2D_Skeletal);
   const ethyl_3_dimethyl_2_5_hexene_2_2D_Condensed = "ethyl_3_dimethyl_2_5_hexene_2_2D_Condensed.mol\n  Namelecule        2D\n\n 10  9  0  0  0  0  0  0  0  0999 V2000\n    2.9250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.7550    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5850    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.7550    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.9250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.7550   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5850    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5850    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.7550   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  2  3  2  0  0  0  0\n  3  4  1  0  0  0  0\n  4  5  1  0  0  0  0\n  5  6  1  0  0  0  0\n  2  7  1  0  0  0  0\n  3  8  1  0  0  0  0\n  8  9  1  0  0  0  0\n  5 10  1  0  0  0  0\nM  END\n";
   const ethyl_3_dimethyl_2_5_hexene_2_2D_Expanded = "ethyl_3_dimethyl_2_5_hexene_2_2D_Expanded.mol\n  Namelecule        2D\n\n 30 29  0  0  0  0  0  0  0  0999 V2000\n    2.9250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.7550    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5850    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.7550    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.9250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.7550   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5850    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5850    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.7550   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.7050    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.9250    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.9250   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.7550    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.7050    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.9250    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.9250   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.7550   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.9750   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.5350   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.1950    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.3650    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5850    3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.1950    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.3650    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.7550   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.5350   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.9750   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  2  3  2  0  0  0  0\n  3  4  1  0  0  0  0\n  4  5  1  0  0  0  0\n  5  6  1  0  0  0  0\n  2  7  1  0  0  0  0\n  3  8  1  0  0  0  0\n  8  9  1  0  0  0  0\n  5 10  1  0  0  0  0\n  1 11  1  0  0  0  0\n  1 12  1  0  0  0  0\n  1 13  1  0  0  0  0\n  4 14  1  0  0  0  0\n  4 15  1  0  0  0  0\n  5 16  1  0  0  0  0\n  6 17  1  0  0  0  0\n  6 18  1  0  0  0  0\n  6 19  1  0  0  0  0\n  7 20  1  0  0  0  0\n  7 21  1  0  0  0  0\n  7 22  1  0  0  0  0\n  8 23  1  0  0  0  0\n  8 24  1  0  0  0  0\n  9 25  1  0  0  0  0\n  9 26  1  0  0  0  0\n  9 27  1  0  0  0  0\n 10 28  1  0  0  0  0\n 10 29  1  0  0  0  0\n 10 30  1  0  0  0  0\nM  END\n";
@@ -6350,113 +6351,113 @@ const methyl_2_propene_2D_Skeletal = "KingDraw KingDraw.mol\nKingDraw2D\n\n  4  
   reg("methyl_methanoate", (typeof methyl_methanoate_2D_Condensed !== "undefined" ? methyl_methanoate_2D_Condensed : null), (typeof methyl_methanoate_2D_Expanded !== "undefined" ? methyl_methanoate_2D_Expanded : null), (typeof methyl_methanoate_2D_Skeletal !== "undefined" ? methyl_methanoate_2D_Skeletal : null));
   reg("isopropyl_ethanoate", (typeof isopropyl_ethanoate_2D_Condensed !== "undefined" ? isopropyl_ethanoate_2D_Condensed : null), (typeof isopropyl_ethanoate_2D_Expanded !== "undefined" ? isopropyl_ethanoate_2D_Expanded : null), (typeof isopropyl_ethanoate_2D_Skeletal !== "undefined" ? isopropyl_ethanoate_2D_Skeletal : null));
 
-const butadiene_1_2_2D_Condensed = "butadiene_1_2_2D_Condensed\n     RDKit          2D\n\n  4  3  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  2  0\n  3  4  1  0\nM  END\n";
+  const butadiene_1_2_2D_Condensed = "butadiene_1_2_2D_Condensed\n     RDKit          2D\n\n  4  3  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  2  0\n  3  4  1  0\nM  END\n";
 
-const butadiene_1_2_2D_Expanded = "butadiene_1_2_2D_Expanded\n     RDKit          2D\n\n 10  9  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    4.2900    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  2  0\n  3  4  1  0\n  1  5  1  0\n  1  6  1  0\n  3  7  1  0\n  4  8  1  0\n  4  9  1  0\n  4 10  1  0\nM  END\n";
+  const butadiene_1_2_2D_Expanded = "butadiene_1_2_2D_Expanded\n     RDKit          2D\n\n 10  9  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    4.2900    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  2  0\n  3  4  1  0\n  1  5  1  0\n  1  6  1  0\n  3  7  1  0\n  4  8  1  0\n  4  9  1  0\n  4 10  1  0\nM  END\n";
 
-const butadiene_1_2_2D_Skeletal = "butadiene_1_2_2D_Skeletal\n     RDKit          2D\n\n  4  3  0  0  0  0  0  0  0  0999 V2000\n   -1.6163    0.1992    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.4915   -0.1228    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.6333   -0.4448    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.4746    0.3684    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  2  0\n  3  4  1  0\nM  END\n";
+  const butadiene_1_2_2D_Skeletal = "butadiene_1_2_2D_Skeletal\n     RDKit          2D\n\n  4  3  0  0  0  0  0  0  0  0999 V2000\n   -1.6163    0.1992    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.4915   -0.1228    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.6333   -0.4448    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.4746    0.3684    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  2  0\n  3  4  1  0\nM  END\n";
 
-const butadiene_1_3_2D_Condensed = "butadiene_1_3_2D_Condensed\n     RDKit          2D\n\n  4  3  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  2  0\nM  END\n";
+  const butadiene_1_3_2D_Condensed = "butadiene_1_3_2D_Condensed\n     RDKit          2D\n\n  4  3  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  2  0\nM  END\n";
 
-const butadiene_1_3_2D_Expanded = "butadiene_1_3_2D_Expanded\n     RDKit          2D\n\n 10  9  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    4.2900    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  2  0\n  1  5  1  0\n  1  6  1  0\n  2  7  1  0\n  3  8  1  0\n  4  9  1  0\n  4 10  1  0\nM  END\n";
+  const butadiene_1_3_2D_Expanded = "butadiene_1_3_2D_Expanded\n     RDKit          2D\n\n 10  9  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    4.2900    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  2  0\n  1  5  1  0\n  1  6  1  0\n  2  7  1  0\n  3  8  1  0\n  4  9  1  0\n  4 10  1  0\nM  END\n";
 
-const butadiene_1_3_2D_Skeletal = "butadiene_1_3_2D_Skeletal\n     RDKit          2D\n\n  4  3  0  0  0  0  0  0  0  0999 V2000\n   -1.5441   -0.1065    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.4675    0.3516    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.4675   -0.3516    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5441    0.1065    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  2  0\nM  END\n";
+  const butadiene_1_3_2D_Skeletal = "butadiene_1_3_2D_Skeletal\n     RDKit          2D\n\n  4  3  0  0  0  0  0  0  0  0999 V2000\n   -1.5441   -0.1065    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.4675    0.3516    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.4675   -0.3516    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5441    0.1065    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  2  0\nM  END\n";
 
-let butanol_2_2D_Condensed = "butanol_2_2D_Condensed\n     RDKit          2D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  2  5  1  0\nM  END\n";
+  let butanol_2_2D_Condensed = "butanol_2_2D_Condensed\n     RDKit          2D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  2  5  1  0\nM  END\n";
 
-let butanol_2_2D_Expanded = "butanol_2_2D_Expanded\n     RDKit          2D\n\n 15 14  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  2  5  1  0\n  1  6  1  0\n  1  7  1  0\n  1  8  1  0\n  2  9  1  0\n  3 10  1  0\n  3 11  1  0\n  4 12  1  0\n  4 13  1  0\n  4 14  1  0\n  5 15  1  0\nM  END\n";
+  let butanol_2_2D_Expanded = "butanol_2_2D_Expanded\n     RDKit          2D\n\n 15 14  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  2  5  1  0\n  1  6  1  0\n  1  7  1  0\n  1  8  1  0\n  2  9  1  0\n  3 10  1  0\n  3 11  1  0\n  4 12  1  0\n  4 13  1  0\n  4 14  1  0\n  5 15  1  0\nM  END\n";
 
-let butanol_2_2D_Skeletal = "butanol_2_2D_Skeletal\n     RDKit          2D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n    1.5478   -0.5745    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.4422   -0.1915    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.4422   -0.9574    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5478   -0.5745    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.2211    0.9574    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  2  5  1  0\nM  END\n";
+  let butanol_2_2D_Skeletal = "butanol_2_2D_Skeletal\n     RDKit          2D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n    1.5478   -0.5745    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.4422   -0.1915    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.4422   -0.9574    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5478   -0.5745    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.2211    0.9574    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  2  5  1  0\nM  END\n";
 
-let dimethyl_2_2_pentanol_3_2D_Condensed = "dimethyl_2_2_pentanol_3_2D_Condensed\n     RDKit          2D\n\n  8  7  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  2  6  1  0\n  2  7  1  0\n  3  8  1  0\nM  END\n";
+  let dimethyl_2_2_pentanol_3_2D_Condensed = "dimethyl_2_2_pentanol_3_2D_Condensed\n     RDKit          2D\n\n  8  7  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  2  6  1  0\n  2  7  1  0\n  3  8  1  0\nM  END\n";
 
-let dimethyl_2_2_pentanol_3_2D_Expanded = "dimethyl_2_2_pentanol_3_2D_Expanded\n     RDKit          2D\n\n 24 23  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.4600    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9500    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3900    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9500   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3900   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  2  6  1  0\n  2  7  1  0\n  3  8  1  0\n  1  9  1  0\n  1 10  1  0\n  1 11  1  0\n  3 12  1  0\n  4 13  1  0\n  4 14  1  0\n  5 15  1  0\n  5 16  1  0\n  5 17  1  0\n  6 18  1  0\n  6 19  1  0\n  6 20  1  0\n  7 21  1  0\n  7 22  1  0\n  7 23  1  0\n  8 24  1  0\nM  END\n";
+  let dimethyl_2_2_pentanol_3_2D_Expanded = "dimethyl_2_2_pentanol_3_2D_Expanded\n     RDKit          2D\n\n 24 23  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.4600    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9500    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3900    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9500   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3900   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  2  6  1  0\n  2  7  1  0\n  3  8  1  0\n  1  9  1  0\n  1 10  1  0\n  1 11  1  0\n  3 12  1  0\n  4 13  1  0\n  4 14  1  0\n  5 15  1  0\n  5 16  1  0\n  5 17  1  0\n  6 18  1  0\n  6 19  1  0\n  6 20  1  0\n  7 21  1  0\n  7 22  1  0\n  7 23  1  0\n  8 24  1  0\nM  END\n";
 
-let dimethyl_2_2_pentanol_3_2D_Skeletal = "dimethyl_2_2_pentanol_3_2D_Skeletal\n     RDKit          2D\n\n  8  7  0  0  0  0  0  0  0  0999 V2000\n    2.0265   -0.1556    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0132    0.4294    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.1556    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132    0.4294    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0265   -0.1556    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.2612    1.3256    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.7653    1.3256    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -1.3256    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  2  6  1  0\n  2  7  1  0\n  3  8  1  0\nM  END\n";
+  let dimethyl_2_2_pentanol_3_2D_Skeletal = "dimethyl_2_2_pentanol_3_2D_Skeletal\n     RDKit          2D\n\n  8  7  0  0  0  0  0  0  0  0999 V2000\n    2.0265   -0.1556    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0132    0.4294    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.1556    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132    0.4294    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0265   -0.1556    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.2612    1.3256    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.7653    1.3256    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -1.3256    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  2  6  1  0\n  2  7  1  0\n  3  8  1  0\nM  END\n";
 
-const dimethyl_2_3_pentadiene_1_3_2D_Condensed = "dimethyl_2_3_pentadiene_1_3_2D_Condensed\n     RDKit          2D\n\n  7  6  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  2  6  1  0\n  3  7  1  0\nM  END\n";
+  const dimethyl_2_3_pentadiene_1_3_2D_Condensed = "dimethyl_2_3_pentadiene_1_3_2D_Condensed\n     RDKit          2D\n\n  7  6  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  2  6  1  0\n  3  7  1  0\nM  END\n";
 
-const dimethyl_2_3_pentadiene_1_3_2D_Expanded = "dimethyl_2_3_pentadiene_1_3_2D_Expanded\n     RDKit          2D\n\n 19 18  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    5.4600    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.3900    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.9500    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5600   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.1200   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  2  6  1  0\n  3  7  1  0\n  1  8  1  0\n  1  9  1  0\n  4 10  1  0\n  5 11  1  0\n  5 12  1  0\n  5 13  1  0\n  6 14  1  0\n  6 15  1  0\n  6 16  1  0\n  7 17  1  0\n  7 18  1  0\n  7 19  1  0\nM  END\n";
+  const dimethyl_2_3_pentadiene_1_3_2D_Expanded = "dimethyl_2_3_pentadiene_1_3_2D_Expanded\n     RDKit          2D\n\n 19 18  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    5.4600    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.3900    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.9500    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5600   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.1200   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  2  6  1  0\n  3  7  1  0\n  1  8  1  0\n  1  9  1  0\n  4 10  1  0\n  5 11  1  0\n  5 12  1  0\n  5 13  1  0\n  6 14  1  0\n  6 15  1  0\n  6 16  1  0\n  7 17  1  0\n  7 18  1  0\n  7 19  1  0\nM  END\n";
 
-const dimethyl_2_3_pentadiene_1_3_2D_Skeletal = "dimethyl_2_3_pentadiene_1_3_2D_Skeletal\n     RDKit          2D\n\n  7  6  0  0  0  0  0  0  0  0999 V2000\n   -1.7550    1.0133    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5851    1.0132    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.7550    1.0133    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.7550   -1.0132    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5850   -1.0133    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  2  6  1  0\n  3  7  1  0\nM  END\n";
+  const dimethyl_2_3_pentadiene_1_3_2D_Skeletal = "dimethyl_2_3_pentadiene_1_3_2D_Skeletal\n     RDKit          2D\n\n  7  6  0  0  0  0  0  0  0  0999 V2000\n   -1.7550    1.0133    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5851    1.0132    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.7550    1.0133    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.7550   -1.0132    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5850   -1.0133    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  2  6  1  0\n  3  7  1  0\nM  END\n";
 
-const dimethyl_2_3_penten_1_yne_4_2D_Condensed = "dimethyl_2_3_penten_1_yne_4_2D_Condensed\n     RDKit          2D\n\n  7  6  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  1  0\n  4  5  3  0\n  2  6  1  0\n  3  7  1  0\nM  END\n";
+  const dimethyl_2_3_penten_1_yne_4_2D_Condensed = "dimethyl_2_3_penten_1_yne_4_2D_Condensed\n     RDKit          2D\n\n  7  6  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  1  0\n  4  5  3  0\n  2  6  1  0\n  3  7  1  0\nM  END\n";
 
-const dimethyl_2_3_penten_1_yne_4_2D_Expanded = "dimethyl_2_3_penten_1_yne_4_2D_Expanded\n     RDKit          2D\n\n 17 16  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.4600    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3900    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9500    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5600   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  1  0\n  4  5  3  0\n  2  6  1  0\n  3  7  1  0\n  1  8  1  0\n  1  9  1  0\n  3 10  1  0\n  5 11  1  0\n  6 12  1  0\n  6 13  1  0\n  6 14  1  0\n  7 15  1  0\n  7 16  1  0\n  7 17  1  0\nM  END\n";
+  const dimethyl_2_3_penten_1_yne_4_2D_Expanded = "dimethyl_2_3_penten_1_yne_4_2D_Expanded\n     RDKit          2D\n\n 17 16  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.4600    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3900    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9500    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5600   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  1  0\n  4  5  3  0\n  2  6  1  0\n  3  7  1  0\n  1  8  1  0\n  1  9  1  0\n  3 10  1  0\n  5 11  1  0\n  6 12  1  0\n  6 13  1  0\n  6 14  1  0\n  7 15  1  0\n  7 16  1  0\n  7 17  1  0\nM  END\n";
 
-const dimethyl_2_3_penten_1_yne_4_2D_Skeletal = "dimethyl_2_3_penten_1_yne_4_2D_Skeletal\n     RDKit          2D\n\n  7  6  0  0  0  0  0  0  0  0999 V2000\n    1.2161    1.3404    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.9950    0.1915    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.1106   -0.1915    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.9950    0.5745    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.8794    1.3404    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.8794   -0.5745    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3317   -1.3404    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  1  0\n  4  5  3  0\n  2  6  1  0\n  3  7  1  0\nM  END\n";
+  const dimethyl_2_3_penten_1_yne_4_2D_Skeletal = "dimethyl_2_3_penten_1_yne_4_2D_Skeletal\n     RDKit          2D\n\n  7  6  0  0  0  0  0  0  0  0999 V2000\n    1.2161    1.3404    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.9950    0.1915    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.1106   -0.1915    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.9950    0.5745    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.8794    1.3404    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.8794   -0.5745    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3317   -1.3404    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  1  0\n  4  5  3  0\n  2  6  1  0\n  3  7  1  0\nM  END\n";
 
-const ethyl_3_dimethyl_4_5_hexadiene_1_4_2D_Condensed = "ethyl_3_dimethyl_4_5_hexadiene_1_4_2D_Condensed\n     RDKit          2D\n\n 10  9  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    5.8500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  1  0\n  4  5  2  0\n  5  6  1  0\n  3  7  1  0\n  7  8  1  0\n  4  9  1  0\n  5 10  1  0\nM  END\n";
+  const ethyl_3_dimethyl_4_5_hexadiene_1_4_2D_Condensed = "ethyl_3_dimethyl_4_5_hexadiene_1_4_2D_Condensed\n     RDKit          2D\n\n 10  9  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    5.8500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  1  0\n  4  5  2  0\n  5  6  1  0\n  3  7  1  0\n  7  8  1  0\n  4  9  1  0\n  5 10  1  0\nM  END\n";
 
-const ethyl_3_dimethyl_4_5_hexadiene_1_4_2D_Expanded = "ethyl_3_dimethyl_4_5_hexadiene_1_4_2D_Expanded\n     RDKit          2D\n\n 28 27  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    5.8500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    5.8500   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    5.8500    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    6.6300    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5600    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.1200    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5600    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.1200    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.7300   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    4.2900   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.9000    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    5.4600    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  1  0\n  4  5  2  0\n  5  6  1  0\n  3  7  1  0\n  7  8  1  0\n  4  9  1  0\n  5 10  1  0\n  1 11  1  0\n  1 12  1  0\n  2 13  1  0\n  3 14  1  0\n  6 15  1  0\n  6 16  1  0\n  6 17  1  0\n  7 18  1  0\n  7 19  1  0\n  8 20  1  0\n  8 21  1  0\n  8 22  1  0\n  9 23  1  0\n  9 24  1  0\n  9 25  1  0\n 10 26  1  0\n 10 27  1  0\n 10 28  1  0\nM  END\n";
+  const ethyl_3_dimethyl_4_5_hexadiene_1_4_2D_Expanded = "ethyl_3_dimethyl_4_5_hexadiene_1_4_2D_Expanded\n     RDKit          2D\n\n 28 27  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    5.8500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    5.8500   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    5.8500    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    6.6300    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5600    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.1200    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5600    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.1200    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.7300   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    4.2900   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.9000    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    5.4600    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  1  0\n  4  5  2  0\n  5  6  1  0\n  3  7  1  0\n  7  8  1  0\n  4  9  1  0\n  5 10  1  0\n  1 11  1  0\n  1 12  1  0\n  2 13  1  0\n  3 14  1  0\n  6 15  1  0\n  6 16  1  0\n  6 17  1  0\n  7 18  1  0\n  7 19  1  0\n  8 20  1  0\n  8 21  1  0\n  8 22  1  0\n  9 23  1  0\n  9 24  1  0\n  9 25  1  0\n 10 26  1  0\n 10 27  1  0\n 10 28  1  0\nM  END\n";
 
-const ethyl_3_dimethyl_4_5_hexadiene_1_4_2D_Skeletal = "ethyl_3_dimethyl_4_5_hexadiene_1_4_2D_Skeletal\n     RDKit          2D\n\n 10  9  0  0  0  0  0  0  0  0999 V2000\n   -1.4624    1.5199    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.2923    1.5199    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.2926    0.5066    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.2925   -0.5066    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.4624   -0.5066    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0476   -1.5198    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.4626    0.5065    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.0476   -0.5067    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.2925   -1.5199    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0474    0.5066    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  1  0\n  4  5  2  0\n  5  6  1  0\n  3  7  1  0\n  7  8  1  0\n  4  9  1  0\n  5 10  1  0\nM  END\n";
+  const ethyl_3_dimethyl_4_5_hexadiene_1_4_2D_Skeletal = "ethyl_3_dimethyl_4_5_hexadiene_1_4_2D_Skeletal\n     RDKit          2D\n\n 10  9  0  0  0  0  0  0  0  0999 V2000\n   -1.4624    1.5199    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.2923    1.5199    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.2926    0.5066    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.2925   -0.5066    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.4624   -0.5066    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0476   -1.5198    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.4626    0.5065    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.0476   -0.5067    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.2925   -1.5199    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0474    0.5066    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  1  0\n  4  5  2  0\n  5  6  1  0\n  3  7  1  0\n  7  8  1  0\n  4  9  1  0\n  5 10  1  0\nM  END\n";
 
-let ethyl_3_methyl_4_hexen_3_yn_5_ol_2_2D_Condensed = "ethyl_3_methyl_4_hexen_3_yn_5_ol_2_2D_Condensed\n     RDKit          2D\n\n 10  9  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  5  6  3  0\n  3  7  1  0\n  7  8  1  0\n  4  9  1  0\n  2 10  1  0\nM  END\n";
+  let ethyl_3_methyl_4_hexen_3_yn_5_ol_2_2D_Condensed = "ethyl_3_methyl_4_hexen_3_yn_5_ol_2_2D_Condensed\n     RDKit          2D\n\n 10  9  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  5  6  3  0\n  3  7  1  0\n  7  8  1  0\n  4  9  1  0\n  2 10  1  0\nM  END\n";
 
-let ethyl_3_methyl_4_hexen_3_yn_5_ol_2_2D_Expanded = "ethyl_3_methyl_4_hexen_3_yn_5_ol_2_2D_Expanded\n     RDKit          2D\n\n 24 23  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -6.6300    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5600    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5600    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.7300   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  5  6  3  0\n  3  7  1  0\n  7  8  1  0\n  4  9  1  0\n  2 10  1  0\n  1 11  1  0\n  1 12  1  0\n  1 13  1  0\n  2 14  1  0\n  6 15  1  0\n  7 16  1  0\n  7 17  1  0\n  8 18  1  0\n  8 19  1  0\n  8 20  1  0\n  9 21  1  0\n  9 22  1  0\n  9 23  1  0\n 10 24  1  0\nM  END\n";
+  let ethyl_3_methyl_4_hexen_3_yn_5_ol_2_2D_Expanded = "ethyl_3_methyl_4_hexen_3_yn_5_ol_2_2D_Expanded\n     RDKit          2D\n\n 24 23  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -6.6300    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5600    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5600    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.7300   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  5  6  3  0\n  3  7  1  0\n  7  8  1  0\n  4  9  1  0\n  2 10  1  0\n  1 11  1  0\n  1 12  1  0\n  1 13  1  0\n  2 14  1  0\n  6 15  1  0\n  7 16  1  0\n  7 17  1  0\n  8 18  1  0\n  8 19  1  0\n  8 20  1  0\n  9 21  1  0\n  9 22  1  0\n  9 23  1  0\n 10 24  1  0\nM  END\n";
 
-let ethyl_3_methyl_4_hexen_3_yn_5_ol_2_2D_Skeletal = "ethyl_3_methyl_4_hexen_3_yn_5_ol_2_2D_Skeletal\n     RDKit          2D\n\n 10  9  0  0  0  0  0  0  0  0999 V2000\n    2.5500    0.2325    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.6105   -0.4649    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5368    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.4026   -0.6974    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.4763   -0.2325    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.5500    0.2325    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.4026    1.1623    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.3421    1.8596    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.2684   -1.8596    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.7447   -1.6272    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  5  6  3  0\n  3  7  1  0\n  7  8  1  0\n  4  9  1  0\n  2 10  1  0\nM  END\n";
+  let ethyl_3_methyl_4_hexen_3_yn_5_ol_2_2D_Skeletal = "ethyl_3_methyl_4_hexen_3_yn_5_ol_2_2D_Skeletal\n     RDKit          2D\n\n 10  9  0  0  0  0  0  0  0  0999 V2000\n    2.5500    0.2325    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.6105   -0.4649    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5368    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.4026   -0.6974    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.4763   -0.2325    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.5500    0.2325    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.4026    1.1623    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.3421    1.8596    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.2684   -1.8596    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.7447   -1.6272    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  5  6  3  0\n  3  7  1  0\n  7  8  1  0\n  4  9  1  0\n  2 10  1  0\nM  END\n";
 
-const ethyl_4_dimethyl_2_3_hepten_2_yne_5_2D_Condensed = "ethyl_4_dimethyl_2_3_hepten_2_yne_5_2D_Condensed\n     RDKit          2D\n\n 11 10  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  3  4  1  0\n  4  5  1  0\n  5  6  3  0\n  6  7  1  0\n  2  8  1  0\n  3  9  1  0\n  4 10  1  0\n 10 11  1  0\nM  END\n";
+  const ethyl_4_dimethyl_2_3_hepten_2_yne_5_2D_Condensed = "ethyl_4_dimethyl_2_3_hepten_2_yne_5_2D_Condensed\n     RDKit          2D\n\n 11 10  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  3  4  1  0\n  4  5  1  0\n  5  6  3  0\n  6  7  1  0\n  2  8  1  0\n  3  9  1  0\n  4 10  1  0\n 10 11  1  0\nM  END\n";
 
-const ethyl_4_dimethyl_2_3_hepten_2_yne_5_2D_Expanded = "ethyl_4_dimethyl_2_3_hepten_2_yne_5_2D_Expanded\n     RDKit          2D\n\n 29 28  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.8000    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3900    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9500    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5600   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.7300    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.7300    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  3  4  1  0\n  4  5  1  0\n  5  6  3  0\n  6  7  1  0\n  2  8  1  0\n  3  9  1  0\n  4 10  1  0\n 10 11  1  0\n  1 12  1  0\n  1 13  1  0\n  1 14  1  0\n  4 15  1  0\n  7 16  1  0\n  7 17  1  0\n  7 18  1  0\n  8 19  1  0\n  8 20  1  0\n  8 21  1  0\n  9 22  1  0\n  9 23  1  0\n  9 24  1  0\n 10 25  1  0\n 10 26  1  0\n 11 27  1  0\n 11 28  1  0\n 11 29  1  0\nM  END\n";
+  const ethyl_4_dimethyl_2_3_hepten_2_yne_5_2D_Expanded = "ethyl_4_dimethyl_2_3_hepten_2_yne_5_2D_Expanded\n     RDKit          2D\n\n 29 28  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.8000    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3900    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9500    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5600   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.7300    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.7300    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  3  4  1  0\n  4  5  1  0\n  5  6  3  0\n  6  7  1  0\n  2  8  1  0\n  3  9  1  0\n  4 10  1  0\n 10 11  1  0\n  1 12  1  0\n  1 13  1  0\n  1 14  1  0\n  4 15  1  0\n  7 16  1  0\n  7 17  1  0\n  7 18  1  0\n  8 19  1  0\n  8 20  1  0\n  8 21  1  0\n  9 22  1  0\n  9 23  1  0\n  9 24  1  0\n 10 25  1  0\n 10 26  1  0\n 11 27  1  0\n 11 28  1  0\n 11 29  1  0\nM  END\n";
 
-const ethyl_4_dimethyl_2_3_hepten_2_yne_5_2D_Skeletal = "ethyl_4_dimethyl_2_3_hepten_2_yne_5_2D_Skeletal\n     RDKit          2D\n\n 11 10  0  0  0  0  0  0  0  0999 V2000\n    2.9250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400   -1.0132    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700   -1.0132    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5850    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.7550    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.9250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.9250   -2.0265    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5850   -2.0265    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    1.0132    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5850    2.0265    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  3  4  1  0\n  4  5  1  0\n  5  6  3  0\n  6  7  1  0\n  2  8  1  0\n  3  9  1  0\n  4 10  1  0\n 10 11  1  0\nM  END\n";
+  const ethyl_4_dimethyl_2_3_hepten_2_yne_5_2D_Skeletal = "ethyl_4_dimethyl_2_3_hepten_2_yne_5_2D_Skeletal\n     RDKit          2D\n\n 11 10  0  0  0  0  0  0  0  0999 V2000\n    2.9250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400   -1.0132    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700   -1.0132    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5850    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.7550    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.9250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.9250   -2.0265    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5850   -2.0265    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    1.0132    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5850    2.0265    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  3  4  1  0\n  4  5  1  0\n  5  6  3  0\n  6  7  1  0\n  2  8  1  0\n  3  9  1  0\n  4 10  1  0\n 10 11  1  0\nM  END\n";
 
-let isopropyl_4_dimethyl_3_5_heptanol_2_2D_Condensed = "isopropyl_4_dimethyl_3_5_heptanol_2_2D_Condensed\n     RDKit          2D\n\n 13 12  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  5  6  1  0\n  6  7  1  0\n  3  8  1  0\n  5  9  1  0\n  4 10  1  0\n 10 11  1  0\n 10 12  1  0\n  2 13  1  0\nM  END\n";
+  let isopropyl_4_dimethyl_3_5_heptanol_2_2D_Condensed = "isopropyl_4_dimethyl_3_5_heptanol_2_2D_Condensed\n     RDKit          2D\n\n 13 12  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  5  6  1  0\n  6  7  1  0\n  3  8  1  0\n  5  9  1  0\n  4 10  1  0\n 10 11  1  0\n 10 12  1  0\n  2 13  1  0\nM  END\n";
 
-let isopropyl_4_dimethyl_3_5_heptanol_2_2D_Expanded = "isopropyl_4_dimethyl_3_5_heptanol_2_2D_Expanded\n     RDKit          2D\n\n 39 38  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    3.5100    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.8000    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5600   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.4600   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.9000   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.7300    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    4.2900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900    3.5100    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.7300    3.5100    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    1.5600    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.4600    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  5  6  1  0\n  6  7  1  0\n  3  8  1  0\n  5  9  1  0\n  4 10  1  0\n 10 11  1  0\n 10 12  1  0\n  2 13  1  0\n  1 14  1  0\n  1 15  1  0\n  1 16  1  0\n  2 17  1  0\n  3 18  1  0\n  4 19  1  0\n  5 20  1  0\n  6 21  1  0\n  6 22  1  0\n  7 23  1  0\n  7 24  1  0\n  7 25  1  0\n  8 26  1  0\n  8 27  1  0\n  8 28  1  0\n  9 29  1  0\n  9 30  1  0\n  9 31  1  0\n 10 32  1  0\n 11 33  1  0\n 11 34  1  0\n 11 35  1  0\n 12 36  1  0\n 12 37  1  0\n 12 38  1  0\n 13 39  1  0\nM  END\n";
+  let isopropyl_4_dimethyl_3_5_heptanol_2_2D_Expanded = "isopropyl_4_dimethyl_3_5_heptanol_2_2D_Expanded\n     RDKit          2D\n\n 39 38  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    3.5100    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.8000    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5600   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.4600   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.9000   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.7300    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    4.2900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900    3.5100    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.7300    3.5100    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    1.5600    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.4600    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  5  6  1  0\n  6  7  1  0\n  3  8  1  0\n  5  9  1  0\n  4 10  1  0\n 10 11  1  0\n 10 12  1  0\n  2 13  1  0\n  1 14  1  0\n  1 15  1  0\n  1 16  1  0\n  2 17  1  0\n  3 18  1  0\n  4 19  1  0\n  5 20  1  0\n  6 21  1  0\n  6 22  1  0\n  7 23  1  0\n  7 24  1  0\n  7 25  1  0\n  8 26  1  0\n  8 27  1  0\n  8 28  1  0\n  9 29  1  0\n  9 30  1  0\n  9 31  1  0\n 10 32  1  0\n 11 33  1  0\n 11 34  1  0\n 11 35  1  0\n 12 36  1  0\n 12 37  1  0\n 12 38  1  0\n 13 39  1  0\nM  END\n";
 
-let isopropyl_4_dimethyl_3_5_heptanol_2_2D_Skeletal = "isopropyl_4_dimethyl_3_5_heptanol_2_2D_Skeletal\n     RDKit          2D\n\n 13 12  0  0  0  0  0  0  0  0999 V2000\n    3.0397   -0.5850    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.0265    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0132   -0.5850    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132   -0.5850    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0265    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.0397   -0.5850    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0132   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132    1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0132    1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.0265    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  5  6  1  0\n  6  7  1  0\n  3  8  1  0\n  5  9  1  0\n  4 10  1  0\n 10 11  1  0\n 10 12  1  0\n  2 13  1  0\nM  END\n";
+  let isopropyl_4_dimethyl_3_5_heptanol_2_2D_Skeletal = "isopropyl_4_dimethyl_3_5_heptanol_2_2D_Skeletal\n     RDKit          2D\n\n 13 12  0  0  0  0  0  0  0  0999 V2000\n    3.0397   -0.5850    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.0265    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0132   -0.5850    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132   -0.5850    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0265    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.0397   -0.5850    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0132   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132    1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0132    1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.0265    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  5  6  1  0\n  6  7  1  0\n  3  8  1  0\n  5  9  1  0\n  4 10  1  0\n 10 11  1  0\n 10 12  1  0\n  2 13  1  0\nM  END\n";
 
-const methyl_2_buten_1_yne_3_2D_Condensed = "methyl_2_buten_1_yne_3_2D_Condensed\n     RDKit          2D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  3  0\n  2  5  1  0\nM  END\n";
+  const methyl_2_buten_1_yne_3_2D_Condensed = "methyl_2_buten_1_yne_3_2D_Condensed\n     RDKit          2D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  3  0\n  2  5  1  0\nM  END\n";
 
-const methyl_2_buten_1_yne_3_2D_Expanded = "methyl_2_buten_1_yne_3_2D_Expanded\n     RDKit          2D\n\n 11 10  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3900    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9500    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  3  0\n  2  5  1  0\n  1  6  1  0\n  1  7  1  0\n  4  8  1  0\n  5  9  1  0\n  5 10  1  0\n  5 11  1  0\nM  END\n";
+  const methyl_2_buten_1_yne_3_2D_Expanded = "methyl_2_buten_1_yne_3_2D_Expanded\n     RDKit          2D\n\n 11 10  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3900    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9500    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  3  0\n  2  5  1  0\n  1  6  1  0\n  1  7  1  0\n  4  8  1  0\n  5  9  1  0\n  5 10  1  0\n  5 11  1  0\nM  END\n";
 
-const methyl_2_buten_1_yne_3_2D_Skeletal = "methyl_2_buten_1_yne_3_2D_Skeletal\n     RDKit          2D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n    1.5478    0.9574    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.6633    0.1915    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.4422    0.5745    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5478    0.9574    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.8844   -0.9574    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  3  0\n  2  5  1  0\nM  END\n";
+  const methyl_2_buten_1_yne_3_2D_Skeletal = "methyl_2_buten_1_yne_3_2D_Skeletal\n     RDKit          2D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n    1.5478    0.9574    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.6633    0.1915    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.4422    0.5745    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5478    0.9574    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.8844   -0.9574    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  3  0\n  2  5  1  0\nM  END\n";
 
-let methyl_2_propanediol_1_2_2D_Condensed = "methyl_2_propanediol_1_2_2D_Condensed\n     RDKit          2D\n\n  6  5  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  2  4  1  0\n  1  5  1  0\n  2  6  1  0\nM  END\n";
+  let methyl_2_propanediol_1_2_2D_Condensed = "methyl_2_propanediol_1_2_2D_Condensed\n     RDKit          2D\n\n  6  5  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  2  4  1  0\n  1  5  1  0\n  2  6  1  0\nM  END\n";
 
-let methyl_2_propanediol_1_2_2D_Expanded = "methyl_2_propanediol_1_2_2D_Expanded\n     RDKit          2D\n\n 16 15  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9500   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3900   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  2  4  1  0\n  1  5  1  0\n  2  6  1  0\n  1  7  1  0\n  1  8  1  0\n  3  9  1  0\n  3 10  1  0\n  3 11  1  0\n  4 12  1  0\n  4 13  1  0\n  4 14  1  0\n  5 15  1  0\n  6 16  1  0\nM  END\n";
+  let methyl_2_propanediol_1_2_2D_Expanded = "methyl_2_propanediol_1_2_2D_Expanded\n     RDKit          2D\n\n 16 15  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9500   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3900   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  2  4  1  0\n  1  5  1  0\n  2  6  1  0\n  1  7  1  0\n  1  8  1  0\n  3  9  1  0\n  3 10  1  0\n  3 11  1  0\n  4 12  1  0\n  4 13  1  0\n  4 14  1  0\n  5 15  1  0\n  6 16  1  0\nM  END\n";
 
-let methyl_2_propanediol_1_2_2D_Skeletal = "methyl_2_propanediol_1_2_2D_Skeletal\n     RDKit          2D\n\n  6  5  0  0  0  0  0  0  0  0999 V2000\n    0.5066    0.7406    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5066    0.1556    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5199    0.7406    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.2587   -0.7406    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5199    0.1556    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.2454   -0.7406    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  2  4  1  0\n  1  5  1  0\n  2  6  1  0\nM  END\n";
+  let methyl_2_propanediol_1_2_2D_Skeletal = "methyl_2_propanediol_1_2_2D_Skeletal\n     RDKit          2D\n\n  6  5  0  0  0  0  0  0  0  0999 V2000\n    0.5066    0.7406    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5066    0.1556    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5199    0.7406    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.2587   -0.7406    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5199    0.1556    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.2454   -0.7406    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  2  4  1  0\n  1  5  1  0\n  2  6  1  0\nM  END\n";
 
-let methyl_3_buten_3_ol_2_2D_Condensed = "methyl_3_buten_3_ol_2_2D_Condensed\n     RDKit          2D\n\n  6  5  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  2  0\n  3  5  1  0\n  2  6  1  0\nM  END\n";
+  let methyl_3_buten_3_ol_2_2D_Condensed = "methyl_3_buten_3_ol_2_2D_Condensed\n     RDKit          2D\n\n  6  5  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  2  0\n  3  5  1  0\n  2  6  1  0\nM  END\n";
 
-let methyl_3_buten_3_ol_2_2D_Expanded = "methyl_3_buten_3_ol_2_2D_Expanded\n     RDKit          2D\n\n 16 15  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5600    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  2  0\n  3  5  1  0\n  2  6  1  0\n  1  7  1  0\n  1  8  1  0\n  1  9  1  0\n  2 10  1  0\n  4 11  1  0\n  4 12  1  0\n  5 13  1  0\n  5 14  1  0\n  5 15  1  0\n  6 16  1  0\nM  END\n";
+  let methyl_3_buten_3_ol_2_2D_Expanded = "methyl_3_buten_3_ol_2_2D_Expanded\n     RDKit          2D\n\n 16 15  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5600    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  2  0\n  3  5  1  0\n  2  6  1  0\n  1  7  1  0\n  1  8  1  0\n  1  9  1  0\n  2 10  1  0\n  4 11  1  0\n  4 12  1  0\n  5 13  1  0\n  5 14  1  0\n  5 15  1  0\n  6 16  1  0\nM  END\n";
 
-let methyl_3_buten_3_ol_2_2D_Skeletal = "methyl_3_buten_3_ol_2_2D_Skeletal\n     RDKit          2D\n\n  6  5  0  0  0  0  0  0  0  0999 V2000\n    1.5478    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.4422   -0.3830    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.4422    0.3830    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5478   -0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.2211    1.5319    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.2211   -1.5319    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  2  0\n  3  5  1  0\n  2  6  1  0\nM  END\n";
+  let methyl_3_buten_3_ol_2_2D_Skeletal = "methyl_3_buten_3_ol_2_2D_Skeletal\n     RDKit          2D\n\n  6  5  0  0  0  0  0  0  0  0999 V2000\n    1.5478    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.4422   -0.3830    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.4422    0.3830    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5478   -0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.2211    1.5319    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.2211   -1.5319    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  2  0\n  3  5  1  0\n  2  6  1  0\nM  END\n";
 
-const methyl_3_pentadiene_1_3_2D_Condensed = "methyl_3_pentadiene_1_3_2D_Condensed\n     RDKit          2D\n\n  6  5  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  3  6  1  0\nM  END\n";
+  const methyl_3_pentadiene_1_3_2D_Condensed = "methyl_3_pentadiene_1_3_2D_Condensed\n     RDKit          2D\n\n  6  5  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  3  6  1  0\nM  END\n";
 
-const methyl_3_pentadiene_1_3_2D_Expanded = "methyl_3_pentadiene_1_3_2D_Expanded\n     RDKit          2D\n\n 16 15  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    5.4600    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5600    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.1200    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  3  6  1  0\n  1  7  1  0\n  1  8  1  0\n  2  9  1  0\n  4 10  1  0\n  5 11  1  0\n  5 12  1  0\n  5 13  1  0\n  6 14  1  0\n  6 15  1  0\n  6 16  1  0\nM  END\n";
+  const methyl_3_pentadiene_1_3_2D_Expanded = "methyl_3_pentadiene_1_3_2D_Expanded\n     RDKit          2D\n\n 16 15  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    5.4600    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5600    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.1200    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  3  6  1  0\n  1  7  1  0\n  1  8  1  0\n  2  9  1  0\n  4 10  1  0\n  5 11  1  0\n  5 12  1  0\n  5 13  1  0\n  6 14  1  0\n  6 15  1  0\n  6 16  1  0\nM  END\n";
 
-const methyl_3_pentadiene_1_3_2D_Skeletal = "methyl_3_pentadiene_1_3_2D_Skeletal\n     RDKit          2D\n\n  6  5  0  0  0  0  0  0  0  0999 V2000\n    1.7550    0.6755    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700   -0.3377    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000   -0.3377    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850    0.6755    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.7550    0.6755    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850   -1.3510    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  3  6  1  0\nM  END\n";
+  const methyl_3_pentadiene_1_3_2D_Skeletal = "methyl_3_pentadiene_1_3_2D_Skeletal\n     RDKit          2D\n\n  6  5  0  0  0  0  0  0  0  0999 V2000\n    1.7550    0.6755    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700   -0.3377    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000   -0.3377    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850    0.6755    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.7550    0.6755    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5850   -1.3510    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  3  6  1  0\nM  END\n";
 
-let methyl_3_pentyn_4_ol_2_2D_Condensed = "methyl_3_pentyn_4_ol_2_2D_Condensed\n     RDKit          2D\n\n  7  6  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  3  0\n  3  6  1  0\n  2  7  1  0\nM  END\n";
+  let methyl_3_pentyn_4_ol_2_2D_Condensed = "methyl_3_pentyn_4_ol_2_2D_Condensed\n     RDKit          2D\n\n  7  6  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  3  0\n  3  6  1  0\n  2  7  1  0\nM  END\n";
 
-let methyl_3_pentyn_4_ol_2_2D_Expanded = "methyl_3_pentyn_4_ol_2_2D_Expanded\n     RDKit          2D\n\n 17 16  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.4600    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5600    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  3  0\n  3  6  1  0\n  2  7  1  0\n  1  8  1  0\n  1  9  1  0\n  1 10  1  0\n  2 11  1  0\n  3 12  1  0\n  5 13  1  0\n  6 14  1  0\n  6 15  1  0\n  6 16  1  0\n  7 17  1  0\nM  END\n";
+  let methyl_3_pentyn_4_ol_2_2D_Expanded = "methyl_3_pentyn_4_ol_2_2D_Expanded\n     RDKit          2D\n\n 17 16  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.4600    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5600    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  3  0\n  3  6  1  0\n  2  7  1  0\n  1  8  1  0\n  1  9  1  0\n  1 10  1  0\n  2 11  1  0\n  3 12  1  0\n  5 13  1  0\n  6 14  1  0\n  6 15  1  0\n  6 16  1  0\n  7 17  1  0\nM  END\n";
 
-let methyl_3_pentyn_4_ol_2_2D_Skeletal = "methyl_3_pentyn_4_ol_2_2D_Skeletal\n     RDKit          2D\n\n  7  6  0  0  0  0  0  0  0  0999 V2000\n    2.1092   -0.1405    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.9735   -0.4215    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.1622    0.4215    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.9735    0.1405    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.1092   -0.1405    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.4867    1.5456    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.6490   -1.5456    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  3  0\n  3  6  1  0\n  2  7  1  0\nM  END\n";
+  let methyl_3_pentyn_4_ol_2_2D_Skeletal = "methyl_3_pentyn_4_ol_2_2D_Skeletal\n     RDKit          2D\n\n  7  6  0  0  0  0  0  0  0  0999 V2000\n    2.1092   -0.1405    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.9735   -0.4215    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.1622    0.4215    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.9735    0.1405    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.1092   -0.1405    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.4867    1.5456    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.6490   -1.5456    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  3  0\n  3  6  1  0\n  2  7  1  0\nM  END\n";
 
-let methyl_4_pentanol_2_2D_Condensed = "methyl_4_pentanol_2_2D_Condensed\n     RDKit          2D\n\n  7  6  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  4  6  1  0\n  2  7  1  0\nM  END\n";
+  let methyl_4_pentanol_2_2D_Condensed = "methyl_4_pentanol_2_2D_Condensed\n     RDKit          2D\n\n  7  6  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  4  6  1  0\n  2  7  1  0\nM  END\n";
 
-let methyl_4_pentanol_2_2D_Expanded = "methyl_4_pentanol_2_2D_Expanded\n     RDKit          2D\n\n 21 20  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.4600    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.7300   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  4  6  1  0\n  2  7  1  0\n  1  8  1  0\n  1  9  1  0\n  1 10  1  0\n  2 11  1  0\n  3 12  1  0\n  3 13  1  0\n  4 14  1  0\n  5 15  1  0\n  5 16  1  0\n  5 17  1  0\n  6 18  1  0\n  6 19  1  0\n  6 20  1  0\n  7 21  1  0\nM  END\n";
+  let methyl_4_pentanol_2_2D_Expanded = "methyl_4_pentanol_2_2D_Expanded\n     RDKit          2D\n\n 21 20  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.4600    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.7300   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  4  6  1  0\n  2  7  1  0\n  1  8  1  0\n  1  9  1  0\n  1 10  1  0\n  2 11  1  0\n  3 12  1  0\n  3 13  1  0\n  4 14  1  0\n  5 15  1  0\n  5 16  1  0\n  5 17  1  0\n  6 18  1  0\n  6 19  1  0\n  6 20  1  0\n  7 21  1  0\nM  END\n";
 
-let methyl_4_pentanol_2_2D_Skeletal = "methyl_4_pentanol_2_2D_Skeletal\n     RDKit          2D\n\n  7  6  0  0  0  0  0  0  0  0999 V2000\n    2.0265   -0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0132   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0265   -0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132    0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0132    0.8775    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  4  6  1  0\n  2  7  1  0\nM  END\n";
+  let methyl_4_pentanol_2_2D_Skeletal = "methyl_4_pentanol_2_2D_Skeletal\n     RDKit          2D\n\n  7  6  0  0  0  0  0  0  0  0999 V2000\n    2.0265   -0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0132   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0265   -0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132    0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0132    0.8775    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  4  6  1  0\n  2  7  1  0\nM  END\n";
 
-let methyl_4_penten_4_yn_2_ol_1_2D_Condensed = "methyl_4_penten_4_yn_2_ol_1_2D_Condensed\n     RDKit          2D\n\n  7  6  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  3  0\n  3  4  1  0\n  4  5  2  0\n  4  6  1  0\n  1  7  1  0\nM  END\n";
+  let methyl_4_penten_4_yn_2_ol_1_2D_Condensed = "methyl_4_penten_4_yn_2_ol_1_2D_Condensed\n     RDKit          2D\n\n  7  6  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  3  0\n  3  4  1  0\n  4  5  2  0\n  4  6  1  0\n  1  7  1  0\nM  END\n";
 
-let methyl_4_penten_4_yn_2_ol_1_2D_Expanded = "methyl_4_penten_4_yn_2_ol_1_2D_Expanded\n     RDKit          2D\n\n 15 14  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.7300   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  3  0\n  3  4  1  0\n  4  5  2  0\n  4  6  1  0\n  1  7  1  0\n  1  8  1  0\n  1  9  1  0\n  5 10  1  0\n  5 11  1  0\n  6 12  1  0\n  6 13  1  0\n  6 14  1  0\n  7 15  1  0\nM  END\n";
+  let methyl_4_penten_4_yn_2_ol_1_2D_Expanded = "methyl_4_penten_4_yn_2_ol_1_2D_Expanded\n     RDKit          2D\n\n 15 14  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.7300   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  3  0\n  3  4  1  0\n  4  5  2  0\n  4  6  1  0\n  1  7  1  0\n  1  8  1  0\n  1  9  1  0\n  5 10  1  0\n  5 11  1  0\n  6 12  1  0\n  6 13  1  0\n  6 14  1  0\n  7 15  1  0\nM  END\n";
 
-let methyl_4_penten_4_yn_2_ol_1_2D_Skeletal = "methyl_4_penten_4_yn_2_ol_1_2D_Skeletal\n     RDKit          2D\n\n  7  6  0  0  0  0  0  0  0  0999 V2000\n    1.7036    0.9836    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5679    0.7026    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5679    0.4215    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.7036    0.1405    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.5149    0.9836    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0281   -0.9836    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.5149    0.1405    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  3  0\n  3  4  1  0\n  4  5  2  0\n  4  6  1  0\n  1  7  1  0\nM  END\n";
+  let methyl_4_penten_4_yn_2_ol_1_2D_Skeletal = "methyl_4_penten_4_yn_2_ol_1_2D_Skeletal\n     RDKit          2D\n\n  7  6  0  0  0  0  0  0  0  0999 V2000\n    1.7036    0.9836    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5679    0.7026    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5679    0.4215    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.7036    0.1405    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.5149    0.9836    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0281   -0.9836    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.5149    0.1405    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  3  0\n  3  4  1  0\n  4  5  2  0\n  4  6  1  0\n  1  7  1  0\nM  END\n";
 
-const pentadiene_1_4_2D_Condensed = "pentadiene_1_4_2D_Condensed\n     RDKit          2D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  1  0\n  4  5  2  0\nM  END\n";
+  const pentadiene_1_4_2D_Condensed = "pentadiene_1_4_2D_Condensed\n     RDKit          2D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  1  0\n  4  5  2  0\nM  END\n";
 
-const pentadiene_1_4_2D_Expanded = "pentadiene_1_4_2D_Expanded\n     RDKit          2D\n\n 13 12  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    5.4600    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  1  0\n  4  5  2  0\n  1  6  1  0\n  1  7  1  0\n  2  8  1  0\n  3  9  1  0\n  3 10  1  0\n  4 11  1  0\n  5 12  1  0\n  5 13  1  0\nM  END\n";
+  const pentadiene_1_4_2D_Expanded = "pentadiene_1_4_2D_Expanded\n     RDKit          2D\n\n 13 12  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    5.4600    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    4.6800   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  1  0\n  4  5  2  0\n  1  6  1  0\n  1  7  1  0\n  2  8  1  0\n  3  9  1  0\n  3 10  1  0\n  4 11  1  0\n  5 12  1  0\n  5 13  1  0\nM  END\n";
 
-const pentadiene_1_4_2D_Skeletal = "pentadiene_1_4_2D_Skeletal\n     RDKit          2D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n   -2.0265   -0.2340    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132    0.3510    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.2340    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0132    0.3510    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.0265   -0.2340    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  1  0\n  4  5  2  0\nM  END\n";
+  const pentadiene_1_4_2D_Skeletal = "pentadiene_1_4_2D_Skeletal\n     RDKit          2D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n   -2.0265   -0.2340    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132    0.3510    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.2340    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0132    0.3510    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.0265   -0.2340    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  1  0\n  4  5  2  0\nM  END\n";
 
   reg("butadiene_1_2", butadiene_1_2_2D_Condensed, butadiene_1_2_2D_Expanded, butadiene_1_2_2D_Skeletal);
   reg("butadiene_1_3", butadiene_1_3_2D_Condensed, butadiene_1_3_2D_Expanded, butadiene_1_3_2D_Skeletal);
@@ -6482,112 +6483,112 @@ const pentadiene_1_4_2D_Skeletal = "pentadiene_1_4_2D_Skeletal\n     RDKit      
 let pentanone_3_2D_Condensed = "pentanone_3_2D_Condensed\n     RDKit          2D\n\n  6  5  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.8720    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.7440    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6160    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.4880    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.7440    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  3  6  2  0\nM  END\n";
 let pentanone_3_2D_Expanded = "pentanone_3_2D_Expanded\n     RDKit          2D\n\n 16 15  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.4600    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  3  6  2  0\n  1  7  1  0\n  1  8  1  0\n  1  9  1  0\n  2 10  1  0\n  2 11  1  0\n  4 12  1  0\n  4 13  1  0\n  5 14  1  0\n  5 15  1  0\n  5 16  1  0\nM  END\n";
 let pentanone_3_2D_Skeletal = "pentanone_3_2D_Skeletal\n     RDKit          2D\n\n  6  5  0  0  0  0  0  0  0  0999 V2000\n    2.0265   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0132   -0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132   -0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0265   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.8775    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  3  6  2  0\nM  END\n";
-window.MOL2D["pentanone_3"] = {condensed: pentanone_3_2D_Condensed, expanded: pentanone_3_2D_Expanded, skeletal: pentanone_3_2D_Skeletal};
+window.MOL2D["pentanone_3"] = { condensed: pentanone_3_2D_Condensed, expanded: pentanone_3_2D_Expanded, skeletal: pentanone_3_2D_Skeletal };
 let dimethyl_2_4_pentanone_3_2D_Condensed = "dimethyl_2_4_pentanone_3_2D_Condensed\n     RDKit          2D\n\n  8  7  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.8720    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.7440    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6160    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.4880    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.8720   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6160   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.7440    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  2  6  1  0\n  4  7  1  0\n  3  8  2  0\nM  END\n";
 let dimethyl_2_4_pentanone_3_2D_Expanded = "dimethyl_2_4_pentanone_3_2D_Expanded\n     RDKit          2D\n\n 22 21  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.4600    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9500   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3900   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.7300   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  2  6  1  0\n  4  7  1  0\n  3  8  2  0\n  1  9  1  0\n  1 10  1  0\n  1 11  1  0\n  2 12  1  0\n  4 13  1  0\n  5 14  1  0\n  5 15  1  0\n  5 16  1  0\n  6 17  1  0\n  6 18  1  0\n  6 19  1  0\n  7 20  1  0\n  7 21  1  0\n  7 22  1  0\nM  END\n";
 let dimethyl_2_4_pentanone_3_2D_Skeletal = "dimethyl_2_4_pentanone_3_2D_Skeletal\n     RDKit          2D\n\n  8  7  0  0  0  0  0  0  0  0999 V2000\n    2.0265    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0132   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0265    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0132   -1.4625    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132   -1.4625    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    1.4625    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  2  6  1  0\n  4  7  1  0\n  3  8  2  0\nM  END\n";
-window.MOL2D["dimethyl_2_4_pentanone_3"] = {condensed: dimethyl_2_4_pentanone_3_2D_Condensed, expanded: dimethyl_2_4_pentanone_3_2D_Expanded, skeletal: dimethyl_2_4_pentanone_3_2D_Skeletal};
+window.MOL2D["dimethyl_2_4_pentanone_3"] = { condensed: dimethyl_2_4_pentanone_3_2D_Condensed, expanded: dimethyl_2_4_pentanone_3_2D_Expanded, skeletal: dimethyl_2_4_pentanone_3_2D_Skeletal };
 let trimethyl_3_4_4_pentanone_2_2D_Condensed = "trimethyl_3_4_4_pentanone_2_2D_Condensed\n     RDKit          2D\n\n  9  8  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.8720    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.7440    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6160    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.4880    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.7440   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6160    1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6160   -3.0713    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.8720    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  3  6  1  0\n  4  7  1  0\n  4  8  1  0\n  2  9  2  0\nM  END\n";
 let trimethyl_3_4_4_pentanone_2_2D_Expanded = "trimethyl_3_4_4_pentanone_2_2D_Expanded\n     RDKit          2D\n\n 25 24  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -4.0950    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.4600    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5600   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.7300    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -4.8750    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900   -4.0950    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.7300   -4.0950    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  3  6  1  0\n  4  7  1  0\n  4  8  1  0\n  2  9  2  0\n  1 10  1  0\n  1 11  1  0\n  1 12  1  0\n  3 13  1  0\n  5 14  1  0\n  5 15  1  0\n  5 16  1  0\n  6 17  1  0\n  6 18  1  0\n  6 19  1  0\n  7 20  1  0\n  7 21  1  0\n  7 22  1  0\n  8 23  1  0\n  8 24  1  0\n  8 25  1  0\nM  END\n";
 let trimethyl_3_4_4_pentanone_2_2D_Skeletal = "trimethyl_3_4_4_pentanone_2_2D_Skeletal\n     RDKit          2D\n\n  9  8  0  0  0  0  0  0  0  0999 V2000\n    2.0265    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0132   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0265    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    1.4625    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.7653   -1.1888    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.2612   -1.1888    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0132   -1.4625    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  3  6  1  0\n  4  7  1  0\n  4  8  1  0\n  2  9  2  0\nM  END\n";
-window.MOL2D["trimethyl_3_4_4_pentanone_2"] = {condensed: trimethyl_3_4_4_pentanone_2_2D_Condensed, expanded: trimethyl_3_4_4_pentanone_2_2D_Expanded, skeletal: trimethyl_3_4_4_pentanone_2_2D_Skeletal};
+window.MOL2D["trimethyl_3_4_4_pentanone_2"] = { condensed: trimethyl_3_4_4_pentanone_2_2D_Condensed, expanded: trimethyl_3_4_4_pentanone_2_2D_Expanded, skeletal: trimethyl_3_4_4_pentanone_2_2D_Skeletal };
 let diethyl_4_5_dimethyl_2_6_heptanone_3_2D_Condensed = "diethyl_4_5_dimethyl_2_6_heptanone_3_2D_Condensed\n     RDKit          2D\n\n 14 13  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.8720    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.7440    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6160    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.4880    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -9.3600    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  -11.2320    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.8720   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6160    2.6325    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.7440    2.6325    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.4880   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -9.3600   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -9.3600    1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.7440    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  5  6  1  0\n  6  7  1  0\n  2  8  1  0\n  4  9  1  0\n  9 10  1  0\n  5 11  1  0\n 11 12  1  0\n  6 13  1  0\n  3 14  2  0\nM  END\n";
 let diethyl_4_5_dimethyl_2_6_heptanone_3_2D_Expanded = "diethyl_4_5_dimethyl_2_6_heptanone_3_2D_Expanded\n     RDKit          2D\n\n 40 39  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    3.5100    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    3.5100    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500   -2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.8000    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9500   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3900   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    4.2900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900    3.5100    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    2.7300    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    4.2900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5600    3.5100    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.9000   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500   -3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500   -1.5600    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -6.6300   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -6.6300    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.0700    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  5  6  1  0\n  6  7  1  0\n  2  8  1  0\n  4  9  1  0\n  9 10  1  0\n  5 11  1  0\n 11 12  1  0\n  6 13  1  0\n  3 14  2  0\n  1 15  1  0\n  1 16  1  0\n  1 17  1  0\n  2 18  1  0\n  4 19  1  0\n  5 20  1  0\n  6 21  1  0\n  7 22  1  0\n  7 23  1  0\n  7 24  1  0\n  8 25  1  0\n  8 26  1  0\n  8 27  1  0\n  9 28  1  0\n  9 29  1  0\n 10 30  1  0\n 10 31  1  0\n 10 32  1  0\n 11 33  1  0\n 11 34  1  0\n 12 35  1  0\n 12 36  1  0\n 12 37  1  0\n 13 38  1  0\n 13 39  1  0\n 13 40  1  0\nM  END\n";
 let diethyl_4_5_dimethyl_2_6_heptanone_3_2D_Skeletal = "diethyl_4_5_dimethyl_2_6_heptanone_3_2D_Skeletal\n     RDKit          2D\n\n 14 13  0  0  0  0  0  0  0  0999 V2000\n    3.0397    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.0265   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0132    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0265   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.0397    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.0265   -1.4625    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -1.4625    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132   -2.0475    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132    1.4625    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0265    2.0475    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0265   -1.4625    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0132    1.4625    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  5  6  1  0\n  6  7  1  0\n  2  8  1  0\n  4  9  1  0\n  9 10  1  0\n  5 11  1  0\n 11 12  1  0\n  6 13  1  0\n  3 14  2  0\nM  END\n";
-window.MOL2D["diethyl_4_5_dimethyl_2_6_heptanone_3"] = {condensed: diethyl_4_5_dimethyl_2_6_heptanone_3_2D_Condensed, expanded: diethyl_4_5_dimethyl_2_6_heptanone_3_2D_Expanded, skeletal: diethyl_4_5_dimethyl_2_6_heptanone_3_2D_Skeletal};
+window.MOL2D["diethyl_4_5_dimethyl_2_6_heptanone_3"] = { condensed: diethyl_4_5_dimethyl_2_6_heptanone_3_2D_Condensed, expanded: diethyl_4_5_dimethyl_2_6_heptanone_3_2D_Expanded, skeletal: diethyl_4_5_dimethyl_2_6_heptanone_3_2D_Skeletal };
 let penten_1_yn_4_one_3_2D_Condensed = "penten_1_yn_4_one_3_2D_Condensed\n     RDKit          2D\n\n  6  5  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.8720    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.7440    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6160    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.4880    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.7440    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  1  0\n  4  5  3  0\n  3  6  2  0\nM  END\n";
 let penten_1_yn_4_one_3_2D_Expanded = "penten_1_yn_4_one_3_2D_Expanded\n     RDKit          2D\n\n 10  9  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.4600    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  1  0\n  4  5  3  0\n  3  6  2  0\n  1  7  1  0\n  1  8  1  0\n  2  9  1  0\n  5 10  1  0\nM  END\n";
 let penten_1_yn_4_one_3_2D_Skeletal = "penten_1_yn_4_one_3_2D_Skeletal\n     RDKit          2D\n\n  6  5  0  0  0  0  0  0  0  0999 V2000\n    2.0588   -0.1220    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0457   -0.7070    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0323   -0.1222    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.9808   -0.7072    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9940   -1.2923    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0323    1.0478    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  2  3  1  0\n  3  4  1  0\n  4  5  3  0\n  3  6  2  0\nM  END\n";
-window.MOL2D["penten_1_yn_4_one_3"] = {condensed: penten_1_yn_4_one_3_2D_Condensed, expanded: penten_1_yn_4_one_3_2D_Expanded, skeletal: penten_1_yn_4_one_3_2D_Skeletal};
+window.MOL2D["penten_1_yn_4_one_3"] = { condensed: penten_1_yn_4_one_3_2D_Condensed, expanded: penten_1_yn_4_one_3_2D_Expanded, skeletal: penten_1_yn_4_one_3_2D_Skeletal };
 let dimethyl_4_5_hexen_5_yn_1_one_3_2D_Condensed = "dimethyl_4_5_hexen_5_yn_1_one_3_2D_Condensed\n     RDKit          2D\n\n  9  8  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.8720    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.7440    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6160    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.4880    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -9.3600    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6160   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.4880    1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.7440    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  3  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  5  6  2  0\n  4  7  1  0\n  5  8  1  0\n  3  9  2  0\nM  END\n";
 let dimethyl_4_5_hexen_5_yn_1_one_3_2D_Expanded = "dimethyl_4_5_hexen_5_yn_1_one_3_2D_Expanded\n     RDKit          2D\n\n 19 18  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.7300   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.4600    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.9000    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  3  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  5  6  2  0\n  4  7  1  0\n  5  8  1  0\n  3  9  2  0\n  1 10  1  0\n  4 11  1  0\n  6 12  1  0\n  6 13  1  0\n  7 14  1  0\n  7 15  1  0\n  7 16  1  0\n  8 17  1  0\n  8 18  1  0\n  8 19  1  0\nM  END\n";
 let dimethyl_4_5_hexen_5_yn_1_one_3_2D_Skeletal = "dimethyl_4_5_hexen_5_yn_1_one_3_2D_Skeletal\n     RDKit          2D\n\n  9  8  0  0  0  0  0  0  0  0999 V2000\n    2.4884    0.8762    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.4752    0.2912    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.4619   -0.2938    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5513    0.2912    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5646   -0.2937    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.5779    0.2912    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5513    1.4613    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5646   -1.4638    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.4619   -1.4638    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  3  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  5  6  2  0\n  4  7  1  0\n  5  8  1  0\n  3  9  2  0\nM  END\n";
-window.MOL2D["dimethyl_4_5_hexen_5_yn_1_one_3"] = {condensed: dimethyl_4_5_hexen_5_yn_1_one_3_2D_Condensed, expanded: dimethyl_4_5_hexen_5_yn_1_one_3_2D_Expanded, skeletal: dimethyl_4_5_hexen_5_yn_1_one_3_2D_Skeletal};
+window.MOL2D["dimethyl_4_5_hexen_5_yn_1_one_3"] = { condensed: dimethyl_4_5_hexen_5_yn_1_one_3_2D_Condensed, expanded: dimethyl_4_5_hexen_5_yn_1_one_3_2D_Expanded, skeletal: dimethyl_4_5_hexen_5_yn_1_one_3_2D_Skeletal };
 let methyl_6_hepten_3_dione_2_5_2D_Condensed = "methyl_6_hepten_3_dione_2_5_2D_Condensed\n     RDKit          2D\n\n 10  9  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.8720    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.7440    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6160    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.4880    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -9.3600    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  -11.2320    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -9.3600   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.8720    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.4880    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  5  6  1  0\n  6  7  1  0\n  6  8  1  0\n  2  9  2  0\n  5 10  2  0\nM  END\n";
 let methyl_6_hepten_3_dione_2_5_2D_Expanded = "methyl_6_hepten_3_dione_2_5_2D_Expanded\n     RDKit          2D\n\n 22 21  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500   -2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.8000    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500   -3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -6.6300   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.0700   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  5  6  1  0\n  6  7  1  0\n  6  8  1  0\n  2  9  2  0\n  5 10  2  0\n  1 11  1  0\n  1 12  1  0\n  1 13  1  0\n  3 14  1  0\n  4 15  1  0\n  6 16  1  0\n  7 17  1  0\n  7 18  1  0\n  7 19  1  0\n  8 20  1  0\n  8 21  1  0\n  8 22  1  0\nM  END\n";
 let methyl_6_hepten_3_dione_2_5_2D_Skeletal = "methyl_6_hepten_3_dione_2_5_2D_Skeletal\n     RDKit          2D\n\n 10  9  0  0  0  0  0  0  0  0999 V2000\n    3.0397    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.0265   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0132    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0265   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.0397    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0265   -1.4625    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.0265   -1.4625    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132    1.4625    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  5  6  1  0\n  6  7  1  0\n  6  8  1  0\n  2  9  2  0\n  5 10  2  0\nM  END\n";
-window.MOL2D["methyl_6_hepten_3_dione_2_5"] = {condensed: methyl_6_hepten_3_dione_2_5_2D_Condensed, expanded: methyl_6_hepten_3_dione_2_5_2D_Expanded, skeletal: methyl_6_hepten_3_dione_2_5_2D_Skeletal};
+window.MOL2D["methyl_6_hepten_3_dione_2_5"] = { condensed: methyl_6_hepten_3_dione_2_5_2D_Condensed, expanded: methyl_6_hepten_3_dione_2_5_2D_Expanded, skeletal: methyl_6_hepten_3_dione_2_5_2D_Skeletal };
 let ethyl_3_methyl_4_octen_3_yn_5_dione_2_7_2D_Condensed = "ethyl_3_methyl_4_octen_3_yn_5_dione_2_7_2D_Condensed\n     RDKit          2D\n\n 13 12  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.8720    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.7440    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6160    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.4880    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -9.3600    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  -11.2320    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  -13.1040    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.7440   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.8720   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6160    1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.8720    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  -11.2320    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  5  6  3  0\n  6  7  1  0\n  7  8  1  0\n  3  9  1  0\n  9 10  1  0\n  4 11  1  0\n  2 12  2  0\n  7 13  2  0\nM  END\n";
 let ethyl_3_methyl_4_octen_3_yn_5_dione_2_7_2D_Expanded = "ethyl_3_methyl_4_octen_3_yn_5_dione_2_7_2D_Expanded\n     RDKit          2D\n\n 27 26  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -8.1900    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -8.1900   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -8.1900    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -8.9700    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.5600    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3900   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.7300    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  5  6  3  0\n  6  7  1  0\n  7  8  1  0\n  3  9  1  0\n  9 10  1  0\n  4 11  1  0\n  2 12  2  0\n  7 13  2  0\n  1 14  1  0\n  1 15  1  0\n  1 16  1  0\n  8 17  1  0\n  8 18  1  0\n  8 19  1  0\n  9 20  1  0\n  9 21  1  0\n 10 22  1  0\n 10 23  1  0\n 10 24  1  0\n 11 25  1  0\n 11 26  1  0\n 11 27  1  0\nM  END\n";
 let ethyl_3_methyl_4_octen_3_yn_5_dione_2_7_2D_Skeletal = "ethyl_3_methyl_4_octen_3_yn_5_dione_2_7_2D_Skeletal\n     RDKit          2D\n\n 13 12  0  0  0  0  0  0  0  0999 V2000\n    3.5584   -0.2088    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.5451   -0.7938    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5319   -0.2088    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5186   -0.7937    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.4947   -0.2088    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5078    0.3764    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.5210    0.9613    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5343    0.3764    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5319    0.9613    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.5451    1.5462    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5186   -1.9637    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.5451   -1.9638    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.5211    2.1313    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  5  6  3  0\n  6  7  1  0\n  7  8  1  0\n  3  9  1  0\n  9 10  1  0\n  4 11  1  0\n  2 12  2  0\n  7 13  2  0\nM  END\n";
-window.MOL2D["ethyl_3_methyl_4_octen_3_yn_5_dione_2_7"] = {condensed: ethyl_3_methyl_4_octen_3_yn_5_dione_2_7_2D_Condensed, expanded: ethyl_3_methyl_4_octen_3_yn_5_dione_2_7_2D_Expanded, skeletal: ethyl_3_methyl_4_octen_3_yn_5_dione_2_7_2D_Skeletal};
+window.MOL2D["ethyl_3_methyl_4_octen_3_yn_5_dione_2_7"] = { condensed: ethyl_3_methyl_4_octen_3_yn_5_dione_2_7_2D_Condensed, expanded: ethyl_3_methyl_4_octen_3_yn_5_dione_2_7_2D_Expanded, skeletal: ethyl_3_methyl_4_octen_3_yn_5_dione_2_7_2D_Skeletal };
 let isopropyl_4_dimethyl_3_6_octen_3_yn_7_dione_2_5_2D_Condensed = "isopropyl_4_dimethyl_3_6_octen_3_yn_7_dione_2_5_2D_Condensed\n     RDKit          2D\n\n 15 14  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.8720    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.7440    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6160    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.4880    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -9.3600    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  -11.2320    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  -13.1040    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.7440   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -9.3600   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6160    1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.7440    1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6160    3.5100    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.8720    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.4880    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  5  6  1  0\n  6  7  1  0\n  7  8  3  0\n  3  9  1  0\n  6 10  1  0\n  4 11  1  0\n 11 12  1  0\n 11 13  1  0\n  2 14  2  0\n  5 15  2  0\nM  END\n";
 let isopropyl_4_dimethyl_3_6_octen_3_yn_7_dione_2_5_2D_Expanded = "isopropyl_4_dimethyl_3_6_octen_3_yn_7_dione_2_5_2D_Expanded\n     RDKit          2D\n\n 33 32  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -8.1900    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500   -2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    4.6800    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -8.9700    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5600   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500   -3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -6.6300   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.0700   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    1.5600    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5600    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    5.4600    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900    4.6800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.7300    4.6800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  5  6  1  0\n  6  7  1  0\n  7  8  3  0\n  3  9  1  0\n  6 10  1  0\n  4 11  1  0\n 11 12  1  0\n 11 13  1  0\n  2 14  2  0\n  5 15  2  0\n  1 16  1  0\n  1 17  1  0\n  1 18  1  0\n  6 19  1  0\n  8 20  1  0\n  9 21  1  0\n  9 22  1  0\n  9 23  1  0\n 10 24  1  0\n 10 25  1  0\n 10 26  1  0\n 11 27  1  0\n 12 28  1  0\n 12 29  1  0\n 12 30  1  0\n 13 31  1  0\n 13 32  1  0\n 13 33  1  0\nM  END\n";
 let isopropyl_4_dimethyl_3_6_octen_3_yn_7_dione_2_5_2D_Skeletal = "isopropyl_4_dimethyl_3_6_octen_3_yn_7_dione_2_5_2D_Skeletal\n     RDKit          2D\n\n 15 14  0  0  0  0  0  0  0  0999 V2000\n    3.5824    0.5420    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.5692   -0.0430    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5560    0.5419    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5427   -0.0431    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.4706    0.5418    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.4838   -0.0432    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.4971    0.5419    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5103    1.1268    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5559    1.7119    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.4837   -1.2132    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5427   -1.2131    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.4705   -1.7981    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5560   -1.7981    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.5693   -1.2131    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.4705    1.7119    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  2  0\n  4  5  1  0\n  5  6  1  0\n  6  7  1  0\n  7  8  3  0\n  3  9  1  0\n  6 10  1  0\n  4 11  1  0\n 11 12  1  0\n 11 13  1  0\n  2 14  2  0\n  5 15  2  0\nM  END\n";
-window.MOL2D["isopropyl_4_dimethyl_3_6_octen_3_yn_7_dione_2_5"] = {condensed: isopropyl_4_dimethyl_3_6_octen_3_yn_7_dione_2_5_2D_Condensed, expanded: isopropyl_4_dimethyl_3_6_octen_3_yn_7_dione_2_5_2D_Expanded, skeletal: isopropyl_4_dimethyl_3_6_octen_3_yn_7_dione_2_5_2D_Skeletal};
+window.MOL2D["isopropyl_4_dimethyl_3_6_octen_3_yn_7_dione_2_5"] = { condensed: isopropyl_4_dimethyl_3_6_octen_3_yn_7_dione_2_5_2D_Condensed, expanded: isopropyl_4_dimethyl_3_6_octen_3_yn_7_dione_2_5_2D_Expanded, skeletal: isopropyl_4_dimethyl_3_6_octen_3_yn_7_dione_2_5_2D_Skeletal };
 let methanal_2D_Condensed = "methanal_2D_Condensed\n     RDKit          2D\n\n  2  1  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\nM  END\n";
 let methanal_2D_Expanded = "methanal_2D_Expanded\n     RDKit          2D\n\n  4  3  0  0  0  0  0  0  0  0999 V2000\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\n  1  3  1  0\n  1  4  1  0\nM  END\n";
 let methanal_2D_Skeletal = "methanal_2D_Skeletal\n     RDKit          2D\n\n  2  1  0  0  0  0  0  0  0  0999 V2000\n   -0.5066   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5066    0.2925    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  2  0\nM  END\n";
-window.MOL2D["methanal"] = {condensed: methanal_2D_Condensed, expanded: methanal_2D_Expanded, skeletal: methanal_2D_Skeletal};
+window.MOL2D["methanal"] = { condensed: methanal_2D_Condensed, expanded: methanal_2D_Expanded, skeletal: methanal_2D_Skeletal };
 let propenal_2D_Condensed = "propenal_2D_Condensed\n     RDKit          2D\n\n  4  3  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.4040    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.8080    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  1  4  2  0\nM  END\n";
 let propenal_2D_Expanded = "propenal_2D_Expanded\n     RDKit          2D\n\n  8  7  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  1  4  2  0\n  1  5  1  0\n  2  6  1  0\n  3  7  1  0\n  3  8  1  0\nM  END\n";
 let propenal_2D_Skeletal = "propenal_2D_Skeletal\n     RDKit          2D\n\n  4  3  0  0  0  0  0  0  0  0999 V2000\n    0.5066    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5066   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5199    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5199   -0.2925    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  1  4  2  0\nM  END\n";
-window.MOL2D["propenal"] = {condensed: propenal_2D_Condensed, expanded: propenal_2D_Expanded, skeletal: propenal_2D_Skeletal};
+window.MOL2D["propenal"] = { condensed: propenal_2D_Condensed, expanded: propenal_2D_Expanded, skeletal: propenal_2D_Skeletal };
 let methyl_2_propenal_2D_Condensed = "methyl_2_propenal_2D_Condensed\n     RDKit          2D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.4040    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.8080    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.4040   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  2  4  1  0\n  1  5  2  0\nM  END\n";
 let methyl_2_propenal_2D_Expanded = "methyl_2_propenal_2D_Expanded\n     RDKit          2D\n\n 11 10  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9500   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3900   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  2  4  1  0\n  1  5  2  0\n  1  6  1  0\n  3  7  1  0\n  3  8  1  0\n  4  9  1  0\n  4 10  1  0\n  4 11  1  0\nM  END\n";
 let methyl_2_propenal_2D_Skeletal = "methyl_2_propenal_2D_Skeletal\n     RDKit          2D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n    0.5066    0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5066    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5199    0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5066   -0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5199    0.2925    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  2  4  1  0\n  1  5  2  0\nM  END\n";
-window.MOL2D["methyl_2_propenal"] = {condensed: methyl_2_propenal_2D_Condensed, expanded: methyl_2_propenal_2D_Expanded, skeletal: methyl_2_propenal_2D_Skeletal};
+window.MOL2D["methyl_2_propenal"] = { condensed: methyl_2_propenal_2D_Condensed, expanded: methyl_2_propenal_2D_Expanded, skeletal: methyl_2_propenal_2D_Skeletal };
 let methyl_2_propanal_2D_Condensed = "methyl_2_propanal_2D_Condensed\n     RDKit          2D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.4040    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.8080    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.4040   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  2  4  1  0\n  1  5  2  0\nM  END\n";
 let methyl_2_propanal_2D_Expanded = "methyl_2_propanal_2D_Expanded\n     RDKit          2D\n\n 13 12  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9500   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3900   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  2  4  1  0\n  1  5  2  0\n  1  6  1  0\n  2  7  1  0\n  3  8  1  0\n  3  9  1  0\n  3 10  1  0\n  4 11  1  0\n  4 12  1  0\n  4 13  1  0\nM  END\n";
 let methyl_2_propanal_2D_Skeletal = "methyl_2_propanal_2D_Skeletal\n     RDKit          2D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n    0.5066    0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5066    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5199    0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5066   -0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5199    0.2925    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  2  4  1  0\n  1  5  2  0\nM  END\n";
-window.MOL2D["methyl_2_propanal"] = {condensed: methyl_2_propanal_2D_Condensed, expanded: methyl_2_propanal_2D_Expanded, skeletal: methyl_2_propanal_2D_Skeletal};
+window.MOL2D["methyl_2_propanal"] = { condensed: methyl_2_propanal_2D_Condensed, expanded: methyl_2_propanal_2D_Expanded, skeletal: methyl_2_propanal_2D_Skeletal };
 let dimethyl_2_3_butanal_2D_Condensed = "dimethyl_2_3_butanal_2D_Condensed\n     RDKit          2D\n\n  7  6  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.4040    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.8080    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2120    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.4040   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.8080    1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  2  5  1  0\n  3  6  1  0\n  1  7  2  0\nM  END\n";
 let dimethyl_2_3_butanal_2D_Expanded = "dimethyl_2_3_butanal_2D_Expanded\n     RDKit          2D\n\n 19 18  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9500   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3900   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5600    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  2  5  1  0\n  3  6  1  0\n  1  7  2  0\n  1  8  1  0\n  2  9  1  0\n  3 10  1  0\n  4 11  1  0\n  4 12  1  0\n  4 13  1  0\n  5 14  1  0\n  5 15  1  0\n  5 16  1  0\n  6 17  1  0\n  6 18  1  0\n  6 19  1  0\nM  END\n";
 let dimethyl_2_3_butanal_2D_Skeletal = "dimethyl_2_3_butanal_2D_Skeletal\n     RDKit          2D\n\n  7  6  0  0  0  0  0  0  0  0999 V2000\n    1.1055    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.3830    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.8844    0.3830    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9900   -0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.2211   -1.5319    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.6633    1.5319    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.9900   -0.7659    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  2  5  1  0\n  3  6  1  0\n  1  7  2  0\nM  END\n";
-window.MOL2D["dimethyl_2_3_butanal"] = {condensed: dimethyl_2_3_butanal_2D_Condensed, expanded: dimethyl_2_3_butanal_2D_Expanded, skeletal: dimethyl_2_3_butanal_2D_Skeletal};
+window.MOL2D["dimethyl_2_3_butanal"] = { condensed: dimethyl_2_3_butanal_2D_Condensed, expanded: dimethyl_2_3_butanal_2D_Expanded, skeletal: dimethyl_2_3_butanal_2D_Skeletal };
 let ethyl_2_methyl_3_pentanal_2D_Condensed = "ethyl_2_methyl_3_pentanal_2D_Condensed\n     RDKit          2D\n\n  9  8  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.4040    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.8080    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2120    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6160    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.4040   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.8080   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.8080    1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  2  6  1  0\n  6  7  1  0\n  3  8  1  0\n  1  9  2  0\nM  END\n";
 let ethyl_2_methyl_3_pentanal_2D_Expanded = "ethyl_2_methyl_3_pentanal_2D_Expanded\n     RDKit          2D\n\n 25 24  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.4600    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3900   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -1.5600    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5600    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  2  6  1  0\n  6  7  1  0\n  3  8  1  0\n  1  9  2  0\n  1 10  1  0\n  2 11  1  0\n  3 12  1  0\n  4 13  1  0\n  4 14  1  0\n  5 15  1  0\n  5 16  1  0\n  5 17  1  0\n  6 18  1  0\n  6 19  1  0\n  7 20  1  0\n  7 21  1  0\n  7 22  1  0\n  8 23  1  0\n  8 24  1  0\n  8 25  1  0\nM  END\n";
 let ethyl_2_methyl_3_pentanal_2D_Skeletal = "ethyl_2_methyl_3_pentanal_2D_Skeletal\n     RDKit          2D\n\n  9  8  0  0  0  0  0  0  0  0999 V2000\n    1.5199    0.5850    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5066   -0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5066    0.5850    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5199   -0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.5331    0.5850    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5066   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5066   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5066    1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.5331   -0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  2  6  1  0\n  6  7  1  0\n  3  8  1  0\n  1  9  2  0\nM  END\n";
-window.MOL2D["ethyl_2_methyl_3_pentanal"] = {condensed: ethyl_2_methyl_3_pentanal_2D_Condensed, expanded: ethyl_2_methyl_3_pentanal_2D_Expanded, skeletal: ethyl_2_methyl_3_pentanal_2D_Skeletal};
+window.MOL2D["ethyl_2_methyl_3_pentanal"] = { condensed: ethyl_2_methyl_3_pentanal_2D_Condensed, expanded: ethyl_2_methyl_3_pentanal_2D_Expanded, skeletal: ethyl_2_methyl_3_pentanal_2D_Skeletal };
 let ethyl_4_isopropyl_3_methyl_2_hexanal_2D_Condensed = "ethyl_4_isopropyl_3_methyl_2_hexanal_2D_Condensed\n     RDKit          2D\n\n 13 12  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.4040    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.8080    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2120    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6160    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.4040   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.8080    1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.4040    1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2120    1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2120   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6160   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  5  6  1  0\n  2  7  1  0\n  3  8  1  0\n  8  9  1  0\n  8 10  1  0\n  4 11  1  0\n 11 12  1  0\n  1 13  2  0\nM  END\n";
 let ethyl_4_isopropyl_3_methyl_2_hexanal_2D_Expanded = "ethyl_4_isopropyl_3_methyl_2_hexanal_2D_Expanded\n     RDKit          2D\n\n 37 36  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -6.6300    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9500   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3900   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.5600    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3900    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    1.5600    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.7300   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -1.5600    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.4600   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  5  6  1  0\n  2  7  1  0\n  3  8  1  0\n  8  9  1  0\n  8 10  1  0\n  4 11  1  0\n 11 12  1  0\n  1 13  2  0\n  1 14  1  0\n  2 15  1  0\n  3 16  1  0\n  4 17  1  0\n  5 18  1  0\n  5 19  1  0\n  6 20  1  0\n  6 21  1  0\n  6 22  1  0\n  7 23  1  0\n  7 24  1  0\n  7 25  1  0\n  8 26  1  0\n  9 27  1  0\n  9 28  1  0\n  9 29  1  0\n 10 30  1  0\n 10 31  1  0\n 10 32  1  0\n 11 33  1  0\n 11 34  1  0\n 12 35  1  0\n 12 36  1  0\n 12 37  1  0\nM  END\n";
 let ethyl_4_isopropyl_3_methyl_2_hexanal_2D_Skeletal = "ethyl_4_isopropyl_3_methyl_2_hexanal_2D_Skeletal\n     RDKit          2D\n\n 13 12  0  0  0  0  0  0  0  0999 V2000\n    2.0802   -0.1162    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0066   -0.5811    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0671    0.1162    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0066   -0.3487    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9460    0.3487    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.0197   -0.1162    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.8724   -1.7434    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.2013    1.2785    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.2750    1.7434    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.7381    1.9759    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1408   -1.5110    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.2144   -1.9759    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.0197   -0.8136    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  4  5  1  0\n  5  6  1  0\n  2  7  1  0\n  3  8  1  0\n  8  9  1  0\n  8 10  1  0\n  4 11  1  0\n 11 12  1  0\n  1 13  2  0\nM  END\n";
-window.MOL2D["ethyl_4_isopropyl_3_methyl_2_hexanal"] = {condensed: ethyl_4_isopropyl_3_methyl_2_hexanal_2D_Condensed, expanded: ethyl_4_isopropyl_3_methyl_2_hexanal_2D_Expanded, skeletal: ethyl_4_isopropyl_3_methyl_2_hexanal_2D_Skeletal};
+window.MOL2D["ethyl_4_isopropyl_3_methyl_2_hexanal"] = { condensed: ethyl_4_isopropyl_3_methyl_2_hexanal_2D_Condensed, expanded: ethyl_4_isopropyl_3_methyl_2_hexanal_2D_Expanded, skeletal: ethyl_4_isopropyl_3_methyl_2_hexanal_2D_Skeletal };
 let ethyl_4_penten_4_yn_2_al_2D_Condensed = "ethyl_4_penten_4_yn_2_al_2D_Condensed\n     RDKit          2D\n\n  8  7  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.4040    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.8080    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2120    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6160    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2120   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6160   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  3  0\n  3  4  1  0\n  4  5  2  0\n  4  6  1  0\n  6  7  1  0\n  1  8  2  0\nM  END\n";
 let ethyl_4_penten_4_yn_2_al_2D_Expanded = "ethyl_4_penten_4_yn_2_al_2D_Expanded\n     RDKit          2D\n\n 16 15  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.7300   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -1.5600    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.4600   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  3  0\n  3  4  1  0\n  4  5  2  0\n  4  6  1  0\n  6  7  1  0\n  1  8  2  0\n  1  9  1  0\n  5 10  1  0\n  5 11  1  0\n  6 12  1  0\n  6 13  1  0\n  7 14  1  0\n  7 15  1  0\n  7 16  1  0\nM  END\n";
 let ethyl_4_penten_4_yn_2_al_2D_Skeletal = "ethyl_4_penten_4_yn_2_al_2D_Skeletal\n     RDKit          2D\n\n  8  7  0  0  0  0  0  0  0  0999 V2000\n    2.0281    1.1241    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.8924    0.8431    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.2434    0.5620    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.3791    0.2810    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.1904    1.1241    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.7036   -0.8431    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.8394   -1.1241    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.8394    0.2810    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  3  0\n  3  4  1  0\n  4  5  2  0\n  4  6  1  0\n  6  7  1  0\n  1  8  2  0\nM  END\n";
-window.MOL2D["ethyl_4_penten_4_yn_2_al"] = {condensed: ethyl_4_penten_4_yn_2_al_2D_Condensed, expanded: ethyl_4_penten_4_yn_2_al_2D_Expanded, skeletal: ethyl_4_penten_4_yn_2_al_2D_Skeletal};
+window.MOL2D["ethyl_4_penten_4_yn_2_al"] = { condensed: ethyl_4_penten_4_yn_2_al_2D_Condensed, expanded: ethyl_4_penten_4_yn_2_al_2D_Expanded, skeletal: ethyl_4_penten_4_yn_2_al_2D_Skeletal };
 let propanedial_2D_Condensed = "propanedial_2D_Condensed\n     RDKit          2D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.4040    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.8080    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.8080    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  1  4  2  0\n  3  5  2  0\nM  END\n";
 let propanedial_2D_Expanded = "propanedial_2D_Expanded\n     RDKit          2D\n\n  9  8  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  1  4  2  0\n  3  5  2  0\n  1  6  1  0\n  2  7  1  0\n  2  8  1  0\n  3  9  1  0\nM  END\n";
 let propanedial_2D_Skeletal = "propanedial_2D_Skeletal\n     RDKit          2D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n    0.5066   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5066   -0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5199   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5199   -0.8775    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5199    0.8775    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  1  4  2  0\n  3  5  2  0\nM  END\n";
-window.MOL2D["propanedial"] = {condensed: propanedial_2D_Condensed, expanded: propanedial_2D_Expanded, skeletal: propanedial_2D_Skeletal};
+window.MOL2D["propanedial"] = { condensed: propanedial_2D_Condensed, expanded: propanedial_2D_Expanded, skeletal: propanedial_2D_Skeletal };
 let methyl_3_penten_2_dial_2D_Condensed = "methyl_3_penten_2_dial_2D_Condensed\n     RDKit          2D\n\n  8  7  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.4040    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.8080    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2120    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6160    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.8080   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6160    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  3  4  1  0\n  4  5  1  0\n  3  6  1  0\n  1  7  2  0\n  5  8  2  0\nM  END\n";
 let methyl_3_penten_2_dial_2D_Expanded = "methyl_3_penten_2_dial_2D_Expanded\n     RDKit          2D\n\n 16 15  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5600   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  3  4  1  0\n  4  5  1  0\n  3  6  1  0\n  1  7  2  0\n  5  8  2  0\n  1  9  1  0\n  2 10  1  0\n  4 11  1  0\n  4 12  1  0\n  5 13  1  0\n  6 14  1  0\n  6 15  1  0\n  6 16  1  0\nM  END\n";
 let methyl_3_penten_2_dial_2D_Skeletal = "methyl_3_penten_2_dial_2D_Skeletal\n     RDKit          2D\n\n  8  7  0  0  0  0  0  0  0  0999 V2000\n    1.5199   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5066   -0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5066   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5199   -0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.5331   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.5066    0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.5331   -0.8775    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.5331    0.8775    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  3  4  1  0\n  4  5  1  0\n  3  6  1  0\n  1  7  2  0\n  5  8  2  0\nM  END\n";
-window.MOL2D["methyl_3_penten_2_dial"] = {condensed: methyl_3_penten_2_dial_2D_Condensed, expanded: methyl_3_penten_2_dial_2D_Expanded, skeletal: methyl_3_penten_2_dial_2D_Skeletal};
+window.MOL2D["methyl_3_penten_2_dial"] = { condensed: methyl_3_penten_2_dial_2D_Condensed, expanded: methyl_3_penten_2_dial_2D_Expanded, skeletal: methyl_3_penten_2_dial_2D_Skeletal };
 let isopropyl_2_buten_2_dial_2D_Condensed = "isopropyl_2_buten_2_dial_2D_Condensed\n     RDKit          2D\n\n  9  8  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.4040    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.8080    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2120    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.4040   -2.6325    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000   -2.6325    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.8080   -2.6325    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2120    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  3  4  1  0\n  2  5  1  0\n  5  6  1  0\n  5  7  1  0\n  1  8  2  0\n  4  9  2  0\nM  END\n";
 let isopropyl_2_buten_2_dial_2D_Expanded = "isopropyl_2_buten_2_dial_2D_Expanded\n     RDKit          2D\n\n 19 18  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -3.5100    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000   -3.5100    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -3.5100    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -4.2900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -4.2900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -2.7300    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800   -3.5100    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -4.2900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -2.7300    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200   -3.5100    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  3  4  1  0\n  2  5  1  0\n  5  6  1  0\n  5  7  1  0\n  1  8  2  0\n  4  9  2  0\n  1 10  1  0\n  3 11  1  0\n  4 12  1  0\n  5 13  1  0\n  6 14  1  0\n  6 15  1  0\n  6 16  1  0\n  7 17  1  0\n  7 18  1  0\n  7 19  1  0\nM  END\n";
 let isopropyl_2_buten_2_dial_2D_Skeletal = "isopropyl_2_buten_2_dial_2D_Skeletal\n     RDKit          2D\n\n  9  8  0  0  0  0  0  0  0  0999 V2000\n    1.5478    0.7659    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.4422    0.3830    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.4422    1.1489    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5478    0.7659    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.2211   -0.7659    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.8844   -1.1489    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1055   -1.5319    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.4322    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.4322    1.5319    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  3  4  1  0\n  2  5  1  0\n  5  6  1  0\n  5  7  1  0\n  1  8  2  0\n  4  9  2  0\nM  END\n";
-window.MOL2D["isopropyl_2_buten_2_dial"] = {condensed: isopropyl_2_buten_2_dial_2D_Condensed, expanded: isopropyl_2_buten_2_dial_2D_Expanded, skeletal: isopropyl_2_buten_2_dial_2D_Skeletal};
+window.MOL2D["isopropyl_2_buten_2_dial"] = { condensed: isopropyl_2_buten_2_dial_2D_Condensed, expanded: isopropyl_2_buten_2_dial_2D_Expanded, skeletal: isopropyl_2_buten_2_dial_2D_Skeletal };
 let ethyl_2_methyl_3_hexen_2_yn_4_dial_2D_Condensed = "ethyl_2_methyl_3_hexen_2_yn_4_dial_2D_Condensed\n     RDKit          2D\n\n 11 10  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.4040    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.8080    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2120    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6160    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.4040   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.8080   -1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.8080    1.7550    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -7.0200    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  3  4  1  0\n  4  5  3  0\n  5  6  1  0\n  2  7  1  0\n  7  8  1  0\n  3  9  1  0\n  1 10  2  0\n  6 11  2  0\nM  END\n";
 let ethyl_2_methyl_3_hexen_2_yn_4_dial_2D_Expanded = "ethyl_2_methyl_3_hexen_2_yn_4_dial_2D_Expanded\n     RDKit          2D\n\n 21 20  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.6800    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.8500   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3900   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -1.5600    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200   -2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5600    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  3  4  1  0\n  4  5  3  0\n  5  6  1  0\n  2  7  1  0\n  7  8  1  0\n  3  9  1  0\n  1 10  2  0\n  6 11  2  0\n  1 12  1  0\n  6 13  1  0\n  7 14  1  0\n  7 15  1  0\n  8 16  1  0\n  8 17  1  0\n  8 18  1  0\n  9 19  1  0\n  9 20  1  0\n  9 21  1  0\nM  END\n";
 let ethyl_2_methyl_3_hexen_2_yn_4_dial_2D_Skeletal = "ethyl_2_methyl_3_hexen_2_yn_4_dial_2D_Skeletal\n     RDKit          2D\n\n 11 10  0  0  0  0  0  0  0  0999 V2000\n    2.6808    0.2211    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5319    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7659    0.8844    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3830    0.6633    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5319    0.4422    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.6808    0.2211    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1489   -1.1055    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.9149   -1.9900    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1489    1.9900    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.4468   -0.6633    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.4468    1.1055    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  2  0\n  3  4  1  0\n  4  5  3  0\n  5  6  1  0\n  2  7  1  0\n  7  8  1  0\n  3  9  1  0\n  1 10  2  0\n  6 11  2  0\nM  END\n";
-window.MOL2D["ethyl_2_methyl_3_hexen_2_yn_4_dial"] = {condensed: ethyl_2_methyl_3_hexen_2_yn_4_dial_2D_Condensed, expanded: ethyl_2_methyl_3_hexen_2_yn_4_dial_2D_Expanded, skeletal: ethyl_2_methyl_3_hexen_2_yn_4_dial_2D_Skeletal};
+window.MOL2D["ethyl_2_methyl_3_hexen_2_yn_4_dial"] = { condensed: ethyl_2_methyl_3_hexen_2_yn_4_dial_2D_Condensed, expanded: ethyl_2_methyl_3_hexen_2_yn_4_dial_2D_Expanded, skeletal: ethyl_2_methyl_3_hexen_2_yn_4_dial_2D_Skeletal };
 let methyl_propyl_ether_2D_Condensed = "methyl_propyl_ether_2D_Condensed\n     RDKit          2D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  1  5  1  0\n  5  4  1  0\nM  END\n";
 let methyl_propyl_ether_2D_Expanded = "methyl_propyl_ether_2D_Expanded\n     RDKit          2D\n\n 15 14  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.1200    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  1  5  1  0\n  5  4  1  0\n  1  6  1  0\n  1  7  1  0\n  2  8  1  0\n  2  9  1  0\n  3 10  1  0\n  3 11  1  0\n  3 12  1  0\n  4 13  1  0\n  4 14  1  0\n  4 15  1  0\nM  END\n";
 let methyl_propyl_ether_2D_Skeletal = "methyl_propyl_ether_2D_Skeletal\n     RDKit          2D\n\n  5  4  0  0  0  0  0  0  0  0999 V2000\n   -0.5066    0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5199    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5199   -0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5199    0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5066    0.2925    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  1  5  1  0\n  5  4  1  0\nM  END\n";
-window.MOL2D["methyl_propyl_ether"] = {condensed: methyl_propyl_ether_2D_Condensed, expanded: methyl_propyl_ether_2D_Expanded, skeletal: methyl_propyl_ether_2D_Skeletal};
+window.MOL2D["methyl_propyl_ether"] = { condensed: methyl_propyl_ether_2D_Condensed, expanded: methyl_propyl_ether_2D_Expanded, skeletal: methyl_propyl_ether_2D_Skeletal };
 let ethyl_propyl_ether_2D_Condensed = "ethyl_propyl_ether_2D_Condensed\n     RDKit          2D\n\n  6  5  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  1  6  1  0\n  6  4  1  0\n  4  5  1  0\nM  END\n";
 let ethyl_propyl_ether_2D_Expanded = "ethyl_propyl_ether_2D_Expanded\n     RDKit          2D\n\n 18 17  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    4.2900    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  1  6  1  0\n  6  4  1  0\n  4  5  1  0\n  1  7  1  0\n  1  8  1  0\n  2  9  1  0\n  2 10  1  0\n  3 11  1  0\n  3 12  1  0\n  3 13  1  0\n  4 14  1  0\n  4 15  1  0\n  5 16  1  0\n  5 17  1  0\n  5 18  1  0\nM  END\n";
 let ethyl_propyl_ether_2D_Skeletal = "ethyl_propyl_ether_2D_Skeletal\n     RDKit          2D\n\n  6  5  0  0  0  0  0  0  0  0999 V2000\n   -1.0132    0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0265    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0265   -0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0132    0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.0265    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    0.2925    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  1  6  1  0\n  6  4  1  0\n  4  5  1  0\nM  END\n";
-window.MOL2D["ethyl_propyl_ether"] = {condensed: ethyl_propyl_ether_2D_Condensed, expanded: ethyl_propyl_ether_2D_Expanded, skeletal: ethyl_propyl_ether_2D_Skeletal};
+window.MOL2D["ethyl_propyl_ether"] = { condensed: ethyl_propyl_ether_2D_Condensed, expanded: ethyl_propyl_ether_2D_Expanded, skeletal: ethyl_propyl_ether_2D_Skeletal };
 let ethyl_isopropyl_ether_2D_Condensed = "ethyl_isopropyl_ether_2D_Condensed\n     RDKit          2D\n\n  6  5  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  2  6  1  0\n  6  4  1  0\n  4  5  1  0\nM  END\n";
 let ethyl_isopropyl_ether_2D_Expanded = "ethyl_isopropyl_ether_2D_Expanded\n     RDKit          2D\n\n 18 17  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.3900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9500    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.3900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.3900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    4.2900    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  2  6  1  0\n  6  4  1  0\n  4  5  1  0\n  1  7  1  0\n  1  8  1  0\n  1  9  1  0\n  2 10  1  0\n  3 11  1  0\n  3 12  1  0\n  3 13  1  0\n  4 14  1  0\n  4 15  1  0\n  5 16  1  0\n  5 17  1  0\n  5 18  1  0\nM  END\n";
 let ethyl_isopropyl_ether_2D_Skeletal = "ethyl_isopropyl_ether_2D_Skeletal\n     RDKit          2D\n\n  6  5  0  0  0  0  0  0  0  0999 V2000\n   -1.0132   -0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0265    0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0132    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.0265    0.8775    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.8775    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  2  6  1  0\n  6  4  1  0\n  4  5  1  0\nM  END\n";
-window.MOL2D["ethyl_isopropyl_ether"] = {condensed: ethyl_isopropyl_ether_2D_Condensed, expanded: ethyl_isopropyl_ether_2D_Expanded, skeletal: ethyl_isopropyl_ether_2D_Skeletal};
+window.MOL2D["ethyl_isopropyl_ether"] = { condensed: ethyl_isopropyl_ether_2D_Condensed, expanded: ethyl_isopropyl_ether_2D_Expanded, skeletal: ethyl_isopropyl_ether_2D_Skeletal };
 let butyl_methyl_ether_2D_Condensed = "butyl_methyl_ether_2D_Condensed\n     RDKit          2D\n\n  6  5  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  1  6  1  0\n  6  5  1  0\nM  END\n";
 let butyl_methyl_ether_2D_Expanded = "butyl_methyl_ether_2D_Expanded\n     RDKit          2D\n\n 18 17  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.5100    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2900    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.1200    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  1  6  1  0\n  6  5  1  0\n  1  7  1  0\n  1  8  1  0\n  2  9  1  0\n  2 10  1  0\n  3 11  1  0\n  3 12  1  0\n  4 13  1  0\n  4 14  1  0\n  4 15  1  0\n  5 16  1  0\n  5 17  1  0\n  5 18  1  0\nM  END\n";
 let butyl_methyl_ether_2D_Skeletal = "butyl_methyl_ether_2D_Skeletal\n     RDKit          2D\n\n  6  5  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132    0.5850    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132   -0.5850    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0265   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.0265    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0132    0.5850    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  1  6  1  0\n  6  5  1  0\nM  END\n";
-window.MOL2D["butyl_methyl_ether"] = {condensed: butyl_methyl_ether_2D_Condensed, expanded: butyl_methyl_ether_2D_Expanded, skeletal: butyl_methyl_ether_2D_Skeletal};
+window.MOL2D["butyl_methyl_ether"] = { condensed: butyl_methyl_ether_2D_Condensed, expanded: butyl_methyl_ether_2D_Expanded, skeletal: butyl_methyl_ether_2D_Skeletal };
 let isobutyl_isopropyl_ether_2D_Condensed = "isobutyl_isopropyl_ether_2D_Condensed\n     RDKit          2D\n\n  8  7  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  2  4  1  0\n  1  8  1  0\n  8  5  1  0\n  5  6  1  0\n  5  7  1  0\nM  END\n";
 let isobutyl_isopropyl_ether_2D_Expanded = "isobutyl_isopropyl_ether_2D_Expanded\n     RDKit          2D\n\n 24 23  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    0.0000    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700   -1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9500   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.3900   -1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    4.2900    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5600    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.1200    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  2  4  1  0\n  1  8  1  0\n  8  5  1  0\n  5  6  1  0\n  5  7  1  0\n  1  9  1  0\n  1 10  1  0\n  2 11  1  0\n  3 12  1  0\n  3 13  1  0\n  3 14  1  0\n  4 15  1  0\n  4 16  1  0\n  4 17  1  0\n  5 18  1  0\n  6 19  1  0\n  6 20  1  0\n  6 21  1  0\n  7 22  1  0\n  7 23  1  0\n  7 24  1  0\nM  END\n";
 let isobutyl_isopropyl_ether_2D_Skeletal = "isobutyl_isopropyl_ether_2D_Skeletal\n     RDKit          2D\n\n  8  7  0  0  0  0  0  0  0  0999 V2000\n   -0.5066    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5199   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.5199   -1.4625    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.5331    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5199    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.5331   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5199    1.4625    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.5066   -0.2925    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  2  4  1  0\n  1  8  1  0\n  8  5  1  0\n  5  6  1  0\n  5  7  1  0\nM  END\n";
-window.MOL2D["isobutyl_isopropyl_ether"] = {condensed: isobutyl_isopropyl_ether_2D_Condensed, expanded: isobutyl_isopropyl_ether_2D_Expanded, skeletal: isobutyl_isopropyl_ether_2D_Skeletal};
+window.MOL2D["isobutyl_isopropyl_ether"] = { condensed: isobutyl_isopropyl_ether_2D_Condensed, expanded: isobutyl_isopropyl_ether_2D_Expanded, skeletal: isobutyl_isopropyl_ether_2D_Skeletal };
 let ethyl_sec_butyl_ether_2D_Condensed = "ethyl_sec_butyl_ether_2D_Condensed\n     RDKit          2D\n\n  7  6  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  2  7  1  0\n  7  5  1  0\n  5  6  1  0\nM  END\n";
 let ethyl_sec_butyl_ether_2D_Expanded = "ethyl_sec_butyl_ether_2D_Expanded\n     RDKit          2D\n\n 21 20  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.3900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    0.3900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3400    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.1200    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.3900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.3900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    4.2900    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  2  7  1  0\n  7  5  1  0\n  5  6  1  0\n  1  8  1  0\n  1  9  1  0\n  1 10  1  0\n  2 11  1  0\n  3 12  1  0\n  3 13  1  0\n  4 14  1  0\n  4 15  1  0\n  4 16  1  0\n  5 17  1  0\n  5 18  1  0\n  6 19  1  0\n  6 20  1  0\n  6 21  1  0\nM  END\n";
 let ethyl_sec_butyl_ether_2D_Skeletal = "ethyl_sec_butyl_ether_2D_Skeletal\n     RDKit          2D\n\n  7  6  0  0  0  0  0  0  0  0999 V2000\n   -1.0132   -1.4625    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.0132   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0265    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0265    1.4625    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0132   -0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.0265    0.2925    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.2925    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  3  4  1  0\n  2  7  1  0\n  7  5  1  0\n  5  6  1  0\nM  END\n";
-window.MOL2D["ethyl_sec_butyl_ether"] = {condensed: ethyl_sec_butyl_ether_2D_Condensed, expanded: ethyl_sec_butyl_ether_2D_Expanded, skeletal: ethyl_sec_butyl_ether_2D_Skeletal};
+window.MOL2D["ethyl_sec_butyl_ether"] = { condensed: ethyl_sec_butyl_ether_2D_Condensed, expanded: ethyl_sec_butyl_ether_2D_Expanded, skeletal: ethyl_sec_butyl_ether_2D_Skeletal };
 let tert_butyl_isopropyl_ether_2D_Condensed = "tert_butyl_isopropyl_ether_2D_Condensed\n     RDKit          2D\n\n  8  7  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  2  4  1  0\n  2  8  1  0\n  8  5  1  0\n  5  6  1  0\n  5  7  1  0\nM  END\n";
 let tert_butyl_isopropyl_ether_2D_Expanded = "tert_butyl_isopropyl_ether_2D_Expanded\n     RDKit          2D\n\n 24 23  0  0  0  0  0  0  0  0999 V2000\n   -0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.0000    2.3400    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    1.1700    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.1700    1.1700    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    3.1200    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.7800    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    0.7800    2.3400    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    0.3900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.1700    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.9500    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    2.3400   -0.7800    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    1.5600    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.1200    0.0000    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    0.3900    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    3.5100    1.9500    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n    4.2900    1.1700    0.0000 H   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  2  4  1  0\n  2  8  1  0\n  8  5  1  0\n  5  6  1  0\n  5  7  1  0\n  1  9  1  0\n  1 10  1  0\n  1 11  1  0\n  3 12  1  0\n  3 13  1  0\n  3 14  1  0\n  4 15  1  0\n  4 16  1  0\n  4 17  1  0\n  5 18  1  0\n  6 19  1  0\n  6 20  1  0\n  6 21  1  0\n  7 22  1  0\n  7 23  1  0\n  7 24  1  0\nM  END\n";
 let tert_butyl_isopropyl_ether_2D_Skeletal = "tert_butyl_isopropyl_ether_2D_Skeletal\n     RDKit          2D\n\n  8  7  0  0  0  0  0  0  0  0999 V2000\n   -0.1917   -0.8610    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.9438    0.0353    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.0960   -0.1679    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.3439    1.1347    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0827    0.0353    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    2.0960    0.6203    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    1.0827   -1.1347    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0695    0.6203    0.0000 O   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0\n  2  3  1  0\n  2  4  1  0\n  2  8  1  0\n  8  5  1  0\n  5  6  1  0\n  5  7  1  0\nM  END\n";
-window.MOL2D["tert_butyl_isopropyl_ether"] = {condensed: tert_butyl_isopropyl_ether_2D_Condensed, expanded: tert_butyl_isopropyl_ether_2D_Expanded, skeletal: tert_butyl_isopropyl_ether_2D_Skeletal};
+window.MOL2D["tert_butyl_isopropyl_ether"] = { condensed: tert_butyl_isopropyl_ether_2D_Condensed, expanded: tert_butyl_isopropyl_ether_2D_Expanded, skeletal: tert_butyl_isopropyl_ether_2D_Skeletal };
