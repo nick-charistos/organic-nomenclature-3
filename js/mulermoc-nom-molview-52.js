@@ -324,7 +324,7 @@ function jsmeOnLoad() {
     "590px",
     "240px",
     {
-      options: "depict, marker",
+      options: "marker",
       depictbg: "#fff",
       atombgsize: "0.6",
     },
@@ -355,7 +355,7 @@ function jsmeOnLoad() {
     "590px",
     "240px",
     {
-      options: "depict, marker",
+      options: "marker",
       depictbg: "#fff",
       atombgsize: "0.6",
     },
