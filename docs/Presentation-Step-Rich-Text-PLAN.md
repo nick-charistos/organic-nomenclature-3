@@ -476,7 +476,7 @@ Functional/browser:
   image/table/predefined-content inserts; `Go` uses the skip icon
 - lists, per-block font size, alignment, image sizing dialog, source-mode
   disabling, top-card column alignment, and side-rail stretch (v52 refinement)
-- all 98 v51 molecules in all 2D modes after Snap removal; v52 extends the live set to 126
+- all 98 v51 molecules in all 2D modes after Snap removal; v52 extends the live set to 136
 - v50 remains runnable and unchanged
 
 Completed 2026-10-25 (Snap removal + v51 live):
@@ -486,7 +486,7 @@ Completed 2026-10-25 (Snap removal + v51 live):
 - Fixed the `MuSVG.parse()` OOM infinite loop (`importNode()` → tolerant
   HTML parsing + `adoptNode()`); the XML parsing error is gone.
 - `node --check` passes on the v51 JS after the `MuSVG` migration.
-- Chrome CDP: 98 v51 molecules in condensed mode + mode sample sweep (128/130); v52 current set is 126.
+- Chrome CDP: 98 v51 molecules in condensed mode + mode sample sweep (128/130); v52 current set is 136.
   Firefox 158.0.1 headless WebDriver BiDi: same 128/130, zero XML/OOM/runtime
   errors. The two failures are pre-existing skeletal JSmol errors
   (`butadiene_1_3`, `propadiene`) and also occur on the Snap baseline.

@@ -36,6 +36,15 @@ The third import is an **in-place v52 port**, not a new version fork:
 - Feature brief for the student: `docs/THESIS-WORK-V52-STEP-TEXT.md` (focus on the step-text/authoring upgrade).
 - Verification: 126/126 data+MOL2D keys; all 28 additions named in headless Chrome; ether common names/highlights and alkoxy table checked; `git diff --check` clean. Real-browser 3D/JSmol, Firefox and touch remain pending.
 
+## v52 acid extension (2026-10-28)
+
+Fourth import, **additive** (126 → 136 keys), same procedure as the v51 additive import:
+
+- Data: 10 records + 30 embedded MOLs appended (`methyl_2_propanoic_acid`, `dimethyl_2_2_propanoic_acid`, `ethyl_2_methyl_3_pentanoic_acid`, `ethyl_3_isopropyl_2_dimethyl_4_5_hexanoic_acid`, `methyl_2_propenoic_acid`, `ethyl_2_methyl_3_penten_2_yn_4_oic_acid`, `ethyl_3_isopropyl_2_dimethyl_4_5_hexadien_2_4_dioic_acid`, `ethyl_2_isopropyl_3_dimethyl_6_6_hepten_2_yn_4_dioic_acid`, `penten_2_yn_4_oic_acid`, `hexen_2_yn_4_dioic_acid`); 10 runtime SDFs byte-identical to `thesis-work` (`sha256` matched on download). Old records/order/MOL bytes untouched (`git diff` shows zero deletions in the data file).
+- Core: the 3 acid-guard functions + 8 integration sites, ported verbatim (result is byte-identical to the `thesis-work` core for these regions). Scope stays bounded: acyclic C/H/O only, alkyl branches only, esters/mixed-functions/rings excluded.
+- Viewer: only `fSequentialKetoneNumberingTarget` extended with the 10 keys. Rejected: `fSkeletalLayoutMol`/`fApplySkeletalLayout`, `fGetUniform2DLibraryFrame`/`fFit2DSVG`, 2D scale/font targets, `fFitNameToWidth`/`fScheduleNameFit`, carboxyl backplate/mask tweaks, split acid-prefix boxes, Namelecule shell/design/React.
+- Verification: `esprima` parse passes for data/core; 30/30 MOLs and 10/10 SDFs structurally checked; guard preconditions hold on all forms; `git diff --check` clean. Real-browser naming/highlight/JSmol pending (no JS runtime in this environment).
+
 ## Roles / policy
 
 - **Import** (student's own work): new molecules + `.sdf`/`.mol` sources, core

@@ -1,7 +1,7 @@
 # Session notes — 2026-10-03 (resume point for next session)
 
-> **Current baseline (2026-10-26): v52 live.** `index.html` →
-> `mulermoc-nom-52.html`, 126 `nameExamples` keys. v52 has a unified rich note
+> **Current baseline (2026-10-28): v52 live.** `index.html` →
+> `mulermoc-nom-52.html`, 136 `nameExamples` keys (126 + 10 carboxylic acids). v52 has a unified rich note
 > editor: inline WYSIWYG, modal WYSIWYG + HTML source view, staged Apply/Cancel
 > with dirty confirm, and lazy legacy-text upgrade. The 2026-10-26 refinement
 > adds block lists, per-block font size/alignment, an image sizing dialog, a
@@ -2315,3 +2315,52 @@ follows; one Save → Present → Next → Exit round-trip.
 * Verified in Chrome and Firefox 158.0.1 headless: PNG insertion, editor sync,
   SVG rejection, oversized-file rejection, missing-`alt` rejection, and URL
   insertion.
+
+## 2026-10-28 — v52 acid extension (10 carboxylic acids, 126 → 136 keys)
+
+* `js/jsme-nick-nomeclature-moc2-data_52.js`: appended 10 records + 30 embedded
+  2D MOLs (4 saturated mono, 4 unsaturated mono/di, 2 enynoic) plus 10
+  `window.MOL2D` registrations; 10 runtime SDFs in `mols/nomeclature-moc2/`
+  byte-identical to `yanisken9/organic-nomenclature-3@thesis-work` (sha256
+  matched). Old records/order/MOL bytes untouched — data diff is purely
+  additive.
+* Core (`mulermoc-nom-core-52.js`): ported `fIsAcyclicSaturatedMonoacidGraph`,
+  `fIsAcyclicUnsaturatedAcidGraph`, `fSupportsAcyclicAcidGraph` + 8 integration
+  sites (branch-prefix gate with off-parent-unsaturation refusal, locant tiers,
+  diacid `forcedC1` tie, alphabetical ties, `fRankChainPool`, C3 locant
+  exception). Result is byte-identical to the thesis-work core for these
+  regions; scope stays bounded (acyclic C/H/O, alkyl only).
+* Molview (`mulermoc-nom-molview-52.js`): only `fSequentialKetoneNumberingTarget`
+  extended with the 10 keys. Rejected all thesis-work 2D geometry/fitting work
+  (`fSkeletalLayoutMol`, uniform frame/`fFit2DSVG`, font/scale targets, name-fit
+  replacement, carboxyl backplate/mask tweaks, split acid-prefix boxes).
+* Checks: `esprima` parse passes for data/core; 30/30 MOLs (V2000 counts,
+  `M END`, C/H/O only), 10/10 SDFs (V2000, 3D coords, hashes match upstream),
+  guard preconditions hold on all forms; `git diff --check` clean. No JS
+  runtime in this environment, so real-browser naming/highlight/JSmol
+  click-through remains pending.
+
+## 2026-10-28 — Branch-prefix split (`ισοπροπυλο-` + `4,5` + `διμεθυλο`)
+
+* Slot 3 (`comp0bText` in `mulermoc-nom-core-52.js`) fused the 2nd+ substituent
+  groups for molecules with 3 substituent types. Render-time split in
+  `mulermoc-nom-molview-52.js` (core/data untouched, joined name identical),
+  mirroring the `comp9loc` suffix split: first name keeps `comp3`, locants take
+  `comp3loc`, later names `comp3b` (+2, …).
+* Per-piece clicks: `compBranchSub{k}` explains/highlights that substituent,
+  `compBranchLoc{k}` numbers; threaded through restore map, teaching dispatch,
+  scenario map, rule panel and 2D/3D highlight scoping. Unfused molecules keep
+  the exact old behavior (`comp3` → `compSecondSub2`).
+* Follow-up: the `-2-`-style locants box (`compNumber2`) highlighted the whole
+  slot-2 group while its text scopes to the first group — now highlights the
+  first group only (verified headless: atoms [7,8,9] isopropyl-only vs
+  [7,8,9,12,13] before; unfused single-name slots unchanged).
+* Checks: `node --check` on molview/teaching/scenario; headless engine
+  (node + JSME stub) names 136/136 with zero diffs vs pristine on the 126 old
+  molecules; all 10 acids correct; fused scan finds 4/136 affected (3 complex
+  acids + `ethyl_4_isopropyl_3_methyl_2_hexanal`), all 3-piece. Follow-up fix:
+  the render block referenced the euphony-loop-local `_isGkConsonant` (block
+  scope → silent fallback via try/catch, no console error); replaced with a
+  block-local copy and re-verified by executing the verbatim render block
+  against engine-real slot data (`comp3`/`comp3loc`/`comp3b` emit correctly,
+  unfused stays single). Real-browser click/numbering/highlight pending.

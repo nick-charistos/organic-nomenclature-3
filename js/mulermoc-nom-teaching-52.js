@@ -937,7 +937,15 @@ $(document).ready(function () {
       $(".nameCompBox").removeClass("selected");
       $(this).addClass("selected");
 
-      switch ($(this).attr("id")) {
+      // Split branch-label pieces (slot 3, comp0bText): per-piece modes.
+      // comp3 keeps the slot-level mode while the slot is unfused.
+      var _bid = "";
+      try { _bid = $(this).attr("id") || ""; } catch (eBid) { _bid = ""; }
+      var _bpxm = /^comp3(b|loc)(\d*)$/.exec(_bid);
+      if (_bpxm && fSplitBranchPiecesActive()) {
+        var _bk = _bpxm[2] === "" ? 2 : parseInt(_bpxm[2], 10) + 1;
+        nameAnalysisMode = _bpxm[1] === "b" ? "compBranchSub" + _bk : "compBranchLoc" + _bk;
+      } else switch ($(this).attr("id")) {
         case "comp0":
           nameAnalysisMode = "compNumber1";
           break;
@@ -948,7 +956,7 @@ $(document).ready(function () {
           nameAnalysisMode = "compNumber2";
           break;
         case "comp3":
-          nameAnalysisMode = "compSecondSub2";
+          nameAnalysisMode = fSplitBranchPiecesActive() ? "compBranchSub1" : "compSecondSub2";
           break;
         case "comp4":
           nameAnalysisMode = "compBondPos";

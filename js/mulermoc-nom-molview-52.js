@@ -3808,6 +3808,63 @@ function fShowNameAnalysis() {
         }
       } catch (eSplit) { /* fused single box fallback */ }
     }
+    // Branch labels are always their own components: slot 3 (comp0bText)
+    // fuses the 2nd and later substituent groups ("ισοπροπυλο-4,5-διμεθυλο")
+    // once three substituent types exist, so split it here at render time —
+    // the first name keeps the comp3 slot id, locants take comp3loc and
+    // later names comp3b (then comp3loc2/comp3b2, ...). Core list, euphony
+    // and the joined name are unchanged: piece ends ("-", digit, vowel-end
+    // name) never take a connector, and a fired euphony aborts the split.
+    if (i === 3 && displayComp === currComp) {
+      try {
+        var _brp = fSplitBranchPieces(currComp);
+        if (_brp) {
+          var _brLast = _brp[_brp.length - 1];
+          var _brNext = _nextIdx >= 0 ? String(nameComponentsList[_nextIdx]) : "";
+          // Local copy of the Greek-consonant test: _isGkConsonant is scoped
+          // to the euphony for-loop above and is not visible here.
+          var _brIsGk = function (ch) {
+            return /[\u0370-\u03ff\u1f00-\u1fff]/u.test(ch) &&
+              !new Set([
+                "α",
+                "ε",
+                "η",
+                "ι",
+                "ο",
+                "υ",
+                "ω",
+                "ά",
+                "έ",
+                "ή",
+                "ί",
+                "ό",
+                "ύ",
+                "ώ",
+              ]).has(ch);
+          };
+          var _brEuph = _brNext !== "" &&
+            _brIsGk(_brLast[_brLast.length - 1]) && _brIsGk(_brNext[0]);
+          if (!_brEuph) {
+            var _brx = "";
+            for (var _bri = 0; _bri < _brp.length; _bri++) {
+              var _brId, _brText;
+              if (_bri % 2 === 0) {
+                var _brNj = _bri / 2 + 1;
+                _brId = _brNj === 1 ? "comp3" : "comp3b" + (_brNj === 2 ? "" : String(_brNj - 1));
+                _brText = _brp[_bri] + (_bri < _brp.length - 1 ? "-" : "");
+              } else {
+                var _brLj = (_bri + 1) / 2 + 1;
+                _brId = "comp3loc" + (_brLj === 2 ? "" : String(_brLj - 1));
+                _brText = _brp[_bri];
+              }
+              if (_bri > 0) _brx += `<div class='${crossClass}' > + </div>`;
+              _brx += fNameCompBox(_brId, boxClass, _brText);
+            }
+            compBox = _brx;
+          }
+        }
+      } catch (eSplitB) { /* fused single box fallback */ }
+    }
     if (_nextIdx >= 0) {
       // Esters: two-word name — blank space after ικός instead of +.
       if (_isEsterWordBoundary && i < 10 && _nextIdx >= 10) {
@@ -3848,13 +3905,16 @@ function fShowNameAnalysis() {
       compBondType2: "comp8",
       compSuffix: "comp9",
       compSuffixLocants: "comp9loc",
+      compBranchSub1: "comp3",
+      compBranchLoc2: "comp3loc",
+      compBranchSub2: "comp3b",
       commonAlkyl1: "comp10",
       commonAlkyl2: "comp11",
       commonEther: "comp12",
       esterAlkyl: "comp10",
       esterEster: "comp11",
     };
-    const _selId = _modeToCompId[nameAnalysisMode];
+    const _selId = _modeToCompId[nameAnalysisMode] || fBranchPieceBoxId(nameAnalysisMode);
     // Hidden boxes stay inert: never restore .selected onto a dash box.
     if (_selId && $(`#${_selId}`).length && !fNameCompHidden(_selId)) {
       $(`#${_selId}`).addClass("selected");
@@ -4118,6 +4178,63 @@ function fSplitSuffixLocantsActive() {
     return !!(typeof document !== "undefined" && document.getElementById("comp9loc"));
   } catch (eD) { return false; }
 }
+// Split branch-label slot ("ισοπροπυλο-4,5-διμεθυλο" in comp0bText, slot 3):
+// true once the render has emitted the standalone pieces. Pieces alternate
+// name/locants/name; the first name keeps the comp3 slot id so every
+// id-driven behavior for unfused molecules is unchanged.
+function fSplitBranchPiecesActive() {
+  try {
+    return !!(typeof document !== "undefined" && document.getElementById("comp3loc"));
+  } catch (eD) { return false; }
+}
+// Pure splitter for a fused branch-label slot. Returns the alternating
+// pieces ([name, locants, name, ...]) or null when the slot is not fused.
+// Names must be bare Greek-letter runs, locants bare digit runs — labels
+// carrying their own dashes (sec-/tert-) stay a single fused box.
+function fSplitBranchPieces(text) {
+  var parts = String(text == null ? "" : text).split("-");
+  if (parts.length < 3 || parts.length % 2 === 0) return null;
+  var gk = "[\u0370-\u03ff\u1f00-\u1fff]";
+  for (var k = 0; k < parts.length; k++) {
+    if (parts[k] === "") return null;
+    if (k % 2 === 0) {
+      if (!new RegExp("^" + gk + "+$").test(parts[k])) return null;
+    } else {
+      if (!/^\d[\d,]*$/.test(parts[k])) return null;
+    }
+  }
+  if (parts.join("-") !== String(text)) return null;
+  return parts;
+}
+// k-th name group (1-based) inside slot 3, for per-piece explanation and
+// highlight. Positional: slot-3 names follow the same alphabetical order in
+// the fused string and in fGetHydrocarbonBranchGroup(2). Null (halogen-only
+// or unmatched pieces) falls back to the slot-level sentences.
+function fGetHydrocarbonBranchPiece(k) {
+  var g = null;
+  try { g = fGetHydrocarbonBranchGroup(2); } catch (eG) { g = null; }
+  if (!g || !Array.isArray(g.names) || !Array.isArray(g.members)) return null;
+  if (typeof k !== "number" || k < 1 || k > g.names.length) return null;
+  var name = g.names[k - 1];
+  var members = g.members.filter(function (b) { return b && b.name === name; });
+  if (!members.length) return null;
+  return { names: [name], members: members };
+}
+// Box id for a branch-piece mode ("compBranchSub1" -> "comp3",
+// "compBranchLoc2" -> "comp3loc", "compBranchSub2" -> "comp3b",
+// then "comp3loc2"/"comp3b2", ...). Null when the mode is not a piece mode.
+function fBranchPieceBoxId(mode) {
+  var m = /^compBranch(Sub|Loc)(\d+)$/.exec(String(mode == null ? "" : mode));
+  if (!m) return null;
+  var k = parseInt(m[2], 10);
+  if (!(k >= 1)) return null;
+  if (m[1] === "Sub") {
+    if (k === 1) return "comp3";
+    return "comp3b" + (k === 2 ? "" : String(k - 1));
+  }
+  if (k < 2) return null;
+  return "comp3loc" + (k === 2 ? "" : String(k - 1));
+}
 function fBranchedSaturatedKetonePosition() {
   return typeof functionalGroupObj !== 'undefined' && functionalGroupObj &&
     functionalGroupObj.ketone && fSupportsAlkylBranchPrefixes() &&
@@ -4125,9 +4242,15 @@ function fBranchedSaturatedKetonePosition() {
     fGetHydrocarbonSubstituentInfo().length > 0;
 }
 // Keep the existing numbering policy elsewhere; animate explicit analysis
-// of the new ketones, not instant zoom/resize overlay restoration.
+// of the new ketones and the ten carboxylic acids, not instant zoom/resize overlay restoration.
 function fSequentialKetoneNumberingTarget() {
-  return ['pentanone_3', 'dimethyl_2_4_pentanone_3',
+  return ['penten_2_yn_4_oic_acid', 'hexen_2_yn_4_dioic_acid',
+    'methyl_2_propenoic_acid', 'ethyl_2_methyl_3_penten_2_yn_4_oic_acid',
+    'ethyl_3_isopropyl_2_dimethyl_4_5_hexadien_2_4_dioic_acid',
+    'ethyl_2_isopropyl_3_dimethyl_6_6_hepten_2_yn_4_dioic_acid',
+    'methyl_2_propanoic_acid', 'dimethyl_2_2_propanoic_acid',
+    'ethyl_2_methyl_3_pentanoic_acid',
+    'ethyl_3_isopropyl_2_dimethyl_4_5_hexanoic_acid', 'pentanone_3', 'dimethyl_2_4_pentanone_3',
     'trimethyl_3_4_4_pentanone_2',
     'diethyl_4_5_dimethyl_2_6_heptanone_3',
     'penten_1_yn_4_one_3', 'dimethyl_4_5_hexen_5_yn_1_one_3',
@@ -4801,11 +4924,48 @@ function fExplainNameComp() {
       numberingFlag = false;
       $("#ruleTheoryContainer").show();
       break;
-    default:
+    default: {
+      // Split branch-label pieces (slot 3, comp0bText): per-piece scope — a
+      // name piece explains/highlights that substituent, a locants piece
+      // numbers. Anything else keeps the generic prompt below.
+      const _bpx = /^compBranch(Sub|Loc)(\d+)$/.exec(nameAnalysisMode || "");
+      if (_bpx) {
+        nStyle = "";
+        myClass = "";
+        const _pk = parseInt(_bpx[2], 10);
+        let _pg = null;
+        try { _pg = fGetHydrocarbonBranchPiece(_pk); } catch (ePg) { _pg = null; }
+        const _isLoc = _bpx[1] === "Loc";
+        if (_pg) {
+          myText = fHydrocarbonBranchExplanation(_pg, _isLoc);
+          numberingFlag = _isLoc;
+          fHighlightFG(2);
+          fHighlightFG3D(2);
+          if (_isLoc) fShowAnalysisNumbering(0);
+          $("#ruleTheoryContainer").show();
+        } else if (_isLoc) {
+          myText = fIsMultiLocantComponent(nameComponentsList[2])
+            ? ` Δηλώνει τις θέσεις της δεύτερης αλφαβητικά δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(2)}.`
+            : ` Δηλώνει τη θέση της δεύτερης αλφαβητικά δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(2)}.`;
+          numberingFlag = true;
+          fHighlightFG(2);
+          fHighlightFG3D(2);
+          fShowAnalysisNumbering(0);
+        } else {
+          myText = fGetNameComponentMultiplier(nameComponentsList[3]) > 1
+            ? ` Δηλώνει το πλήθος των δευτερευουσών Χαρακτηριστικών Ομάδων${fGetSecondaryGroupNounSuffix(2)}.`
+            : ` Δηλώνει το όνομα  της δεύτερης αλφαβητικά δευτερεύουσας Χαρακτηριστικής Ομάδας${fGetSecondaryGroupNounSuffix(2)}.`;
+          numberingFlag = false;
+          fHighlightFG(2);
+          fHighlightFG3D(2);
+        }
+        break;
+      }
       myText =
         "Κάνε κλικ σε ένα συστατικό του ονόματος για να δεις την εξήγηση";
       nStyle = "color:#666; font-style:italic; font-weight:normal; border:0;";
       myClass = "";
+    }
   }
   fShowRule(nameAnalysisMode);
   myHTML = `<div class='explainText ${myClass} ' style='${nStyle}'  >${myText}</div>`;
@@ -4904,14 +5064,33 @@ function fShowRule(theRule) {
       ruleTable = "";
       ruleTitle = "";
       break;
-    default:
+    default: {
+      // Split branch-label pieces: same alkyl rule/table as the slot-level
+      // branch modes, with rows scoped to the clicked substituent.
+      const _rbpx = /^compBranch(Sub|Loc)(\d+)$/.exec(theRule || "");
+      if (_rbpx) {
+        const _rpg = fGetHydrocarbonBranchPiece(parseInt(_rbpx[2], 10));
+        if (_rpg) {
+          ruleText = namingRules.alkylRule;
+          ruleTable = namingRules.alkylTable;
+          ruleTitle = "Ονόματα αλκυλίων και προθέματα";
+          alkylRows = _rpg.names.map(function (name) { return "alkyl-" + name; });
+        } else {
+          ruleText = namingRules.rule4;
+          ruleTable = namingRules.table4;
+          ruleTitle = "Σειρά ισχύος Χαρακτηριστικών Ομάδων";
+        }
+        break;
+      }
       ruleText = "";
       ruleTable = "";
       ruleTitle = "";
+    }
   }
 
   if ((theRule === "compNumber1" || theRule === "compSecondSub1" ||
-       theRule === "compNumber2" || theRule === "compSecondSub2") &&
+       theRule === "compNumber2" || theRule === "compSecondSub2" ||
+       /^compBranch(Sub|Loc)\d+$/.test(theRule || "")) &&
       typeof selectedMol !== "undefined" && selectedMol &&
       Array.isArray(atomConnectivityList) && Array.isArray(allAtomsTypeList) && Array.isArray(bondList) &&
       typeof fIsAcyclicMonoetherGraph === "function" &&
@@ -5230,6 +5409,7 @@ function fGetHydrocarbonBranchGroup(slot) {
 }
 
 function fHydrocarbonBranchSlot() {
+  if (/^compBranch(Sub|Loc)\d+$/.test(nameAnalysisMode || "")) return 2;
   return nameAnalysisMode === "compNumber2" || nameAnalysisMode === "compSecondSub2" ? 2 : 1;
 }
 
@@ -5276,7 +5456,24 @@ function fGetHydrocarbonBranchHighlight(slot) {
   }
 
   const mainSet = new Set(mainChainAtomsList.map((n) => n - 1));
-  const group = slot ? fGetHydrocarbonBranchGroup(slot) : null;
+  const _pieceM = /^compBranch(Sub|Loc)(\d+)$/.exec(typeof nameAnalysisMode !== "undefined" ? nameAnalysisMode : "");
+  var group = slot ? fGetHydrocarbonBranchGroup(slot) : null;
+  // Split branch-label pieces highlight only their own substituent; an
+  // unmatched piece keeps the whole slot group (never an empty highlight).
+  if (_pieceM && slot === 2) {
+    let _pp = null;
+    try { _pp = fGetHydrocarbonBranchPiece(parseInt(_pieceM[2], 10)); } catch (ePp) { _pp = null; }
+    if (_pp && _pp.members.length) group = _pp;
+  }
+  // The "-2-" style locants box (compNumber2) highlights only the first of
+  // the remaining groups — its explanation already scopes positions that
+  // way ("της πρώτης από τις υπόλοιπες ομάδες"). Single-name slots are
+  // unaffected; an unmatched shape keeps the whole slot group.
+  if (!_pieceM && nameAnalysisMode === "compNumber2" && slot === 2 &&
+      group && Array.isArray(group.names) && group.names.length > 1) {
+    const _fm = group.members.filter(function (b) { return b && b.name === group.names[0]; });
+    if (_fm.length) group = { names: [group.names[0]], members: _fm };
+  }
   if (slot && !group) return { atoms: [], bonds: [] };
   const atoms = new Set();
   const bonds = new Set();
@@ -5371,7 +5568,20 @@ function fGetHydrocarbonBranchHighlight3D(slot) {
   }
 
   const mainSet = new Set(mainChainAtoms3D.map((n) => n - 1));
-  const group = slot ? fGetHydrocarbonBranchGroup(slot) : null;
+  const _pieceM3 = /^compBranch(Sub|Loc)(\d+)$/.exec(typeof nameAnalysisMode !== "undefined" ? nameAnalysisMode : "");
+  var group = slot ? fGetHydrocarbonBranchGroup(slot) : null;
+  // Same per-piece scope as the 2D twin (matched by locant+signature below).
+  if (_pieceM3 && slot === 2) {
+    let _pp3 = null;
+    try { _pp3 = fGetHydrocarbonBranchPiece(parseInt(_pieceM3[2], 10)); } catch (ePp3) { _pp3 = null; }
+    if (_pp3 && _pp3.members.length) group = _pp3;
+  }
+  // Same first-group scope for compNumber2 as the 2D twin.
+  if (!_pieceM3 && nameAnalysisMode === "compNumber2" && slot === 2 &&
+      group && Array.isArray(group.names) && group.names.length > 1) {
+    const _fm3 = group.members.filter(function (b) { return b && b.name === group.names[0]; });
+    if (_fm3.length) group = { names: [group.names[0]], members: _fm3 };
+  }
   if (slot && !group) return { atoms: [], bonds: [] };
   const atoms = new Set();
   const bonds = new Set();
@@ -5916,7 +6126,7 @@ function fHighlightFG(FGno) {
     "compNumber2",
     "compSecondSub1",
     "compSecondSub2",
-  ].includes(nameAnalysisMode);
+  ].includes(nameAnalysisMode) || /^compBranch(Sub|Loc)\d+$/.test(nameAnalysisMode || "");
 
   if (fgKeys.length === 0 || (allowBranchFallback &&
       (fSupportsAlkylBranchPrefixes() || fEtherPrefixGroups().length > 0) && branch.atoms.length > 0)) {
@@ -6342,7 +6552,7 @@ function fHighlightFG3D(FGno) {
     "compNumber2",
     "compSecondSub1",
     "compSecondSub2",
-  ].includes(nameAnalysisMode);
+  ].includes(nameAnalysisMode) || /^compBranch(Sub|Loc)\d+$/.test(nameAnalysisMode || "");
 
   let highAtoms3D = [];
 

@@ -3,7 +3,7 @@
 ### Organic Chemistry Interactive Learning & Research Platform
 
 **Principal Investigator:** N. Charistos, Department of Chemistry, ΑΠΘ
-**Status:** Active development | v52 live (126 molecules — 126 `nameExamples` keys): unified rich note editor (inline WYSIWYG, modal WYSIWYG + HTML source, lazy legacy-text upgrade, staged Apply/Cancel and dirty-close confirm); safe rich HTML notes (DOMPurify), rule-table components, a compact icon toolbar, and a Snap-free native `MuSVG` 2D overlay; the v51 rich notes, v50 presentation rails/persistent naming shell, and the v49 MSc-student `thesis-work` import are retained; the 2026-10-26 thesis-work port adds 28 molecules (126 total), ketone/aldehyde/ether graph guards, methanal handling, sequential ketone numbering, and ether naming/highlight fixes. Default scenario: `Αλκάνια-Αιθάνιο-τεστ`. `index.html` → v52, v51/v50/v49/v48/v47/v46/v45/v44 runnable at root, v43 frozen at tag `v43`, v42 frozen in repo2. Automated Chrome/Firefox matrices pass; `MuSVG.parse()` OOM/XML crash fixed. The two pre-existing skeletal JSmol failures and some manual coverage remain open.
+**Status:** Active development | v52 live (136 molecules — 136 `nameExamples` keys): unified rich note editor (inline WYSIWYG, modal WYSIWYG + HTML source, lazy legacy-text upgrade, staged Apply/Cancel and dirty-close confirm); safe rich HTML notes (DOMPurify), rule-table components, a compact icon toolbar, and a Snap-free native `MuSVG` 2D overlay; the v51 rich notes, v50 presentation rails/persistent naming shell, and the v49 MSc-student `thesis-work` import are retained; the 2026-10-26 thesis-work port adds 28 molecules (126 total), ketone/aldehyde/ether graph guards, methanal handling, sequential ketone numbering, and ether naming/highlight fixes; the 2026-10-28 acid extension adds 10 carboxylic acids (136 total) with acid graph guards and sequential acid numbering. Default scenario: `Αλκάνια-Αιθάνιο-τεστ`. `index.html` → v52, v51/v50/v49/v48/v47/v46/v45/v44 runnable at root, v43 frozen at tag `v43`, v42 frozen in repo2. Automated Chrome/Firefox matrices pass; `MuSVG.parse()` OOM/XML crash fixed. The two pre-existing skeletal JSmol failures and some manual coverage remain open.
 **Last updated:** 2026-10-26
 
 > **2026-10 update:** vision is now twofold+1 (community tool + research publications + platform for isomerism/reactions) with four layers in LEARN-first order — LEARN → EXPLORE-lite → PRACTICE → PLAY. The static chemistry app is embedded in Drupal; logging is research-primary. Source of truth for layers: `docs/LAYERS-PLAN.md`. Team P1–P6 roles and timeline are defined there and in `README.md`. What follows below is the original plan text, kept for theory and history; version/count claims predating v44 are superseded.
@@ -72,7 +72,7 @@ Each step removes one scaffolding layer. Familiar representations constrain inte
 ## Module 1: Organic Nomenclature — Current State (v52 live; v37 text below kept for history)
 
 ### What exists
-- **126 molecules** (126 `nameExamples` keys: the previous 98 plus 9 ketones/diones/ynones, 12 aldehydes/dials and 7 monoethers) covering homologous-series menu groups (series-first, rules secondary)
+- **136 molecules** (136 `nameExamples` keys: the previous 98 plus 9 ketones/diones/ynones, 12 aldehydes/dials, 7 monoethers and 10 carboxylic acids) covering homologous-series menu groups (series-first, rules secondary)
 - **v51 data (retained)** — adds 18 molecules (9 alcohols, 6 dienes, 3 enynes), 54 embedded 2D forms and 18 runtime 3D SDFs, with bounded acyclic-alcohol branch naming; the existing 80 entries are unchanged. Branch prefixes are still limited to pure acyclic hydrocarbons/alcohols; other series need the generic branch/FG-profile refactor.
 - **Algorithmic IUPAC engine** — DFS main chain determination, 3-tier locant rules, Greek euphony; ester two-word naming + ether systematic/common toggle since v40/v41
 - **5 representation modes** — condensed, expanded, annotated skeletal (partial), skeletal, 3D
@@ -241,7 +241,7 @@ RQ4: Learner strategies                    detection                    adaptive
 ┌─────────────────────────────────────────────────────────────┐
 │                    DATA LAYER                               │
 │  jsme-nick-nomeclature-moc2-data_52.js                      │
-│  126 molecules: MOL strings, main chain, 3D SDF paths        │
+│  136 molecules: MOL strings, main chain, 3D SDF paths        │
 └────────────────────────┬────────────────────────────────────┘
                          ↓
 ┌─────────────────────────────────────────────────────────────┐
