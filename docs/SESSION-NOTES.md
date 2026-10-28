@@ -2340,7 +2340,7 @@ follows; one Save → Present → Next → Exit round-trip.
   runtime in this environment, so real-browser naming/highlight/JSmol
   click-through remains pending.
 
-## 2026-10-28 — Branch-prefix split (`ισοπροπυλο-` + `4,5` + `διμεθυλο`)
+## 2026-10-28 — Branch-prefix split (`ισοπροπυλο` + `-4,5-` + `διμεθυλο`)
 
 * Slot 3 (`comp0bText` in `mulermoc-nom-core-52.js`) fused the 2nd+ substituent
   groups for molecules with 3 substituent types. Render-time split in

@@ -1467,7 +1467,7 @@ header {
 }
 
 .nameCompBox {
-  font-size: calc(1.1rem * var(--nameCompScale, 1));
+  font-size: max(14px, calc(1.1rem * var(--nameCompScale, 1)));
   font-weight: bold;
   color: #000;
    cursor: pointer;

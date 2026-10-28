@@ -3846,16 +3846,23 @@ function fShowNameAnalysis() {
             _brIsGk(_brLast[_brLast.length - 1]) && _brIsGk(_brNext[0]);
           if (!_brEuph) {
             var _brx = "";
+            // Locants pieces carry dashes on both sides ("-6,6-"), unless the
+            // piece leads the whole panel — then trailing dash only, like the
+            // comp0 "3-" convention. (Unreachable while slot 3 is fused, since
+            // fusion implies slots 0-2 exist; kept as the general rule.)
+            var _brFirst = !(nameComponentsList[0] || nameComponentsList[1] || nameComponentsList[2]);
             for (var _bri = 0; _bri < _brp.length; _bri++) {
               var _brId, _brText;
               if (_bri % 2 === 0) {
                 var _brNj = _bri / 2 + 1;
                 _brId = _brNj === 1 ? "comp3" : "comp3b" + (_brNj === 2 ? "" : String(_brNj - 1));
-                _brText = _brp[_bri] + (_bri < _brp.length - 1 ? "-" : "");
+                // Names stay bare: dashes live in locants boxes only, so the
+                // locants piece supplies the junction dash on both sides.
+                _brText = _brp[_bri];
               } else {
                 var _brLj = (_bri + 1) / 2 + 1;
                 _brId = "comp3loc" + (_brLj === 2 ? "" : String(_brLj - 1));
-                _brText = _brp[_bri];
+                _brText = (_brFirst ? "" : "-") + _brp[_bri] + "-";
               }
               if (_bri > 0) _brx += `<div class='${crossClass}' > + </div>`;
               _brx += fNameCompBox(_brId, boxClass, _brText);
@@ -4262,7 +4269,9 @@ function fShowAnalysisNumbering(time, overrideAtoms, overrideAtoms3D) {
     currNumberEl = 0;
     document.querySelectorAll('#jsmeNomeclatureSVG text[id^="number"]').forEach(el => el.remove());
     removeEcho3D();
-    fShowNumbering(); // Existing 400ms timer appends one 2D/3D number per tick.
+    // Numbering policy: instant (time 0/missing), animated only for time > 0
+    // (main-chain carbon-count component). The old-number cleanup above stays.
+    fShowNumbering(time);
     return;
   }
   fShowNumbering(time, overrideAtoms, overrideAtoms3D);
@@ -4581,7 +4590,8 @@ function fExplainNameComp() {
       if (_showA2) fHighLightMainChain();
       if (_showB2) fHighLightMainChainBonds();
       if (_showA2 || _showB2) fHighlightAtomChain3D(mainChainAtoms3D, true, !_showB2, !_showA2);
-      fShowAnalysisNumbering();
+      // Main-chain carbon-count component: the sole animated numbering reveal.
+      fShowAnalysisNumbering(400);
       $("#ruleTheoryContainer").show();
       break;
     case "compBondType":
@@ -7054,13 +7064,15 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
       break;
   }
 
-  if (time === undefined) {
+  if (time === undefined || time === null) {
     time = 400;
-    myNumberingTimeout = setInterval(fShowNumber, time);
-  } else if (time == 0) {
+  }
+  if (time == 0) {
     for (let i = 0; i < numbersSVGElements.length; i++) {
       fShowNumber();
     }
+  } else {
+    myNumberingTimeout = setInterval(fShowNumber, time);
   }
 }
 
