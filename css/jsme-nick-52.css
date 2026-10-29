@@ -408,7 +408,7 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
+  gap: 7px;
 }
 
 #nameSettingsRowMain .nsLeft {
@@ -419,7 +419,7 @@ header {
 #nameSettingsRowMain .nsRight {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 7px;
   margin-left: auto;
 }
 
@@ -470,7 +470,7 @@ header {
   height: 19px;
   color: var(--darkBlue);
   background-color: var(--veryLightEarth);
-  border: 2px solid var(--darkEarth);
+  border: 1px solid var(--darkEarth);
   padding: 2px;
   border-radius: 4px;
   cursor: pointer;
@@ -524,6 +524,7 @@ header {
 .nameStyleBox[data-tooltip]::after,
 .nameStyleCross[data-tooltip]::after,
 .nameStyleEye[data-tooltip]::after,
+.nameStyleExpand[data-tooltip]::after,
 #narrateAnalysisToggle[data-tooltip]::after,
 .compEye[data-tooltip]::after,
 #scenarioAuthorTab[data-tooltip]::after,
@@ -561,6 +562,7 @@ header {
 .nameStyleBox[data-tooltip]:hover::after,
 .nameStyleCross[data-tooltip]:hover::after,
 .nameStyleEye[data-tooltip]:hover::after,
+.nameStyleExpand[data-tooltip]:hover::after,
 #narrateAnalysisToggle[data-tooltip]:hover::after,
 .compEye[data-tooltip]:hover::after,
 #scenarioAuthorTab[data-tooltip]:hover::after,
@@ -587,6 +589,7 @@ header {
 .nameStyleBox[data-tooltip]::after,
 .nameStyleCross[data-tooltip]::after,
 .nameStyleEye[data-tooltip]::after,
+.nameStyleExpand[data-tooltip]::after,
 #narrateAnalysisToggle[data-tooltip]::after {
   position: absolute;
   top: calc(100% + 10px);
@@ -605,6 +608,7 @@ header {
 .nameStyleBox[data-tooltip]::before,
 .nameStyleCross[data-tooltip]::before,
 .nameStyleEye[data-tooltip]::before,
+.nameStyleExpand[data-tooltip]::before,
 #narrateAnalysisToggle[data-tooltip]::before,
 .compEye[data-tooltip]::before,
 #scenarioAuthorTab[data-tooltip]::before,
@@ -633,6 +637,7 @@ header {
 .nameStyleBox[data-tooltip]:hover::before,
 .nameStyleCross[data-tooltip]:hover::before,
 .nameStyleEye[data-tooltip]:hover::before,
+.nameStyleExpand[data-tooltip]:hover::before,
 #narrateAnalysisToggle[data-tooltip]:hover::before,
 .compEye[data-tooltip]:hover::before,
 #scenarioAuthorTab[data-tooltip]:hover::before,
@@ -658,6 +663,7 @@ header {
 .nameStyleBox[data-tooltip]::before,
 .nameStyleCross[data-tooltip]::before,
 .nameStyleEye[data-tooltip]::before,
+.nameStyleExpand[data-tooltip]::before,
 #narrateAnalysisToggle[data-tooltip]::before {
   top: 100%;
   left: 50%;

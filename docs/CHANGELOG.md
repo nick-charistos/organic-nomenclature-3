@@ -102,6 +102,46 @@ New parallel file set `mulermoc-nom-52.html` + `js/*-52.js` + `css/*-52.css`, fo
 - Owner CSS tweak carried in this commit: `body.scPinned #scenarioAuthorBar` `top: 0` → `-31px` (`css/mulermoc-nom-scenario-52.css`).
 - Checks: `git diff --check` clean; JS brace/paren balance `0/0` on both edited files (no Node runtime for `node --check`); manual browser verification pending (console `fScenarioGetMoveto()`, capture → export `view3D.moveto`, molecule switch keeps stored framing, step apply jumps instantly).
 
+### 2026-10-30 — Name expand button: visible tooltip + fullscreen icons (v52)
+- `#nameExpandBtn` had `data-tooltip` but the shared tooltip skin never listed
+  `.nameStyleExpand`, so no bubble rendered; fixed by adding it to all 5
+  tooltip selector groups (same below-centered bubble + arrow as siblings).
+- The button now uses the note editor's `fullScreen` / `fullScreenExit` icon
+  pair (toggle with state, Greek action tooltips, legacy glyph fallback);
+  `fullScreenExit` normalized 22px → 16px to match button size.
+- Checks: `node --check` clean. Browser: hover bubble closed + open, icon swap
+  both ways, Esc/molecule-switch restore.
+
+### 2026-10-30 — JSME split mode: depict restored on main applet (v52)
+- `6f55eb5` had removed `depict` from both JSME applets (`"depict, marker"` →
+  `"marker"`), which broke all 2D highlights: `fUpdateSVG()` reads highlights
+  back from `getMolecularAreaGraphicsString()`, and that pipeline needs the
+  depiction mode (3D JSmol was unaffected). Symptom: even ethene `εν` painted
+  no double bond in 2D.
+- Fix: main `jsmeNomeclatureApplet` back to `"depict, marker"`;
+  `jsmeNomeclatureAppletORGNL` stays `"marker"` full-edit for future
+  user/teacher structure input (it never serves highlights or graphics-string
+  reads). Constraint documented at `jsmeOnLoad` in `molview-52.js`.
+- Checks: `node --check` clean. Browser re-verify: ethene `εν` + ester `αν` /
+  acid-stem count in condensed/expanded/skeletal.
+
+### 2026-10-30 — Five thesis-work esters ported (v52, 136 → 141)
+- Data (`data_52.js` + 5 runtime `mols/nomeclature-moc2/*_3D.sdf`, byte-identical
+  to `yianni/thesis-work`): `sec_butyl_ethanoate`, `butyl_propanoate`,
+  `tert_butyl_methanoate`, `isobutyl_2_methylpropanoate`,
+  `isopropyl_2_3_dimethylbutanoate` (existing 136 keys/order untouched).
+- Core (`core-52.js`): ported `fIsAcyclicSaturatedMonoesterGraph` + 6 sites
+  (branch-prefix tier, orient 2D x2 + 3D, rank-pool tie-break, ester acidLen).
+- Viewer (`molview-52.js`): ported `fGetEsterAcidParentChain()/3D` + ester
+  `compCarbonsCount` conditional text/highlight/numbering on the named parent
+  (branched: `Η κύρια αλυσίδα του όξινου τμήματος…`, e.g. 4 not 6 for
+  2,3-dimethylbutanoate). Teaching routing needed no change.
+- Still pending from thesis-work: 4 display fixes (`fRemainingImplicitCarbon-
+  Hydrogens`, skeletal acid-left, formyl-H left, skeletal C-H hide).
+- Checks: `node --check` passes on data/core/molview/teaching;
+  `git diff --check` clean. Browser naming/highlight/numbering matrix for the
+  5 new esters + 136-molecule regression pending.
+
 ### 2026-10-29 — Explain floating sheet under expanded name (v52, live)
 - `#nameAnalysisExplain` now portals inside `#nameAnalysisContainer` while expanded, sharing the sheet's right anchor (`z-index:801` over the `800` name sheet) so it extends left outside the 350px column under the expanded components; restored on close/molecule-switch.
 - Geometry is JS-pinned: Explain width = sheet width, top = `sheetRect.bottom - hostRect.top - 1` (rect math, `-1` overlap), reserve `#nameAnalysis min-height = sheetH - 1 + explainH + 6`; re-pinned on open/render/rebuild/debounced resize.

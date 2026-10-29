@@ -819,6 +819,44 @@ function fIsAcyclicMonoetherGraph(conn, types, bonds) {
     }
     return seen.size === heavy.length
 }
+// Bounded branch naming: one saturated acyclic ester, including formates.
+// Inspect the full heavy-atom tree: the bridging O must not close a lactone.
+// These arrays carry elements/bonds, not formal-charge metadata.
+function fIsAcyclicSaturatedMonoesterGraph(conn, types, bonds) {
+    if (!Array.isArray(conn) || !Array.isArray(types) || !Array.isArray(bonds) ||
+        types.some(t => !['C','H','O'].includes(t))) return false
+    const os = types.map((t,i) => t === 'O' ? i : -1).filter(i => i >= 0)
+    if (os.length !== 2 || bonds.some(b => !Array.isArray(b) || b.length < 3 ||
+        !Number.isInteger(b[0]) || !Number.isInteger(b[1]) || b[0] === b[1] ||
+        b[0] < 1 || b[1] < 1 || b[0] > types.length || b[1] > types.length ||
+        ![1,2].includes(b[2]))) return false
+    const incident = i => bonds.filter(b => b[0]-1 === i || b[1]-1 === i)
+    const other = (b,i) => b[0]-1 === i ? b[1]-1 : b[0]-1
+    const carbonylO = os.find(o => {
+        const bs = incident(o)
+        return bs.length === 1 && bs[0][2] === 2 && types[other(bs[0],o)] === 'C'
+    })
+    if (carbonylO === undefined) return false
+    const carbonylBond = incident(carbonylO)[0], carbonylC = other(carbonylBond,carbonylO)
+    const bridgeO = os.find(o => o !== carbonylO), bridgeBonds = incident(bridgeO)
+    if (bridgeBonds.length !== 2 || bridgeBonds.some(b => b[2] !== 1 || types[other(b,bridgeO)] !== 'C') ||
+        new Set(bridgeBonds.map(b => other(b,bridgeO))).size !== 2 ||
+        !bridgeBonds.some(b => other(b,bridgeO) === carbonylC) ||
+        bonds.some(b => b !== carbonylBond && b[2] !== 1)) return false
+    for (let i = 0; i < types.length; i++) {
+        const bs = incident(i)
+        if (types[i] === 'C' && bs.reduce((n,b) => n+b[2],0) > 4) return false
+        if (types[i] === 'H' && (bs.length !== 1 || bs[0][2] !== 1 || types[other(bs[0],i)] !== 'C')) return false
+    }
+    const heavy = types.map((t,i) => t !== 'H' ? i : -1).filter(i => i >= 0)
+    if (bonds.filter(b => types[b[0]-1] !== 'H' && types[b[1]-1] !== 'H').length !== heavy.length-1) return false
+    const seen = new Set(), todo = [carbonylC]
+    while (todo.length) {
+        const i = todo.pop(); if (seen.has(i)) continue; seen.add(i)
+        for (const b of incident(i)) { const n = other(b,i); if (types[n] !== 'H' && !seen.has(n)) todo.push(n) }
+    }
+    return seen.size === heavy.length
+}
 function fCarbonFragment(attach, conn, types) {
     const seen = new Set(), todo = [attach]
     while (todo.length) {
@@ -878,7 +916,9 @@ function fSupportsAlkylBranchPrefixes() {
         (functionalGroupsList[0] === 'ketone' &&
             fIsAcyclicKetoneGraph(atomConnectivityList, allAtomsTypeList, bondList)) ||
         (functionalGroupsList[0] === 'alcohol' &&
-            fIsAcyclicAlcoholGraph(atomConnectivityList, allAtomsTypeList, bondList)))
+            fIsAcyclicAlcoholGraph(atomConnectivityList, allAtomsTypeList, bondList)) ||
+        (functionalGroupsList[0] === 'ester' &&
+            fIsAcyclicSaturatedMonoesterGraph(atomConnectivityList, allAtomsTypeList, bondList)))
 }
 
 function fCarbonBranchLocants(path, connList, typeList) {
@@ -978,7 +1018,7 @@ function fOrientChainPath(path) {
                 if (pos >= 0) locants.push(pos + 1)
             }
             // v49: acyclic hydrocarbon alkyl branches join the detachable-prefix tier
-            if ((fIsAcyclicHydrocarbonGraph(atomConnectivityList, allAtomsTypeList) || fIsAcyclicAlcoholGraph(atomConnectivityList, allAtomsTypeList, bondList) || fIsAcyclicMonoetherGraph(atomConnectivityList, allAtomsTypeList, bondList) || fIsAcyclicAldehydeGraph(atomConnectivityList, allAtomsTypeList, bondList) || fIsAcyclicKetoneGraph(atomConnectivityList, allAtomsTypeList, bondList) || fSupportsAcyclicAcidGraph(atomConnectivityList, allAtomsTypeList, bondList))) {
+            if ((fIsAcyclicHydrocarbonGraph(atomConnectivityList, allAtomsTypeList) || fIsAcyclicAlcoholGraph(atomConnectivityList, allAtomsTypeList, bondList) || fIsAcyclicMonoetherGraph(atomConnectivityList, allAtomsTypeList, bondList) || fIsAcyclicAldehydeGraph(atomConnectivityList, allAtomsTypeList, bondList) || fIsAcyclicKetoneGraph(atomConnectivityList, allAtomsTypeList, bondList) || fSupportsAcyclicAcidGraph(atomConnectivityList, allAtomsTypeList, bondList) || fIsAcyclicSaturatedMonoesterGraph(atomConnectivityList, allAtomsTypeList, bondList))) {
                 locants.push(...fCarbonBranchLocants(path, atomConnectivityList, allAtomsTypeList))
             }
             locants.sort(function(a, b) { return a - b })
@@ -1046,7 +1086,7 @@ function fOrientChainPath(path) {
                         }
                         if (((!Object.keys(ccDoubleBondKeys).length && !Object.keys(ccTripleBondKeys).length) ||
                         fIsAcyclicUnsaturatedAcidGraph(atomConnectivityList, allAtomsTypeList, bondList)) &&
-                            (fIsAcyclicHydrocarbonGraph(atomConnectivityList, allAtomsTypeList) || fIsAcyclicAlcoholGraph(atomConnectivityList, allAtomsTypeList, bondList) || fIsAcyclicMonoetherGraph(atomConnectivityList, allAtomsTypeList, bondList) || fIsAcyclicAldehydeGraph(atomConnectivityList, allAtomsTypeList, bondList) || fIsAcyclicKetoneGraph(atomConnectivityList, allAtomsTypeList, bondList) || fSupportsAcyclicAcidGraph(atomConnectivityList, allAtomsTypeList, bondList))) {
+                            (fIsAcyclicHydrocarbonGraph(atomConnectivityList, allAtomsTypeList) || fIsAcyclicAlcoholGraph(atomConnectivityList, allAtomsTypeList, bondList) || fIsAcyclicMonoetherGraph(atomConnectivityList, allAtomsTypeList, bondList) || fIsAcyclicAldehydeGraph(atomConnectivityList, allAtomsTypeList, bondList) || fIsAcyclicKetoneGraph(atomConnectivityList, allAtomsTypeList, bondList) || fSupportsAcyclicAcidGraph(atomConnectivityList, allAtomsTypeList, bondList) || fIsAcyclicSaturatedMonoesterGraph(atomConnectivityList, allAtomsTypeList, bondList))) {
                             if (fCompareLocantSets(
                                 fCarbonBranchAlphabeticalKey(rev, atomConnectivityList, allAtomsTypeList),
                                 fCarbonBranchAlphabeticalKey(oriented, atomConnectivityList, allAtomsTypeList)) < 0) useForward = false
@@ -1629,7 +1669,7 @@ function fOrientChainPath3D(path) {
                 if (pos >= 0) locants.push(pos + 1)
             }
             // v49: acyclic hydrocarbon alkyl branches join the detachable-prefix tier
-            if ((fIsAcyclicHydrocarbonGraph(atomConnectivityList3D, allAtomsTypeList3D) || fIsAcyclicAlcoholGraph(atomConnectivityList3D, allAtomsTypeList3D, bondList3D) || fIsAcyclicMonoetherGraph(atomConnectivityList3D, allAtomsTypeList3D, bondList3D) || fIsAcyclicAldehydeGraph(atomConnectivityList3D, allAtomsTypeList3D, bondList3D) || fIsAcyclicKetoneGraph(atomConnectivityList3D, allAtomsTypeList3D, bondList3D) || fSupportsAcyclicAcidGraph(atomConnectivityList3D, allAtomsTypeList3D, bondList3D))) {
+            if ((fIsAcyclicHydrocarbonGraph(atomConnectivityList3D, allAtomsTypeList3D) || fIsAcyclicAlcoholGraph(atomConnectivityList3D, allAtomsTypeList3D, bondList3D) || fIsAcyclicMonoetherGraph(atomConnectivityList3D, allAtomsTypeList3D, bondList3D) || fIsAcyclicAldehydeGraph(atomConnectivityList3D, allAtomsTypeList3D, bondList3D) || fIsAcyclicKetoneGraph(atomConnectivityList3D, allAtomsTypeList3D, bondList3D) || fSupportsAcyclicAcidGraph(atomConnectivityList3D, allAtomsTypeList3D, bondList3D) || fIsAcyclicSaturatedMonoesterGraph(atomConnectivityList3D, allAtomsTypeList3D, bondList3D))) {
                 locants.push(...fCarbonBranchLocants(path, atomConnectivityList3D, allAtomsTypeList3D))
             }
             locants.sort(function(a, b) { return a - b })
@@ -2116,7 +2156,7 @@ function fRankChainPool(paths, req, scoreFn, orientFn, connList, typeList, bonds
             scored = scored.filter(c => fCompareLocantSets(multiKey(c), bestMulti) === 0)
         }
     }
-    if ((bestMu === 0 && fIsAcyclicHydrocarbonGraph(connList, typeList)) || alcohol || fIsAcyclicAldehydeGraph(connList, typeList, bonds) || fIsAcyclicKetoneGraph(connList, typeList, bonds) || fSupportsAcyclicAcidGraph(connList, typeList, bonds)) {
+    if ((bestMu === 0 && fIsAcyclicHydrocarbonGraph(connList, typeList)) || alcohol || fIsAcyclicAldehydeGraph(connList, typeList, bonds) || fIsAcyclicKetoneGraph(connList, typeList, bonds) || fSupportsAcyclicAcidGraph(connList, typeList, bonds) || fIsAcyclicSaturatedMonoesterGraph(connList, typeList, bonds)) {
         let bestBranches = -1
         for (const candidate of scored) {
             candidate.branchCount = fCarbonBranchLocants(candidate.p, connList, typeList).length
@@ -2676,7 +2716,8 @@ function fGuessName(skipChainRecalc) {
                 // 5 boxes: comp1 (προπ) | comp2 (αν) | comp4 (ικός) | comp10 (μεθυλ) | comp11 (εστέρας)
                 {
                     const _es = (typeof esterInfo !== "undefined") ? esterInfo : null
-                    const _acidLen = (_es && _es.acidLen) ? _es.acidLen : mainChainAtomsList.length
+                    const _acidLen = fIsAcyclicSaturatedMonoesterGraph(atomConnectivityList, allAtomsTypeList, bondList)
+                        ? mainChainAtomsList.length : ((_es && _es.acidLen) ? _es.acidLen : mainChainAtomsList.length)
                     const _alcLen = (_es && _es.alcoholLen) ? _es.alcoholLen : 1
                     comp1 = nameMainCompList1[_acidLen - 1]
                     comp2 = "αν"

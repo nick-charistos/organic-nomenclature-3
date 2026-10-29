@@ -320,6 +320,10 @@ fInitViewerMaxHeight();
 fInitViewerBothHeight();
 
 // ── jsmeOnLoad ────────────────────────────────────────────────────────────
+// Main applet stays in depict mode: 2D highlights are read back from
+// getMolecularAreaGraphicsString(), which needs the depiction pipeline.
+// Future user/teacher structure input goes through the ORGNL applet below,
+// which stays in full edit mode.
 
 function jsmeOnLoad() {
   jsmeNomeclatureApplet = new JSApplet.JSME(
@@ -327,7 +331,7 @@ function jsmeOnLoad() {
     "590px",
     "240px",
     {
-      options: "marker",
+      options: "depict, marker",
       depictbg: "#fff",
       atombgsize: "0.6",
     },
@@ -3638,6 +3642,7 @@ function fNameExpandOpen() {
     cont.setAttribute("aria-label", "Πλήρες όνομα");
     var btn = document.getElementById("nameExpandBtn");
     if (btn) { btn.classList.add("active"); btn.setAttribute("aria-expanded", "true"); }
+    try { fNameExpandPaintBtn(); } catch (eP) { /* best-effort */ }
     try { fNameExpandReserve(); } catch (eR) { /* best-effort */ }
     try { fNameExplainAnchor(); } catch (eA) { /* best-effort */ }
   } catch (eO) { /* best-effort */ }
@@ -3775,6 +3780,7 @@ function fNameExpandClose(refit) {
     if (cont) { cont.removeAttribute("role"); if (cont.parentElement) cont.parentElement.style.minHeight = ""; }
     var btn = document.getElementById("nameExpandBtn");
     if (btn) { btn.classList.remove("active"); btn.setAttribute("aria-expanded", "false"); }
+    try { fNameExpandPaintBtn(); } catch (eP) { /* best-effort */ }
   } catch (eC) { /* best-effort */ }
   if (refit !== false) {
     try { fFitNameComponents(); } catch (eF) { /* best-effort */ }
@@ -3804,6 +3810,29 @@ function fNameExpandSync() {
     btn.classList.toggle("active", !!window.nameExpanded);
     btn.setAttribute("aria-expanded", window.nameExpanded ? "true" : "false");
   } catch (eA) { /* best-effort */ }
+  try { fNameExpandPaintBtn(); } catch (eP) { /* best-effort */ }
+}
+
+// Expand-button icon/tooltip follow state — same fullScreen pair as the
+// note editor expand/close buttons (fallback: legacy expand glyph).
+function fNameExpandPaintBtn() {
+  var btn = null;
+  try { btn = document.getElementById("nameExpandBtn"); } catch (eB) { btn = null; }
+  if (!btn) return;
+  var open = !!window.nameExpanded;
+  var icon = "";
+  try {
+    if (window.MuLERIcons) {
+      icon = open ? (window.MuLERIcons.fullScreenExit || "") : (window.MuLERIcons.fullScreen || "");
+    }
+    if (!icon && typeof svgNameExpand !== "undefined") icon = svgNameExpand;
+  } catch (eI) { icon = ""; }
+  var tip = open ? "Έξοδος από το πλήρες όνομα" : "Πλήρες όνομα";
+  try {
+    btn.innerHTML = icon;
+    btn.setAttribute("data-tooltip", tip);
+    btn.setAttribute("aria-label", tip);
+  } catch (eA) { /* best-effort */ }
 }
 
 // ── fShowNameAnalysis ─────────────────────────────────────────────────────
@@ -3831,6 +3860,7 @@ function fShowNameAnalysis() {
         } catch (eNt) { /* best-effort */ }
       }
       try { fNameExplainPortalOut(); } catch (eNp) { /* best-effort */ }
+      try { fNameExpandPaintBtn(); } catch (ePp) { /* best-effort */ }
       var _nxCont = document.querySelector("#nameAnalysis .nameCompContainer");
       if (_nxCont && _nxCont.parentElement) _nxCont.parentElement.style.minHeight = "";
     } catch (eNx) { /* best-effort */ }
@@ -4811,15 +4841,18 @@ function fExplainNameComp() {
     case "compCarbonsCount":
       if (fIsSingleEster()) {
         // Ester acid-stem click (e.g. αιθ-): the name counts the ACID carbons,
-        // so text + highlight + numbering follow the acid fragment, not the
-        // longest chain (which may run through the alcohol part).
-        myText = `Το οξύ-τμήμα του εστέρα έχει ${esterInfo.acidLen} άτομα άνθρακα C`;
+        // so text + highlight + numbering follow the named acid parent chain,
+        // not the longest chain (which may run through the alcohol part).
+        var _acidChain = fGetEsterAcidParentChain();
+        var _acidChain3D = fGetEsterAcidParentChain3D();
+        var _acidParentLen = _acidChain ? _acidChain.length : esterInfo.acidLen;
+        myText = _acidParentLen === esterInfo.acidLen
+          ? `Το οξύ-τμήμα του εστέρα έχει ${esterInfo.acidLen} άτομα άνθρακα C`
+          : `Η κύρια αλυσίδα του όξινου τμήματος του εστέρα έχει ${_acidParentLen} άτομα άνθρακα C`;
         nStyle = "";
         myClass = "";
-        ruleTableHighlight = `r1-c${esterInfo.acidLen}`;
+        ruleTableHighlight = `r1-c${_acidParentLen}`;
         numberingFlag = true;
-        var _acidChain = fGetEsterAcidChain();
-        var _acidChain3D = fGetEsterAcidChain3D();
         // Numbering highlight, atoms and bonds gated independently
         // (either checkbox alone still paints its half).
         var _showA = false, _showB = true;
@@ -6196,6 +6229,23 @@ function fGetEsterAcidChain3D() {
   }
   const rest = Object.keys(seen).map(function (x) { return parseInt(x); }).filter(function (c) { return c !== att; });
   return [att + 1].concat(rest.map(function (c) { return c + 1; }));
+}
+
+// Acid PARENT chain for branched esters — the named chain,
+// not the whole acid fragment (parent + branches).
+function fGetEsterAcidParentChain() {
+  if (!fIsSingleEster()) return null;
+  const fragment = fGetEsterAcidChain();
+  if (Array.isArray(mainChainAtomsList) && mainChainAtomsList[0] === esterInfo.carbonylC + 1 &&
+      mainChainAtomsList.every(n => fragment.includes(n))) return mainChainAtomsList.slice();
+  return fragment;
+}
+function fGetEsterAcidParentChain3D() {
+  const carbonyl = fGetEsterAcidC3D(), fragment = fGetEsterAcidChain3D();
+  if (carbonyl === null || !fragment) return null;
+  if (Array.isArray(mainChainAtoms3D) && mainChainAtoms3D[0] === carbonyl + 1 &&
+      mainChainAtoms3D.every(n => fragment.includes(n))) return mainChainAtoms3D.slice();
+  return null; // 3D analysis/mapping has not caught up with this molecule.
 }
 
 // Sole-FG ester predicate: name + highlight overrides apply only when the
