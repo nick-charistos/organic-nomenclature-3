@@ -1,5 +1,11 @@
 # Session notes — 2026-10-03 (resume point for next session)
 
+> **Resume pointer (cross-machine):** last commit `f5001e8` (2026-10-30) —
+> per-step expand persistence + Explain-tracks-panel, tree clean. Routine:
+> end-of-day commit + push and update this pointer; on the other machine pull
+> first, then resume from the baseline below + `git log --oneline -5` +
+> `git status`. OpenCode sessions themselves stay machine-local.
+
 > **Current baseline (2026-10-30): v52 live.** `index.html` →
 > `mulermoc-nom-52.html`, 141 `nameExamples` keys (136 + 5 thesis-work esters). v52 has a unified rich note
 > editor: inline WYSIWYG, modal WYSIWYG + HTML source view, staged Apply/Cancel
