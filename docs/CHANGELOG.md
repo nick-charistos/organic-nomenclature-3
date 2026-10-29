@@ -102,6 +102,12 @@ New parallel file set `mulermoc-nom-52.html` + `js/*-52.js` + `css/*-52.css`, fo
 - Owner CSS tweak carried in this commit: `body.scPinned #scenarioAuthorBar` `top: 0` → `-31px` (`css/mulermoc-nom-scenario-52.css`).
 - Checks: `git diff --check` clean; JS brace/paren balance `0/0` on both edited files (no Node runtime for `node --check`); manual browser verification pending (console `fScenarioGetMoveto()`, capture → export `view3D.moveto`, molecule switch keeps stored framing, step apply jumps instantly).
 
+### 2026-10-28 — Full-name floating overlay (v52, live)
+- Long names shrink to 14px then scroll; a new expand button (visible only when shrunk/scrolled) floats the existing boxes over the app at fit-content width and default size with a drop shadow — same nodes, so clicks/eyes/narration keep working, no backdrop/dimming, app fully live underneath. Single nowrap row with horizontal scroll inside the sheet; right-anchored to the host, growing left outside the 350px column (viewport-capped).
+- Height reserve: the sheet is absolute (out of flow), so `#nameAnalysis` is pinned to the measured sheet height (+6 breathing room) keeping `#nameAnalysisExplain` below instead of behind; re-pinned on same-molecule rebuilds and debounced resize.
+- Close contract: toggle, `Esc`, or rebuild for another molecule (same-molecule mode/chain/eye/scenario rebuilds preserve it). Fitter skips while expanded; close restores the exact prior state.
+- Checks: `node --check` passes; DOM-stub logic test (open/close/refit/sync); CSS braces balanced; `git diff --check` clean. Browser matrix pending (overlay over viewer, live clicks inside, molecule-switch close, narrow scroll, short-name untouched).
+
 ### 2026-10-28 — Name-component minimum font size (v52, live)
 - `.nameCompBox` is now `max(14px, calc(1.1rem * var(--nameCompScale, 1)))`: long names shrink to 14px and then resolve through the existing horizontal-scroll fallback instead of shrinking further. Short names and the fitter are untouched; `+` separators keep their 1.5rem scale.
 - Checks: CSS braces balanced; browser check pending (longest acid name at 14px + scroll, short names unchanged).

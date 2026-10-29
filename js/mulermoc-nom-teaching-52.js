@@ -628,6 +628,18 @@ $(document).ready(function () {
   // Ensure read button remains enabled/visible even if other scripts attempt to disable it
   $("#readNameBtn").prop("disabled", false);
 
+  // Expanded-name floating overlay: same nodes, non-modal (app stays live).
+  $(document).on("click", "#nameExpandBtn", function () {
+    if (window.nameExpanded) fNameExpandClose(true);
+    else fNameExpandOpen();
+  });
+  $(document).on("keydown", function (e) {
+    if ((e.key === "Escape" || e.key === "Esc") && window.nameExpanded) {
+      fNameExpandClose(true);
+      try { $("#nameExpandBtn").focus(); } catch (eF) { /* best-effort */ }
+    }
+  });
+
   $(document).on("click", "#nameStyleBoxToggle", function () {
     window.nameBoxFlag = !window.nameBoxFlag;
     if (window.nameBoxFlag) {

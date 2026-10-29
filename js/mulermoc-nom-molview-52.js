@@ -253,6 +253,7 @@ const svgNameCrossOff = (window.MuLERIcons && window.MuLERIcons.nameCrossOff) ||
 const svgEye = (window.MuLERIcons && window.MuLERIcons.eye) || "";
 const svgEyeOff = (window.MuLERIcons && window.MuLERIcons.eyeOff) || "";
 const svgEyeState = (window.MuLERIcons && window.MuLERIcons.eyeState) || "";
+const svgNameExpand = (window.MuLERIcons && window.MuLERIcons.nameExpand) || "";
 
 // Per-component name visibility helpers (eye toggles). Masking is applied at
 // box-construction time in fShowNameAnalysis so every rebuild (mode switch,
@@ -3560,6 +3561,9 @@ window.fSaveJmolPng = function () {
 var NAME_COMP_MIN_SCALE = 0.7;
 
 function fFitNameComponents() {
+  // Expanded-name overlay owns its own size (full width, default font):
+  // never shrink it here (render, explain clicks, column observer).
+  if (window.nameExpanded) return;
   var container = document.querySelector("#nameAnalysis .nameCompContainer");
   if (!container) return;
   var parent = container.parentElement;
@@ -3608,11 +3612,111 @@ function fFitNameComponents() {
   }
 }
 
+// ── Expanded-name floating overlay ────────────────────────────────────────
+// Non-modal: the existing boxes are restyled in place (same nodes, so all
+// clicks/eyes/narration keep working); the app underneath stays fully live.
+// Close contract: toggle button, Esc, or a rebuild for another molecule.
+
+function fNameExpandOpen() {
+  var cont = null;
+  try { cont = document.querySelector("#nameAnalysis .nameCompContainer"); } catch (eC) { cont = null; }
+  if (!cont || !selectedMol) return;
+  window.nameExpanded = true;
+  window.expandedMol = selectedMol;
+  try {
+    cont.style.setProperty("--nameCompScale", "1");
+    var parent = cont.parentElement;
+    if (parent) parent.classList.remove("nameOverflow");
+    var host = document.getElementById("nameAnalysisContainer");
+    if (host) { host.classList.add("nameExpanded"); host.style.minHeight = ""; }
+    cont.setAttribute("role", "dialog");
+    cont.setAttribute("aria-label", "Πλήρες όνομα");
+    var btn = document.getElementById("nameExpandBtn");
+    if (btn) { btn.classList.add("active"); btn.setAttribute("aria-expanded", "true"); }
+    try { fNameExpandReserve(); } catch (eR) { /* best-effort */ }
+  } catch (eO) { /* best-effort */ }
+}
+
+// Height reserve: the overlay is absolute (out of flow), so #nameAnalysis
+// collapses and #nameAnalysisExplain slides up behind it. Pinning the
+// parent's min-height to the overlay's measured height (+6 breathing room)
+// keeps Explain below the sheet. Pinned on #nameAnalysis (not the host): the overlay's static
+// top sits below #ruleTheory, so host = R + overlay needs the parent hop.
+function fNameExpandReserve() {
+  if (!window.nameExpanded) return;
+  try {
+    var cont = document.querySelector("#nameAnalysis .nameCompContainer");
+    if (!cont) return;
+    var parent = cont.parentElement;
+    if (!parent) return;
+    var h = 0;
+    try { h = Math.ceil(cont.offsetHeight) + 6; } catch (eH) { h = 0; }
+    if (h > 0) parent.style.minHeight = h + "px";
+  } catch (eR) { /* best-effort */ }
+}
+
+function fNameExpandClose(refit) {
+  if (!window.nameExpanded) return;
+  window.nameExpanded = false;
+  window.expandedMol = null;
+  try {
+    var host = document.getElementById("nameAnalysisContainer");
+    if (host) { host.classList.remove("nameExpanded"); host.style.minHeight = ""; }
+    var cont = document.querySelector("#nameAnalysis .nameCompContainer");
+    if (cont) { cont.removeAttribute("role"); if (cont.parentElement) cont.parentElement.style.minHeight = ""; }
+    var btn = document.getElementById("nameExpandBtn");
+    if (btn) { btn.classList.remove("active"); btn.setAttribute("aria-expanded", "false"); }
+  } catch (eC) { /* best-effort */ }
+  if (refit !== false) {
+    try { fFitNameComponents(); } catch (eF) { /* best-effort */ }
+    try { fNameExpandSync(); } catch (eS) { /* best-effort */ }
+  }
+}
+
+// Toggle-button visibility: only when the name is actually shrunk or
+// scrolled (or already expanded). Runs after every render + open/close.
+function fNameExpandSync() {
+  var btn = null;
+  try { btn = document.getElementById("nameExpandBtn"); } catch (eB) { btn = null; }
+  if (!btn) return;
+  var show = !!window.nameExpanded;
+  if (!show) {
+    try {
+      var cont = document.querySelector("#nameAnalysis .nameCompContainer");
+      var parent = cont && cont.parentElement;
+      var scale = cont ? parseFloat(cont.style.getPropertyValue("--nameCompScale") || "1") : 1;
+      show = !!selectedMol &&
+        !!((parent && parent.classList.contains("nameOverflow")) || scale < 1);
+    } catch (eS) { show = false; }
+  }
+  try {
+    if (show) btn.removeAttribute("hidden");
+    else btn.setAttribute("hidden", "");
+    btn.classList.toggle("active", !!window.nameExpanded);
+    btn.setAttribute("aria-expanded", window.nameExpanded ? "true" : "false");
+  } catch (eA) { /* best-effort */ }
+}
+
 // ── fShowNameAnalysis ─────────────────────────────────────────────────────
 
 function fShowNameAnalysis() {
   let compCount, currComp, displayComp, compBox, nameCompContainer;
   compCount = selectedMol ? nameComponentsList.length : 0;
+
+  // Expanded-name overlay follows the same molecule only: a rebuild for a
+  // different molecule closes it (fresh boxes + trailing fitter restore the
+  // normal state, no refit needed here); same-molecule rebuilds (2D mode,
+  // chain mode, stepper, eyes, scenario steps) keep it open.
+  if (window.nameExpanded && window.expandedMol !== selectedMol) {
+    window.nameExpanded = false;
+    window.expandedMol = null;
+    try {
+      var _nxHost = document.getElementById("nameAnalysisContainer");
+      if (_nxHost) { _nxHost.classList.remove("nameExpanded"); _nxHost.style.minHeight = ""; }
+      var _nxCont = document.querySelector("#nameAnalysis .nameCompContainer");
+      if (_nxCont && _nxCont.parentElement) _nxCont.parentElement.style.minHeight = "";
+    } catch (eNx) { /* best-effort */ }
+  }
 
   const toggleIcon = narrateAnalysisFlag ? svgSpeaker : svgMute;
   const toggleTitle = narrateAnalysisFlag
@@ -3656,7 +3760,7 @@ function fShowNameAnalysis() {
   // - radios only (ether, no stepper): single row, radios left / buttons right.
   // - neither: single row, buttons right (as in frozen versions).
   const _stepperHTML = (typeof fChainStepperHTML === "function") ? fChainStepperHTML() : "";
-  const _buttonsHTML = `<button id='narrateAnalysisToggle' class='narrateBtn${narrateActiveClass}' data-tooltip='${toggleTitle}'>${toggleIcon}</button><button id='readNameBtn' class='readNameBtn' data-tooltip='Εκφώνηση ονόματος' >${svgAudioDesc}</button><button id='nameStyleBoxToggle' class='nameStyleBox ${boxActiveClass}' data-tooltip='${boxTooltip}'>${toggleNameStyleBox}</button><button id='nameStyleCrossToggle' class='nameStyleCross ${crossActiveClass}' data-tooltip='${crossTooltip}'>${toggleNameStyleCross}</button><button id='nameStyleEyeToggle' class='nameStyleEye${eyeActiveClass}' data-tooltip='Ορατότητα συνθετικών'>${toggleNameStyleEye}</button>`;
+  const _buttonsHTML = `<button id='narrateAnalysisToggle' class='narrateBtn${narrateActiveClass}' data-tooltip='${toggleTitle}'>${toggleIcon}</button><button id='readNameBtn' class='readNameBtn' data-tooltip='Εκφώνηση ονόματος' >${svgAudioDesc}</button><button id='nameStyleBoxToggle' class='nameStyleBox ${boxActiveClass}' data-tooltip='${boxTooltip}'>${toggleNameStyleBox}</button><button id='nameStyleCrossToggle' class='nameStyleCross ${crossActiveClass}' data-tooltip='${crossTooltip}'>${toggleNameStyleCross}</button><button id='nameStyleEyeToggle' class='nameStyleEye${eyeActiveClass}' data-tooltip='Ορατότητα συνθετικών'>${toggleNameStyleEye}</button><button id='nameExpandBtn' class='nameStyleExpand' data-tooltip='Πλήρες όνομα' aria-label='Πλήρες όνομα' hidden>${svgNameExpand}</button>`;
   var _panelInner = "";
   if (_stepperHTML && etherNamingToggle) {
     _panelInner = `<div id='nameSettingsRowTop'>${_stepperHTML}</div><div id='nameSettingsRowMain'><div class='nsLeft'>${etherNamingToggle}</div><div class='nsRight'>${_buttonsHTML}</div></div>`;
@@ -3942,7 +4046,29 @@ function fShowNameAnalysis() {
     /* scenario absent */
   }
   fFitNameComponents();
+  fNameExpandSync();
+  // Same-molecule rebuild while open: boxes were recreated, re-pin the
+  // host height so Explain stays below the sheet (fFit is a no-op here).
+  try { if (window.nameExpanded) fNameExpandReserve(); } catch (eR) { /* best-effort */ }
 }
+
+// While open, viewport/column changes can alter the wrapped height:
+// re-pin the reserve (debounced, guarded so it registers only once).
+var _nameExpandResizeTimer = null;
+(function () {
+  try {
+    if (window._nameExpandResizeHook) return;
+    window._nameExpandResizeHook = true;
+    window.addEventListener("resize", function () {
+      if (!window.nameExpanded) return;
+      if (_nameExpandResizeTimer) clearTimeout(_nameExpandResizeTimer);
+      _nameExpandResizeTimer = setTimeout(function () {
+        _nameExpandResizeTimer = null;
+        try { fNameExpandReserve(); } catch (eR) { /* best-effort */ }
+      }, 150);
+    });
+  } catch (eW) { /* best-effort */ }
+})();
 
 // ── fClearHighlights ──────────────────────────────────────────────────────
 

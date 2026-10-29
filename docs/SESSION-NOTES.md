@@ -2364,3 +2364,28 @@ follows; one Save → Present → Next → Exit round-trip.
   block-local copy and re-verified by executing the verbatim render block
   against engine-real slot data (`comp3`/`comp3loc`/`comp3b` emit correctly,
   unfused stays single). Real-browser click/numbering/highlight pending.
+
+## 2026-10-28 — Instant numbering, 14px name floor, full-name overlay
+
+* Numbering policy: `fShowAnalysisNumbering(0)`/bare renders all 2D/3D numbers
+  synchronously; only `time > 0` animates, used solely by the main-chain
+  carbon-count component (explicit `400`). The sequential-target wrapper passes
+  `time` through (keeping old-number cleanup); `fShowNumbering` normalizes
+  `undefined`/`null` → 400 so the explicit interval always renders (a bare
+  `400` previously hit neither branch — numbers computed but never shown).
+* `.nameCompBox` floor: `max(14px, calc(1.1rem * var(--nameCompScale, 1)))`;
+  below 14px the existing horizontal-scroll fallback engages. `+` separators
+  keep 1.5rem; fitter untouched.
+* Full-name floating overlay (non-modal): expand button in the name-panel row,
+  visible only when shrunk/scrolled; floats the existing boxes (same nodes, so
+  clicks/eyes/narration keep working) at fit-content width, right-anchored,
+  single nowrap row with horizontal scroll, at default size with drop
+  shadow; no backdrop/dimming, app fully live. `#nameAnalysis` pinned to the
+  measured sheet height (+6) so the explain line stays below, re-pinned on
+  same-molecule rebuilds/resize. Close: toggle,
+  `Esc`, or rebuild for another molecule (same-molecule rebuilds preserve it);
+  fitter skips while expanded. New `MuLERIcons.nameExpand` icon.
+* Checks: `node --check` on molview/teaching/scenario/ui-icons; routing +
+  interval-branch + DOM-stub overlay-logic unit tests; CSS braces balanced;
+  `git diff --check` clean. Browser matrix pending (instant locants, stem
+  reveal, 14px+scroll, overlay over viewer with live clicks).
