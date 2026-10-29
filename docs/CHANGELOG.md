@@ -102,6 +102,13 @@ New parallel file set `mulermoc-nom-52.html` + `js/*-52.js` + `css/*-52.css`, fo
 - Owner CSS tweak carried in this commit: `body.scPinned #scenarioAuthorBar` `top: 0` → `-31px` (`css/mulermoc-nom-scenario-52.css`).
 - Checks: `git diff --check` clean; JS brace/paren balance `0/0` on both edited files (no Node runtime for `node --check`); manual browser verification pending (console `fScenarioGetMoveto()`, capture → export `view3D.moveto`, molecule switch keeps stored framing, step apply jumps instantly).
 
+### 2026-10-29 — Explain floating sheet under expanded name (v52, live)
+- `#nameAnalysisExplain` now portals inside `#nameAnalysisContainer` while expanded, sharing the sheet's right anchor (`z-index:801` over the `800` name sheet) so it extends left outside the 350px column under the expanded components; restored on close/molecule-switch.
+- Geometry is JS-pinned: Explain width = sheet width, top = `sheetRect.bottom - hostRect.top - 1` (rect math, `-1` overlap), reserve `#nameAnalysis min-height = sheetH - 1 + explainH + 6`; re-pinned on open/render/rebuild/debounced resize.
+- Explain box is shrink-wrapped (`fit-content`) and centered under the selected `.nameCompBox` via live `getBoundingClientRect` clamp; sheet scroll re-anchors (rAF); no selection docks left.
+- Carried working-tree polish in this commit: viewer defaults `viewerMaxH/viewerBothH` `null` → `"full"`, sheet `overflow-y:hidden`, padding `0 15px 18px`, stronger shadow, `explainText` `#000`.
+- Checks: `node --check` passes; CSS braces `314/314`. Browser click-through pending (open/click left-mid-right, sheet scroll, resize, close/reopen, molecule-switch restore).
+
 ### 2026-10-28 — Full-name floating overlay (v52, live)
 - Long names shrink to 14px then scroll; a new expand button (visible only when shrunk/scrolled) floats the existing boxes over the app at fit-content width and default size with a drop shadow — same nodes, so clicks/eyes/narration keep working, no backdrop/dimming, app fully live underneath. Single nowrap row with horizontal scroll inside the sheet; right-anchored to the host, growing left outside the 350px column (viewport-capped).
 - Height reserve: the sheet is absolute (out of flow), so `#nameAnalysis` is pinned to the measured sheet height (+6 breathing room) keeping `#nameAnalysisExplain` below instead of behind; re-pinned on same-molecule rebuilds and debounced resize.

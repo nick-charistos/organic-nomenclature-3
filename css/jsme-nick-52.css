@@ -455,6 +455,7 @@ header {
 .nameContainer.nameOverflow {
   justify-content: flex-start !important;
   overflow-x: auto;
+  overflow-y: hidden;
   scrollbar-width: thin;
   scrollbar-color: var(--darkBlue) var(--veryLightBlue);
 }
@@ -1560,14 +1561,14 @@ header {
   min-width: 100%;  /* never smaller than host width */
   max-width: calc(100vw - 24px);  /* viewport safety cap */
   overflow-x: auto;
-  max-height: calc(100vh - 130px);
-  overflow-y: auto;
+  /* max-height: calc(100vh - 130px); */
+  overflow-y: hidden;
   z-index: 800;
   background: var(--bodyBg);
   border: 1px solid var(--lightBlue);
-  border-radius: 2px;
-  box-shadow: 1px 3px 6px rgba(0, 0, 0, 0.35);
-  padding: 0 5px 5px 5px;
+  border-radius: 3px;
+  box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.55), 1px 3px 6px rgba(0, 0, 0, 0.35);
+  padding: 0 15px 18px 15px;
   display: flex;
   flex-wrap: nowrap;
   row-gap: 0px;
@@ -1699,11 +1700,31 @@ header {
   /* border-top: 0; */
 }
 
+#nameAnalysisExplain.nameExplainExpanded {
+  position: absolute;
+  right: 0;
+  width: max-content;
+  min-width: 100%;
+  max-width: calc(100vw - 24px);
+  z-index: 801;
+  /* top/width pinned via JS to match the name sheet */
+}
+
+#nameAnalysisExplain.nameExplainExpanded .explainText   {
+  width: fit-content;
+  max-width: 100%;
+  box-sizing: border-box;
+  box-shadow: 0px 2px 3px rgba(0, 0, 0, 0.55), 1px 3px 6px rgba(0, 0, 0, 0.35);
+  z-index: 800;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
 .explainText {
   padding: 10px 10px;
   font-weight: bold;
   font-size: 1rem;
-  color: var(--darkBlue);
+  color: #000;
   background-color: #fff;
   border: 3px solid var(--vibrantGreen);
   z-index: 100;

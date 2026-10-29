@@ -23,18 +23,20 @@ const MOL_ZOOM_DEFAULT = 2.0;
 const MOL_ZOOM_MIN = 0.5;
 const MOL_ZOOM_MAX = 6.0;
 let molZoom2D = MOL_ZOOM_DEFAULT;
-// Single-viewer max-height (v48): null = Auto (cap at the both-visible
-// height, so toggling one viewer off never resizes the survivor); a number is
-// an absolute px cap. Applied only when exactly one viewer is visible, in
-// fViewerHeights2D3D. Set by the Ρυθμίσεις control and per scenario step
-// (show.viewerMaxHeight); scenario owns persistence, this is the live value.
-let viewerMaxH = null;
-// Double-viewer height (v48): null = Auto (the equal split both viewers get
-// today); a number is the COMBINED 2D+3D height when two viewers are visible —
-// each viewer takes half. Applied only when exactly two viewers are visible,
-// in fViewerHeights2D3D. Set by the Ρυθμίσεις control and per scenario step
-// (show.viewerBothHeight); scenario owns persistence, this is the live value.
-let viewerBothH = null;
+// Single-viewer max-height (v48): default "full" (live viewport share); null
+// = Auto (cap at the both-visible height, so toggling one viewer off never
+// resizes the survivor); a number is an absolute px cap. Applied only when
+// exactly one viewer is visible, in fViewerHeights2D3D. Set by the Ρυθμίσεις
+// control and per scenario step (show.viewerMaxHeight); scenario owns
+// persistence, this is the live value.
+let viewerMaxH = "full";
+// Double-viewer height (v48): default "full" (live viewport fill for both);
+// null = Auto (the equal split both viewers get today); a number is the
+// COMBINED 2D+3D height when two viewers are visible — each viewer takes half.
+// Applied only when exactly two viewers are visible, in fViewerHeights2D3D.
+// Set by the Ρυθμίσεις control and per scenario step (show.viewerBothHeight);
+// scenario owns persistence, this is the live value.
+let viewerBothH = "full";
 // Manual double-viewer slider bounds (v48): the combined 2D+3D height is a
 // fixed 300–1000px range regardless of the live single-viewer ceiling.
 const VIEWER_BOTH_MIN = 300;
@@ -3629,19 +3631,57 @@ function fNameExpandOpen() {
     if (parent) parent.classList.remove("nameOverflow");
     var host = document.getElementById("nameAnalysisContainer");
     if (host) { host.classList.add("nameExpanded"); host.style.minHeight = ""; }
+    try { fNameExplainPortalIn(); } catch (eP) { /* best-effort */ }
+    var explain = document.getElementById("nameAnalysisExplain");
+    if (explain) explain.classList.add("nameExplainExpanded");
     cont.setAttribute("role", "dialog");
     cont.setAttribute("aria-label", "Πλήρες όνομα");
     var btn = document.getElementById("nameExpandBtn");
     if (btn) { btn.classList.add("active"); btn.setAttribute("aria-expanded", "true"); }
     try { fNameExpandReserve(); } catch (eR) { /* best-effort */ }
+    try { fNameExplainAnchor(); } catch (eA) { /* best-effort */ }
   } catch (eO) { /* best-effort */ }
 }
 
-// Height reserve: the overlay is absolute (out of flow), so #nameAnalysis
-// collapses and #nameAnalysisExplain slides up behind it. Pinning the
-// parent's min-height to the overlay's measured height (+6 breathing room)
-// keeps Explain below the sheet. Pinned on #nameAnalysis (not the host): the overlay's static
-// top sits below #ruleTheory, so host = R + overlay needs the parent hop.
+// Portal: while expanded, #nameAnalysisExplain lives inside
+// #nameAnalysisContainer (same containing block as the name sheet) so its
+// right anchor matches the sheet and it can extend left outside analysisCol.
+var _nameExplainPlaceholder = null;
+function fNameExplainPortalIn() {
+  var host = null, explain = null;
+  try { host = document.getElementById("nameAnalysisContainer"); } catch (eH) { host = null; }
+  try { explain = document.getElementById("nameAnalysisExplain"); } catch (eE) { explain = null; }
+  if (!host || !explain) return;
+  if (explain.parentElement === host) return;
+  try {
+    _nameExplainPlaceholder = document.createComment("nameExplainAnchor");
+    explain.parentNode.insertBefore(_nameExplainPlaceholder, explain);
+    host.appendChild(explain);
+  } catch (eP) { /* best-effort */ }
+}
+function fNameExplainPortalOut() {
+  var explain = null;
+  try { explain = document.getElementById("nameAnalysisExplain"); } catch (eE) { explain = null; }
+  if (!explain) { _nameExplainPlaceholder = null; return; }
+  try { explain.style.top = ""; explain.style.width = ""; } catch (eS) { /* best-effort */ }
+  try {
+    if (_nameExplainPlaceholder && _nameExplainPlaceholder.parentNode) {
+      _nameExplainPlaceholder.parentNode.insertBefore(explain, _nameExplainPlaceholder);
+      _nameExplainPlaceholder.parentNode.removeChild(_nameExplainPlaceholder);
+    } else if (explain.parentElement) {
+      var host = document.getElementById("nameAnalysisContainer");
+      if (host && host.parentNode && explain.parentElement !== host.parentNode) {
+        if (host.nextSibling) host.parentNode.insertBefore(explain, host.nextSibling);
+        else host.parentNode.appendChild(explain);
+      }
+    }
+  } catch (eP) { /* best-effort */ }
+  _nameExplainPlaceholder = null;
+}
+
+// Height reserve: both sheets are absolute (out of flow). Pin #nameAnalysis
+// min-height to sheet + gap + Explain so Explain floats just below the name
+// sheet and #ruleTheoryContainer/footer stay below the stack.
 function fNameExpandReserve() {
   if (!window.nameExpanded) return;
   try {
@@ -3649,10 +3689,70 @@ function fNameExpandReserve() {
     if (!cont) return;
     var parent = cont.parentElement;
     if (!parent) return;
-    var h = 0;
-    try { h = Math.ceil(cont.offsetHeight) + 6; } catch (eH) { h = 0; }
-    if (h > 0) parent.style.minHeight = h + "px";
+    var host = document.getElementById("nameAnalysisContainer");
+    var explain = document.getElementById("nameAnalysisExplain");
+    // Keep Explain in the same containing block as the sheet.
+    try {
+      if (explain && host && explain.parentElement !== host) fNameExplainPortalIn();
+    } catch (eP) { /* best-effort */ }
+    var sheetH = 0, sheetW = 0;
+    try { sheetH = Math.ceil(cont.offsetHeight); } catch (eH) { sheetH = 0; }
+    try { sheetW = Math.ceil(cont.offsetWidth); } catch (eW) { sheetW = 0; }
+    // Robust top: rect math (immune to offsetParent/static-position quirks).
+    var topPx = null;
+    try {
+      if (host && cont.getBoundingClientRect && host.getBoundingClientRect) {
+        var hostRect = host.getBoundingClientRect();
+        var sheetRect = cont.getBoundingClientRect();
+        if (hostRect && sheetRect) topPx = Math.round(sheetRect.bottom - hostRect.top - 1);
+      }
+    } catch (eR) { topPx = null; }
+    var explainH = 0;
+    if (explain) {
+      try {
+        if (sheetW > 0) explain.style.width = sheetW + "px";
+        if (topPx !== null && topPx >= 0) explain.style.top = topPx + "px";
+        else explain.style.top = (sheetH - 1) + "px";
+        void explain.offsetHeight;
+        explainH = Math.ceil(explain.offsetHeight);
+      } catch (eE) { explainH = 0; }
+    }
+    var total = sheetH - 1 + explainH + 6;
+    if (total > 0) parent.style.minHeight = total + "px";
   } catch (eR) { /* best-effort */ }
+}
+
+// Explain anchor (expanded mode): shrink-wrapped Explain box centers under
+// the selected name component. Overlay is right-anchored + scrollable, so
+// the selected box center is measured live via getBoundingClientRect and the
+// Explain offset is clamped to the Explain row. No selection docks left.
+function fNameExplainAnchor() {
+  var wrap = null;
+  try { wrap = document.getElementById("nameAnalysisExplain"); } catch (eW) { wrap = null; }
+  if (!wrap) return;
+  var tip = null;
+  try { tip = wrap.querySelector(".explainText"); } catch (eQ) { tip = null; }
+  if (!tip) return;
+  if (!window.nameExpanded) {
+    try { tip.style.marginLeft = ""; } catch (eC) { /* best-effort */ }
+    return;
+  }
+  var sel = null;
+  try { sel = document.querySelector("#nameAnalysis .nameCompBox.selected"); } catch (eS) { sel = null; }
+  try { tip.style.marginLeft = "0px"; } catch (eM) { /* best-effort */ }
+  if (!sel) return;
+  try {
+    var wrapRect = wrap.getBoundingClientRect();
+    var selRect = sel.getBoundingClientRect();
+    var tipW = tip.offsetWidth || tip.getBoundingClientRect().width || 0;
+    var wrapW = wrap.clientWidth || wrapRect.width || 0;
+    if (!(tipW > 0) || !(wrapW > 0)) return;
+    var center = (selRect.left - wrapRect.left) + selRect.width / 2;
+    var left = Math.round(center - tipW / 2);
+    if (wrapW > tipW) left = Math.max(0, Math.min(left, wrapW - tipW));
+    else left = 0;
+    tip.style.marginLeft = left + "px";
+  } catch (eA) { /* best-effort */ }
 }
 
 function fNameExpandClose(refit) {
@@ -3662,6 +3762,15 @@ function fNameExpandClose(refit) {
   try {
     var host = document.getElementById("nameAnalysisContainer");
     if (host) { host.classList.remove("nameExpanded"); host.style.minHeight = ""; }
+    var explain = document.getElementById("nameAnalysisExplain");
+    if (explain) {
+      explain.classList.remove("nameExplainExpanded");
+      try {
+        var _tip = explain.querySelector(".explainText");
+        if (_tip) _tip.style.marginLeft = "";
+      } catch (eT) { /* best-effort */ }
+      try { fNameExplainPortalOut(); } catch (eP) { /* best-effort */ }
+    }
     var cont = document.querySelector("#nameAnalysis .nameCompContainer");
     if (cont) { cont.removeAttribute("role"); if (cont.parentElement) cont.parentElement.style.minHeight = ""; }
     var btn = document.getElementById("nameExpandBtn");
@@ -3713,6 +3822,15 @@ function fShowNameAnalysis() {
     try {
       var _nxHost = document.getElementById("nameAnalysisContainer");
       if (_nxHost) { _nxHost.classList.remove("nameExpanded"); _nxHost.style.minHeight = ""; }
+      var _nxExplain = document.getElementById("nameAnalysisExplain");
+      if (_nxExplain) {
+        _nxExplain.classList.remove("nameExplainExpanded");
+        try {
+          var _nxTip = _nxExplain.querySelector(".explainText");
+          if (_nxTip) _nxTip.style.marginLeft = "";
+        } catch (eNt) { /* best-effort */ }
+      }
+      try { fNameExplainPortalOut(); } catch (eNp) { /* best-effort */ }
       var _nxCont = document.querySelector("#nameAnalysis .nameCompContainer");
       if (_nxCont && _nxCont.parentElement) _nxCont.parentElement.style.minHeight = "";
     } catch (eNx) { /* best-effort */ }
@@ -4050,11 +4168,13 @@ function fShowNameAnalysis() {
   // Same-molecule rebuild while open: boxes were recreated, re-pin the
   // host height so Explain stays below the sheet (fFit is a no-op here).
   try { if (window.nameExpanded) fNameExpandReserve(); } catch (eR) { /* best-effort */ }
+  try { if (window.nameExpanded) fNameExplainAnchor(); } catch (eA) { /* best-effort */ }
 }
 
 // While open, viewport/column changes can alter the wrapped height:
-// re-pin the reserve (debounced, guarded so it registers only once).
+// re-pin the reserve + re-anchor Explain (debounced, guarded so it registers only once).
 var _nameExpandResizeTimer = null;
+var _nameExpandScrollRaf = 0;
 (function () {
   try {
     if (window._nameExpandResizeHook) return;
@@ -4065,8 +4185,21 @@ var _nameExpandResizeTimer = null;
       _nameExpandResizeTimer = setTimeout(function () {
         _nameExpandResizeTimer = null;
         try { fNameExpandReserve(); } catch (eR) { /* best-effort */ }
+        try { fNameExplainAnchor(); } catch (eA) { /* best-effort */ }
       }, 150);
     });
+    document.addEventListener("scroll", function (e) {
+      if (!window.nameExpanded) return;
+      try {
+        var t = e && e.target;
+        if (!t || !t.classList || !t.classList.contains("nameCompContainer")) return;
+        if (_nameExpandScrollRaf) return;
+        _nameExpandScrollRaf = requestAnimationFrame(function () {
+          _nameExpandScrollRaf = 0;
+          try { fNameExplainAnchor(); } catch (eA) { /* best-effort */ }
+        });
+      } catch (eS) { /* best-effort */ }
+    }, true);
   } catch (eW) { /* best-effort */ }
 })();
 
@@ -5107,6 +5240,8 @@ function fExplainNameComp() {
   myHTML = `<div class='explainText ${myClass} ' style='${nStyle}'  >${myText}</div>`;
   $("#nameAnalysisExplain").html(myHTML);
   fFitNameComponents();
+  try { if (window.nameExpanded) fNameExpandReserve(); } catch (eR) { /* best-effort */ }
+  try { if (window.nameExpanded) fNameExplainAnchor(); } catch (eA) { /* best-effort */ }
 }
 
 // ── fShowRule ─────────────────────────────────────────────────────────────
@@ -7712,18 +7847,19 @@ function fViewerHeights2D3D(raw) {
     );
     var maxViewerH =
       window.innerHeight < 430 ? Math.floor(window.innerHeight * 0.3) : Infinity;
-    // Single visible viewer: cap its height. Default (viewerMaxH == null) is
-    // the both-visible share so hiding the other viewer never resizes the
-    // survivor; an explicit px cap — or "full" for the whole single share —
-    // overrides. The cap is clamped into
+    // Single visible viewer: cap its height. Default is "full" (whole single
+    // share); null uses the both-visible share so hiding the other viewer
+    // never resizes the survivor; an explicit px cap also overrides. The cap
+    // is clamped into
     // [floor, single share], so it can neither squash below the CSS minimum
     // nor exceed the space one viewer can actually take. `raw` skips the cap
     // (used to measure the full height for the slider ceiling).
     var cap2 = Infinity, cap3 = Infinity;
     // Double visible viewers: an explicit COMBINED total overrides the equal
     // split for BOTH — each viewer gets half the combined 2D+3D height (it can
-    // grow or shrink; the page scrolls if the total no longer fits). Auto
-    // (viewerBothH == null) keeps the split. The phone cap still trims.
+    // grow or shrink; the page scrolls if the total no longer fits). Default
+    // is "full"; Auto (viewerBothH == null) keeps the split. The phone cap
+    // still trims.
     var each2 = each, each3 = each;
     if (!raw && n === 2 && viewerBothH != null) {
       // "full" fills the live viewport instead of a stored px total.
@@ -7940,4 +8076,3 @@ var _resizeSentOn3DReady = false;
     };
   } catch (eW) { /* hook unavailable */ }
 })();
-

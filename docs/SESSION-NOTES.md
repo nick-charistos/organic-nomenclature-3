@@ -1,12 +1,14 @@
 # Session notes — 2026-10-03 (resume point for next session)
 
-> **Current baseline (2026-10-28): v52 live.** `index.html` →
+> **Current baseline (2026-10-29): v52 live.** `index.html` →
 > `mulermoc-nom-52.html`, 136 `nameExamples` keys (126 + 10 carboxylic acids). v52 has a unified rich note
 > editor: inline WYSIWYG, modal WYSIWYG + HTML source view, staged Apply/Cancel
 > with dirty confirm, and lazy legacy-text upgrade. The 2026-10-26 refinement
 > adds block lists, per-block font size/alignment, an image sizing dialog, a
 > top card that spans the visible app columns, and a rail that stretches to the
-> app row. It
+> app row. The 2026-10-29 refinement floats Explain as a second sheet under the
+> expanded full-name overlay (portal + rect-pinned top, shrink-wrapped and
+> centered under the selected component). It
 > retains the v51 safe rich HTML notes, rule-table components, compact icon
 > toolbar, Snap-free native `MuSVG` 2D overlay, v50 presentation text rails, and
 > persistent naming shell.
