@@ -102,6 +102,25 @@ New parallel file set `mulermoc-nom-52.html` + `js/*-52.js` + `css/*-52.css`, fo
 - Owner CSS tweak carried in this commit: `body.scPinned #scenarioAuthorBar` `top: 0` → `-31px` (`css/mulermoc-nom-scenario-52.css`).
 - Checks: `git diff --check` clean; JS brace/paren balance `0/0` on both edited files (no Node runtime for `node --check`); manual browser verification pending (console `fScenarioGetMoveto()`, capture → export `view3D.moveto`, molecule switch keeps stored framing, step apply jumps instantly).
 
+### 2026-10-30 — Name expand state saved per scenario step (v52)
+- New per-step `show.nameExpanded` (default `false`, no schema bump): capture
+  stores the live expand state (menu-only steps store `false`); apply opens or
+  closes the overlay after the naming rebuild and before the highlight replay;
+  Update refreshes it from the live view like the hidden set; Exit stashes and
+  restores the author's live state. Go/Present flow through apply unchanged.
+- Checks: `node --check` clean. Browser: capture open → Present shows open,
+  step turns, Update round-trip, Exit restores author state, legacy import
+  stays closed.
+
+### 2026-10-30 — Explain sheet tracks the name settings panel (v52)
+- The gear panel sits above the name boxes and animates (0.25s), which left the
+  rect-pinned Explain `top` stale on open/close. New `fNameExpandRepinDelayed()`
+  (pin now + once after the transition, collapsing timers, no-op unless
+  expanded), called from `fToggleNameSettings()` and the scenario-chrome panel
+  close. Rebuilds already re-pinned after render.
+- Checks: `node --check` clean. Browser: expanded sheet open → gear toggle →
+  Explain stays glued during and after the animation.
+
 ### 2026-10-30 — Name expand button: visible tooltip + fullscreen icons (v52)
 - `#nameExpandBtn` had `data-tooltip` but the shared tooltip skin never listed
   `.nameStyleExpand`, so no bubble rendered; fixed by adding it to all 5

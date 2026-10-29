@@ -593,6 +593,7 @@ function fScenarioCapture() {
       nameSettings: false,
       nameClick: false,
       nameEye: false,
+      nameExpanded: !menuOnly && !!window.nameExpanded,
       audio: false,
       rule: false,
       text: true,
@@ -1019,7 +1020,7 @@ function fScenarioDefaults(step, i) {
       viewerBothHeight: null,
       controls: { "2D": false, "3D": false },
       save: { "2D": false, "3D": false },
-      naming: true, nameSettings: false, nameEye: false, audio: false, rule: false, text: true,
+      naming: true, nameSettings: false, nameEye: false, nameExpanded: false, audio: false, rule: false, text: true,
     },
   };
   var out = Object.assign({}, d, step);
@@ -1303,6 +1304,7 @@ function fScenarioStashAuthorSettings() {
     zoom: (typeof molZoom2D !== "undefined" ? molZoom2D : 2.0),
     viewerMaxHeight: (typeof viewerMaxH !== "undefined" ? viewerMaxH : null),
     viewerBothHeight: (typeof viewerBothH !== "undefined" ? viewerBothH : null),
+    nameExpanded: !!window.nameExpanded,
   };
 }
 
@@ -1344,6 +1346,15 @@ function fScenarioRestoreAuthorSettings() {
   } catch (e) {
     /* naming unavailable */
   }
+  // Author's live expanded-name state comes back too (step applies overwrote
+  // it). Runs after the rebuild above, which preserves same-molecule opens
+  // and closes stale ones.
+  try {
+    if (typeof fNameExpandOpen === "function" && typeof fNameExpandClose === "function") {
+      if (a.nameExpanded) fNameExpandOpen();
+      else fNameExpandClose();
+    }
+  } catch (eExp) { /* expand best-effort */ }
   MuLERMoCScenario.authorSettings = null;
 }
 
@@ -1895,6 +1906,18 @@ function fScenarioApply(step) {
   } catch (e) {
     /* naming unavailable */
   }
+  // Per-step expanded-name state: set AFTER the naming rebuild above (a
+  // molecule switch closes a stale overlay; same-molecule rebuilds preserve
+  // it) and BEFORE the highlight replay below, whose reserve/anchor calls
+  // observe window.nameExpanded. Skipped when the naming shell is hidden.
+  try {
+    if (typeof fNameExpandOpen === "function" && typeof fNameExpandClose === "function") {
+      var _wantExpand = !!(step.show && step.show.nameExpanded === true) && !!step.selectedMol &&
+        !(MuLERMoCScenario.present && step.show && step.show.naming === false);
+      if (_wantExpand) fNameExpandOpen();
+      else fNameExpandClose();
+    }
+  } catch (eExp) { /* expand best-effort */ }
   try {
     if (typeof fUpdateSVG === "function") fUpdateSVG();
   } catch (eZoomSvg) {
@@ -3873,6 +3896,9 @@ function fScenarioApplyNamingChrome(show) {
     fScenarioHide("nameSettingsBtnDiv", present && !ns);
     var panel = document.getElementById("nameSettingsPanel");
     if (panel && present && !ns) panel.classList.remove("open");
+    // The panel sits above the name boxes: re-pin the floating Explain sheet
+    // when chrome mutates it (no-op unless expanded; covers the 0.25s close).
+    try { if (typeof fNameExpandRepinDelayed === "function") fNameExpandRepinDelayed(); } catch (eExp) { /* best-effort */ }
     // voice buttons: visible with audio on, or with the naming controls
     var audioOn = !(present && show.audio !== true && show.nameSettings !== true);
     ["narrateAnalysisToggle", "readNameBtn"].forEach(function (id) {
@@ -5747,7 +5773,7 @@ function fScenarioGo(i) {
 // selectedMol, mode2D, mainChainMode, etherNamingMode, nameAnalysisMode
 // (clicked name-box highlight), selectedRule, style2D (atom colors, color
 // mode, zigzag, zoom), styleName (box/cross/etherNaming/panelOpen), styleHighlight,
-// audio, view3D (style/spin/showH/atomSymbols/moveto), menuSubset +
+// show.nameExpanded (live expand state), audio, view3D (style/spin/showH/atomSymbols/moveto), menuSubset +
 // show.menu/show.viewers, menuGroups (Ταξινομήσεις Μένου). No schema change
 // (scenarioVersion stays 1).
 function fScenarioUpdateStep(scenId, idx) {

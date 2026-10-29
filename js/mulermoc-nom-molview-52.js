@@ -923,6 +923,9 @@ function fToggleNameSettings() {
     panel.classList.add("open");
     btn.classList.add("active");
   }
+  // The panel sits above the name boxes and animates (0.25s): re-pin the
+  // floating Explain sheet now and once the transition settles.
+  try { fNameExpandRepinDelayed(); } catch (eR) { /* best-effort */ }
 }
 
 // document.addEventListener('click', function (e) {
@@ -4205,6 +4208,25 @@ function fShowNameAnalysis() {
 // re-pin the reserve + re-anchor Explain (debounced, guarded so it registers only once).
 var _nameExpandResizeTimer = null;
 var _nameExpandScrollRaf = 0;
+var _nameExpandRepinTimer = null;
+// Re-pin after a layout shift above the sheet (e.g. the name settings panel
+// opening/closing, which animates 0.25s): pin now for the start state and
+// once more after the transition settles. No-op unless expanded; pending
+// timers collapse into one.
+function fNameExpandRepinDelayed() {
+  if (!window.nameExpanded) return;
+  try { fNameExpandReserve(); } catch (eR) { /* best-effort */ }
+  try { fNameExplainAnchor(); } catch (eA) { /* best-effort */ }
+  try {
+    if (_nameExpandRepinTimer) clearTimeout(_nameExpandRepinTimer);
+    _nameExpandRepinTimer = setTimeout(function () {
+      _nameExpandRepinTimer = null;
+      if (!window.nameExpanded) return;
+      try { fNameExpandReserve(); } catch (eR2) { /* best-effort */ }
+      try { fNameExplainAnchor(); } catch (eA2) { /* best-effort */ }
+    }, 320);
+  } catch (eT) { /* best-effort */ }
+}
 (function () {
   try {
     if (window._nameExpandResizeHook) return;
