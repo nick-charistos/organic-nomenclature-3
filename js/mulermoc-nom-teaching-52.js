@@ -359,6 +359,91 @@ function fNarrateRule() {
   window.speechSynthesis.speak(utterance);
 }
 
+// ── Name narration helpers (UI-level) ─────────────────────────────────────
+const NAME_RATE_SHORT = 0.8;
+const NAME_RATE_MEDIUM = 0.7;
+const NAME_RATE_LONG = 0.6;
+
+function fSpeakGreek(text) {
+  window.speechSynthesis.cancel();
+  const cleanText = text.replace(/-/g, " ").replace(/\s+/g, " ").trim();
+  const utterance = new SpeechSynthesisUtterance(cleanText);
+  utterance.lang = "el-GR";
+  utterance.rate = 0.9;
+  const voices = window.speechSynthesis.getVoices();
+  const greekVoices = voices.filter((v) => v.lang.startsWith("el"));
+  const femaleNames = /eleni|nefeli|maria|sofia|female/i;
+  const maleNames = /stefanos|nikos|kostas|giorgos|male/i;
+  const femaleVoice =
+    greekVoices.find((v) => femaleNames.test(v.name)) ||
+    greekVoices.find((v) => !maleNames.test(v.name)) ||
+    greekVoices[0];
+  if (femaleVoice) utterance.voice = femaleVoice;
+  window.speechSynthesis.speak(utterance);
+}
+
+function fSpeakNameWithPauses() {
+  // Narration follows component visibility: hidden (dash) boxes are skipped.
+  // Rendered boxes (any naming mode) drive the parts; data-list/full-name
+  // fallback is used when boxes are unavailable. Parts are merged into one
+  // utterance so browser inter-utterance boundary gaps are eliminated.
+  var hidden = (typeof window !== "undefined" && Array.isArray(window.nameHiddenComps))
+    ? window.nameHiddenComps
+    : [];
+  var parts = null;
+  try {
+    var boxes = (typeof document !== "undefined")
+      ? document.querySelectorAll(".nameCompContainer .nameCompBox")
+      : null;
+    if (boxes && boxes.length) {
+      parts = [];
+      for (var bi = 0; bi < boxes.length; bi++) {
+        var box = boxes[bi];
+        if (box.classList && box.classList.contains("comp-hidden")) continue;
+        var token = (box.textContent || "").replace(/-/g, " ").replace(/\s+/g, " ").trim();
+        if (token) parts.push(token);
+      }
+    }
+  } catch (e) { parts = null; }
+  if (!parts) {
+    parts = nameComponentsList
+      .filter(function (c, i) { return c && c !== "" && hidden.indexOf("comp" + i) < 0; })
+      .map(function (c) { return String(c).replace(/<[^>]*>/g, ""); });
+  }
+  if (!parts || !parts.length) {
+    const fallback = (typeof currentMolName === "string" ? currentMolName : "")
+      .replace(/<[^>]*>/g, "")
+      .trim();
+    parts = fallback ? [fallback] : [];
+  }
+  if (!parts.length) return;
+
+  window.speechSynthesis.cancel();
+  const voices = window.speechSynthesis.getVoices();
+  const greekVoices = voices.filter((v) => v.lang.startsWith("el"));
+  const femaleNames = /eleni|nefeli|maria|sofia|female/i;
+  const maleNames = /stefanos|nikos|kostas|giorgos|male/i;
+  const femaleVoice =
+    greekVoices.find((v) => femaleNames.test(v.name)) ||
+    greekVoices.find((v) => !maleNames.test(v.name)) ||
+    greekVoices[0];
+  const normalizedParts = parts
+    .map(function (p) { return String(p).replace(/<[^>]*>/g, "").replace(/-/g, " ").replace(/\s+/g, " ").trim(); })
+    .filter(function (p) { return !!p; });
+  const partCount = normalizedParts.length;
+  if (!partCount) return;
+  const rate = partCount <= 4
+    ? NAME_RATE_SHORT
+    : (partCount <= 8 ? NAME_RATE_MEDIUM : NAME_RATE_LONG);
+  const merged = normalizedParts.join(" ");
+  if (!merged) return;
+  const utt = new SpeechSynthesisUtterance(merged);
+  utt.lang = "el-GR";
+  utt.rate = rate;
+  if (femaleVoice) utt.voice = femaleVoice;
+  window.speechSynthesis.speak(utt);
+}
+
 // ── fSortPropsByCarbonCount ─────────────────────────────────────────────────
 // Ascending total-carbon order, stable on data-file order, unclassified last.
 // Shared by series/chemclass groups and the flat "all molecules" list.
@@ -603,6 +688,10 @@ $(document).ready(function () {
 
   $(document).on("click", "#readNameBtn", function () {
     if (!selectedMol || !nameExamples[selectedMol]) return;
+    if (typeof fSpeakNameWithPauses === "function") {
+      fSpeakNameWithPauses();
+      return;
+    }
     // Narration follows component visibility: hidden (dash) boxes are
     // skipped; falls back to the full name when no boxes are rendered.
     var vis = [];
@@ -1304,4 +1393,3 @@ $(document).ready(function () {
     fUpdateSVG();
   });
 });
-

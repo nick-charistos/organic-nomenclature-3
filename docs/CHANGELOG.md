@@ -8,6 +8,14 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 New parallel file set `mulermoc-nom-52.html` + `js/*-52.js` + `css/*-52.css`, forked from v51. v52 is now live: `index.html` points to `mulermoc-nom-52.html`; v51 and earlier remain runnable at root. No scenario-schema change (`scenarioVersion` stays 1); `noteFormat` remains `"text"` / `"html"`.
 
+### 2026-10-30 — Name narration pacing (v52)
+- `#readNameBtn` now narrates visible name components as a single utterance (space-joined), avoiding browser-added inter-utterance boundary delays.
+- Read-name pacing is adaptive by component count: short names stay near normal speed, while long names are slowed (components remain space-joined).
+- Adaptive read-name rates are now exposed as named constants in `teaching-52.js` (`NAME_RATE_SHORT`, `NAME_RATE_MEDIUM`, `NAME_RATE_LONG`) for easy tuning.
+- Component visibility rules are preserved: hidden name boxes are skipped, and full-name fallback remains when component boxes are unavailable.
+- Change is scoped to v52 read-name narration only; other TTS flows (for example rule explanation narration) are unchanged.
+- Name narration helpers were moved from `core-52.js` to `teaching-52.js` so narration behavior stays in the UI/teaching layer.
+
 ### Rich note editor (`scenario-52.js`, `note-52.js`, `scenario-52.css`)
 - The inline drawer is now a compact WYSIWYG `contenteditable` editor, not a textarea. It renders sanitized HTML via `renderEditable`, writes `st.note` live, and uses the existing expand button for the full modal. Long notes scroll inside a capped height.
 - The expanded modal has one WYSIWYG editor and one `WYSIWYG` / `HTML` source toggle. The earlier **Simple** / **Rich** modes are removed; Simple was only the legacy text storage/rendering path, not a meaningful authoring mode.
@@ -905,4 +913,3 @@ New parallel file set `mulermoc-nom-44.html` + `js/*-44.js` + `css/*-44.css`, co
 ## [Initial] — earlier · `cb66337`
 
 - Initial upload: organic nomenclature 2 page with assets
-
