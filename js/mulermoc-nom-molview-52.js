@@ -7244,6 +7244,36 @@ function fHighlightFG3D(FGno) {
 let numberingAtomOverride = null;
 let numberingAtomOverride3D = null;
 
+// Locant emphasis (visual): when a locant/position component is clicked, its
+// number(s) stay blue while the rest dim to gray — 2D fill + 3D echo.
+// Only for main-chain numbering modes whose box digits ARE display indices
+// (locant value v = label = index v-1, chains stored in numbering order).
+// Override-chain and whole-chain modes return null (all blue, as today).
+// Parse failures also return null, so the safe default is today's rendering.
+let numberingEmphasis = null;
+function fLocantEmphasisIndices() {
+  try {
+    var mode = (typeof nameAnalysisMode !== "undefined") ? nameAnalysisMode : "none";
+    var ok = mode === "compBondPos" || mode === "compEndNumber" ||
+      mode === "compSuffixLocants" || mode === "compNumber1" || mode === "compNumber2" ||
+      /^compBranchLoc\d+$/.test(mode);
+    if (!ok) return null;
+    var box = null;
+    try { box = document.querySelector("#nameAnalysis .nameCompBox.selected"); } catch (eB) { box = null; }
+    if (!box) return null;
+    var text = "";
+    try { text = box.textContent || ""; } catch (eT) { text = ""; }
+    var found = text.match(/\d+/g);
+    if (!found || !found.length) return null;
+    var idx = [];
+    for (var k = 0; k < found.length; k++) {
+      var v = parseInt(found[k], 10);
+      if (v >= 1 && idx.indexOf(v - 1) < 0) idx.push(v - 1);
+    }
+    return idx.length ? idx : null;
+  } catch (e) { return null; }
+}
+
 // ── fShowNumbering ────────────────────────────────────────────────────────
 
 function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
@@ -7253,6 +7283,9 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
   }
   numberingAtomOverride = Array.isArray(overrideAtoms) ? overrideAtoms : null;
   numberingAtomOverride3D = Array.isArray(overrideAtoms3D) ? overrideAtoms3D : null;
+  // Locant emphasis is recomputed on every numbering render (click, rebuild,
+  // scenario replay), so it always matches the live selection; null = all blue.
+  numberingEmphasis = fLocantEmphasisIndices();
   clearInterval(myNumberingTimeout);
   numbersSVGElements = [];
 
@@ -7288,7 +7321,7 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
           : parseInt(currAtomTextElement.attr("x")) + numberOffset[0];
         y = parseInt(currAtomTextElement.attr("y")) + +numberOffset[1];
         r = 220;
-        numberString = `  <text id='number${i}' x='${x}' y='${y}' font-size='380px' font-weight='bold' font-family='Arial, sans-serif' fill='#193F8F' stroke='white' stroke-width='60px' paint-order='stroke'>${i + 1}</text> `;
+        numberString = `  <text id='number${i}' x='${x}' y='${y}' font-size='380px' font-weight='bold' font-family='Arial, sans-serif' fill='${(numberingEmphasis === null || numberingEmphasis.indexOf(i) >= 0) ? "#193F8F" : "#8A8D93"}' stroke='white' stroke-width='60px' paint-order='stroke'>${i + 1}</text> `;
         numbersSVGElements[i] = numberString;
       }
       break;
@@ -7315,7 +7348,7 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
         x = parseInt(currAtomTextElement.attr("x")) + numberOffset[0];
         y = parseInt(currAtomTextElement.attr("y")) + +numberOffset[1];
         r = 220;
-        numberString = `  <text id='number${i}' x='${x}' y='${y}' font-size='380px' font-weight='bold' font-family='Arial, sans-serif' fill='#193F8F' stroke='white' stroke-width='60px' paint-order='stroke'>${i + 1}</text> `;
+        numberString = `  <text id='number${i}' x='${x}' y='${y}' font-size='380px' font-weight='bold' font-family='Arial, sans-serif' fill='${(numberingEmphasis === null || numberingEmphasis.indexOf(i) >= 0) ? "#193F8F" : "#8A8D93"}' stroke='white' stroke-width='60px' paint-order='stroke'>${i + 1}</text> `;
         numbersSVGElements[i] = numberString;
       }
       break;
@@ -7342,7 +7375,7 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
         x = parseInt(currAtomTextElement.attr("x")) + numberOffset[0];
         y = parseInt(currAtomTextElement.attr("y")) + +numberOffset[1];
         r = 220;
-        numberString = `  <text id='number${i}' x='${x}' y='${y}' font-size='380px' font-weight='bold' font-family='Arial, sans-serif' fill='#193F8F' stroke='white' stroke-width='60px' paint-order='stroke'>${i + 1}</text> `;
+        numberString = `  <text id='number${i}' x='${x}' y='${y}' font-size='380px' font-weight='bold' font-family='Arial, sans-serif' fill='${(numberingEmphasis === null || numberingEmphasis.indexOf(i) >= 0) ? "#193F8F" : "#8A8D93"}' stroke='white' stroke-width='60px' paint-order='stroke'>${i + 1}</text> `;
         numbersSVGElements[i] = numberString;
       }
       break;
@@ -7393,7 +7426,7 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
         }
 
         r = 220;
-        numberString = `  <text id='number${i}' x='${x}' y='${y}' font-size='380px' font-weight='bold' font-family='Arial, sans-serif' fill='#193F8F' stroke='white' stroke-width='60px' paint-order='stroke'>${i + 1}</text> `;
+        numberString = `  <text id='number${i}' x='${x}' y='${y}' font-size='380px' font-weight='bold' font-family='Arial, sans-serif' fill='${(numberingEmphasis === null || numberingEmphasis.indexOf(i) >= 0) ? "#193F8F" : "#8A8D93"}' stroke='white' stroke-width='60px' paint-order='stroke'>${i + 1}</text> `;
         numbersSVGElements[i] = numberString;
       }
       break;
@@ -7478,6 +7511,13 @@ function fShowNumber3D(n, chain) {
   let num = n + 1;
   let d = 0.01; // stroke thickness in Å (tune this)
 
+  // Locant emphasis: the selected number(s) stay blue, the rest dim to gray
+  // (shadow echoes stay black for legibility). Same index space as the 2D
+  // labels (position in the displayed chain); null = all blue.
+  let _dim = false;
+  try { _dim = Array.isArray(numberingEmphasis) && numberingEmphasis.indexOf(n) < 0; } catch (eD) { _dim = false; }
+  let _echoCol = _dim ? "x8A8D93" : "x193f8f";
+
   // Shadow echoes in 4 directions (black stroke)
   let s = "";
   s +=
@@ -7485,7 +7525,7 @@ function fShowNumber3D(n, chain) {
     id +
     " " +
     atom +
-    "; set echo offset {-1.1 1.1 3}; font echo 42 sansSerif bold; color echo[x193f8f]; echo " +
+    "; set echo offset {-1.1 1.1 3}; font echo 42 sansSerif bold; color echo[" + _echoCol + "]; echo " +
     num +
     ";";
 
