@@ -7321,7 +7321,7 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
           : parseInt(currAtomTextElement.attr("x")) + numberOffset[0];
         y = parseInt(currAtomTextElement.attr("y")) + +numberOffset[1];
         r = 220;
-        numberString = `  <text id='number${i}' x='${x}' y='${y}' font-size='380px' font-weight='bold' font-family='Arial, sans-serif' fill='${(numberingEmphasis === null || numberingEmphasis.indexOf(i) >= 0) ? "#193F8F" : "#8A8D93"}' stroke='white' stroke-width='60px' paint-order='stroke'>${i + 1}</text> `;
+        numberString = `  <text id='number${i}' x='${x}' y='${y}' font-size='380px' font-weight='bold' font-family='Arial, sans-serif' fill='${(numberingEmphasis === null || numberingEmphasis.indexOf(i) >= 0) ? "#193F8F" : "#9ac1ed"}' stroke='white' stroke-width='60px' paint-order='stroke'>${i + 1}</text> `;
         numbersSVGElements[i] = numberString;
       }
       break;
@@ -7348,7 +7348,7 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
         x = parseInt(currAtomTextElement.attr("x")) + numberOffset[0];
         y = parseInt(currAtomTextElement.attr("y")) + +numberOffset[1];
         r = 220;
-        numberString = `  <text id='number${i}' x='${x}' y='${y}' font-size='380px' font-weight='bold' font-family='Arial, sans-serif' fill='${(numberingEmphasis === null || numberingEmphasis.indexOf(i) >= 0) ? "#193F8F" : "#8A8D93"}' stroke='white' stroke-width='60px' paint-order='stroke'>${i + 1}</text> `;
+        numberString = `  <text id='number${i}' x='${x}' y='${y}' font-size='380px' font-weight='bold' font-family='Arial, sans-serif' fill='${(numberingEmphasis === null || numberingEmphasis.indexOf(i) >= 0) ? "#193F8F" : "#9ac1ed"}' stroke='white' stroke-width='60px' paint-order='stroke'>${i + 1}</text> `;
         numbersSVGElements[i] = numberString;
       }
       break;
@@ -7375,7 +7375,7 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
         x = parseInt(currAtomTextElement.attr("x")) + numberOffset[0];
         y = parseInt(currAtomTextElement.attr("y")) + +numberOffset[1];
         r = 220;
-        numberString = `  <text id='number${i}' x='${x}' y='${y}' font-size='380px' font-weight='bold' font-family='Arial, sans-serif' fill='${(numberingEmphasis === null || numberingEmphasis.indexOf(i) >= 0) ? "#193F8F" : "#8A8D93"}' stroke='white' stroke-width='60px' paint-order='stroke'>${i + 1}</text> `;
+        numberString = `  <text id='number${i}' x='${x}' y='${y}' font-size='380px' font-weight='bold' font-family='Arial, sans-serif' fill='${(numberingEmphasis === null || numberingEmphasis.indexOf(i) >= 0) ? "#193F8F" : "#9ac1ed"}' stroke='white' stroke-width='60px' paint-order='stroke'>${i + 1}</text> `;
         numbersSVGElements[i] = numberString;
       }
       break;
@@ -7426,7 +7426,7 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
         }
 
         r = 220;
-        numberString = `  <text id='number${i}' x='${x}' y='${y}' font-size='380px' font-weight='bold' font-family='Arial, sans-serif' fill='${(numberingEmphasis === null || numberingEmphasis.indexOf(i) >= 0) ? "#193F8F" : "#8A8D93"}' stroke='white' stroke-width='60px' paint-order='stroke'>${i + 1}</text> `;
+        numberString = `  <text id='number${i}' x='${x}' y='${y}' font-size='380px' font-weight='bold' font-family='Arial, sans-serif' fill='${(numberingEmphasis === null || numberingEmphasis.indexOf(i) >= 0) ? "#193F8F" : "#9ac1ed"}' stroke='white' stroke-width='60px' paint-order='stroke'>${i + 1}</text> `;
         numbersSVGElements[i] = numberString;
       }
       break;
@@ -7516,7 +7516,7 @@ function fShowNumber3D(n, chain) {
   // labels (position in the displayed chain); null = all blue.
   let _dim = false;
   try { _dim = Array.isArray(numberingEmphasis) && numberingEmphasis.indexOf(n) < 0; } catch (eD) { _dim = false; }
-  let _echoCol = _dim ? "x8A8D93" : "x193f8f";
+  let _echoCol = _dim ? "x9ac1ed" : "x193f8f";
 
   // Shadow echoes in 4 directions (black stroke)
   let s = "";
