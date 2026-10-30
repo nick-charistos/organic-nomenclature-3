@@ -1016,8 +1016,8 @@ function fScenarioDefaults(step, i) {
     show: {
       menu: false, viewerButtons: false, viewerSettings: false,
       viewers: { "2D": true, "3D": true },
-      viewerMaxHeight: null,
-      viewerBothHeight: null,
+      viewerMaxHeight: "full",
+      viewerBothHeight: "full",
       controls: { "2D": false, "3D": false },
       save: { "2D": false, "3D": false },
       naming: true, nameSettings: false, nameEye: false, nameExpanded: false, audio: false, rule: false, text: true,

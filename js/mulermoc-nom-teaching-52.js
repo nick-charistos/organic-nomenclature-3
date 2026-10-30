@@ -364,21 +364,27 @@ const NAME_RATE_SHORT = 0.8;
 const NAME_RATE_MEDIUM = 0.7;
 const NAME_RATE_LONG = 0.6;
 
+// Shared Greek-voice pick: female Greek voice preferred, else any non-male
+// Greek voice, else the first Greek voice, else undefined (browser default).
+function fPickGreekVoice(voices) {
+  var list = Array.isArray(voices) ? voices : [];
+  var greekVoices = list.filter(function (v) { return v && typeof v.lang === "string" && v.lang.indexOf("el") === 0; });
+  if (!greekVoices.length) return undefined;
+  var femaleNames = /eleni|nefeli|maria|sofia|female/i;
+  var maleNames = /stefanos|nikos|kostas|giorgos|male/i;
+  return greekVoices.find(function (v) { return femaleNames.test(v.name); }) ||
+    greekVoices.find(function (v) { return !maleNames.test(v.name); }) ||
+    greekVoices[0];
+}
+
 function fSpeakGreek(text) {
   window.speechSynthesis.cancel();
   const cleanText = text.replace(/-/g, " ").replace(/\s+/g, " ").trim();
   const utterance = new SpeechSynthesisUtterance(cleanText);
   utterance.lang = "el-GR";
   utterance.rate = 0.9;
-  const voices = window.speechSynthesis.getVoices();
-  const greekVoices = voices.filter((v) => v.lang.startsWith("el"));
-  const femaleNames = /eleni|nefeli|maria|sofia|female/i;
-  const maleNames = /stefanos|nikos|kostas|giorgos|male/i;
-  const femaleVoice =
-    greekVoices.find((v) => femaleNames.test(v.name)) ||
-    greekVoices.find((v) => !maleNames.test(v.name)) ||
-    greekVoices[0];
-  if (femaleVoice) utterance.voice = femaleVoice;
+  const voice = fPickGreekVoice(window.speechSynthesis.getVoices());
+  if (voice) utterance.voice = voice;
   window.speechSynthesis.speak(utterance);
 }
 
@@ -419,14 +425,7 @@ function fSpeakNameWithPauses() {
   if (!parts.length) return;
 
   window.speechSynthesis.cancel();
-  const voices = window.speechSynthesis.getVoices();
-  const greekVoices = voices.filter((v) => v.lang.startsWith("el"));
-  const femaleNames = /eleni|nefeli|maria|sofia|female/i;
-  const maleNames = /stefanos|nikos|kostas|giorgos|male/i;
-  const femaleVoice =
-    greekVoices.find((v) => femaleNames.test(v.name)) ||
-    greekVoices.find((v) => !maleNames.test(v.name)) ||
-    greekVoices[0];
+  const voice = fPickGreekVoice(window.speechSynthesis.getVoices());
   const normalizedParts = parts
     .map(function (p) { return String(p).replace(/<[^>]*>/g, "").replace(/-/g, " ").replace(/\s+/g, " ").trim(); })
     .filter(function (p) { return !!p; });
@@ -440,7 +439,7 @@ function fSpeakNameWithPauses() {
   const utt = new SpeechSynthesisUtterance(merged);
   utt.lang = "el-GR";
   utt.rate = rate;
-  if (femaleVoice) utt.voice = femaleVoice;
+  if (voice) utt.voice = voice;
   window.speechSynthesis.speak(utt);
 }
 

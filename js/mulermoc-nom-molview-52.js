@@ -3719,8 +3719,10 @@ function fNameExpandReserve() {
     if (explain) {
       try {
         if (sheetW > 0) explain.style.width = sheetW + "px";
+        // Rect-only: the (sheetH - 1) fallback ignored #ruleTheory height and
+        // misplaced Explain by exactly that amount. If rect math is
+        // unavailable, keep the previous top instead of guessing.
         if (topPx !== null && topPx >= 0) explain.style.top = topPx + "px";
-        else explain.style.top = (sheetH - 1) + "px";
         void explain.offsetHeight;
         explainH = Math.ceil(explain.offsetHeight);
       } catch (eE) { explainH = 0; }

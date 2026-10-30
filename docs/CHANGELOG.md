@@ -8,6 +8,13 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 New parallel file set `mulermoc-nom-52.html` + `js/*-52.js` + `css/*-52.css`, forked from v51. v52 is now live: `index.html` points to `mulermoc-nom-52.html`; v51 and earlier remain runnable at root. No scenario-schema change (`scenarioVersion` stays 1); `noteFormat` remains `"text"` / `"html"`.
 
+### 2026-10-30 — Review follow-ups (v52)
+- Ester acid length (`core-52.js`): the name stem now uses `mainChainAtomsList` only when the chain is rooted at the carbonyl C and contained in the acid fragment, else `esterInfo.acidLen` (mirrors the `fGetEsterAcidParentChain` viewer guard). VERIFY pending: headless 141-name re-check, 136 old names byte-identical.
+- Explain reserve (`molview-52.js`): dropped the `(sheetH - 1)` fallback `top` (it ignored `#ruleTheory` height); rect-only pinning, keeps previous `top` when rect math is unavailable.
+- Narration (`teaching-52.js`): extracted shared `fPickGreekVoice()` used by `fSpeakGreek` and `fSpeakNameWithPauses` (behavior-identical).
+- Viewer heights (`scenario-52.js`): new steps now default to `"full"` for `viewerMaxHeight`/`viewerBothHeight`, matching the live v52 default (was `null` = Auto). `overflow-y: hidden` on the name row is intentional (single nowrap row; vertical overflow clipped).
+- Checks: brace/paren balance + `git diff --check` clean (no Node runtime for `node --check`); browser + headless naming matrices pending.
+
 ### 2026-10-30 — Name narration pacing (v52)
 - `#readNameBtn` now narrates visible name components as a single utterance (space-joined), avoiding browser-added inter-utterance boundary delays.
 - Read-name pacing is adaptive by component count: short names stay near normal speed, while long names are slowed (components remain space-joined).

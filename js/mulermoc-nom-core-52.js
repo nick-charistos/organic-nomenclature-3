@@ -2716,8 +2716,19 @@ function fGuessName(skipChainRecalc) {
                 // 5 boxes: comp1 (προπ) | comp2 (αν) | comp4 (ικός) | comp10 (μεθυλ) | comp11 (εστέρας)
                 {
                     const _es = (typeof esterInfo !== "undefined") ? esterInfo : null
-                    const _acidLen = fIsAcyclicSaturatedMonoesterGraph(atomConnectivityList, allAtomsTypeList, bondList)
-                        ? mainChainAtomsList.length : ((_es && _es.acidLen) ? _es.acidLen : mainChainAtomsList.length)
+                    // VERIFY (headless 141-name re-check pending): the named acid
+                    // length must come from the acid chain, not from whatever
+                    // chain the ranker chose. Trust mainChainAtomsList only when
+                    // it is rooted at the carbonyl C and contained in the acid
+                    // fragment (0-based acidFrag vs 1-based JSME chain numbers);
+                    // otherwise fall back to esterInfo.acidLen. Mirrors the
+                    // containment check in fGetEsterAcidParentChain (molview).
+                    const _esChainIsAcid = !!(_es && typeof _es.carbonylC !== "undefined" &&
+                        Array.isArray(_es.acidFrag) && Array.isArray(mainChainAtomsList) &&
+                        mainChainAtomsList.length > 0 && mainChainAtomsList[0] === _es.carbonylC + 1 &&
+                        mainChainAtomsList.every(function (n) { return _es.acidFrag.indexOf(n - 1) >= 0 }))
+                    const _acidLen = (_esChainIsAcid ? mainChainAtomsList.length
+                        : ((_es && _es.acidLen) ? _es.acidLen : mainChainAtomsList.length))
                     const _alcLen = (_es && _es.alcoholLen) ? _es.alcoholLen : 1
                     comp1 = nameMainCompList1[_acidLen - 1]
                     comp2 = "αν"
