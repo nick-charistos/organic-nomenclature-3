@@ -4,6 +4,30 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ---
 
+## [v53] (English version: full UI + molecule naming in English, Greek default preserved)
+
+New parallel file set `mulermoc-nom-53.html` + `js/*-53.js` + `css/*-53.css`, forked from v52. Single codebase with `?lang=` toggle (no `-en` file fork); Greek remains the default. Scenarios stay author-language; new EN scenarios to be authored later by teachers/MSc students.
+
+### UI translation (chrome)
+- 207-string `?lang=` table (`mulermoc-nom-lang-53.js`), every Greek value source-verified. Value-based `data-tooltip`/`aria-label`/`title`/`placeholder` translation with debounced MutationObserver, dynamic-prefix rules, dialog/bar/menu/step text nodes. All render paths translate at build time (no Greek-first flip; verified observer-neutered); GR output byte-identical, no EN leakage.
+- Header GR/EN two-button switch (`#langSwitch`, plain `langButtonClass` buttons, `selected` on the active language; clicking the active side is a no-op). Toggle carries the selected molecule (`?mol=`, dropped when a scenario owns the selection); boot restores viewer + menu highlight + group open via the normal click path. Also enables `?lang=…&mol=…` deep links.
+- Per-step scenario language (`step.lang`, EN/GR badge on step rows): applying/presenting a step re-renders naming + UI in its creation language (in-memory override read by `fMulerLang()`); present exit restores session language. Legacy steps without the field default to Greek.
+
+### EN molecule naming + explanations
+- Slot-transliterated systematic English names (`fPopulateEngineENFromGreek`) with per-box EN layout reusing stable Greek box ids (`fNameENBoxes`); PubChem/CIR as oracle (`fValidateENAgainstOracle`, stereo prefixes stripped) — validation only, except Greek-common esters/complex ethers which fall back to the audited `systematicEN` (flagged `engineDelegated`).
+- Ester fix: suffix component is `-oate` not `-anoate` (`methyl methanoate`, not `*methananoate`); alcohol word leads (`isobutyl 2-methylpropanoate`).
+- Oxocarboxylic merge per IUPAC: acid+ketone now classifies as `oxoCarboxylicAcids` (ketoAcids series retired, label kept as harmless alias); substitutive prefix `κετο-` → systematic `οξο-` with derived chain-position locant (`2-οξοπροπανικό οξύ` / `2-oxopropanoic acid`, `4-oxobutanoic acid`). Locant suppression is lifted only under carboxylic principal; group nouns (`Κετονομάδα`) unchanged.
+- Explain line, rule panel (titles/texts/tables via 91-pair `RULE_GR2EN`), rule theory (9 texts) and alkyl/alkoxy systematic tables fully translated; EN rule narration with en-US voice.
+
+### Live oracle verdicts (EN panel)
+- Each name carries a verdict: plain = engine agrees with PubChem/CIR (systematic/retained/Title); red = differs; amber = fetch done, no record; lavender = fetch itself failed; blue = oracle-supplied display or Greek fallback. Shared comparator (`fMatchEngineEN`) feeds validator and live marker alike; fetch completion updates the marker in place (molecule-guarded, no rebuild; pending fetch never flashes). Console logs predicted vs displayed (`[EN-CHECK]`); mismatches print the oracle `IUPAC name:` under the boxes.
+- Live full run: 100 match (92 systematic + 8 retained), 10 mismatch (implied-locant omissions + retained common groups/names, §B/§C/P3 queue), 34 missing (15 novel §E molecules + 19 bulk-run throttled), 0 pending/delegated/Greek-fallback.
+
+### Docs
+- `docs/REVIEW-EN-53.md`: human-review handoff (§A–§E oracle queues, §F–§N validation log).
+- `docs/TEACHER-GUIDE-EN-53.md`: short teacher guide (switching, authoring, per-step language, marker legend).
+- `docs/CHEM-LIBRARIES.md`: evaluated 2D/3D/cheminformatics/naming libraries with links, pros/cons, project fit.
+
 ## [v52] (unified rich note editor: inline WYSIWYG, modal WYSIWYG + HTML source, lazy legacy text upgrade; live, `index.html` → v52)
 
 New parallel file set `mulermoc-nom-52.html` + `js/*-52.js` + `css/*-52.css`, forked from v51. v52 is now live: `index.html` points to `mulermoc-nom-52.html`; v51 and earlier remain runnable at root. No scenario-schema change (`scenarioVersion` stays 1); `noteFormat` remains `"text"` / `"html"`.

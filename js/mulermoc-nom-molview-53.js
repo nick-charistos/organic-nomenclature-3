@@ -3859,6 +3859,123 @@ function fNameExpandPaintBtn() {
 
 // ── fShowNameAnalysis ─────────────────────────────────────────────────────
 
+// EN verdict for the name marker ("oracle"|"fallback"|"mismatch"|"nooracle"|"noerror"|null).
+// fetched=true skips the pending-fetch grace (used by the fetch-completion hook).
+function fMulerVerdictState(key, fetched) {
+  try {
+    if (typeof fMulerLang === "function" && fMulerLang() !== "en") return null;
+    if (typeof nameExamples === "undefined" || !key || !nameExamples[key]) return null;
+    var ex = nameExamples[key];
+    var boxesEN = false;
+    try {
+      var r = (typeof fNameENBoxes === "function") ? fNameENBoxes() : null;
+      boxesEN = !!(r && r.boxes && r.boxes.length);
+    } catch (eB) { boxesEN = false; }
+    if (!boxesEN) return "fallback";
+    if (ex.engineDelegated) return "oracle";
+    if (typeof fMatchEngineEN !== "function") return null;
+    var v = fMatchEngineEN(key);
+    if (v.status === "mismatch") return "mismatch";
+    if (v.status === "missing") {
+      var pend = false, done = false, err = false;
+      try { pend = !!(typeof window !== "undefined" && window.__mulerIupacPending && window.__mulerIupacPending[key]); } catch (eP) {}
+      try { done = !!ex.iupacFetchDone; err = !!ex.iupacFetchError; } catch (eD) {}
+      if (fetched || (done && !pend)) return err ? "noerror" : "nooracle";
+    }
+    return null;
+  } catch (e) { return null; }
+}
+
+// In-place verdict repaint (no rebuild: preserves focus, scroll, selection).
+function fMulerApplyVerdict(key, fetched) {
+  try {
+    if (typeof selectedMol === "undefined" || selectedMol !== key) return null;
+    var cont = document.querySelector("#nameAnalysis .nameCompContainer");
+    if (!cont) return null;
+    var st = (typeof fMulerVerdictState === "function") ? fMulerVerdictState(key, fetched) : null;
+    cont.classList.remove("oracle-name", "verdict-oracle", "verdict-fallback", "verdict-mismatch", "verdict-nooracle", "verdict-noerror");
+    cont.removeAttribute("title");
+    if (!st) { try { if (typeof fMulerPaintOracleLine === "function") fMulerPaintOracleLine(); } catch (eL) {} return null; }
+    var tipMap = { oracle: "oracleNameTip", fallback: "greekFallbackTip", mismatch: "enMismatchTip", nooracle: "enNoOracleTip", noerror: "enNoErrorTip" };
+    var tipFall = {
+      oracle: "Name from the PubChem oracle — pending human review",
+      fallback: "No engine English name — showing Greek",
+      mismatch: "Engine name differs from PubChem IUPAC — pending human review",
+      nooracle: "No PubChem/CIR data to validate against",
+      noerror: "Oracle lookup failed (network) — not validated"
+    };
+    var tip = tipFall[st] || tipFall.oracle;
+    try { if (typeof fMulerT === "function") tip = fMulerT(tipMap[st] || "oracleNameTip"); } catch (eT) {}
+    cont.classList.add("oracle-name", "verdict-" + st);
+    cont.setAttribute("title", tip);
+    try { if (typeof fMulerPaintOracleLine === "function") fMulerPaintOracleLine(); } catch (eL2) {}
+    return st;
+  } catch (e) { return null; }
+}
+
+// Oracle-name subline ("IUPAC name: ...") shown below the boxes on mismatch.
+// Managed here (not in the boxes string): render and fetch paths share it.
+function fMulerOracleLineText() {
+  try {
+    if (typeof fMulerLang === "function" && fMulerLang() !== "en") return null;
+    if (typeof selectedMol === "undefined" || !selectedMol) return null;
+    var st = null;
+    try { st = (typeof fMulerVerdictState === "function") ? fMulerVerdictState(selectedMol, false) : null; } catch (eS) {}
+    if (st !== "mismatch") return null;
+    var ex = (typeof nameExamples !== "undefined") ? nameExamples[selectedMol] : null;
+    if (!ex) return null;
+    var nm = ex.systematicEN || ex.iupacPubchem || "";
+    if (!nm) return null;
+    var label = "IUPAC name:";
+    try { if (typeof fMulerT === "function") label = fMulerT("iupacNameLabel"); } catch (eL) {}
+    return { label: label, name: String(nm) };
+  } catch (e) { return null; }
+}
+function fMulerPaintOracleLine() {
+  try {
+    var na = document.getElementById("nameAnalysis");
+    if (!na) return;
+    var olds = na.querySelectorAll(".nameOracleName");
+    for (var i = 0; i < olds.length; i++) {
+      try { if (olds[i].parentNode) olds[i].parentNode.removeChild(olds[i]); } catch (eR) {}
+    }
+    var line = null;
+    try { if (typeof fMulerOracleLineText === "function") line = fMulerOracleLineText(); } catch (eL) {}
+    if (!line) return;
+    var div = document.createElement("div");
+    div.className = "nameOracleName";
+    div.textContent = line.label + " " + line.name;
+    na.appendChild(div);
+  } catch (e) { /* best-effort */ }
+}
+
+// Oracle fetch completion: log predicted vs displayed, repaint the verdict
+// in place (no rebuild). Skipped unless the fetched molecule is on screen.
+function fMulerENFetchDone(key) {
+  try {
+    if (typeof selectedMol === "undefined" || selectedMol !== key) return;
+    var isEN = false;
+    try { isEN = (typeof fMulerLang === "function" && fMulerLang() === "en"); } catch (eL) {}
+    if (!isEN) return;
+    var st = (typeof fMulerApplyVerdict === "function") ? fMulerApplyVerdict(key, true) : null;
+    var predicted = "", displayed = "";
+    try {
+      if (typeof nameExamples !== "undefined" && nameExamples[key]) predicted = nameExamples[key].engineEN || "";
+    } catch (eP) {}
+    try {
+      var parts = [];
+      document.querySelectorAll("#nameAnalysis .nameCompBox").forEach(function (b) { parts.push((b.textContent || "").trim()); });
+      displayed = parts.join(" ").replace(/\s+/g, " ").trim();
+    } catch (eD) {}
+    var via = "";
+    try {
+      if (typeof nameExamples !== "undefined" && nameExamples[key] && nameExamples[key].engineMatchVia) via = " via " + nameExamples[key].engineMatchVia;
+      else if (typeof fMatchEngineEN === "function") { var _r = fMatchEngineEN(key); if (_r && _r.via) via = " via " + _r.via; }
+    } catch (eV) {}
+    console.log("[EN-CHECK] " + key + ": predicted=\"" + predicted + "\" displayed=\"" + displayed + "\" verdict=" + (st || "plain") + via);
+  } catch (e) { /* best-effort */ }
+}
+
 function fShowNameAnalysis() {
   let compCount, currComp, displayComp, compBox, nameCompContainer;
   compCount = selectedMol ? nameComponentsList.length : 0;
@@ -4190,24 +4307,28 @@ function fShowNameAnalysis() {
 
   // Oracle/fallback marker (EN only): tint when the shown name is not pure
   // engine output — PubChem-oracle EN boxes, or Greek fallback in EN mode.
-  // Additive container class: box ids and hooks untouched. GR never marked.
+  // Verdict states (mismatch/no-data) are decided by fMulerVerdictState.
+  // Additive container classes: box ids and hooks untouched. GR never marked.
   try {
-    var _oracleState = null;
-    if (_isEN && typeof selectedMol !== "undefined" && selectedMol && typeof nameExamples !== "undefined" && nameExamples[selectedMol] && nameExamples[selectedMol].engineDelegated) {
-      _oracleState = "oracle";
-    } else if (_isEN && !_renderedENBoxes) {
-      _oracleState = "fallback";
-    }
+    var _oracleState = (typeof fMulerVerdictState === "function") ? fMulerVerdictState(selectedMol, false) : null;
     if (_oracleState) {
-      var _tip = _oracleState === "oracle"
-        ? ((typeof fMulerT === "function") ? fMulerT("oracleNameTip") : "Name from the PubChem oracle — pending human review")
-        : ((typeof fMulerT === "function") ? fMulerT("greekFallbackTip") : "No engine English name — showing Greek");
+      var _tipMap = { oracle: "oracleNameTip", fallback: "greekFallbackTip", mismatch: "enMismatchTip", nooracle: "enNoOracleTip", noerror: "enNoErrorTip" };
+      var _tipFall = {
+        oracle: "Name from the PubChem oracle — pending human review",
+        fallback: "No engine English name — showing Greek",
+        mismatch: "Engine name differs from PubChem IUPAC — pending human review",
+        nooracle: "No PubChem/CIR data to validate against",
+        noerror: "Oracle lookup failed (network) — not validated"
+      };
+      var _tip = _tipFall[_oracleState] || _tipFall.oracle;
+      try { if (typeof fMulerT === "function") _tip = fMulerT(_tipMap[_oracleState] || "oracleNameTip"); } catch (eT) {}
       nameCompContainer = nameCompContainer.replace("<div class='nameCompContainer'>",
-        "<div class='nameCompContainer oracle-name' title='" + _tip + "'>");
+        "<div class='nameCompContainer oracle-name verdict-" + _oracleState + "' title='" + _tip + "'>");
     }
   } catch (eO) { /* marker best-effort */ }
 
   $("#nameAnalysis").html(nameCompContainer);
+  try { if (typeof fMulerPaintOracleLine === "function") fMulerPaintOracleLine(); } catch (eO2) {}
 
   // Fix 3: the explain line follows box visibility — hidden when zero
   // components are visible, restored on reveal (toggle, so both directions

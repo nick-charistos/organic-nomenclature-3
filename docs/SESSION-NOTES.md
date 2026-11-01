@@ -2552,3 +2552,27 @@ follows; one Save → Present → Next → Exit round-trip.
   grouping); full 141 sweep moves only the 2 oxo molecules (+9 esters from
   the anoate fix); no console errors. REVIEW §C resolved, new §L; §J
   duplicate heading fixed (->K).
+
+## 2026-11-02 — Live oracle verdict markers + EN-CHECK log
+
+* Name panel now shows live verdict in EN: plain = match, red = mismatch vs
+  PubChem/CIR, amber = fetch done but no oracle data; blue kept for
+  provenance (oracle-supplied display, Greek fallback). GR never marked.
+* Single shared comparator fMatchEngineEN feeds batch validator (refactored,
+  same output) and live marker; fetch completion repaints in place with
+  molecule guard, no rebuild; pending fetch never flashes; console logs
+  predicted vs displayed on every oracle resolution.
+* Verified offline-deterministically (seeded oracle): all states incl.
+  stale-guard; full GR unchanged; no console errors.
+* Verdict v2: network-error state (lavender `verdict-noerror`, fetch-error
+  flag set in catch / cleared on success); mismatch shows oracle
+  "IUPAC name: …" subline below boxes (shared painter, render + fetch
+  paths); console line verified live (`predicted/displayed/verdict`).
+
+## 2026-11-02 — Red/amber watchlist doc + fetch error/empty split (live oracle)
+
+* Live full run (141 selected, oracle fetched): 100 match (92 systematic + 8 retained), 7 mismatch, 34 missing, 0 pending/delegated/fallback.
+* Mismatch root-caused per key: 3 implied-locant (§B) + retained substituents (§C/P3: isopropyl/sec-butyl ethers, isopropyl dial) + 2 esters whose oracle record mixes systematic substituent with retained acid stem — engine form is PIN-preferred (§A-family, P3 confirms).
+* Amber = 15 §E novel (confirmed no-record); 19 further missing were bulk-run throttling (spot re-checks resolve to match/red), motivating the error split.
+* Fetch layer now distinguishes transport failure (lavender `verdict-noerror`, `iupacFetchError`) from genuine no-record (amber). Only transport-like errors in `lastErr` count as failed; PubChem/CIR 404-style empties stay amber.
+* REVIEW §N watchlist written (10 red incl. prior-run dial row, 15 amber + transient note). Individual re-checks: butene_2 + hexen_2_yn_4_dioic_acid → systematic match; 3 throttled esters → red with exact oracle strings captured.

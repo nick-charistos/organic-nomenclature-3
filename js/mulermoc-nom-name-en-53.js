@@ -429,6 +429,30 @@ function fNormNoStereo(s) {
   if (m) t = t.slice(m[0].length).trim();
   return t;
 }
+// Per-molecule verdict: does the local engineEN agree with the oracle?
+// Shared by the batch validator and the live in-page marker, so the two can
+// never disagree. Returns { status, via, engine, oracle } where status is
+// "systematic" | "retained" | "title" | "mismatch" | "missing".
+function fMatchEngineEN(key) {
+  var out = { status: "missing", via: null, engine: null, oracle: null };
+  try {
+    if (typeof nameExamples === "undefined" || !nameExamples[key]) return out;
+    var e = nameExamples[key];
+    if (!e || !e.engineEN) return out;
+    var a = fNormNoStereo(String(e.engineEN).toLowerCase().trim());
+    var sys = fNormNoStereo(String(e.systematicEN || "").toLowerCase().trim());
+    var ret = fNormNoStereo(String(e.iupacPubchem || e.iupacEN || "").toLowerCase().trim());
+    var tit = fNormNoStereo(String(e.titlePubchem || "").toLowerCase().trim());
+    out.engine = e.engineEN;
+    out.oracle = e.systematicEN || e.iupacEN || null;
+    if (!sys && !ret) return out;
+    if (a && a === sys) { out.status = "systematic"; out.via = "systematic"; }
+    else if (ret && a && a === ret) { out.status = "retained"; out.via = "retained"; }
+    else if (tit && a && a === tit) { out.status = "title"; out.via = "title"; }
+    else { out.status = "mismatch"; }
+    return out;
+  } catch (e2) { return out; }
+}
 function fValidateENAgainstOracle() {
   var out = { checked: 0, match: 0, mismatch: [], missing: 0 };
   if (typeof nameExamples === "undefined") return out;
@@ -436,14 +460,11 @@ function fValidateENAgainstOracle() {
     const e = nameExamples[k];
     if (!e || !e.engineEN) continue;
     out.checked++;
-    const a = fNormNoStereo(String(e.engineEN).toLowerCase().trim());
-    const sys = fNormNoStereo(String(e.systematicEN || "").toLowerCase().trim());
-    const ret = fNormNoStereo(String(e.iupacPubchem || e.iupacEN || "").toLowerCase().trim());
-    const tit = fNormNoStereo(String(e.titlePubchem || "").toLowerCase().trim());
-    if (!sys && !ret) { out.missing++; continue; }
-    if (a && a === sys) { out.match++; out.viaSystematic = (out.viaSystematic || 0) + 1; e.engineMatchVia = "systematic"; }
-    else if (ret && a && a === ret) { out.match++; out.viaRetained = (out.viaRetained || 0) + 1; e.engineMatchVia = "retained"; }
-    else if (tit && a && a === tit) { out.match++; out.viaTitle = (out.viaTitle || 0) + 1; e.engineMatchVia = "title"; }
+    const r = fMatchEngineEN(k);
+    if (r.status === "missing") { out.missing++; continue; }
+    if (r.status === "systematic") { out.match++; out.viaSystematic = (out.viaSystematic || 0) + 1; e.engineMatchVia = "systematic"; }
+    else if (r.status === "retained") { out.match++; out.viaRetained = (out.viaRetained || 0) + 1; e.engineMatchVia = "retained"; }
+    else if (r.status === "title") { out.match++; out.viaTitle = (out.viaTitle || 0) + 1; e.engineMatchVia = "title"; }
     else out.mismatch.push({ key: k, engine: e.engineEN, oracle: e.systematicEN || e.iupacEN });
   }
   console.log("[EN-VALIDATE] checked=" + out.checked + " match=" + out.match + " mismatch=" + out.mismatch.length + " missing=" + out.missing);

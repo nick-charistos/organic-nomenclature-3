@@ -360,6 +360,14 @@ function fLogMolSelectWithIUPAC(key) {
             !!entry.iupacPubchem &&
             !!entry.systematicEN &&
             entry.iupacPubchem.toLowerCase() !== entry.systematicEN.toLowerCase();
+          entry.iupacFetchDone = true;
+          // Distinguish "no record" (amber) from "lookup failed" (lavender):
+          // only transport-level errors count as failed when nothing came back.
+          try {
+            var _le = String((hit && hit.lastErr) || "");
+            var _hasO = !!(entry.systematicEN || entry.iupacEN || entry.iupacPubchem || entry.titlePubchem);
+            entry.iupacFetchError = !_hasO && /failed to fetch|networkerror|load failed|typeerror|timeout|abort/i.test(_le);
+          } catch (eFE) {}
         }
       } catch (eStore) {
         /* cache best-effort */
@@ -369,9 +377,12 @@ function fLogMolSelectWithIUPAC(key) {
           hit.iupacPubchem + "\" systematic=\"" + hit.systematic + "\"" +
           (entry && entry.needsHumanCheck ? " [NEEDS-HUMAN-CHECK]" : "")
       );
+      try { if (typeof fMulerENFetchDone === "function") fMulerENFetchDone(key); } catch (eH) {}
     })
     .catch(function (err) {
       console.warn("[IUPAC-EN] select-fetch failed " + key, err);
+      try { if (entry) { entry.iupacFetchDone = true; entry.iupacFetchError = true; } } catch (eF) {}
+      try { if (typeof fMulerENFetchDone === "function") fMulerENFetchDone(key); } catch (eH2) {}
     })
     .finally(function () {
       __mulerIupacPending[key] = false;

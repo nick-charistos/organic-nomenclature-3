@@ -109,6 +109,36 @@ CIR note: `cactus.nci.nih.gov` throttles aggressively after bulk lookups (HTTP 4
 - Greek substitutive prefix `κετο-` → systematic `οξο-` with derived chain-position locant (`κετο-προπανικό οξύ` → `2-οξοπροπανικό οξύ`; EN `oxopropanoic acid` → `2-oxopropanoic acid`, `oxobutanoic acid` → `4-oxobutanoic acid`). Suppression of secondary aldehyde/ketone locants is now lifted only when the principal group is carboxylic acid; all other principals keep the school convention.
 - Verified: `2-oxopropanoic acid`, `4-oxobutanoic acid` in EN with no oracle delegation (pure engine); GR boxes `2-οξο + προπ + αν + ικό οξύ`; explain/numbering/highlight fire correctly on the new locant boxes; chemclass/series group headers show Οξοκαρβοξυλικά (GR) / Oxocarboxylic acids (EN); full 141-molecule sweep shows movement only on these 2 molecules vs pre-change output; no console errors.
 
+## M. Live oracle verdict markers + EN-CHECK console (2026-11-02, headless Chrome)
+
+- The name panel now shows a live verdict in EN mode: plain = engine agrees with PubChem/CIR (systematic/retained/Title, same rules as the batch validator); **red tint** = engine prediction differs from the oracle (`verdict-mismatch`); **amber tint** = fetch completed but no oracle record exists (`verdict-nooracle`); **lavender tint** = the fetch itself failed, so nothing could be checked (`verdict-noerror`); blue kept strictly for provenance (oracle-supplied display, Greek fallback). GR never marked.
+- One shared comparator (`fMatchEngineEN`) feeds both the batch validator (refactored, output format unchanged) and the live marker — the two cannot drift. Fetch completion updates the marker in place (molecule-guarded, no rebuild); a pending fetch never flashes amber. Console logs predicted vs displayed on every oracle resolution (`[EN-CHECK] key: predicted="…" displayed="…" verdict=…`). Mismatches also print the oracle systematic name below the boxes (`IUPAC name: …`).
+- Verified offline-deterministically (seeded oracle, no network): match→plain, mismatch→red+tooltip, no-data→amber, network-failure→lavender, pending→plain; forced fallback/delegation paths intact; hook stale-guard holds; GR forced states unmarked; no console errors.
+
+## N. Live verdict watchlist — red and amber molecules (live oracle, 2026-11-02)
+
+Canonical per-molecule verdicts from a full live run (all 141 selected, oracle fetched, `fMatchEngineEN` per key: 100 match — 92 systematic, 8 retained — 10 mismatch, 34 missing, 0 pending, 0 delegated, 0 Greek-fallback). The marker is always the live truth; this list is the audited snapshot. See §B–§E for the human-review queue behind the red rows.
+
+**Red — engine differs from oracle (10). All are deliberate-convention cases or oracle-record quirks, pending P3/P4 — no engine bugs found:**
+- `propene` — engine `propene` | oracle `prop-1-ene` (implied locant omitted, §B)
+- `propyne` — engine `propyne` | oracle `prop-1-yne` (implied locant omitted, §B)
+- `nitroethane` — engine `nitroethane` | oracle `1-nitroethane` (implied locant omitted, §B; oracle once showed a polluted synonym — §D)
+- `isopropyl_2_buten_2_dial` — engine `2-isopropylbut-2-enedial` | oracle `2-propan-2-ylbut-2-enedial` (retained isopropyl, §C/P3; prior-run oracle — throttled in this run, verdict carried from §C)
+- `isobutyl_isopropyl_ether` — engine `1-isopropoxy-2-methylpropane` | oracle `2-methyl-1-propan-2-yloxypropane` (retained substituents, §C/P3)
+- `tert_butyl_isopropyl_ether` — engine `2-isopropoxy-2-methylpropane` | oracle `2-methyl-2-propan-2-yloxypropane` (retained substituents, §C/P3)
+- `isopropyl_ethanoate` — engine `isopropyl ethanoate` | oracle systematic `2-Acetoxypropane`, retained `propan-2-yl acetate` (retained substituent + retained acid stem in oracle record; engine form is PIN-preferred, §A-family — P3 confirms)
+- `sec_butyl_ethanoate` — engine `sec-butyl ethanoate` | oracle systematic `1-Methylpropyl ethanoate`, retained `butan-2-yl acetate` (retained substituent + retained acid stem; engine form is PIN-preferred, §A-family — P3 confirms)
+- `tert_butyl_methanoate` — engine `tert-butyl methanoate` | oracle `tert-butyl formate` (retained acid stem; engine form is PIN-preferred, §A-family — P3 confirms)
+- `isobutyl_2_methylpropanoate` — engine `isobutyl 2-methylpropanoate` | oracle `2-methylpropyl 2-methylpropanoate` (retained isobutyl; engine form is PIN-preferred, §A-family — P3 confirms)
+- `isopropyl_2_3_dimethylbutanoate` — engine `isopropyl 2,3-dimethylbutanoate` | oracle `propan-2-yl 2,3-dimethylbutanoate` (retained isopropyl; engine form is PIN-preferred, §A-family — P3 confirms)
+
+**Amber — no PubChem/CIR record, nothing to validate against (15 novel molecules, all of §E, all confirmed missing live):**
+`ethyl_4_dimethyl_3_5_heptyne_1`, `ethyl_3_methyl_4_hexen_3_yn_5_ol_2`, `ethyl_4_dimethyl_2_3_hepten_2_yne_5`, `isopropyl_4_dimethyl_3_5_heptanol_2`, `diethyl_4_5_dimethyl_2_6_heptanone_3`, `dimethyl_4_5_hexen_5_yn_1_one_3`, `methyl_6_hepten_3_dione_2_5`, `ethyl_3_methyl_4_octen_3_yn_5_dione_2_7`, `isopropyl_4_dimethyl_3_6_octen_3_yn_7_dione_2_5`, `ethyl_4_isopropyl_3_methyl_2_hexanal`, `ethyl_4_penten_4_yn_2_al`, `ethyl_2_methyl_3_hexen_2_yn_4_dial`, `ethyl_3_isopropyl_2_dimethyl_4_5_hexanoic_acid`, `ethyl_2_methyl_3_penten_2_yn_4_oic_acid`, `ethyl_3_isopropyl_2_dimethyl_4_5_hexadien_2_4_dioic_acid`, `ethyl_2_isopropyl_3_dimethyl_6_6_hepten_2_yn_4_dioic_acid` — engine proposals in §E stand; P1/P4 to bless against `.mol` files.
+
+**Bulk-run caveat (transient amber/lavender):** 19 further molecules returned no oracle data in this bulk run (`butene_2`, `penten_2_ol_1`, `penten_3_yne_1`, `hexen_2_yne_4`, `bromo_3_chloropentane_1`, `bromo_2_chlorobutane_3`, `ethyl_3_dimethyl_2_5_hexene_2`, `ethyl_3_dimethyl_2_5_hexane`, `dimethyl_2_3_pentadiene_1_3`, `dimethyl_2_3_penten_1_yne_4`, `methyl_3_pentadiene_1_3`, `methyl_3_penten_2_dial`, `penten_2_yn_4_oic_acid`, `hexen_2_yn_4_dioic_acid`, `methyl_6_hepten_3_dione_2_5` and the 4 esters above pre-classification). All have public records — this is CIR/PubChem throttling under bulk lookup (documented §D/§E), not absence. Spot re-checks with spacing confirm it (`butene_2` → systematic match, `hexen_2_yn_4_dioic_acid` → systematic match). Since the fetch-error/empty split, throttled lookups land on **lavender** (unknown), genuine no-records on **amber** — re-visit individually, don't bulk-retry.
+
+**Lavender** is transient by nature (network failures, throttling, offline) and is never listed per molecule — any molecule can show it while unreachable. Offline, verdicts stay unmarked (no data, no claim).
+
 ## Files
 
 - `js/mulermoc-nom-name-en-53.js` — EN tables + slot transliteration + validation (`fGuessNameEN_canon`, `fAssembleBranchedEN`, `fPopulateEngineENFromGreek`, `fValidateENAgainstOracle`).

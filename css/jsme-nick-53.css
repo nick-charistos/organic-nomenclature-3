@@ -5,6 +5,9 @@
 
   --lightBlue: #779ace;
   --veryLightBlue: #c8d9ec;
+  --veryLightRed: #f3caca;
+  --veryLightAmber: #f5e3b8;
+  --veryLightLavender: #e2d9f2;
   --darkEarth: #dfa374;
   --lightEarth: #f6d1ba;
 
@@ -1741,6 +1744,26 @@ header {
 .nameCompContainer.oracle-name .nameCompBox:not(.selected) {
   background-color: var(--veryLightBlue);
   border-color: var(--lightBlue);
+}
+/* Live oracle verdicts (EN only): mismatch alarm + no-data amber. */
+.nameCompContainer.oracle-name.verdict-mismatch .nameCompBox:not(.selected) {
+  background-color: var(--veryLightRed);
+  border-color: #d98c8c;
+}
+.nameCompContainer.oracle-name.verdict-nooracle .nameCompBox:not(.selected) {
+  background-color: var(--veryLightAmber);
+  border-color: #d9b96a;
+}
+.nameCompContainer.oracle-name.verdict-noerror .nameCompBox:not(.selected) {
+  background-color: var(--veryLightLavender);
+  border-color: #a58fd6;
+}
+.nameOracleName {
+  font-size: 0.85rem;
+  color: var(--redAlert);
+  margin-top: -8px;
+  margin-bottom: 1px;
+  text-align: center;
 }
 
 /* Eye tooltip above the button (skin: shared rule at the top of this file) */
