@@ -23,15 +23,15 @@ Result: **103 systematic + 14 retained-name + 2 title matches = 119/141 automate
 ## C. Genuinely different names — human ruling required (P1/P4 + P3)
 - `propene`: engine `propene` | oracle `prop-1-ene` | PubChem `prop-1-ene`
 - `propyne`: engine `propyne` | oracle `prop-1-yne` | PubChem `prop-1-yne`
-- `Oxopropanoic_acid`: engine `oxopropanoic acid` | oracle `2-oxopropanoic acid` | PubChem `2-oxopropanoic acid`
-- `oxobutanoic_acid`: engine `oxobutanoic acid` | oracle `4-oxobutanoic acid` | PubChem `4-oxobutanoic acid`
+- `Oxopropanoic_acid`: engine `2-oxopropanoic acid` | oracle `2-oxopropanoic acid` | PubChem `2-oxopropanoic acid` — RESOLVED (oxo locant now derived, §L)
+- `oxobutanoic_acid`: engine `4-oxobutanoic acid` | oracle `4-oxobutanoic acid` | PubChem `4-oxobutanoic acid` — RESOLVED (oxo locant now derived, §L)
 - `nitroethane`: engine `nitroethane` | oracle `1-nitroethane` | PubChem `1-nitroethane`
 - `isopropyl_2_buten_2_dial`: engine `2-isopropylbut-2-enedial` | oracle `2-propan-2-ylbut-2-enedial` | PubChem `2-propan-2-ylbut-2-enedial`
 - `isobutyl_isopropyl_ether`: engine `1-isopropoxy-2-methylpropane` | oracle `2-methyl-1-propan-2-yloxypropane` | PubChem `2-methyl-1-propan-2-yloxypropane`
 - `tert_butyl_isopropyl_ether`: engine `2-isopropoxy-2-methylpropane` | oracle `2-methyl-2-propan-2-yloxypropane` | PubChem `2-methyl-2-propan-2-yloxypropane`
 
 Notes:
-- `Oxopropanoic_acid` / `oxobutanoic_acid`: Greek slots carry no oxo locant, so neither does the engine. Confirm positions from the `.mol` files (expected 2- and 4-); future work: derive oxo locant from `functionalGroupObj` chain position.
+- ~~`Oxopropanoic_acid` / `oxobutanoic_acid`: Greek slots carry no oxo locant, so neither does the engine. Confirm positions from the `.mol` files (expected 2- and 4-); future work: derive oxo locant from `functionalGroupObj` chain position.~~ RESOLVED — oxo locants derived from chain position in both languages (§L).
 - `isopropyl_2_buten_2_dial`, `isobutyl/tert-butyl isopropyl ether`: engine uses school-common `isopropyl/isobutyl/isopropoxy`; systematic wants `propan-2-yl`/`2-methylpropyl`/`propan-2-yloxy`. P3 teaching decision: keep common substituents (matches Greek UI tables) or switch to substitutive.
 - `nitroethane` oracle in-app once showed a polluted synonym string; offline PubChem SMILES lookup gives clean `1-nitroethane`. If it recurs, it is oracle noise, not an engine bug (engine output is PIN-valid).
 
@@ -96,6 +96,18 @@ CIR note: `cactus.nci.nih.gov` throttles aggressively after bulk lookups (HTTP 4
 - Header is now a two-button GR/EN switch (plain `langButtonClass` buttons, `selected` on the active language, no app CSS reused — teacher styles by hand); clicking the active side is a no-op (no reload).
 - Toggling carries the selected molecule (`?mol=`), dropped when a scenario owns the selection; boot restores it through the normal click path (viewer + menu highlight + group open + naming), ignored for bogus keys and when `?scenario=` is present. Direct `?lang=…&mol=…` links open that molecule.
 - Verified with the real toggle function (stubbed navigation) + direct-URL boots in both languages; scenario+mol precedence confirmed; zero console errors.
+
+## K. Engine gap closed (9 esters) + oracle marker (2026-11-02, headless Chrome)
+
+- The 9 molecules where the joined `engineEN` kept Greek (`ethanικός methylester` etc. — methyl/alkyl alkanoates whose acid adjective `ικός` had no suffix-map entry) are fixed with one map pair (`ικός`→`anoate`; longest-first keeps `ικό οξύ` intact). All 141 `engineEN` strings are now Greek-free; the oracle-delegation path no longer triggers on current data.
+- New visual flag: when the shown EN name is not pure engine output, the name boxes get a `veryLightBlue` tint (`oracle-name` on the container, additive — ids/hooks untouched, selected keeps green). Two states: oracle-supplied EN (`Name from the PubChem oracle — pending human review`) and Greek fallback in EN mode (`No engine English name — showing Greek`). EN-only; GR never marked. Serves as the human-review queue at a glance.
+- Verified: 0 mixed strings, 0 false tints in normal EN/GR operation; forced fallback/delegation states show correct tint + title; box-click highlight works over the tint; GR forced states stay unmarked; no console errors.
+
+## L. Oxocarboxylic merge + οξο- prefix + oxo locants (2026-11-02, headless Chrome)
+
+- Per IUPAC there is a single class: `ketoAcids` merged into `oxoCarboxylicAcids` (acid+ketone now classifies with acid+aldehyde). The `ketoAcids` label/EN-map entries stay as harmless aliases for old saves; grouping is live-derived so the Κετοξέα group simply no longer appears. Greek class nouns (`Κετονομάδα`) and the r4 priority row are untouched — only the substitutive prefix changed.
+- Greek substitutive prefix `κετο-` → systematic `οξο-` with derived chain-position locant (`κετο-προπανικό οξύ` → `2-οξοπροπανικό οξύ`; EN `oxopropanoic acid` → `2-oxopropanoic acid`, `oxobutanoic acid` → `4-oxobutanoic acid`). Suppression of secondary aldehyde/ketone locants is now lifted only when the principal group is carboxylic acid; all other principals keep the school convention.
+- Verified: `2-oxopropanoic acid`, `4-oxobutanoic acid` in EN with no oracle delegation (pure engine); GR boxes `2-οξο + προπ + αν + ικό οξύ`; explain/numbering/highlight fire correctly on the new locant boxes; chemclass/series group headers show Οξοκαρβοξυλικά (GR) / Oxocarboxylic acids (EN); full 141-molecule sweep shows movement only on these 2 molecules vs pre-change output; no console errors.
 
 ## Files
 

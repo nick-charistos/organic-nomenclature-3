@@ -97,7 +97,10 @@ function fGetMoleculeClassification() {
         : hasCarboxylicAcid && functionalGroups.includes("alcohol")
             ? "hydroxyAcids"
         : hasCarboxylicAcid && functionalGroups.includes("ketone")
-            ? "ketoAcids"
+            // IUPAC single class (oxocarboxylic acids): the ketoAcids series
+            // is retired — acid+ketone merges into oxoCarboxylicAcids, named
+            // with the οξο- prefix + locant (not κετο-).
+            ? "oxoCarboxylicAcids"
             : hasCyanide && functionalGroups.includes("alcohol")
                 ? "hydroxyNitriles"
             : null
@@ -149,7 +152,7 @@ function fInitNamingProps() {
         halogen: { suffix: 'ιο', substitute: { Br: "βρωμο", I: "ιωδο", F: "φθορο", Cl: "χλωρο" } },
         alcohol: { suffix: 'όλη', substitute: "υδροξυ" },
         aldehyde: { suffix: 'άλη', substitute: "οξο" },
-        ketone: { suffix: 'όνη', substitute: "κετο" },
+        ketone: { suffix: 'όνη', substitute: "οξο" }, // systematic substitutive prefix (traditional κετο- retired)
         carboxylicAcid: { suffix: 'ικό οξύ', substitute: "καρβοξυ" },
         cyanide: { suffix: 'νιτρίλιο', substitute: "κυανο" },
         amine: { suffix: 'αμίνη', substitute: "αμινο" },
@@ -2797,8 +2800,11 @@ function fGuessName(skipChainRecalc) {
                 }
             }
 
-            if (currXO == "aldehyde") { myXpositions = "" }
-            if (currXO == "ketone" && mainChainAtomsList.length < 5) { myXpositions = "" }
+            // Oxo-acid naming (carboxylic principal): keep the substituent
+            // locant so both languages render it (2-οξο- / 2-oxo-). Other
+            // principals keep the school convention (locant omitted).
+            if (currXO == "aldehyde" && fgOrder[0] !== "carboxylicAcid") { myXpositions = "" }
+            if (currXO == "ketone" && mainChainAtomsList.length < 5 && fgOrder[0] !== "carboxylicAcid") { myXpositions = "" }
 
             // Per-group count prefix accumulated with its own substitute
             // (was: only the last group's count prefix applied to the whole string)

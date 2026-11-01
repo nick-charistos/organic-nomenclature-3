@@ -3961,13 +3961,14 @@ function fShowNameAnalysis() {
   var _isEN = false;
   try { _isEN = (typeof fMulerLang === "function" && fMulerLang() === "en"); } catch (eL) { _isEN = false; }
   var _enBoxes = null;
+  var _renderedENBoxes = false;
   try { _enBoxes = (_isEN && typeof fNameENBoxes === "function") ? fNameENBoxes() : null; } catch (eEN) { _enBoxes = null; }
   if (_commonParts && _commonParts.parts) {
     var _labels = _commonParts.parts.map(function (p) { return p.label; });
     if (_isEN && typeof fMulerENCommonLabel === "function") {
       var _enLabels = [];
       for (var _li = 0; _li < _labels.length; _li++) { _enLabels.push(fMulerENCommonLabel(_labels[_li])); }
-      if (_enLabels.indexOf(null) < 0) _labels = _enLabels;
+      if (_enLabels.indexOf(null) < 0) { _labels = _enLabels; _renderedENBoxes = true; }
     }
     for (let ci = 0; ci < _labels.length; ci++) {
       currComp = _labels[ci];
@@ -4014,6 +4015,7 @@ function fShowNameAnalysis() {
     }
   } else if (_enBoxes && _enBoxes.boxes && _enBoxes.boxes.length) {
   // EN systematic name boxes: pre-transliterated text in EN order, stable Greek box ids.
+  _renderedENBoxes = true;
   var _elist = _enBoxes.boxes;
   for (var _ei = 0; _ei < _elist.length; _ei++) {
     compBox = fNameCompBox(_elist[_ei][0], boxClass, _elist[_ei][1]);
@@ -4185,6 +4187,25 @@ function fShowNameAnalysis() {
   } // end IUPAC boxes (else of COMMON render)
 
   // nameCompContainer += "</div><button id='readNameBtn' class='readNameBtn' data-tooltip='Ανάγνωση ονόματος'" + playDisabled + ">" + svgPlay + "</button></div>"
+
+  // Oracle/fallback marker (EN only): tint when the shown name is not pure
+  // engine output — PubChem-oracle EN boxes, or Greek fallback in EN mode.
+  // Additive container class: box ids and hooks untouched. GR never marked.
+  try {
+    var _oracleState = null;
+    if (_isEN && typeof selectedMol !== "undefined" && selectedMol && typeof nameExamples !== "undefined" && nameExamples[selectedMol] && nameExamples[selectedMol].engineDelegated) {
+      _oracleState = "oracle";
+    } else if (_isEN && !_renderedENBoxes) {
+      _oracleState = "fallback";
+    }
+    if (_oracleState) {
+      var _tip = _oracleState === "oracle"
+        ? ((typeof fMulerT === "function") ? fMulerT("oracleNameTip") : "Name from the PubChem oracle — pending human review")
+        : ((typeof fMulerT === "function") ? fMulerT("greekFallbackTip") : "No engine English name — showing Greek");
+      nameCompContainer = nameCompContainer.replace("<div class='nameCompContainer'>",
+        "<div class='nameCompContainer oracle-name' title='" + _tip + "'>");
+    }
+  } catch (eO) { /* marker best-effort */ }
 
   $("#nameAnalysis").html(nameCompContainer);
 

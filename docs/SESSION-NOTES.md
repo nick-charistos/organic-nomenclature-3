@@ -2527,3 +2527,28 @@ follows; one Save → Present → Next → Exit round-trip.
 * Evaluated 2D editors (Kekule.js, Ketcher, ChemDoodle, OpenChemLib, SmilesDrawer), 3D viewers (3Dmol.js, Mol*; NGL deprecated), cheminformatics WASM (RDKit.js, Indigo, chematic), and namers (PubChem/CIR oracle as today, OPSIN reverse-only, ACD/Name, ChemAxon, ChemDoodle, NISPO, OpenClatura, schematic-iupac) — all with links, pros/cons, fit-for-project verdicts.
 * Decisions recorded: JSME + JSmol stay (JSME covers SMILES↔2D + SMARTS input; JSmol off the table); no naming library adopted (round-trip ≠ pedagogically correct); OpenClatura closest to watch (decision traces); OPSIN the only candidate validation addition later.
 * Cyclic scope fixed: simple rings with substituents only (monocyclic alkanes/alkenes, substituted benzenes, common heterocycles) — bounded rule-table extension later, no fused/bridged/spiro.
+
+## 2026-11-02 — Engine gap closed (9 esters) + oracle marker
+
+* `ικός`→`anoate` suffix-map pair fixes the 9 methyl/alkyl esters whose joined
+  engineEN kept Greek (longest-first keeps `ικό οξύ` intact). All 141
+  engineEN strings now Greek-free; oracle delegation no longer triggers.
+* New `oracle-name` tint (veryLightBlue, additive container class, selected
+  keeps green) when the shown EN name isn't pure engine output: oracle EN +
+  Greek-fallback states, each with its own tooltip. EN-only, GR untouched.
+* Verified incl. forced states, click-hook over tint, GR never marked,
+  no console errors. Docs: REVIEW §J, teacher-guide tint note.
+
+## 2026-11-02 — Oxocarboxylic merge + οξο- prefix + oxo locants (IUPAC)
+
+* Per user decision: single class `oxoCarboxylicAcids` (acid+ketone merged;
+  `ketoAcids` label/EN-map kept as harmless aliases); Greek substitutive
+  prefix κετο- → οξο- with derived chain-position locant
+  (κετο-προπανικό οξύ → 2-οξοπροπανικό οξύ); EN oxopropanoic →
+  2-oxopropanoic acid, oxobutanoic → 4-oxobutanoic acid (pure engine, no
+  delegation). Locant suppression now lifted only under carboxylic
+  principal; all else unchanged. Nouns (Κετονομάδα) and r4 row untouched.
+* Verified GR+EN end-to-end (slots, boxes, engine, explain, series/class
+  grouping); full 141 sweep moves only the 2 oxo molecules (+9 esters from
+  the anoate fix); no console errors. REVIEW §C resolved, new §L; §J
+  duplicate heading fixed (->K).

@@ -1735,6 +1735,14 @@ header {
   background-color: var(--veryLightBlue);
 }
 
+/* Oracle/fallback marker (EN only): the shown name is not pure engine
+   output — PubChem-oracle EN boxes, or Greek fallback in EN mode.
+   Selected boxes keep their green highlight. */
+.nameCompContainer.oracle-name .nameCompBox:not(.selected) {
+  background-color: var(--veryLightBlue);
+  border-color: var(--lightBlue);
+}
+
 /* Eye tooltip above the button (skin: shared rule at the top of this file) */
 .compEye[data-tooltip]::after {
   position: absolute;

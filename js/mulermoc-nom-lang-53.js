@@ -199,6 +199,8 @@ var MULER_STRINGS = {
   applyBtn: { gr: "Εφαρμογή", en: "Apply" },
   richText: { gr: "Πλούσιο κείμενο", en: "Rich text" },
   stepLang: { gr: "Γλώσσα βήματος", en: "Step language" },
+  oracleNameTip: { gr: "Ονομασία από τον oracle του PubChem — εκκρεμεί ανθρώπινος έλεγχος", en: "Name from the PubChem oracle — pending human review" },
+  greekFallbackTip: { gr: "Δεν υπάρχει αγγλική ονομασία από τη μηχανή — εμφανίζεται η ελληνική", en: "No engine English name — showing Greek" },
   confirmDelete: { gr: "Διαγραφή", en: "Delete" },
   unclosedTag: { gr: "Μη κλεισμένη ετικέτα — ελέγξτε τα <...>.", en: "Unclosed tag — check the <...>." },
   imgShort: { gr: "Εικ.", en: "Img" },

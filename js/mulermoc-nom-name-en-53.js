@@ -145,7 +145,7 @@ var EN_INFIX_GR = [
 var EN_SUFFIX_GR = [
   ["διοικό οξύ", "dioic acid"], ["διόλη", "diol"], ["διάλη", "dial"], ["διόνη", "dione"],
   ["δι", "di"], ["τρι", "tri"],
-  ["ιο", "e"], ["όλη", "ol"], ["άλη", "al"], ["όνη", "one"], ["ικό οξύ", "oic acid"],
+  ["ιο", "e"], ["όλη", "ol"], ["άλη", "al"], ["όνη", "one"], ["ικό οξύ", "oic acid"], ["ικός", "oate"],
   ["νιτρίλιο", "nitrile"], ["αμίνη", "amine"]
 ];
 var EN_SUB_GR = [
@@ -268,7 +268,9 @@ function fPopulateEngineENFromGreek(key) {
     parent = parent.replace(/-yn$/, "-yne").replace(/-en$/, "-ene");
     parent = parent.replace(/-en-(\d[\d,]*-)(dione|diol|dial|dioic)/, "-ene-$1$2").replace(/-yn-(\d[\d,]*-)(dione|diol|dial|dioic)/, "-yne-$1$2");
     var tail = [S(10), S(11)].join("");
-    var out = isEster ? (parent + (tail ? " " + tail : "")) : (pre + parent + tail);
+    // Esters: alcohol word first, then the substituted acid parent; the
+    // εστέρας noun (S(11)) is implied by -oate and dropped.
+    var out = isEster ? (S(10) + " " + pre + parent) : (pre + parent + tail);
     // normalize artifacts
     out = out.replace(/\s+/g, " ").trim().replace(/ananoic/g, "anoic").replace(/\banane\b/g, "ane");
     if (!out || /^[0-9,\-]*$/.test(out)) return null;
@@ -320,10 +322,13 @@ function fNameENBoxes() {
     var satKetLoc = (!comp1No && !mid && infix === "an" && suffix === "one" && ["meth", "eth", "prop", "but"].indexOf(stem) >= 0) ? "2" : "";
     var diMatch = /^(di|tri|tetra)(en|yn)$/.exec(infix);
     if (diMatch && !comp1No && !mid) comp1No = "1,2";
-    if (isEster) suffix = "anoate";
+    if (isEster) suffix = "oate";
     var boxes = [];
     var push = function (id, t) { if (t !== "" && t != null) boxes.push([id, String(t)]); };
     var diene = !!diMatch;
+    var spaceAfter = null;
+    // Esters lead with the alcohol word (alkyl alkanoate: "isobutyl ...").
+    if (isEster) { push("comp10", S(10)); spaceAfter = "comp10"; }
     // Pre (substituent) boxes keep Greek slot order — identical in EN.
     if (hasSub) {
       push("comp0", S(0));
@@ -341,8 +346,6 @@ function fNameENBoxes() {
         }
       } else { push("comp3", S(3)); }
     }
-    var spaceAfter = null;
-    if (isEster) { push("comp10", S(10)); spaceAfter = "comp10"; }
     // Parent boxes in EN systematic order (stem first).
     if (diene) {
       push("comp5", stem);
