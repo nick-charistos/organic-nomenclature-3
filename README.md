@@ -8,6 +8,15 @@ Designed and developed by Nickolas Charistos
 **Previous version:** v51 remains runnable at root (`mulermoc-nom-51.html`), along with v50…v42. v51 introduced safe rich notes and the Snap-free viewer; v52 adds the unified inline/modal rich editor.
 **Entry point:** [index.html](index.html) → [mulermoc-nom-52.html](mulermoc-nom-52.html) (live); `mulermoc-nom-51.html` and earlier versions `mulermoc-nom-50.html`…`-42.html` runnable alongside
 
+## English version (v53 in progress, Greek default preserved)
+
+- Preview: `mulermoc-nom-53.html?lang=en` (Greek without the flag). Single codebase, per-key EN fallback.
+- Chrome: `js/mulermoc-nom-lang-53.js` (207-string `?lang=` table, every Greek value source-verified + value-based `data-tooltip`/`aria-label`/`title`/`placeholder` translation with debounced MutationObserver, dynamic-prefix rules, present-panel/step-title/badge/tab/size-option/2D-3D-bar text nodes, EN TTS `fSpeakMuler`/`fWireENTTS`, two-button header switch carrying the selected molecule (`?mol=`); verified headless: 0 Greek of 254 tooltips, 0 Greek of 224 aria-labels, final audit 24 remaining Greek strings all authored-note/credit — zero chrome remainder; GR mode no-leak). EN renders directly at build time (no Greek-first flip; verified observer-neutered); GR default byte-identical.
+- Didactic EN: `nameAnalysisExplain` all 17 modes + rule panel (titles/texts/tables via 91-pair `RULE_GR2EN`) + 9 theory texts + alkyl/alkoxy systematic tables + EN rule narration; validated 141×17+9 with 0 Greek in EN, GR throw-parity and zero EN leakage — see `docs/REVIEW-EN-53.md` §G.
+- Chemistry: `js/mulermoc-nom-name-en-53.js` (straight-chain + branched `fAssembleBranchedEN`, ether `fEtherSystematicEN`, ester `fEsterSystematicEN`, slot transliteration `fPopulateEngineENFromGreek` hooked in `fSelectMol`); oracle `js/mulermoc-nom-iupac-53.js` (PubChem `IUPACName` verbatim + `RETAINED_TO_SYSTEMATIC_EN` map + synonyms, `needsHumanCheck` on retained≠systematic; e.g. `formic→methanoic`, `methyl acetate→methyl ethanoate`).
+- Validation: in-browser full run 119/141 automated agreement (103 systematic + 14 retained-name + 2 PubChem-Title matches via `fValidateENAgainstOracle`; stereo prefixes stripped); offline pure-function run 107/141 on the same oracle snapshot. Remainder is an explicit human queue — see [docs/REVIEW-EN-53.md](docs/REVIEW-EN-53.md) (retained names, PIN locant omissions, oxo locants, common-vs-systematic substituents, 15 novel molecules without public record + engineEN proposals). Full re-run: serve repo root and open `zz-harness-53.html?lang=en`; fast offline check: `zz-test-en53.html`.
+- Scenarios stay author-language; new EN scenarios to be authored by teachers/MSc students. Each step stores its creation language and renders in it (mixed-language scenarios supported); the header toggle keeps the selected molecule (`?mol=`). Short guide: [docs/TEACHER-GUIDE-EN-53.md](docs/TEACHER-GUIDE-EN-53.md).
+
 | Layer | File |
 |---|---|
 | Core engine (analysis + naming) | [js/mulermoc-nom-core-52.js](js/mulermoc-nom-core-52.js) |

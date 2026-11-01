@@ -1,0 +1,58 @@
+# Teacher guide — English version (v53)
+
+Preview: `mulermoc-nom-53.html?lang=en`. Greek is the default; English is a
+display layer over the same app and the same 141 molecules. Nothing is forked:
+one codebase, `?lang=` switch.
+
+## Switching language
+
+- Open `mulermoc-nom-53.html?lang=en` for English, `mulermoc-nom-53.html`
+  (or `?lang=gr`) for Greek. The header shows GR and EN side by side; the
+  active language is marked selected. Switching preserves scenario/query
+  state and keeps the selected molecule (`?mol=` link, dropped when a
+  scenario owns the selection). The choice is remembered
+  (localStorage), so a plain `mulermoc-nom-53.html` link reopens in the last
+  used language — share explicit `?lang=en` / `?lang=gr` links with students
+  when it matters (add `&mol=<key>` to point at a molecule). Each language
+  renders directly (no flash of the other).
+
+## What is translated
+
+- All UI chrome (~200 strings): menus, viewer and naming settings, buttons,
+  tooltips, present/author panels, step chrome, placeholders, name-component
+  boxes (systematic English order, e.g. `pentan-2-one`, `buta-1,3-diene`).
+- Text-to-speech reads the visible English name in EN mode (picks an
+  English voice when the browser has one); the rule-theory narrate button
+  reads the English theory in EN mode.
+
+## What stays Greek (by design)
+
+- Authored content: every scenario step title/note and all author credits.
+- Greek common names of molecules (data, e.g. ether `Κοινή ονομασία`) — omitted from the EN explain line rather than mistranslated.
+- Existing scenarios are Greek test/authoring material, not student content.
+
+## Authoring English scenarios
+
+Write step titles and notes directly in English; the surrounding chrome
+follows `?lang=`. Each step remembers the language it was created in
+(`lang` in the scenario JSON; shown as an EN/GR badge on the step row),
+and shows its naming and UI in that language when applied or presented —
+mixed Greek/English scenarios work step by step. Legacy steps without the
+field play in Greek. Switching languages via the header keeps the selected
+molecule (`?mol=` link, dropped when a scenario owns the selection) —
+viewer, menu highlight and naming all follow;
+pasting a `?lang=…&mol=…` link opens that molecule directly. Molecule names
+shown in the panels come from the Greek
+analysis transliterated to systematic English — verify any name you put in
+a note against the panel. Greek-common forms are kept for now
+(`isopropyl`, `sec-butyl`); see `docs/REVIEW-EN-53.md` for the convention
+queue awaiting expert ruling (retained vs systematic names, implied locants
+such as `propene` vs `prop-1-ene`, 15 novel molecules without a public
+record). Do not "correct" engine names inside notes — flag them instead.
+
+## Validation
+
+Automated agreement engine-vs-PubChem/CIR oracle: 119/141 in-browser
+(103 systematic + 14 retained-name + 2 PubChem-Title); remainder is the
+explicit human queue above. Re-run: serve the repo root and open
+`zz-harness-53.html?lang=en`; fast offline check: `zz-test-en53.html`.

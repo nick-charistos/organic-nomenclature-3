@@ -2398,3 +2398,126 @@ follows; one Save → Present → Next → Exit round-trip.
   interval-branch + DOM-stub overlay-logic unit tests; CSS braces balanced;
   `git diff --check` clean. Browser matrix pending (instant locants, stem
   reveal, 14px+scroll, overlay over viewer with live clicks).
+
+## 2026-11-01 — EN chrome sweep complete (v53 `?lang=en`, zero chrome remainder)
+
+* `MULER_STRINGS` 114 → 191 keys; every `gr` value verified verbatim against a
+  53 source. Typo fixes: `homolSeries` `Σείρες`→`Σειρές` (series grouping label
+  never matched), `toastRichStuck` `;`→`.` (toast never translated).
+* Observer now covers `[title]`, `[placeholder]`/`[data-placeholder]`,
+  `.sshow` present-panel labels (+ menu-group checkboxes), `.scTabText`,
+  `.scStepTitleLabel`, `.scMolBadge`, size `option`s, `#dropLabel`/`.dropLi`,
+  `#zigzagCheck`/`#hydrogensCheck`/`#rotateCheck`, `#nameAnalysisExplain`
+  click-hints, `.scNoteEditorTitle`. New keys: molecules/meνού badge, step
+  title + note/HTML placeholders, scenario title attr, 2D/3D settings,
+  naming-settings-lower, name-interaction, menu-groupings, CH-symbols,
+  hydrogens, rotation, vis styles, 5 size options, 2 click-hints,
+  data-URI-too-big toast. Prefix rule added: `Κείμενο βήματος `.
+* EN render fixes (`name-en-53`/`molview-53`): NFD `fStripTonos` (ϊ/ΐ broke
+  common-ether EN labels); di-suffix `ane`-fusion scoped to saturated branch;
+  ester `comp9=anoate` + `comp10` alcohol word + space; fused suffix locants →
+  own `comp9loc`; `comp3loc`/`comp3b` splits kept in EN order.
+* Verification (headless, real `fSelectMol` path): 141/141 EN boxes, 0 Greek
+  in boxes; full-DOM EN audit 24 remaining Greek strings, all
+  didactic/authored (rule theory, authored step notes, credits); GR mode:
+  no EN leakage, Greek chrome intact. `zz-probe*.html` scaffolding deleted
+  (`zz-harness-53.html`, `zz-test-en53.html` kept — docs reference them).
+* Still uncommitted (user rule): all `*53*` files + README + `mulermoc-nom-52.html`
+  (one pre-existing title tweak, not ours). Human queue unchanged (P1/P3/P4:
+  retained vs systematic, PIN locants, oxo locants, isopropyl convention,
+  15 novel molecules); real-browser TTS check still pending.
+
+## 2026-11-02 — nameAnalysisExplain + rule panel + theory translated (v53 EN)
+
+* `fExplainNameComp` all 17 modes wrapped with `fTX(gr, en)` (lang-53.js);
+  EN noun maps + resolvers (`fBranchNoun`, `fTaxonomyEN` with `Καροξυλικά`/
+  `Ιμίνες`/`Αλδεϋδες` aliases — Greek data untouched); `compSuffix`
+  composes EN class/series; Greek common-name clause omitted in EN.
+* `fShowRule` title/text/table via `fTranslateRuleHTML` (91-pair
+  `RULE_GR2EN`, every entry source-verified, longest-first); alkyl/alkoxy
+  builders render systematic EN tables directly (`_cap(g[4])`,
+  EN note). `fShowRuleTheory` → `Rule N`; `fNarrateRule` lang-aware
+  (en-US voice); `#narrateBtn` removed from EN name-speak hijack.
+* Caught by headless log: batch splice produced `myText = " + fTX(...` (14
+  sites) — repaired to `myText = fTX(...);`, verified via Chrome error log.
+* Validation: 141×17 explain+rule cells + 9 theory texts = 0 Greek in EN;
+  GR baseline identical 26 probe-forced throws, 0 EN leakage, GR intact.
+  Full-DOM EN remainder = known 24 authored-note/credit strings.
+  Probes deleted. Still uncommitted (user rule).
+
+## 2026-11-02 — Chrome independence: no Greek-first flip in EN
+
+* Reported: grouping-radio clicks flashed Greek before English. Cause:
+  rebuilds rendered Greek, debounced observer translated post-paint.
+* Fix: all post-boot render paths choose language at build time
+  (`fMulerT`/`fTX`/`fMulerPre`/`fTranslateRuleHTML`/`fVisStyleLabels`/
+  `fRuleTheoryTitleEN`/`fTaxonomyEN`, lang-aware alkyl/alkoxy builders):
+  menu, name panel, viewer buttons, style/eye/expand tooltips, rule panel +
+  theory + narrate, full scenario drawer (incl. confirm dialog), note
+  fallbacks, image-dialog/size/text chrome. New STRINGS keys: applyBtn,
+  richText, confirmDelete, unclosedTag, img/tableShort, comp1-3Menu,
+  groupOrder/alkyl/alkoxyMenu, untitledDoc, stepCopy, imgUnavailable.
+  Observer is backstop only; toasts/prompts already call-time.
+* Authored content untouched (step notes/titles, note table boilerplate,
+  list placeholders, credits); legacy core spellings aliased, not fixed.
+  Caught en route: swapped show/hide EN keys, `R-NO` Latin fix in dictionary.
+* Verified observer-neutered: EN 13 checkpoints 0 Greek text/attrs
+  (bilingual toggle excepted); GR mirror 0 EN markers, chrome intact.
+  Probes deleted. Still uncommitted (user rule).
+
+## 2026-11-02 — Per-step scenario language (`step.lang`)
+
+* Steps store creation language (`lang: en|gr`, captured via effective
+  `fMulerLang`); JSON round-trips it; validate normalizes + warns on invalid
+  (legacy/absent → silent Greek default).
+* Apply (`fScenarioApply`, all triggers incl. authoring preview) sets the
+  in-memory `__mulerStepLang` override read by `fMulerLang()`, then
+  `fMulerRefreshStepChrome()` re-renders menu (present-menu preserved +
+  switcher), name analysis, static chrome, one-time bars by ID, drawer
+  panels (open-drawer + focus/draft guarded). Skipped when painted lang
+  unchanged. Present exit + reload/header-toggle clear the override.
+* Drawer rows show an EN/GR badge (`.scLangBadge`); new STRINGS keys incl.
+  stepLang, imgShort/tblShort, comp menus, untitledDoc, stepCopy.
+* Verified: GR/EN capture, mixed present walk EN→GR→EN with per-step boxes,
+  legacy + invalid (`xx`→gr+warning), exit clears, no console errors.
+  Probes deleted. Still uncommitted (user rule).
+
+## 2026-11-02 — Molecule survives language toggle (`?mol=`)
+
+* Header toggle now carries the selected molecule (`?lang=` + `?mol=key`,
+  dropped when a scenario owns the selection); boot restores it through
+  the normal `fSelectMol` path when no `?scenario=` is present. Also gives
+  shareable `?lang=…&mol=…` deep links.
+* Verified: toggle URL logic with the real function body (carry / drop on
+  scenario / no-op on empty or bogus); direct-URL boots select in both
+  languages (EN `sec_butyl_ethanoate` → `anoate` boxes); scenario+mol
+  ignores mol (scenario wins); bogus mol ignored without crash.
+  Still uncommitted (user rule).
+
+## 2026-11-02 — Menu follows `?mol=` boot restore
+
+* The toggle-kept molecule loaded in the viewer but the menu still showed
+  methane selected: `fSelectMol` never touches menu state (highlight is a
+  click-handler side effect). Boot restore now mirrors the click — marks
+  `.menuLi.selectedLi` on the restored entry and opens its group container
+  (no rule-mode header side effects). Verified EN+GR (?mol=… → selected +
+  marked match); no console errors.
+
+## 2026-11-02 — Two-button language switch (unstyled)
+
+* Header now shows GR + EN side by side (`#langSwitch`, plain
+  `langButtonClass` buttons, `selected` on the active language, no
+  app CSS reused — teacher styles by hand). `fMulerToggleLang(target)`,
+  active-side click is a no-op (no reload). Verified both langs:
+  correct `selected`/aria-pressed, switch carries `?lang=`+`?mol=`.
+  Still uncommitted (user rule).
+
+## 2026-11-02 — `?mol=` carry + menu follow + two-button switch
+
+* Header toggle now a GR/EN two-button switch (plain `langButtonClass`,
+  `selected` on active, no app CSS — teacher styles by hand);
+  `fMulerToggleLang(target)`, active-side click is a no-op.
+* Toggle preserves the molecule (`?mol=`, dropped under scenarios); boot
+  restores via the click path incl. menu highlight + group open.
+  Verified EN+GR with the real toggle code and direct-URL boots.
+* Docs updated (REVIEW §J, guide, README); counts refreshed (207 strings).
