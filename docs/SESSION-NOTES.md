@@ -2521,3 +2521,9 @@ follows; one Save → Present → Next → Exit round-trip.
   restores via the click path incl. menu highlight + group open.
   Verified EN+GR with the real toggle code and direct-URL boots.
 * Docs updated (REVIEW §J, guide, README); counts refreshed (207 strings).
+
+## 2026-11-02 — Cheminformatics library survey (`docs/CHEM-LIBRARIES.md`)
+
+* Evaluated 2D editors (Kekule.js, Ketcher, ChemDoodle, OpenChemLib, SmilesDrawer), 3D viewers (3Dmol.js, Mol*; NGL deprecated), cheminformatics WASM (RDKit.js, Indigo, chematic), and namers (PubChem/CIR oracle as today, OPSIN reverse-only, ACD/Name, ChemAxon, ChemDoodle, NISPO, OpenClatura, schematic-iupac) — all with links, pros/cons, fit-for-project verdicts.
+* Decisions recorded: JSME + JSmol stay (JSME covers SMILES↔2D + SMARTS input; JSmol off the table); no naming library adopted (round-trip ≠ pedagogically correct); OpenClatura closest to watch (decision traces); OPSIN the only candidate validation addition later.
+* Cyclic scope fixed: simple rings with substituents only (monocyclic alkanes/alkenes, substituted benzenes, common heterocycles) — bounded rule-table extension later, no fused/bridged/spiro.
