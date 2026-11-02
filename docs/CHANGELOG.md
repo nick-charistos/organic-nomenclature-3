@@ -28,9 +28,9 @@ New parallel file set `mulermoc-nom-53.html` + `js/*-53.js` + `css/*-53.css`, fo
 - `docs/TEACHER-GUIDE-EN-53.md`: short teacher guide (switching, authoring, per-step language, marker legend).
 - `docs/CHEM-LIBRARIES.md`: evaluated 2D/3D/cheminformatics/naming libraries with links, pros/cons, project fit.
 
-## [v52] (unified rich note editor: inline WYSIWYG, modal WYSIWYG + HTML source, lazy legacy text upgrade; live, `index.html` → v52)
+## [v52] (unified rich note editor: inline WYSIWYG, modal WYSIWYG + HTML source, lazy legacy text upgrade; was live, `index.html` → v52 before v53)
 
-New parallel file set `mulermoc-nom-52.html` + `js/*-52.js` + `css/*-52.css`, forked from v51. v52 is now live: `index.html` points to `mulermoc-nom-52.html`; v51 and earlier remain runnable at root. No scenario-schema change (`scenarioVersion` stays 1); `noteFormat` remains `"text"` / `"html"`.
+New parallel file set `mulermoc-nom-52.html` + `js/*-52.js` + `css/*-52.css`, forked from v51. v52 was live until v53: `index.html` pointed to `mulermoc-nom-52.html`; v51 and earlier remain runnable at root. No scenario-schema change (`scenarioVersion` stays 1); `noteFormat` remains `"text"` / `"html"`.
 
 ### 2026-10-30 — Review follow-ups (v52)
 - Locant number emphasis (`molview-52.js`): clicking a locant/position component keeps its number(s) blue (`#193F8F`) and dims the rest to light blue (`#9ac1ed`) in 2D (all viewer modes) and 3D (echo color, black shadow kept). Applies to main-chain locant modes (`compBondPos`, `compEndNumber`, `compSuffixLocants`, `compNumber1/2`, `compBranchLocN`); whole-chain and override-chain modes stay all-blue. Parse failures fall back to all-blue. Browser verify pending.

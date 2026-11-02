@@ -1,13 +1,13 @@
 # Session notes — 2026-10-03 (resume point for next session)
 
-> **Resume pointer (cross-machine):** last commit `f5001e8` (2026-10-30) —
-> per-step expand persistence + Explain-tracks-panel, tree clean. Routine:
+> **Resume pointer (cross-machine):** last commit `2bf14ed` (2026-11-02) —
+> v53 EN layer live (`index.html` → v53), tree clean. Routine:
 > end-of-day commit + push and update this pointer; on the other machine pull
 > first, then resume from the baseline below + `git log --oneline -5` +
 > `git status`. OpenCode sessions themselves stay machine-local.
 
-> **Current baseline (2026-10-30): v52 live.** `index.html` →
-> `mulermoc-nom-52.html`, 141 `nameExamples` keys (136 + 5 thesis-work esters). v52 has a unified rich note
+> **Current baseline (2026-11-02): v53 live.** `index.html` →
+> `mulermoc-nom-53.html`, 141 `nameExamples` keys. Full English version (`?lang=en`, Greek default; per-step scenario language, molecule-carrying switch) over the v52 base. v53 adds: 207-string chrome table with build-time translation, slot-transliterated systematic EN names + PubChem/CIR oracle with live verdict tints, oxocarboxylic merge (`κετο-` → systematic `οξο-` with derived locants), ester `-oate` fix. v52 base has a unified rich note
 > editor: inline WYSIWYG, modal WYSIWYG + HTML source view, staged Apply/Cancel
 > with dirty confirm, and lazy legacy-text upgrade. The 2026-10-26 refinement
 > adds block lists, per-block font size/alignment, an image sizing dialog, a

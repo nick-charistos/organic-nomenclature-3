@@ -1,12 +1,12 @@
 # MuLERMoCs — Organic Nomenclature Learning Platform
 
-A Greek-first interactive learning platform for organic nomenclature, built around molecular structure, naming logic, and multiple representations. It is a no-build static web app (JSME, JSmol, jQuery, vanilla JavaScript; live v52 is Snap-free and adds the unified rich note editor) intended to be embedded in Drupal.
+A Greek-first interactive learning platform for organic nomenclature, built around molecular structure, naming logic, and multiple representations. It is a no-build static web app (JSME, JSmol, jQuery, vanilla JavaScript; live v53 adds a full English UI + molecule-naming layer over the Snap-free v52 base, Greek default preserved) intended to be embedded in Drupal.
 
 Designed and developed by Nickolas Charistos
 
-**Current baseline:** v52 is live (`index.html` → v52) — **141 molecules**, the unified rich note editor (inline WYSIWYG, modal WYSIWYG + HTML source, lazy legacy-text upgrade, staged Apply/Cancel); it retains safe rich HTML notes (DOMPurify), rule-table components, the compact icon toolbar, and a Snap-free native `MuSVG` 2D overlay. The main JSME applet stays in depict mode (2D highlight pipeline); ORGNL stays full-edit for future inputs. The default preloaded scenario is `Αλκάνια-Αιθάνιο-τεστ`. See [docs/Presentation-Step-Rich-Text-PLAN.md](docs/Presentation-Step-Rich-Text-PLAN.md).
-**Previous version:** v51 remains runnable at root (`mulermoc-nom-51.html`), along with v50…v42. v51 introduced safe rich notes and the Snap-free viewer; v52 adds the unified inline/modal rich editor.
-**Entry point:** [index.html](index.html) → [mulermoc-nom-52.html](mulermoc-nom-52.html) (live); `mulermoc-nom-51.html` and earlier versions `mulermoc-nom-50.html`…`-42.html` runnable alongside
+**Current baseline:** v53 is live (`index.html` → v53) — **141 molecules**, full English version (`?lang=en`, Greek default; per-step scenario language, molecule-carrying switch) over the v52 base: unified rich note editor (inline WYSIWYG, modal WYSIWYG + HTML source, lazy legacy-text upgrade, staged Apply/Cancel); safe rich HTML notes (DOMPurify), rule-table components, compact icon toolbar, Snap-free native `MuSVG` 2D overlay. The main JSME applet stays in depict mode (2D highlight pipeline); ORGNL stays full-edit for future inputs. The default preloaded scenario is `Αλκάνια-Αιθάνιο-τεστ`. See [docs/Presentation-Step-Rich-Text-PLAN.md](docs/Presentation-Step-Rich-Text-PLAN.md).
+**Previous version:** v52 remains runnable at root (`mulermoc-nom-52.html`), along with v51…v42. v52 added the unified inline/modal rich editor; v53 adds the English layer.
+**Entry point:** [index.html](index.html) → [mulermoc-nom-53.html](mulermoc-nom-53.html) (live); `mulermoc-nom-52.html` and earlier versions `mulermoc-nom-51.html`…`-42.html` runnable alongside
 
 ## English version (v53 in progress, Greek default preserved)
 
@@ -19,13 +19,14 @@ Designed and developed by Nickolas Charistos
 
 | Layer | File |
 |---|---|
-| Core engine (analysis + naming) | [js/mulermoc-nom-core-52.js](js/mulermoc-nom-core-52.js) |
-| Viewer (JSME / JSmol / native SVG) | [js/mulermoc-nom-molview-52.js](js/mulermoc-nom-molview-52.js) |
-| Teaching (rules, narration, UI wiring) | [js/mulermoc-nom-teaching-52.js](js/mulermoc-nom-teaching-52.js) |
-| Scenario module (LEARN authoring + presentation) | [js/mulermoc-nom-scenario-52.js](js/mulermoc-nom-scenario-52.js) |
+| Core engine (analysis + naming) | [js/mulermoc-nom-core-53.js](js/mulermoc-nom-core-53.js) |
+| Viewer (JSME / JSmol / native SVG) | [js/mulermoc-nom-molview-53.js](js/mulermoc-nom-molview-53.js) |
+| Teaching (rules, narration, UI wiring) | [js/mulermoc-nom-teaching-53.js](js/mulermoc-nom-teaching-53.js) |
+| Scenario module (LEARN authoring + presentation) | [js/mulermoc-nom-scenario-53.js](js/mulermoc-nom-scenario-53.js) |
+| EN chrome + naming + oracle | [js/mulermoc-nom-lang-53.js](js/mulermoc-nom-lang-53.js), [js/mulermoc-nom-name-en-53.js](js/mulermoc-nom-name-en-53.js), [js/mulermoc-nom-iupac-53.js](js/mulermoc-nom-iupac-53.js) |
 | Shared icon helper | [js/ui-icons.js](js/ui-icons.js) |
-| Molecule data (141 molecules — 141 `nameExamples` keys) | [js/jsme-nick-nomeclature-moc2-data_52.js](js/jsme-nick-nomeclature-moc2-data_52.js) |
-| Styles | [css/jsme-nick-52.css](css/jsme-nick-52.css), [css/mulermoc-nom-scenario-52.css](css/mulermoc-nom-scenario-52.css) |
+| Molecule data (141 molecules — 141 `nameExamples` keys) | [js/jsme-nick-nomeclature-moc2-data_53.js](js/jsme-nick-nomeclature-moc2-data_53.js) |
+| Styles | [css/jsme-nick-53.css](css/jsme-nick-53.css), [css/mulermoc-nom-scenario-53.css](css/mulermoc-nom-scenario-53.css) |
 | Stored scenarios | [scenarios/](scenarios/) (`Αλκάνια-Αιθάνιο-τεστ` default, `Αλκάνια-Αιθάνιο` legacy retained, `Αλκένια-Αιθένιο`, `Αλκένια-Ονοματολογία_και_διακλαδώσεις`; Greek filenames stay URL-encoded in `?scenario=` links) |
 
 ---
@@ -35,9 +36,9 @@ Designed and developed by Nickolas Charistos
 | Site | Serves | Status |
 |---|---|---|
 | [organic-nomenclature-2](https://nick-charistos.github.io/organic-nomenclature-2/) | v42 | frozen — emergency hotfixes only |
-| [organic-nomenclature-3](https://nick-charistos.github.io/organic-nomenclature-3/) | v52 live | active — all new work happens here |
+| [organic-nomenclature-3](https://nick-charistos.github.io/organic-nomenclature-3/) | v53 live | active — all new work happens here |
 
-Root holds the files of the current live set (`*52*`; `mulermoc-nom-51.html` and `mulermoc-nom-50.html` plus `mulermoc-nom-42/43/44/45/46/47/48/49.html` are kept runnable alongside). Older file sets live in [archive/](archive/README.md) (non-runnable museum). Runnable history via git tags `v41`–`v44`.
+Root holds the files of the current live set (`*53*`; `mulermoc-nom-52.html` and `mulermoc-nom-51.html` plus `mulermoc-nom-50/49/48/47/46/45/44/43/42.html` are kept runnable alongside). Older file sets live in [archive/](archive/README.md) (non-runnable museum). Runnable history via git tags `v41`–`v44`.
 
 Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (only `image-svgrepo-Industrial-Sharp.svg` is kept; other icons are inlined/served by `js/ui-icons.js`), PDFs, `mols/branched/`, and the large JSmol runtime. Small security- or compatibility-critical libraries are vendored under `js/vendor/`; the rest are served via CDN (see [.gitignore](.gitignore)).
 
@@ -136,7 +137,7 @@ Out of scope for now: quiz SPA, participant logging, CSV export, server-side cla
 
 ## Status summary
 
-- Baseline: **v52 live** (`index.html` → v52; unified inline/modal rich note editor with WYSIWYG + HTML source and staged Apply/Cancel, 141 molecules, Snap-free native `MuSVG`; default scenario `Αλκάνια-Αιθάνιο-τεστ`); v51/v50/v49/v48/v47/v46/v45/v44 runnable at root (`mulermoc-nom-51/50/49/48/47/46/45/44.html`), v43 frozen at tag `v43`, v42 frozen in repo2
+- Baseline: **v53 live** (`index.html` → v53; full English `?lang=en` layer over the v52 base — unified inline/modal rich note editor with WYSIWYG + HTML source and staged Apply/Cancel, 141 molecules, Snap-free native `MuSVG`; default scenario `Αλκάνια-Αιθάνιο-τεστ`); v52/v51/v50/v49/v48/v47/v46/v45/v44 runnable at root (`mulermoc-nom-52/51/50/49/48/47/46/45/44.html`), v43 frozen at tag `v43`, v42 frozen in repo2
 - Previous live: **v51** (`mulermoc-nom-51.html`; safe rich notes, rule-table components, content-only authoring dialog, Snap-free viewer)
 - Focus: **LEARN pilot (stored scenarios) + bounded EXPLORE-lite**
 - Near-term: **finish v52 manual coverage (rich note editor in real scenarios, Firefox/touch, 3D + highlights for the 18 v51 molecules, icon toolbar, 2D/3D refit, JSmol loader, jQuery 4); fix the two pre-existing skeletal JSmol failures; then generic branch prefixes beyond hydrocarbon/acyclic alcohol; v51/v50/v49 backlog verification; scenario library verification; bounded EXPLORE-lite (~15 mols + menu search)**
