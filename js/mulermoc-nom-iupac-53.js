@@ -44,7 +44,7 @@ var RETAINED_TO_SYSTEMATIC_EN = {
 function fIsSystematicName(t) {
   var s = String(t || "").trim();
   if (!s || s.indexOf(",") >= 0) return false;
-  if (/^(methanal|ethanal|propanal|butanal|pentanal|methanol|ethanol|acetone|propan-2-one|butan-2-one)$/i.test(s)) return true;
+  if (/^(methanal|ethanal|propanal|butanal|pentanal|methanol|ethanol|acetone|propan-2-one|butan-2-one|methanoic acid|ethanoic acid|propanoic acid|butanoic acid)$/i.test(s)) return true;
   return /\d/.test(s) && /(ane|ene|yne|anol|anone|anal|oic acid|dioic acid|anenitrile|anamine|diol|dial|dione|anoate)$/i.test(s);
 }
 

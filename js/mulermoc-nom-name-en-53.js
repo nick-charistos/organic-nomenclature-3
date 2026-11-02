@@ -303,6 +303,18 @@ function fPopulateEngineENFromGreek(key) {
 // systematic order and transliterated text. Returns
 // { boxes: [[boxId, text]...], spaceAfter: boxId|null, isEster } or null
 // (caller falls back to Greek render). Greek is never mutated here.
+// P-14.4 terminal-e fusion for EN box boundaries: an "en"/"yn" infix box
+// directly followed by a consonant-initial suffix box (no locant box
+// between) takes back its terminal "e" (ynedioic, enedial, ynedione);
+// vowel-initial suffixes (oic acid, al, ol, one, e, amine, oate) fuse bare,
+// and "an"/"diene"/"diyne" never change.
+function fFuseEnInfixSuffix(infix, nextText) {
+  try {
+    if ((infix === "en" || infix === "yn") && /^[b-df-hj-np-tv-z]/i.test(String(nextText == null ? "" : nextText).trim())) return infix + "e";
+  } catch (e) { /* best-effort */ }
+  return infix;
+}
+
 function fNameENBoxes() {
   try {
     if (typeof nameComponentsList === "undefined" || !nameComponentsList) return null;
@@ -382,6 +394,18 @@ function fNameENBoxes() {
       if (_qm && _qm[2]) { boxes[_cp] = ["comp9", _qm[2]]; boxes.splice(_cp, 0, ["comp9loc", _qm[1]]); }
     }
     if (!isEster) { push("comp10", S(10)); push("comp11", S(11)); }
+    // P-14.4 fusion at box seams: "yn"/"en" directly before a
+    // consonant-initial suffix box regains its terminal "e"
+    // (ynedioic, enedial); vowel-initial suffixes fuse bare.
+    for (var _fi = 0; _fi + 1 < boxes.length; _fi++) {
+      try {
+        var _fb = boxes[_fi];
+        if ((_fb[0] === "comp6" || _fb[0] === "comp8") && boxes[_fi + 1][0] === "comp9") {
+          var _fused = (typeof fFuseEnInfixSuffix === "function") ? fFuseEnInfixSuffix(_fb[1], boxes[_fi + 1][1]) : _fb[1];
+          if (_fused !== _fb[1]) boxes[_fi] = [_fb[0], _fused];
+        }
+      } catch (eF) { /* best-effort */ }
+    }
     // Abort (Greek render) when anything is left untransliterated.
     for (var b = 0; b < boxes.length; b++) {
       if (/[\u0370-\u03ff\u1f00-\u1fff]/.test(boxes[b][1])) return null;

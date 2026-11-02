@@ -26,6 +26,11 @@ for (const s of SLOTS) {
   } catch (err) { out.push("THROW " + s.key + " " + (err && err.message)); }
 }
 out.push("MATCH " + match + " MISMATCH " + mismatch.length + " NO-ORACLE " + nooracle + " DELEGATED(part of match/mismatch)");
+var FUSE = [["yn","dioic acid","yne"],["en","dioic acid","ene"],["yn","dial","yne"],["en","dial","ene"],["yn","dione","yne"],["en","dione","ene"],["yn","diol","yne"],["en","diol","ene"],["yn","oic acid","yn"],["en","oic acid","en"],["yn","al","yn"],["en","al","en"],["yn","ol","yn"],["an","dione","an"],["diene","dioic acid","diene"],["yn","nitrile","yne"],["en","e","en"],["yn","","yn"]];
+var fuseBad = [];
+for (const f of FUSE) { try { var g = fFuseEnInfixSuffix(f[0], f[1]); if (g !== f[2]) fuseBad.push(f[0]+"+"+f[1]+" got ["+g+"] want ["+f[2]+"]"); } catch (err) { fuseBad.push(f[0]+"+"+f[1]+" THREW"); } }
+out.push("FUSE-OK " + (FUSE.length - fuseBad.length) + "/" + FUSE.length);
+for (const m of fuseBad) out.push("FUSE-MM " + m);
 for (const m of mismatch) out.push("MM " + m.key + " engine=[" + m.engine + "] oracle=[" + m.oracle + "]");
 document.getElementById("o").textContent = out.join("\n");
 document.title = "TEST-DONE";

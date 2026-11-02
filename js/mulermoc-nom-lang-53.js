@@ -84,6 +84,7 @@ var MULER_STRINGS = {
   molInfoMissing: { gr: "Χωρίς εγγραφή PubChem", en: "No PubChem record" },
   molInfoCopy: { gr: "Αντιγραφή SMILES", en: "Copy SMILES" },
   molInfoCopied: { gr: "Αντιγράφηκε", en: "Copied" },
+  molInfoSystematic: { gr: "Συστηματική (PubChem)", en: "Systematic (PubChem)" },
   imageDlg: { gr: "Εικόνα", en: "Image" },
   altText: { gr: "Εναλλακτική περιγραφή", en: "Alternative text" },
   widthPx: { gr: "Πλάτος (px)", en: "Width (px)" },

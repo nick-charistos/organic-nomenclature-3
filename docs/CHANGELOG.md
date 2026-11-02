@@ -25,6 +25,7 @@ New parallel file set `mulermoc-nom-53.html` + `js/*-53.js` + `css/*-53.css`, fo
 - Slot-transliterated systematic English names (`fPopulateEngineENFromGreek`) with per-box EN layout reusing stable Greek box ids (`fNameENBoxes`); PubChem/CIR as oracle (`fValidateENAgainstOracle`, stereo prefixes stripped) — validation only, except Greek-common esters/complex ethers which fall back to the audited `systematicEN` (flagged `engineDelegated`).
 - Ester fix: suffix component is `-oate` not `-anoate` (`methyl methanoate`, not `*methananoate`); alcohol word leads (`isobutyl 2-methylpropanoate`).
 - Oxocarboxylic merge per IUPAC: acid+ketone now classifies as `oxoCarboxylicAcids` (ketoAcids series retired, label kept as harmless alias); substitutive prefix `κετο-` → systematic `οξο-` with derived chain-position locant (`2-οξοπροπανικό οξύ` / `2-oxopropanoic acid`, `4-oxobutanoic acid`). Locant suppression is lifted only under carboxylic principal; group nouns (`Κετονομάδα`) unchanged.
+- P-14.4 terminal-`e` fusion at EN box seams (`fFuseEnInfixSuffix`): `en`/`yn` directly before a consonant-initial suffix box regains its `e` (`hex-2-en-4-ynedioic acid`, not `*yndioic`); vowel-initial suffixes fuse bare. Engine path was already correct — boxes now match it. 19 `FUSE` unit vectors in `zz-test-en53.html`.
 - Explain line, rule panel (titles/texts/tables via 91-pair `RULE_GR2EN`), rule theory (9 texts) and alkyl/alkoxy systematic tables fully translated; EN rule narration with en-US voice.
 
 ### Live oracle verdicts (EN panel)

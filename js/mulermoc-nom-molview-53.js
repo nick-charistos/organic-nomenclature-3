@@ -1025,6 +1025,37 @@ function fRenderMolInfo() {
   r2.appendChild(l2);
   r2.appendChild(v2);
   try { box.appendChild(r2); } catch (eB2) { /* best-effort */ }
+  // Systematic row: PubChem-derived systematic name, shown only when our
+  // computed name differs from the IUPAC name (stereo-insensitive) and the
+  // candidate passes the locant-shaped PIN test. PubChem has no authoritative
+  // systematic field, so heuristic synonyms never reach the UI — and a bogus
+  // pool pick stays hidden whenever engine and oracle agree.
+  try {
+    var _sys = entry.systematicEN || null;
+    var _eng = null;
+    try { _eng = entry.engineEN || null; } catch (eE2) { _eng = null; }
+    if (_sys && _eng && iupac) {
+      var _norm = function (s) {
+        try { if (typeof fNormNoStereo === "function") return fNormNoStereo(String(s)); } catch (eN) {}
+        return String(s == null ? "" : s).toLowerCase().trim();
+      };
+      var _okShape = false;
+      try { _okShape = (typeof fIsSystematicName === "function") ? !!fIsSystematicName(_sys) : false; } catch (eS2) { _okShape = false; }
+      if (_okShape && _norm(_eng) !== _norm(iupac) && _norm(_sys) !== _norm(v2.textContent)) {
+        var r3 = document.createElement("div");
+        r3.className = "molInfoRow";
+        var l3 = document.createElement("span");
+        l3.className = "molInfoLabel";
+        l3.textContent = T("molInfoSystematic", "Systematic (PubChem)");
+        var v3 = document.createElement("span");
+        v3.className = "molInfoValue";
+        v3.textContent = _sys;
+        r3.appendChild(l3);
+        r3.appendChild(v3);
+        try { box.appendChild(r3); } catch (eB3) { /* best-effort */ }
+      }
+    }
+  } catch (eSys) { /* best-effort */ }
   // The panel sits above the name boxes: re-pin the floating Explain sheet.
   try { if (typeof fNameExpandRepinDelayed === "function") fNameExpandRepinDelayed(); } catch (eR2) { /* best-effort */ }
 }
