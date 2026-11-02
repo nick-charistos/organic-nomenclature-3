@@ -1,6 +1,6 @@
 # Session notes — 2026-10-03 (resume point for next session)
 
-> **Resume pointer (cross-machine):** last commit `1de1e25` (2026-11-02) —
+> **Resume pointer (cross-machine):** last commit `b73caa7` (2026-11-02) —
 > v53 molecule info panel + lang-switch menu preservation, tree clean. Routine:
 > end-of-day commit + push and update this pointer; on the other machine pull
 > first, then resume from the baseline below + `git log --oneline -5` +
