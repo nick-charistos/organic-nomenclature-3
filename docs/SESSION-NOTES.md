@@ -1,7 +1,7 @@
 # Session notes — 2026-10-03 (resume point for next session)
 
-> **Resume pointer (cross-machine):** last commit `6a43e1d` (2026-11-02) —
-> v53 systematic panel row + box fusion, tree clean. Routine:
+> **Resume pointer (cross-machine):** last commit `c65bace` (2026-11-02) —
+> v53 JSmol cold-boot robustness, tree clean. Routine:
 > end-of-day commit + push and update this pointer; on the other machine pull
 > first, then resume from the baseline below + `git log --oneline -5` +
 > `git status`. OpenCode sessions themselves stay machine-local.
