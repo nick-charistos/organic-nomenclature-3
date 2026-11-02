@@ -2365,6 +2365,14 @@ function fMatchNumberedMainChain3D() {
 // ── fGuessName ────────────────────────────────────────────────────────────
 
 function fGuessName(skipChainRecalc) {
+    // Order-independent naming tables: any path that reaches fGuessName
+    // before teaching's $(document).ready ran (cold-boot jsmeOnLoad,
+    // ?mol=/?scenario= deep links) would otherwise throw on the empty
+    // nameMainCompObj3. Idempotent pure assignments — no-op when ready.
+    try {
+        if ((typeof nameMainCompObj3 === "undefined" || !nameMainCompObj3 || !nameMainCompObj3.hydrocarbon) &&
+            typeof fInitNamingProps === "function") fInitNamingProps();
+    } catch (eNp) { /* best-effort */ }
     // All single-function: comp0../theSuffix/guessNameObj are written+read only here
     // (other files use "compN" DOM-id strings and the nameComponentsList vector).
     let myXpositions, myFunctionalGroups, theXno, currXPos, currDouble, currTriple;

@@ -379,6 +379,11 @@ function jsmeOnLoad() {
   jsmeNomeclatureAppletORGNL.setBackGroundColorPalette(bgAtom);
 
   fInitData();
+  // Naming tables must exist before any fGuessName call below: teaching's
+  // $(document).ready also runs fInitNamingProps, but jsmeOnLoad can win the
+  // race on a cold boot (then fGuessName throws on the empty tables and the
+  // whole select aborts after the 2D paint). Idempotent pure assignments.
+  try { if (typeof fInitNamingProps === "function") fInitNamingProps(); } catch (eNp) { /* best-effort */ }
   fClassifyAllMolecules();
   fInitNomeclatureMenu();
 
