@@ -565,7 +565,7 @@ header {
 }
 .molInfoCopy {
   color: var(--darkBlue);
-  background: transparent;
+  background: var(--veryLightGray);
   border: 1px solid var(--lightBlue);
   border-radius: 4px;
   cursor: pointer;
@@ -574,6 +574,7 @@ header {
   line-height: 1;
   flex-shrink: 0;
   position: relative;
+  transition: all 0.2s;
 }
 .molInfoCopy svg {
   width: 14px;
@@ -1859,13 +1860,6 @@ header {
 .nameCompContainer.oracle-name.verdict-noerror .nameCompBox:not(.selected) {
   background-color: var(--veryLightLavender);
   border-color: #a58fd6;
-}
-.nameOracleName {
-  font-size: 0.85rem;
-  color: var(--redAlert);
-  margin-top: -8px;
-  margin-bottom: 1px;
-  text-align: center;
 }
 
 /* Eye tooltip above the button (skin: shared rule at the top of this file) */

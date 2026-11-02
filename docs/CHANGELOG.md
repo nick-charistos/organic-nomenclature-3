@@ -9,7 +9,7 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 New parallel file set `mulermoc-nom-53.html` + `js/*-53.js` + `css/*-53.css`, forked from v52. Single codebase with `?lang=` toggle (no `-en` file fork); Greek remains the default. Scenarios stay author-language; new EN scenarios to be authored later by teachers/MSc students.
 
 ### Molecule info panel (v53)
-- Info button left of the naming gear (icon from `imgs/info-svgrepo-com.svg`): opens `#moleculeInfo` with the cached SMILES (copy button included) and the verbatim PubChem IUPAC name. Pending (`fetching…`), no-record and offline states; in-place refresh on fetch resolve, molecule-guarded. Live-only toggle, no scenario-schema change. GR/EN labels via `lang-53.js`.
+- Info button left of the naming gear (icon from `imgs/info-svgrepo-com.svg`): opens `#moleculeInfo` with the cached SMILES (copy button included), the verbatim PubChem IUPAC name, a gated systematic row (locant-shaped `systematicEN` only, e.g. `methanoic acid` but never `*yndioic`-style artifacts), and — for ethers — a Common row showing the verbatim PubChem Title *only* when it actually looks like a common ether name (ends in "ether"); systematicTitles are skipped, never translated or locally reconstructed. Pending (`fetching…`), no-record and offline states; in-place refresh on fetch resolve, molecule-guarded. Live-only toggle, no scenario-schema change. GR/EN labels via `lang-53.js`.
 - Sits above the name boxes, so opening it re-pins the floating Explain sheet (same helper as the settings panel).
 
 ### JSmol cold-boot robustness (v53)
@@ -36,7 +36,7 @@ New parallel file set `mulermoc-nom-53.html` + `js/*-53.js` + `css/*-53.css`, fo
 - Explain line, rule panel (titles/texts/tables via 91-pair `RULE_GR2EN`), rule theory (9 texts) and alkyl/alkoxy systematic tables fully translated; EN rule narration with en-US voice.
 
 ### Live oracle verdicts (EN panel)
-- Each name carries a verdict: plain = engine agrees with PubChem/CIR (systematic/retained/Title); red = differs; amber = fetch done, no record; lavender = fetch itself failed; blue = oracle-supplied display or Greek fallback. Shared comparator (`fMatchEngineEN`) feeds validator and live marker alike; fetch completion updates the marker in place (molecule-guarded, no rebuild; pending fetch never flashes). Console logs predicted vs displayed (`[EN-CHECK]`); mismatches print the oracle `IUPAC name:` under the boxes.
+- Each name carries a verdict: plain = engine agrees with PubChem/CIR (systematic/retained/Title); red = differs; amber = fetch done, no record; lavender = fetch itself failed; blue = oracle-supplied display or Greek fallback. Shared comparator (`fMatchEngineEN`) feeds validator and live marker alike; fetch completion updates the marker in place (molecule-guarded, no rebuild; pending fetch never flashes). Console logs predicted vs displayed (`[EN-CHECK]`); the full oracle strings live in the molecule info panel. Live-only common-name reprieve for ethers: when the engine mismatches but the locally built common name matches the PubChem title, the red is withheld (plain + explanatory tooltip).
 - Live full run: 100 match (92 systematic + 8 retained), 10 mismatch (implied-locant omissions + retained common groups/names, §B/§C/P3 queue), 34 missing (15 novel §E molecules + 19 bulk-run throttled), 0 pending/delegated/Greek-fallback.
 
 ### Docs

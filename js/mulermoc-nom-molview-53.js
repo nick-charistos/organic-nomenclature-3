@@ -929,10 +929,53 @@ function fToggleNameSettings() {
 }
 
 // ── fToggleMolInfo / fRenderMolInfo ───────────────────────────────────────
-// Live-only molecule info panel (SMILES + PubChem IUPAC), toggled by the
-// info button left of the gear. Never stored in steps. Content refreshes on
-// every naming rebuild (fShowNameAnalysis calls fRenderMolInfo) and in place
-// when a pending PubChem fetch resolves (fMulerMolInfoRefresh, guarded).
+// Live-only molecule info panel (SMILES + PubChem IUPAC + common ether name),
+// toggled by the info button left of the gear. Never stored in steps.
+// Content refreshes on every naming rebuild (fShowNameAnalysis calls
+// fRenderMolInfo) and in place when a pending PubChem fetch resolves
+// (fMulerMolInfoRefresh, guarded).
+// Locally joined transliterated common ether name, for INTERNAL comparison
+// only (verdict common-match check). Never displayed: the info panel shows
+// verbatim PubChem data or nothing, so no locally joined string can appear
+// under a "(PubChem)" label. EN joins alkyl words with spaces
+// ("ethyl methyl ether", multiplier fused: "dimethyl ether"); Greek stays
+// one word ("διμεθυλαιθέρας"). Returns null on any gap.
+function fMulerENCommonName() {
+  try {
+    if (typeof selectedMol === "undefined" || !selectedMol) return null;
+    var parts = null;
+    try { parts = (typeof fGetEtherCommonParts === "function") ? fGetEtherCommonParts() : null; } catch (eP) { return null; }
+    if (!parts || !Array.isArray(parts.parts) || !parts.parts.length) return null;
+    var isEN = true;
+    try { isEN = (typeof fMulerLang === "function") && fMulerLang() === "en"; } catch (eL) { isEN = true; }
+    var alkyls = [], noun = "";
+    for (var i = 0; i < parts.parts.length; i++) {
+      var p = parts.parts[i] || {};
+      var lab = p.label || "";
+      if (!lab) return null;
+      var isNoun = p.kind === "ether" || /^(αιθέρ|αιθερ|ether)/i.test(String(lab));
+      if (isNoun) {
+        if (noun) return null;
+        noun = isEN ? "ether" : String(lab);
+        continue;
+      }
+      var w = String(lab);
+      if (isEN) {
+        if (typeof fMulerENCommonLabel !== "function") return null;
+        w = fMulerENCommonLabel(lab);
+        if (!w || /[\u0370-\u03ff\u1f00-\u1fff]/.test(w)) return null;
+      }
+      alkyls.push(w);
+    }
+    if (!alkyls.length || !noun) return null;
+    if (isEN) {
+      var words = alkyls.slice();
+      if (words.length >= 2 && /^(di|tri|tetra)$/i.test(words[0])) words = [words[0] + words[1]].concat(words.slice(2));
+      return words.join(" ") + " " + noun;
+    }
+    return alkyls.join("") + noun;
+  } catch (e) { return null; }
+}
 function fToggleMolInfo() {
   try {
     molInfoOpenFlag = !molInfoOpenFlag;
@@ -1061,6 +1104,37 @@ function fRenderMolInfo() {
       }
     }
   } catch (eSys) { /* best-effort */ }
+  // Common-name row (ethers only): the verbatim PubChem Title, and only if
+  // it actually looks like a common ether name (ends in "ether").
+  // Systematic "...oxy..." titles are skipped, never translated or locally
+  // reconstructed — this row reports PubChem data as-is.
+  try {
+    var _isEth = false;
+    try { _isEth = !!(entry && entry.classification && entry.classification.chemicalClass === "ethers"); } catch (eC2) { _isEth = false; }
+    if (_isEth) {
+      var _common = null;
+      var _norm2 = function (s) { return String(s == null ? "" : s).toLowerCase().trim(); };
+      var _row2 = "";
+      try { _row2 = v2.textContent || ""; } catch (eR2) { _row2 = ""; }
+      try {
+        var _tit = entry.titlePubchem || null;
+        if (_tit && /ether$/i.test(String(_tit).trim()) && _norm2(_tit) !== _norm2(_row2)) _common = _tit;
+      } catch (eT2) { /* best-effort */ }
+      if (_common && _norm2(_common) !== _norm2(v2.textContent)) {
+        var r4 = document.createElement("div");
+        r4.className = "molInfoRow";
+        var l4 = document.createElement("span");
+        l4.className = "molInfoLabel";
+        l4.textContent = T("molInfoCommon", "Common name");
+        var v4 = document.createElement("span");
+        v4.className = "molInfoValue";
+        v4.textContent = _common;
+        r4.appendChild(l4);
+        r4.appendChild(v4);
+        try { box.appendChild(r4); } catch (eB4) { /* best-effort */ }
+      }
+    }
+  } catch (eCN) { /* best-effort */ }
   // The panel sits above the name boxes: re-pin the floating Explain sheet.
   try { if (typeof fNameExpandRepinDelayed === "function") fNameExpandRepinDelayed(); } catch (eR2) { /* best-effort */ }
 }
@@ -4202,7 +4276,28 @@ function fMulerApplyVerdict(key, fetched) {
     var st = (typeof fMulerVerdictState === "function") ? fMulerVerdictState(key, fetched) : null;
     cont.classList.remove("oracle-name", "verdict-oracle", "verdict-fallback", "verdict-mismatch", "verdict-nooracle", "verdict-noerror");
     cont.removeAttribute("title");
-    if (!st) { try { if (typeof fMulerPaintOracleLine === "function") fMulerPaintOracleLine(); } catch (eL) {} return null; }
+    if (!st) return null;
+    // Ether common-name fallback (live only): the shared comparator checks the
+    // systematic engine name, so a school-retained common name can mismatch
+    // while still being valid. If the locally built common name matches the
+    // PubChem title, show plain instead of red. Batch validation is untouched.
+    if (st === "mismatch") {
+      try {
+        var _ex = (typeof nameExamples !== "undefined") ? nameExamples[key] : null;
+        var _isEth = !!(_ex && _ex.classification && _ex.classification.chemicalClass === "ethers");
+        if (_isEth && typeof fMulerENCommonName === "function" && _ex && _ex.titlePubchem) {
+          var _cn = fMulerENCommonName();
+          var _norm = function (s) { return String(s == null ? "" : s).toLowerCase().trim(); };
+          if (_cn && _norm(_cn) === _norm(_ex.titlePubchem)) {
+            var _ctip = "Common name matches PubChem — systematic form differs by school convention";
+            try { if (typeof fMulerT === "function") _ctip = fMulerT("commonMatchTip"); } catch (eT2) { /* fallback above */ }
+            try { cont.setAttribute("title", _ctip); } catch (eA2) { /* best-effort */ }
+            try { console.log("[EN-CHECK] " + key + ": common name matches PubChem title — plain (systematic mismatch kept for review)"); } catch (eL) {}
+            return "common";
+          }
+        }
+      } catch (eC) { /* fall through to mismatch */ }
+    }
     var tipMap = { oracle: "oracleNameTip", fallback: "greekFallbackTip", mismatch: "enMismatchTip", nooracle: "enNoOracleTip", noerror: "enNoErrorTip" };
     var tipFall = {
       oracle: "Name from the PubChem oracle — pending human review",
@@ -4215,45 +4310,8 @@ function fMulerApplyVerdict(key, fetched) {
     try { if (typeof fMulerT === "function") tip = fMulerT(tipMap[st] || "oracleNameTip"); } catch (eT) {}
     cont.classList.add("oracle-name", "verdict-" + st);
     cont.setAttribute("title", tip);
-    try { if (typeof fMulerPaintOracleLine === "function") fMulerPaintOracleLine(); } catch (eL2) {}
     return st;
   } catch (e) { return null; }
-}
-
-// Oracle-name subline ("IUPAC name: ...") shown below the boxes on mismatch.
-// Managed here (not in the boxes string): render and fetch paths share it.
-function fMulerOracleLineText() {
-  try {
-    if (typeof fMulerLang === "function" && fMulerLang() !== "en") return null;
-    if (typeof selectedMol === "undefined" || !selectedMol) return null;
-    var st = null;
-    try { st = (typeof fMulerVerdictState === "function") ? fMulerVerdictState(selectedMol, false) : null; } catch (eS) {}
-    if (st !== "mismatch") return null;
-    var ex = (typeof nameExamples !== "undefined") ? nameExamples[selectedMol] : null;
-    if (!ex) return null;
-    var nm = ex.systematicEN || ex.iupacPubchem || "";
-    if (!nm) return null;
-    var label = "IUPAC name:";
-    try { if (typeof fMulerT === "function") label = fMulerT("iupacNameLabel"); } catch (eL) {}
-    return { label: label, name: String(nm) };
-  } catch (e) { return null; }
-}
-function fMulerPaintOracleLine() {
-  try {
-    var na = document.getElementById("nameAnalysis");
-    if (!na) return;
-    var olds = na.querySelectorAll(".nameOracleName");
-    for (var i = 0; i < olds.length; i++) {
-      try { if (olds[i].parentNode) olds[i].parentNode.removeChild(olds[i]); } catch (eR) {}
-    }
-    var line = null;
-    try { if (typeof fMulerOracleLineText === "function") line = fMulerOracleLineText(); } catch (eL) {}
-    if (!line) return;
-    var div = document.createElement("div");
-    div.className = "nameOracleName";
-    div.textContent = line.label + " " + line.name;
-    na.appendChild(div);
-  } catch (e) { /* best-effort */ }
 }
 
 // Oracle fetch completion: log predicted vs displayed, repaint the verdict
@@ -4638,7 +4696,6 @@ function fShowNameAnalysis() {
   } catch (eO) { /* marker best-effort */ }
 
   $("#nameAnalysis").html(nameCompContainer);
-  try { if (typeof fMulerPaintOracleLine === "function") fMulerPaintOracleLine(); } catch (eO2) {}
   try { if (typeof fRenderMolInfo === "function") fRenderMolInfo(); } catch (eMI) {}
 
   // Fix 3: the explain line follows box visibility — hidden when zero

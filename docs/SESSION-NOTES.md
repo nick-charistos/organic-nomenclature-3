@@ -2565,9 +2565,10 @@ follows; one Save → Present → Next → Exit round-trip.
 * Verified offline-deterministically (seeded oracle): all states incl.
   stale-guard; full GR unchanged; no console errors.
 * Verdict v2: network-error state (lavender `verdict-noerror`, fetch-error
-  flag set in catch / cleared on success); mismatch shows oracle
-  "IUPAC name: …" subline below boxes (shared painter, render + fetch
-  paths); console line verified live (`predicted/displayed/verdict`).
+  flag set in catch / cleared on success); mismatch tint + tooltip only (the
+  former "IUPAC name: …" subline below the boxes was removed — oracle strings
+  live in the molecule info panel); console line verified live
+  (`predicted/displayed/verdict`).
 
 ## 2026-11-02 — Red/amber watchlist doc + fetch error/empty split (live oracle)
 
