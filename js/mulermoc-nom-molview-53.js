@@ -1274,7 +1274,14 @@ function fSelectMol() {
   rotate3D();
 
   // fShowMolName()
-  fShowNameAnalysis();
+  // Cold-boot hardening: a throw here must never silently kill the naming
+  // panel (2D already painted above). Log loudly with a tag and continue;
+  // the ready-hook resend retries the full select when naming is missing.
+  try {
+    fShowNameAnalysis();
+  } catch (eNA) {
+    try { console.error("[COLD-BOOT] fShowNameAnalysis failed for " + selectedMol, eNA); } catch (eL) { /* console unavailable */ }
+  }
 
   getMolData();
 
@@ -1318,11 +1325,11 @@ function fDeselectMol() {
   myMol2D = null;
   if (jsmeNomeclatureApplet) jsmeNomeclatureApplet.reset();
   if (jsmeNomeclatureAppletORGNL) jsmeNomeclatureAppletORGNL.reset();
-  fUpdateSVG();
+  try { fUpdateSVG(); } catch (eU) { try { console.error("[COLD-BOOT] fUpdateSVG failed in fDeselectMol", eU); } catch (eL) {} }
 
   $("#molName").html("");
   nameComponentsList = [];
-  fShowNameAnalysis();
+  try { fShowNameAnalysis(); } catch (eNA2) { try { console.error("[COLD-BOOT] fShowNameAnalysis failed in fDeselectMol", eNA2); } catch (eL2) {} }
   fUpdateDiagr2DButton();
   fUpdateChainModeButton();
 }
@@ -1445,11 +1452,25 @@ function fLoadMol2D() {
     jsmeNomeclatureAppletORGNL.setMolecularAreaScale(molZoom2D);
   }
 
-  fAnalyseStructure();
-  fDetectMolType();
-  nameExamples[selectedMol].classification = fGetMoleculeClassification();
-  fGuessName();
-  fUpdateSVG();
+  try {
+    fAnalyseStructure();
+    fDetectMolType();
+    nameExamples[selectedMol].classification = fGetMoleculeClassification();
+  } catch (eAn) {
+    try { console.error("[COLD-BOOT] analysis failed for " + selectedMol + " — naming cleared, not guessed", eAn); } catch (eL) { /* console unavailable */ }
+    try { nameComponentsList = []; currentMolName = ""; } catch (eC) { /* best-effort */ }
+  }
+  try {
+    fGuessName();
+  } catch (eGn) {
+    try { console.error("[COLD-BOOT] fGuessName failed for " + selectedMol + " — naming cleared, not guessed", eGn); } catch (eL2) { /* console unavailable */ }
+    try { nameComponentsList = []; currentMolName = ""; } catch (eC2) { /* best-effort */ }
+  }
+  try {
+    fUpdateSVG();
+  } catch (eSvg) {
+    try { console.error("[COLD-BOOT] fUpdateSVG failed for " + selectedMol + " — overlay skipped, naming continues", eSvg); } catch (eL3) { /* console unavailable */ }
+  }
   // Fresh pools were just built by fCalcMainChain — refresh the stepper UI.
   try { if (typeof fRenderChainStepper === "function") fRenderChainStepper(); } catch (eStep) { /* stepper unavailable */ }
 }
@@ -8808,16 +8829,30 @@ var _resizeSentOn3DReady = false;
       }
       // Cold-boot resend: a 3D load skipped while JSmol was dead is replayed
       // once the applet reports ready — molecule-guarded, no rebuild.
+      // If the naming panel never rendered (cold-boot abort before the
+      // wrappers existed), redo the full select instead: it is the same code
+      // path as clicking the molecule, which is known to recover. Skipped
+      // while presenting (step chrome owns the state there; the step
+      // re-click below covers it).
       try {
         var _pm = null, _sel = null;
         try { _pm = window.__mulerPending3D || null; } catch (ePm) { _pm = null; }
         try { _sel = (typeof selectedMol !== "undefined") ? selectedMol : null; } catch (eSm) { _sel = null; }
         if (_pm && _sel && _pm === _sel && typeof fJSmolLive === "function" && fJSmolLive()) {
           try { window.__mulerPending3D = null; } catch (eC) { /* best-effort */ }
-          try { if (typeof fLoadMol3D === "function") fLoadMol3D(); } catch (eL) { /* best-effort */ }
-          try { if (typeof showAtomSymbols3D === "function") showAtomSymbols3D(); } catch (eA) { /* best-effort */ }
-          try { if (typeof showHydrogens3D === "function") showHydrogens3D(); } catch (eH) { /* best-effort */ }
-          try { if (typeof rotate3D === "function") rotate3D(); } catch (eR) { /* best-effort */ }
+          var _presenting = false;
+          try { _presenting = !!(typeof MuLERMoCScenario !== "undefined" && MuLERMoCScenario.present); } catch (ePs) { /* best-effort */ }
+          var _named = false;
+          try { _named = !!document.querySelector("#nameAnalysis .nameCompContainer .nameCompBox"); } catch (eNb) { /* best-effort */ }
+          if (!_named && !_presenting && typeof fSelectMol === "function") {
+            try { console.warn("[COLD-BOOT] naming missing at 3D-ready; re-running full select for " + _sel); } catch (eW2) { /* best-effort */ }
+            try { fSelectMol(); } catch (eFs) { try { console.error("[COLD-BOOT] resend reselect failed for " + _sel, eFs); } catch (eL) {} }
+          } else {
+            try { if (typeof fLoadMol3D === "function") fLoadMol3D(); } catch (eL) { /* best-effort */ }
+            try { if (typeof showAtomSymbols3D === "function") showAtomSymbols3D(); } catch (eA) { /* best-effort */ }
+            try { if (typeof showHydrogens3D === "function") showHydrogens3D(); } catch (eH) { /* best-effort */ }
+            try { if (typeof rotate3D === "function") rotate3D(); } catch (eR) { /* best-effort */ }
+          }
           try {
             if (typeof MuLERMoCScenario !== "undefined" && MuLERMoCScenario.present &&
               typeof fScenarioPresent === "function" && typeof fScenarioNormMode === "function" &&

@@ -2268,12 +2268,14 @@ header {
 .ruleText {
   box-sizing: border-box;
   padding: 10px;
-  color: #000;
-  background-color: var(--veryLightEarth);
+  color: #333;
+  background-color: #fff;
   border: 1px solid var(--darkBlue);
   font-size: 0.969rem;
-
-  /* border-top: 0; */
+  margin-bottom: 10px;
+  border-top: 0;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
 }
 
 /* ── ruleTheory accordion ──────────────────────────────────────────────── */
