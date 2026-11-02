@@ -45,6 +45,10 @@ function fIsSystematicName(t) {
   var s = String(t || "").trim();
   if (!s || s.indexOf(",") >= 0) return false;
   if (/^(methanal|ethanal|propanal|butanal|pentanal|methanol|ethanol|acetone|propan-2-one|butan-2-one|methanoic acid|ethanoic acid|propanoic acid|butanoic acid)$/i.test(s)) return true;
+  // Systematic esters need no locants (methyl methanoate, propenoate salts):
+  // anything ending in anoate/enoate/ynoate/dioate is systematic by construction
+  // (retained formate/acetate do not match).
+  if (/(anoate|enoate|ynoate|dioate)$/i.test(s)) return true;
   return /\d/.test(s) && /(ane|ene|yne|anol|anone|anal|oic acid|dioic acid|anenitrile|anamine|diol|dial|dione|anoate)$/i.test(s);
 }
 
