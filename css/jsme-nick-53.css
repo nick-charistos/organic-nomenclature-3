@@ -219,6 +219,7 @@ header {
 }
 
 .langButtonClass {
+  position: relative;
   font-size: 1rem;
   font-weight: bolder;
   padding: 2px 4px;
@@ -692,7 +693,8 @@ header {
 .scNoteFontSizeWrap[data-tooltip]::after,
 .scShowRow .sshow[data-tooltip]::after,
 .scMolBadge[data-tooltip]::after,
-.scDragHandle[data-tooltip]::after {
+.scDragHandle[data-tooltip]::after,
+.langButtonClass[data-tooltip]::after {
   content: attr(data-tooltip);
   background: var(--darkBlue);
   color: #fff;
@@ -731,7 +733,8 @@ header {
 .scNoteFontSizeWrap[data-tooltip]:hover::after,
 .scShowRow .sshow[data-tooltip]:hover::after,
 .scMolBadge[data-tooltip]:hover::after,
-.scDragHandle[data-tooltip]:hover::after {
+.scDragHandle[data-tooltip]:hover::after,
+.langButtonClass[data-tooltip]:hover::after {
   opacity: 1;
   transition: opacity 0.15s ease 0.5s;
 }
@@ -747,7 +750,8 @@ header {
 .nameStyleEye[data-tooltip]::after,
 .nameStyleExpand[data-tooltip]::after,
 .molInfoCopy[data-tooltip]::after,
-#narrateAnalysisToggle[data-tooltip]::after {
+#narrateAnalysisToggle[data-tooltip]::after,
+.langButtonClass[data-tooltip]::after {
   position: absolute;
   top: calc(100% + 10px);
   left: 50%;
@@ -778,7 +782,8 @@ header {
 .scNoteFontSizeWrap[data-tooltip]::before,
 .scShowRow .sshow[data-tooltip]::before,
 .scMolBadge[data-tooltip]::before,
-.scDragHandle[data-tooltip]::before {
+.scDragHandle[data-tooltip]::before,
+.langButtonClass[data-tooltip]::before {
   content: "";
   position: absolute;
   border: 6px solid transparent;
@@ -808,7 +813,8 @@ header {
 .scNoteFontSizeWrap[data-tooltip]:hover::before,
 .scShowRow .sshow[data-tooltip]:hover::before,
 .scMolBadge[data-tooltip]:hover::before,
-.scDragHandle[data-tooltip]:hover::before {
+.scDragHandle[data-tooltip]:hover::before,
+.langButtonClass[data-tooltip]:hover::before {
   opacity: 1;
   transition: opacity 0.15s ease 0.5s;
 }
@@ -824,7 +830,8 @@ header {
 .nameStyleEye[data-tooltip]::before,
 .nameStyleExpand[data-tooltip]::before,
 .molInfoCopy[data-tooltip]::before,
-#narrateAnalysisToggle[data-tooltip]::before {
+#narrateAnalysisToggle[data-tooltip]::before,
+.langButtonClass[data-tooltip]::before {
   top: 100%;
   left: 50%;
   transform: translateX(-50%);

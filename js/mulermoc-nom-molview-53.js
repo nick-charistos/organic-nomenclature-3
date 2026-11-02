@@ -336,7 +336,7 @@ function jsmeOnLoad() {
     "590px",
     "240px",
     {
-      options: "depict, marker",
+      options: "depict, marker, depictaction, toggle","guicolor": "#c8d9ec",  "guiAtomColor": "#1b275d", 
       depictbg: "#fff",
       atombgsize: "0.6",
     },
@@ -367,9 +367,10 @@ function jsmeOnLoad() {
     "590px",
     "240px",
     {
-      options: "marker",
+      options: "marker, norbutton, noxbutton, atommovebutton, autonumber,   ",  "guicolor": "#c8d9ec",  "guiAtomColor": "#1b275d", 
       depictbg: "#fff",
       atombgsize: "0.6",
+      
     },
   );
   jsmeNomeclatureAppletORGNL.setAtomMolecularAreaFontSize(9);
