@@ -3426,7 +3426,12 @@ function patchtheNitrogen() {
 // wrappers: fail-closed (null / no-op) with a pending-3D note instead of
 // throwing, so a cold/dead applet can never abort molecule loading, naming,
 // or menu selection. The pending load is resent from the jmol_isReady hook.
-var jmolAppletNomeclature = null;
+// The JSmol applet object is created by the parse-time inline script in
+// mulermoc-nom-53.html (Jmol.getApplet must run during parsing). Only
+// declare the binding if nothing assigned it yet — an unconditional
+// `var ... = null` here would wipe the live applet (execution order:
+// inline getApplet first, this file after).
+try { if (typeof jmolAppletNomeclature === "undefined") jmolAppletNomeclature = null; } catch (eG) { /* best-effort */ }
 
 function fJSmolLive() {
   try {

@@ -14,7 +14,7 @@ New parallel file set `mulermoc-nom-53.html` + `js/*-53.js` + `css/*-53.css`, fo
 
 ### JSmol cold-boot robustness (v53)
 - All `Jmol.*` calls go through fail-closed `fJSmol*` wrappers (pending-3D note instead of throwing), so a slow/blocked CDN can no longer abort molecule loading after the 2D paint — naming, menu and selection always complete. A readiness-gated resend in the `jmol_isReady` hook replays the pending 3D load (plus scenario highlight) once the applet reports ready.
-- Applet creation stays parse-time (`Jmol.getApplet` writes via `document.write`, unsafe post-parse); the library keeps its parse-time `document.write` include with the `?libs=` switch. A hard CDN failure toasts once ("3D unavailable") and the app continues 2D-only.
+- Applet creation stays parse-time (`Jmol.getApplet` writes via `document.write`, unsafe post-parse); the library keeps its parse-time `document.write` include with the `?libs=` switch. The applet binding is conditional (`typeof` guard) so the molview declaration can never wipe the live applet object. A hard CDN failure toasts once ("3D unavailable") and the app continues 2D-only.
 
 ### Language switch keeps menu state (v53)
 - Header toggle reloads, so the menu rebuild used to lose everything except the mode. Now: `?grouping=` travels on toggle (validated, non-default only) and is restored once at boot; in-place repaints preserve selection visuals, scroll and group header (tracked live, visual-only, no reload); the boot `?mol=` path marks the group header too.
