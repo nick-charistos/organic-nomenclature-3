@@ -1,7 +1,7 @@
 # Session notes — 2026-10-03 (resume point for next session)
 
-> **Resume pointer (cross-machine):** last commit `ad69799` (2026-11-02) —
-> v53 systematic ester shape check, tree clean. Routine:
+> **Resume pointer (cross-machine):** last commit `415ccbd` (2026-11-02) —
+> v53 verbatim Common row + ether verdict reprieve, tree clean. Routine:
 > end-of-day commit + push and update this pointer; on the other machine pull
 > first, then resume from the baseline below + `git log --oneline -5` +
 > `git status`. OpenCode sessions themselves stay machine-local.
