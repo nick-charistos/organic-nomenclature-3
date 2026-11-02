@@ -77,6 +77,13 @@ var MULER_STRINGS = {
   readNameAlt: { gr: "Ανάγνωση ονόματος", en: "Read name aloud" },
   exitFullName: { gr: "Έξοδος από το πλήρες όνομα", en: "Exit full name" },
   exitBigEditor: { gr: "Έξοδος από τον μεγάλο επεξεργαστή", en: "Exit the large editor" },
+  molInfo: { gr: "Πληροφορίες μορίου", en: "Molecule info" },
+  molInfoSmiles: { gr: "SMILES:", en: "SMILES:" },
+  molInfoIupac: { gr: "IUPAC (PubChem):", en: "IUPAC (PubChem):" },
+  molInfoFetching: { gr: "Αναζήτηση…", en: "Looking up…" },
+  molInfoMissing: { gr: "Χωρίς εγγραφή PubChem", en: "No PubChem record" },
+  molInfoCopy: { gr: "Αντιγραφή SMILES", en: "Copy SMILES" },
+  molInfoCopied: { gr: "Αντιγράφηκε", en: "Copied" },
   imageDlg: { gr: "Εικόνα", en: "Image" },
   altText: { gr: "Εναλλακτική περιγραφή", en: "Alternative text" },
   widthPx: { gr: "Πλάτος (px)", en: "Width (px)" },
@@ -376,7 +383,20 @@ function fMulerRefreshStepChrome() {
         _pv = _sel ? _sel.getAttribute("data-pgroup") : null;
       } catch (eV) {}
       fScenarioRenderPresentMenu(_pv);
-    } else if (typeof fInitNomeclatureMenu === "function") fInitNomeclatureMenu();
+    } else if (typeof fInitNomeclatureMenu === "function") {
+      // Authoring menu rebuild (e.g. language toggle): capture scroll and
+      // selection visuals first, then restore them without reloading the
+      // molecule. A silent boot default (methane, never clicked) stays clean.
+      var _menuScroll = null, _hadRowSel = false, _hadHdrSel = false;
+      try {
+        var _sc = document.querySelector(".menuNomeclature2Container") || document.getElementById("menuDrawer");
+        _menuScroll = _sc ? _sc.scrollTop : null;
+        _hadRowSel = !!document.querySelector(".menuLi.selectedLi");
+        _hadHdrSel = !!document.querySelector(".crossMenuLi.selectedLi");
+      } catch (eSc) { _menuScroll = null; }
+      fInitNomeclatureMenu();
+      try { if (typeof fRestoreMenuSelection === "function") fRestoreMenuSelection(_menuScroll, _hadRowSel, _hadHdrSel); } catch (eRs) { /* best-effort */ }
+    }
   } catch (e) {}
   try { if (typeof fShowNameAnalysis === "function") fShowNameAnalysis(); } catch (e) {}
   try {
@@ -728,13 +748,24 @@ function fMulerToggleLang(target) {
     try {
       var hasSc = !!u.searchParams.get("scenario");
       var presenting = !!(typeof MuLERMoCScenario !== "undefined" && MuLERMoCScenario.present);
-      var sel = (typeof selectedMol !== "undefined") ? selectedMol : null;
+      // Carry ?mol= only for explicitly chosen molecules (row click, deep
+      // link, scenario step) — never the silent methane boot default.
+      var sel = null;
+      try { sel = (window.__mulerUserPickedMol && typeof selectedMol !== "undefined") ? selectedMol : null; } catch (eS) { sel = null; }
       if (!hasSc && !presenting && sel && typeof nameExamples !== "undefined" && nameExamples[sel]) {
         u.searchParams.set("mol", sel);
       } else {
         u.searchParams.delete("mol");
       }
     } catch (eM) {}
+    // Keep the menu grouping mode across the reload (non-default rides as
+    // ?grouping=, default stays clean — same convention as ?mol=).
+    try {
+      var _gm = null;
+      try { _gm = moleculeGroupingMode; } catch (eG) { _gm = null; }
+      if (_gm === "chemclass" || _gm === "series" || _gm === "rule") u.searchParams.set("grouping", _gm);
+      else u.searchParams.delete("grouping");
+    } catch (eG2) {}
     window.location.href = u.toString();
     return;
   } catch (e) {}
@@ -745,10 +776,18 @@ function fMulerToggleLang(target) {
     // legacy path: same mol-carry rule as above, without URL API
     try {
       var _hasSc = /[?&]scenario=/.test(h);
-      var _sel = (typeof selectedMol !== "undefined") ? selectedMol : null;
+      var _sel = null;
+      try { _sel = (window.__mulerUserPickedMol && typeof selectedMol !== "undefined") ? selectedMol : null; } catch (eS2) { _sel = null; }
       var _ok = !_hasSc && _sel && typeof nameExamples !== "undefined" && nameExamples[_sel];
       h = h.replace(/[?&]mol=[^&]*/g, "");
       if (_ok) h += (h.indexOf("?") >= 0 ? "&" : "?") + "mol=" + encodeURIComponent(_sel);
+      // Same grouping rule as above (legacy path, without URL API).
+      try {
+        var _gm2 = null;
+        try { _gm2 = moleculeGroupingMode; } catch (eG3) { _gm2 = null; }
+        h = h.replace(/[?&]grouping=[^&]*/g, "");
+        if (_gm2 === "chemclass" || _gm2 === "series" || _gm2 === "rule") h += (h.indexOf("?") >= 0 ? "&" : "?") + "grouping=" + _gm2;
+      } catch (eG4) {}
     } catch (eM2) {}
     window.location.href = h;
   } catch (e2) {}

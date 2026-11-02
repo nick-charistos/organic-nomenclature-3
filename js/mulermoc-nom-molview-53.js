@@ -190,6 +190,10 @@ let JmolSelection = "select none";
 let selectedRule;
 let nameSettingsFlag = true;
 let narrateAnalysisFlag = false;
+// Molecule info panel (SMILES + PubChem IUPAC): live-only toggle, never
+// stored in steps. Content refreshes on every naming rebuild and in place
+// when a pending PubChem fetch resolves (fMulerMolInfoRefresh).
+let molInfoOpenFlag = false;
 if (typeof window.nameBoxFlag === "undefined") window.nameBoxFlag = true;
 if (typeof window.nameCrossFlag === "undefined") window.nameCrossFlag = false;
 // Single source: all code reads/writes window.* directly (no local aliases,
@@ -256,6 +260,7 @@ const svgEye = (window.MuLERIcons && window.MuLERIcons.eye) || "";
 const svgEyeOff = (window.MuLERIcons && window.MuLERIcons.eyeOff) || "";
 const svgEyeState = (window.MuLERIcons && window.MuLERIcons.eyeState) || "";
 const svgNameExpand = (window.MuLERIcons && window.MuLERIcons.nameExpand) || "";
+const svgMolInfo = (window.MuLERIcons && window.MuLERIcons.info) || "";
 
 // Per-component name visibility helpers (eye toggles). Masking is applied at
 // box-construction time in fShowNameAnalysis so every rebuild (mode switch,
@@ -384,24 +389,14 @@ function jsmeOnLoad() {
   // 2D-only scenario step 1 (load-then-zap+hide as its first lifecycle)
   // corrupts all later 3D. One visible startup load primes it. Direct
   // fSelectMol (not synthesized clicks: teaching-layer handlers may not be
-  // bound yet when JSME fires jsmeOnLoad); menu marking is best-effort.
+  // bound yet when JSME fires jsmeOnLoad). No menu marking and no group
+  // auto-open: the landing menu stays clean (no selection, groups closed);
+  // the header trigger-click used here before also deselected the molecule
+  // and zapped the just-primed 3D.
   try {
     if (typeof nameExamples !== "undefined" && nameExamples.methane) {
       selectedMol = "methane";
       fSelectMol();
-      try {
-        var $startupRow = $("#methane");
-        if ($startupRow && $startupRow.length) {
-          $(".menuLi").removeClass("selectedLi");
-          $startupRow.addClass("selectedLi");
-          var $startupHdr = $startupRow.closest(".exmplContainer").prev(".crossMenuLi");
-          if ($startupHdr && $startupHdr.length && !$startupHdr.hasClass("open")) {
-            $startupHdr.trigger("click");
-          }
-        }
-      } catch (eMenu) {
-        /* viewers primed; menu marking best-effort */
-      }
     }
   } catch (e) {
     /* startup selection best-effort */
@@ -928,6 +923,146 @@ function fToggleNameSettings() {
   try { fNameExpandRepinDelayed(); } catch (eR) { /* best-effort */ }
 }
 
+// ── fToggleMolInfo / fRenderMolInfo ───────────────────────────────────────
+// Live-only molecule info panel (SMILES + PubChem IUPAC), toggled by the
+// info button left of the gear. Never stored in steps. Content refreshes on
+// every naming rebuild (fShowNameAnalysis calls fRenderMolInfo) and in place
+// when a pending PubChem fetch resolves (fMulerMolInfoRefresh, guarded).
+function fToggleMolInfo() {
+  try {
+    molInfoOpenFlag = !molInfoOpenFlag;
+  } catch (eF) {
+    try { molInfoOpenFlag = true; } catch (eF2) { /* best-effort */ }
+  }
+  try { fRenderMolInfo(); } catch (eR) { /* best-effort */ }
+}
+
+// In-place refresh hook for the PubChem fetch completion in iupac-53.js.
+// Skipped unless the fetched molecule is on screen and the panel is open.
+function fMulerMolInfoRefresh(key) {
+  try {
+    if (typeof selectedMol === "undefined" || selectedMol !== key) return;
+    if (!molInfoOpenFlag) return;
+    fRenderMolInfo();
+  } catch (e) { /* best-effort */ }
+}
+
+function fRenderMolInfo() {
+  var box = null;
+  try { box = document.getElementById("moleculeInfo"); } catch (eB) { box = null; }
+  if (!box) return;
+  var open = false;
+  try { open = !!molInfoOpenFlag; } catch (eF) { open = false; }
+  var btn = null;
+  try { btn = document.getElementById("molInfoBtn"); } catch (eBtn) { btn = null; }
+  try {
+    if (btn) {
+      btn.classList.toggle("active", open);
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+    box.classList.toggle("open", open);
+  } catch (eC) { /* best-effort */ }
+  try { box.innerHTML = ""; } catch (eX) { return; }
+  if (!open) return;
+  var T = function (k, gr) {
+    try { return (typeof fMulerT === "function") ? fMulerT(k) : gr; } catch (e) { return gr; }
+  };
+  var entry = null;
+  try {
+    entry = (typeof selectedMol !== "undefined" && selectedMol && typeof nameExamples !== "undefined")
+      ? nameExamples[selectedMol] : null;
+  } catch (eE) { entry = null; }
+  if (!entry) {
+    var hint = document.createElement("div");
+    hint.className = "molInfoEmpty";
+    hint.textContent = T("noMolHint", "Επιλέξτε μόριο για ανάλυση ονόματος");
+    try { box.appendChild(hint); } catch (eA) { /* best-effort */ }
+    return;
+  }
+  // SMILES row (cached at boot; always available when a molecule is loaded).
+  var r1 = document.createElement("div");
+  r1.className = "molInfoRow";
+  var l1 = document.createElement("span");
+  l1.className = "molInfoLabel";
+  l1.textContent = T("molInfoSmiles", "SMILES");
+  var v1 = document.createElement("code");
+  v1.className = "molInfoSmiles";
+  v1.textContent = (entry.smiles ? entry.smiles : "—");
+  var cp = document.createElement("button");
+  cp.type = "button";
+  cp.className = "molInfoCopy";
+  cp.setAttribute("data-tooltip", T("molInfoCopy", "Αντιγραφή SMILES"));
+  cp.setAttribute("aria-label", T("molInfoCopy", "Αντιγραφή SMILES"));
+  try { cp.innerHTML = (window.MuLERIcons && window.MuLERIcons.copy) || "⧉"; } catch (eI) { cp.textContent = "⧉"; }
+  cp.onclick = function (ev) {
+    try { if (ev && ev.preventDefault) ev.preventDefault(); } catch (eP) { /* best-effort */ }
+    fCopyMolSmiles(cp);
+  };
+  r1.appendChild(l1);
+  r1.appendChild(v1);
+  r1.appendChild(cp);
+  try { box.appendChild(r1); } catch (eB1) { /* best-effort */ }
+  // IUPAC row (verbatim PubChem name; async fetch may still be pending).
+  var r2 = document.createElement("div");
+  r2.className = "molInfoRow";
+  var l2 = document.createElement("span");
+  l2.className = "molInfoLabel";
+  l2.textContent = T("molInfoIupac", "IUPAC (PubChem)");
+  var v2 = document.createElement("span");
+  v2.className = "molInfoValue";
+  var iupac = null;
+  try { iupac = entry.iupacPubchem || null; } catch (eN) { iupac = null; }
+  if (iupac) {
+    v2.textContent = iupac;
+  } else {
+    var failed = false, done = false;
+    try { failed = !!entry.iupacFetchError; done = !!entry.iupacFetchDone; } catch (eS) { /* best-effort */ }
+    v2.textContent = (failed || done)
+      ? T("molInfoMissing", "Χωρίς εγγραφή PubChem")
+      : T("molInfoFetching", "Αναζήτηση…");
+    try { v2.classList.add("molInfoPending"); } catch (eP2) { /* best-effort */ }
+  }
+  r2.appendChild(l2);
+  r2.appendChild(v2);
+  try { box.appendChild(r2); } catch (eB2) { /* best-effort */ }
+  // The panel sits above the name boxes: re-pin the floating Explain sheet.
+  try { if (typeof fNameExpandRepinDelayed === "function") fNameExpandRepinDelayed(); } catch (eR2) { /* best-effort */ }
+}
+
+function fCopyMolSmiles(btn) {
+  var smi = "";
+  try {
+    smi = (typeof selectedMol !== "undefined" && selectedMol && typeof nameExamples !== "undefined" && nameExamples[selectedMol])
+      ? (nameExamples[selectedMol].smiles || "") : "";
+  } catch (eS) { smi = ""; }
+  if (!smi) return;
+  var done = function () {
+    if (!btn) return;
+    var t = "Αντιγράφηκε";
+    try { t = (typeof fMulerT === "function") ? fMulerT("molInfoCopied") : "Αντιγράφηκε"; } catch (eT) { /* keep default */ }
+    try {
+      var prev = btn.getAttribute("data-tooltip");
+      btn.setAttribute("data-tooltip", t);
+      setTimeout(function () { try { btn.setAttribute("data-tooltip", prev || ""); } catch (eR) { /* best-effort */ } }, 1200);
+    } catch (eA) { /* best-effort */ }
+  };
+  try {
+    if (typeof navigator !== "undefined" && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(smi).then(done, done);
+      return;
+    }
+  } catch (eC) { /* fall through to legacy path */ }
+  try {
+    var ta = document.createElement("textarea");
+    ta.value = smi;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.parentNode.removeChild(ta);
+    done();
+  } catch (eF) { /* clipboard unavailable */ }
+}
+
 // document.addEventListener('click', function (e) {
 //     var panel = document.getElementById('nameSettingsPanel')
 //     var btn = document.getElementById('nameSettingsBtn')
@@ -1138,6 +1273,8 @@ function fDeselectMol() {
 
   selectedMol = null;
   $(".menuLi").removeClass("selectedLi");
+  try { window.__mulerSelGroupKey = null; } catch (eGk) { /* best-effort */ }
+  try { window.__mulerUserPickedMol = false; } catch (eUp) { /* best-effort */ }
 
   myMol3D = null;
   Jmol.script(jmolAppletNomeclature, "zap");
@@ -4065,8 +4202,11 @@ function fShowNameAnalysis() {
 
   const _namingWord = (() => { try { return (typeof fMulerT === "function") ? fMulerT("naming") : "Ονομασία"; } catch (e) { return "Ονομασία"; } })();
   const _namingSettingsWord = (() => { try { return (typeof fMulerT === "function") ? fMulerT("namingSettings") : "Ρυθμίσεις Ονομασίας"; } catch (e) { return "Ρυθμίσεις Ονομασίας"; } })();
+  const _molInfoWord = (() => { try { return (typeof fMulerT === "function") ? fMulerT("molInfo") : "Πληροφορίες μορίου"; } catch (e) { return "Πληροφορίες μορίου"; } })();
+  const _molInfoActive = (typeof molInfoOpenFlag !== "undefined" && molInfoOpenFlag) ? " active" : "";
+  const _molInfoAria = (typeof molInfoOpenFlag !== "undefined" && molInfoOpenFlag) ? "true" : "false";
   nameCompContainer =
-    `<div class='panelTitle'><span>${_namingWord}</span><div id='nameSettingsBtnDiv'><button  id='nameSettingsBtn'  class='settingsBtn ${namesSettingsBtnActiveClass}'  onclick='fToggleNameSettings()'  data-tooltip='${_namingSettingsWord}' >${svgSettings} </button></div></div><div id='nameSettingsPanel' class='${nameSettingClass}'>${_panelInner}</div><div class='HFlex nameContainer' style='justify-content:center;'><div class='nameCompContainer'>`;
+    `<div class='panelTitle'><span>${_namingWord}</span><div id='nameSettingsBtnDiv'><button id='molInfoBtn' class='settingsBtn${_molInfoActive}' onclick='fToggleMolInfo()' data-tooltip='${_molInfoWord}' aria-label='${_molInfoWord}' aria-expanded='${_molInfoAria}'>${svgMolInfo}</button><button  id='nameSettingsBtn'  class='settingsBtn ${namesSettingsBtnActiveClass}'  onclick='fToggleNameSettings()'  data-tooltip='${_namingSettingsWord}' >${svgSettings} </button></div></div><div id='nameSettingsPanel' class='${nameSettingClass}'>${_panelInner}</div><div id='moleculeInfo' class='${(typeof molInfoOpenFlag !== "undefined" && molInfoOpenFlag) ? "open" : ""}'></div><div class='HFlex nameContainer' style='justify-content:center;'><div class='nameCompContainer'>`;
 
   if (!selectedMol) {
     nameCompContainer +=
@@ -4329,6 +4469,7 @@ function fShowNameAnalysis() {
 
   $("#nameAnalysis").html(nameCompContainer);
   try { if (typeof fMulerPaintOracleLine === "function") fMulerPaintOracleLine(); } catch (eO2) {}
+  try { if (typeof fRenderMolInfo === "function") fRenderMolInfo(); } catch (eMI) {}
 
   // Fix 3: the explain line follows box visibility — hidden when zero
   // components are visible, restored on reveal (toggle, so both directions

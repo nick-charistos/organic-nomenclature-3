@@ -488,6 +488,102 @@ header {
 
 }
 
+/* Molecule info button row: info button left of the gear. Neutralizes the
+   absolute .settingsBtn positioning inside this container. */
+#nameSettingsBtnDiv {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 300;
+}
+#nameSettingsBtnDiv .settingsBtn {
+  position: static;
+  transform: none;
+}
+
+/* In-flow collapsible molecule info panel (SMILES + PubChem IUPAC), below
+   the name settings panel. Same collapse pattern as #nameSettingsPanel. */
+
+#moleculeInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  box-sizing: border-box;
+  max-height: 0;
+  overflow: hidden;
+  transition:
+    max-height 0.25s ease,
+    padding 0.25s ease;
+  padding: 0 8px;
+  background: #fff;
+  will-change: max-height;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+#molInfoBtn svg {
+  width: 20px;
+  height: 20px;
+}
+
+#moleculeInfo.open {
+  max-height: 260px;
+  padding: 6px 8px;
+  overflow: auto;
+  border: 1px solid var(--lightBlue);
+  /* border-top: none; */
+  margin-top: -4px;
+}
+.molInfoRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+.molInfoLabel {
+	font-weight: bold;
+	color: #333;
+	white-space: nowrap;
+	flex-shrink: 0;
+	font-size: 0.813rem;
+}
+.molInfoSmiles {
+  font-family: monospace;
+  word-break: break-all;
+}
+.molInfoValue {
+  word-break: break-word;
+}
+.molInfoPending,
+.molInfoEmpty {
+  color: #666;
+  font-style: italic;
+}
+.molInfoCopy {
+  color: var(--darkBlue);
+  background: transparent;
+  border: 1px solid var(--lightBlue);
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 1px 3px;
+  font-size: 0;
+  line-height: 1;
+  flex-shrink: 0;
+  position: relative;
+}
+.molInfoCopy svg {
+  width: 14px;
+  height: 14px;
+}
+.molInfoCopy:hover {
+  color: #fff;
+  background-color: var(--darkEarth);
+}
+
 .nameContainer {
   justify-content: center;
   /* background-color: var(--veryLightEarth); */
@@ -582,6 +678,7 @@ header {
 .nameStyleCross[data-tooltip]::after,
 .nameStyleEye[data-tooltip]::after,
 .nameStyleExpand[data-tooltip]::after,
+.molInfoCopy[data-tooltip]::after,
 #narrateAnalysisToggle[data-tooltip]::after,
 .compEye[data-tooltip]::after,
 #scenarioAuthorTab[data-tooltip]::after,
@@ -620,6 +717,7 @@ header {
 .nameStyleCross[data-tooltip]:hover::after,
 .nameStyleEye[data-tooltip]:hover::after,
 .nameStyleExpand[data-tooltip]:hover::after,
+.molInfoCopy[data-tooltip]:hover::after,
 #narrateAnalysisToggle[data-tooltip]:hover::after,
 .compEye[data-tooltip]:hover::after,
 #scenarioAuthorTab[data-tooltip]:hover::after,
@@ -647,6 +745,7 @@ header {
 .nameStyleCross[data-tooltip]::after,
 .nameStyleEye[data-tooltip]::after,
 .nameStyleExpand[data-tooltip]::after,
+.molInfoCopy[data-tooltip]::after,
 #narrateAnalysisToggle[data-tooltip]::after {
   position: absolute;
   top: calc(100% + 10px);
@@ -666,6 +765,7 @@ header {
 .nameStyleCross[data-tooltip]::before,
 .nameStyleEye[data-tooltip]::before,
 .nameStyleExpand[data-tooltip]::before,
+.molInfoCopy[data-tooltip]::before,
 #narrateAnalysisToggle[data-tooltip]::before,
 .compEye[data-tooltip]::before,
 #scenarioAuthorTab[data-tooltip]::before,
@@ -695,6 +795,7 @@ header {
 .nameStyleCross[data-tooltip]:hover::before,
 .nameStyleEye[data-tooltip]:hover::before,
 .nameStyleExpand[data-tooltip]:hover::before,
+.molInfoCopy[data-tooltip]:hover::before,
 #narrateAnalysisToggle[data-tooltip]:hover::before,
 .compEye[data-tooltip]:hover::before,
 #scenarioAuthorTab[data-tooltip]:hover::before,
@@ -721,6 +822,7 @@ header {
 .nameStyleCross[data-tooltip]::before,
 .nameStyleEye[data-tooltip]::before,
 .nameStyleExpand[data-tooltip]::before,
+.molInfoCopy[data-tooltip]::before,
 #narrateAnalysisToggle[data-tooltip]::before {
   top: 100%;
   left: 50%;

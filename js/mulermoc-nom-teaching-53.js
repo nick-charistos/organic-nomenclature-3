@@ -504,6 +504,22 @@ function fSortPropsByCarbonCount(props) {
 // ── fInitNomeclatureMenu ──────────────────────────────────────────────────
 
 function fInitNomeclatureMenu() {
+  // One-time grouping restore from ?grouping= (set by the header language
+  // toggle, which reloads the page). Later in-place switches own the global.
+  try {
+    if (!window.__mulerGroupingBooted) {
+      window.__mulerGroupingBooted = true;
+      var _gg = null;
+      try { _gg = new URL(window.location.href).searchParams.get("grouping"); }
+      catch (eU) {
+        try {
+          var _gm = /[?&]grouping=([^&#]*)/.exec(String(window.location.href));
+          _gg = _gm ? decodeURIComponent(_gm[1]) : null;
+        } catch (eM) { _gg = null; }
+      }
+      if (_gg === "chemclass" || _gg === "series" || _gg === "rule" || _gg === "all") moleculeGroupingMode = _gg;
+    }
+  } catch (eB) { /* best-effort */ }
   const names = Object.keys(nameExamples);
   const groups = {};
   const groupLabels = {};
@@ -609,6 +625,67 @@ function fInitNomeclatureMenu() {
   } catch (e) {
     /* scenario absent */
   }
+}
+
+// Visual-only menu selection restore (no reload): re-marks the selected row,
+// reopens its group and restores scroll after a bare menu rebuild (e.g. the
+// language toggle, which must not reload the already-loaded molecule).
+// Pass the scroller's scrollTop captured BEFORE the rebuild. The selected
+// group header is re-marked too (row's group wins; else the last
+// header-clicked group). Visual classes only — never triggers clicks (a
+// header click would deselect the molecule / clear rule state).
+function fRestoreMenuSelection(prevScrollTop, hadRowSel, hadHdrSel) {
+  try {
+    var row = null;
+    try {
+      row = (typeof selectedMol !== "undefined" && selectedMol) ? document.getElementById(selectedMol) : null;
+    } catch (eR) { row = null; }
+    // Only re-mark a row that was marked before the rebuild (an untouched
+    // boot default stays clean).
+    var showRow = !!hadRowSel && !!row;
+    var hdr = null;
+    try {
+      if (showRow && row.closest) {
+        var cont = row.closest(".exmplContainer");
+        hdr = cont && cont.previousElementSibling && cont.previousElementSibling.classList &&
+          cont.previousElementSibling.classList.contains("crossMenuLi") ? cont.previousElementSibling : null;
+      }
+      if (!hdr && !!hadHdrSel) {
+        var gk = null;
+        try { gk = window.__mulerSelGroupKey || null; } catch (eG) { gk = null; }
+        if (gk) hdr = document.querySelector('.crossMenuLi[data-group-key="' + gk + '"]');
+      }
+      document.querySelectorAll(".crossMenuLi.selectedLi").forEach(function (h) { h.classList.remove("selectedLi"); });
+      if (hdr && hdr.classList) hdr.classList.add("selectedLi");
+    } catch (eH) { /* best-effort */ }
+    if (showRow) {
+      try { row.classList.add("selectedLi"); } catch (eC) { /* best-effort */ }
+      try {
+        var cont2 = row.closest ? row.closest(".exmplContainer") : null;
+        if (cont2) {
+          cont2.classList.remove("closed");
+          cont2.classList.add("open");
+          try { cont2.style.display = ""; } catch (eD) { /* best-effort */ }
+        }
+      } catch (eO) { /* best-effort */ }
+    } else if (hdr) {
+      // Header-only selection (no molecule): reopen its group.
+      try {
+        var cont3 = hdr.nextElementSibling;
+        if (cont3 && cont3.classList && cont3.classList.contains("exmplContainer")) {
+          cont3.classList.remove("closed");
+          cont3.classList.add("open");
+          try { cont3.style.display = ""; } catch (eD2) { /* best-effort */ }
+        }
+      } catch (eO2) { /* best-effort */ }
+    }
+    if (typeof prevScrollTop === "number") {
+      try {
+        var scroller = document.querySelector(".menuNomeclature2Container") || document.getElementById("menuDrawer");
+        if (scroller) scroller.scrollTop = prevScrollTop;
+      } catch (eS) { /* best-effort */ }
+    }
+  } catch (e) { /* best-effort */ }
 }
 
 // ── showRadio ─────────────────────────────────────────────────────────────
@@ -1181,6 +1258,9 @@ $(document).ready(function () {
     // Scenario pick checkboxes live inside rows — they manage themselves.
     if (event && event.target && $(event.target).closest(".scPickBox").length) return;
     selectedMol = $(this).attr("id");
+    // Explicit user choice (vs the silent methane boot default): the header
+    // language toggle carries ?mol= only for explicitly chosen molecules.
+    try { window.__mulerUserPickedMol = true; } catch (eUp) { /* best-effort */ }
 
     $(".menuLi").removeClass("selectedLi");
     $(this).addClass("selectedLi");
@@ -1217,6 +1297,7 @@ $(document).ready(function () {
       ) {
         fDeselectMol();
         $(this).removeClass("selectedLi");
+        try { window.__mulerSelGroupKey = null; } catch (eGk) { /* best-effort */ }
         $(this).next(".exmplContainer").slideUp();
         $(this).next(".exmplContainer").removeClass("open").addClass("closed");
         // Rule mode: closing the group clears its theory (mirrors molecule deselect).
@@ -1232,6 +1313,10 @@ $(document).ready(function () {
 
       $(".crossMenuLi").removeClass("selectedLi");
       $(this).addClass("selectedLi");
+      try {
+        var _gk = $(this).attr("data-group-key") || $(this).data("group-key") || null;
+        window.__mulerSelGroupKey = _gk || null;
+      } catch (eGk2) { /* best-effort */ }
 
       $(".exmplContainer.open").slideUp();
       $(this).next(".exmplContainer").slideDown();

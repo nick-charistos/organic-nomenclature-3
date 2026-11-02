@@ -8,6 +8,14 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 New parallel file set `mulermoc-nom-53.html` + `js/*-53.js` + `css/*-53.css`, forked from v52. Single codebase with `?lang=` toggle (no `-en` file fork); Greek remains the default. Scenarios stay author-language; new EN scenarios to be authored later by teachers/MSc students.
 
+### Molecule info panel (v53)
+- Info button left of the naming gear (icon from `imgs/info-svgrepo-com.svg`): opens `#moleculeInfo` with the cached SMILES (copy button included) and the verbatim PubChem IUPAC name. Pending (`fetching…`), no-record and offline states; in-place refresh on fetch resolve, molecule-guarded. Live-only toggle, no scenario-schema change. GR/EN labels via `lang-53.js`.
+- Sits above the name boxes, so opening it re-pins the floating Explain sheet (same helper as the settings panel).
+
+### Language switch keeps menu state (v53)
+- Header toggle reloads, so the menu rebuild used to lose everything except the mode. Now: `?grouping=` travels on toggle (validated, non-default only) and is restored once at boot; in-place repaints preserve selection visuals, scroll and group header (tracked live, visual-only, no reload); the boot `?mol=` path marks the group header too.
+- Methane boot default no longer marks the menu or force-opens Alkanes (the JSmol warm-up load itself is kept); `?mol=` is carried only for explicitly chosen molecules (row click, deep link, scenario step), never the silent default.
+
 ### UI translation (chrome)
 - 207-string `?lang=` table (`mulermoc-nom-lang-53.js`), every Greek value source-verified. Value-based `data-tooltip`/`aria-label`/`title`/`placeholder` translation with debounced MutationObserver, dynamic-prefix rules, dialog/bar/menu/step text nodes. All render paths translate at build time (no Greek-first flip; verified observer-neutered); GR output byte-identical, no EN leakage.
 - Header GR/EN two-button switch (`#langSwitch`, plain `langButtonClass` buttons, `selected` on the active language; clicking the active side is a no-op). Toggle carries the selected molecule (`?mol=`, dropped when a scenario owns the selection); boot restores viewer + menu highlight + group open via the normal click path. Also enables `?lang=…&mol=…` deep links.

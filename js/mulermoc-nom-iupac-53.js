@@ -378,11 +378,13 @@ function fLogMolSelectWithIUPAC(key) {
           (entry && entry.needsHumanCheck ? " [NEEDS-HUMAN-CHECK]" : "")
       );
       try { if (typeof fMulerENFetchDone === "function") fMulerENFetchDone(key); } catch (eH) {}
+      try { if (typeof fMulerMolInfoRefresh === "function") fMulerMolInfoRefresh(key); } catch (eMI) {}
     })
     .catch(function (err) {
       console.warn("[IUPAC-EN] select-fetch failed " + key, err);
       try { if (entry) { entry.iupacFetchDone = true; entry.iupacFetchError = true; } } catch (eF) {}
       try { if (typeof fMulerENFetchDone === "function") fMulerENFetchDone(key); } catch (eH2) {}
+      try { if (typeof fMulerMolInfoRefresh === "function") fMulerMolInfoRefresh(key); } catch (eMI2) {}
     })
     .finally(function () {
       __mulerIupacPending[key] = false;

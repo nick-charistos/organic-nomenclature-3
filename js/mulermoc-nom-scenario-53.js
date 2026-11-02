@@ -1862,6 +1862,10 @@ function fScenarioApply(step) {
   }
   // 1. state globals (same scope as molview/teaching layers)
   selectedMol = step.selectedMol;
+  // Scenario-driven selection counts as explicit (like a row click), so the
+  // header language toggle keeps carrying it — unlike the silent methane
+  // boot default, which must not force ?mol= on toggle.
+  try { window.__mulerUserPickedMol = true; } catch (eUp) { /* best-effort */ }
   mode2D = step.mode2D;
   modeSuffix = mode2D === "expanded" ? "_2D_Expanded" : mode2D === "condensed" ? "_2D_Condensed" : "_2D_Skeletal";
   if (step.style2D.zigzag) mode2D = "condensedZigZag";
@@ -5964,8 +5968,11 @@ function fScenarioBoot() {
       try {
         if (typeof fSelectMol === "function") { selectedMol = url.mol; fSelectMol(); }
       } catch (e) { /* menu click remains the manual path */ }
-      // Mirror the menu click: mark the entry, open its group (no rule-mode
-      // header side effects — theory follows header clicks only).
+      // Adopted deep link counts as explicit: keep carrying it on toggle.
+      try { window.__mulerUserPickedMol = true; } catch (eUp2) { /* best-effort */ }
+      // Mirror the menu click: mark the entry, mark its group header and open
+      // its group (no rule-mode header side effects — theory follows header
+      // clicks only).
       try {
         var _mb = document.getElementById(url.mol);
         if (_mb && _mb.classList && _mb.classList.contains("menuLi")) {
@@ -5973,6 +5980,11 @@ function fScenarioBoot() {
           _mb.classList.add("selectedLi");
           var _grp = _mb.closest ? _mb.closest(".exmplContainer") : null;
           if (_grp) { _grp.classList.remove("closed"); _grp.classList.add("open"); }
+          var _hdr = _grp && _grp.previousElementSibling ? _grp.previousElementSibling : null;
+          if (_hdr && _hdr.classList && _hdr.classList.contains("crossMenuLi")) {
+            document.querySelectorAll(".crossMenuLi.selectedLi").forEach(function (x) { x.classList.remove("selectedLi"); });
+            _hdr.classList.add("selectedLi");
+          }
         }
       } catch (eM) { /* menu highlight best-effort */ }
     }
