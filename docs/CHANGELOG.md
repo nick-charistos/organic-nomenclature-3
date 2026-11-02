@@ -12,6 +12,10 @@ New parallel file set `mulermoc-nom-53.html` + `js/*-53.js` + `css/*-53.css`, fo
 - Info button left of the naming gear (icon from `imgs/info-svgrepo-com.svg`): opens `#moleculeInfo` with the cached SMILES (copy button included) and the verbatim PubChem IUPAC name. Pending (`fetching…`), no-record and offline states; in-place refresh on fetch resolve, molecule-guarded. Live-only toggle, no scenario-schema change. GR/EN labels via `lang-53.js`.
 - Sits above the name boxes, so opening it re-pins the floating Explain sheet (same helper as the settings panel).
 
+### JSmol cold-boot robustness (v53)
+- All `Jmol.*` calls go through fail-closed `fJSmol*` wrappers (pending-3D note instead of throwing), so a slow/blocked CDN can no longer abort molecule loading after the 2D paint — naming, menu and selection always complete. A readiness-gated resend in the `jmol_isReady` hook replays the pending 3D load (plus scenario highlight) once the applet reports ready.
+- Applet creation stays parse-time (`Jmol.getApplet` writes via `document.write`, unsafe post-parse); the library keeps its parse-time `document.write` include with the `?libs=` switch. A hard CDN failure toasts once ("3D unavailable") and the app continues 2D-only.
+
 ### Language switch keeps menu state (v53)
 - Header toggle reloads, so the menu rebuild used to lose everything except the mode. Now: `?grouping=` travels on toggle (validated, non-default only) and is restored once at boot; in-place repaints preserve selection visuals, scroll and group header (tracked live, visual-only, no reload); the boot `?mol=` path marks the group header too.
 - Methane boot default no longer marks the menu or force-opens Alkanes (the JSmol warm-up load itself is kept); `?mol=` is carried only for explicitly chosen molecules (row click, deep link, scenario step), never the silent default.

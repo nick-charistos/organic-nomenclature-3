@@ -556,7 +556,7 @@ function fToggleViewer3D() {
         var _h = (_ap && _ap.clientHeight) || 240;
         if (typeof Jmol !== "undefined" && Jmol.resizeApplet &&
             typeof jmolAppletNomeclature !== "undefined") {
-          Jmol.resizeApplet(jmolAppletNomeclature, { width: _w, height: _h });
+          fJSmolResizeApplet(jmolAppletNomeclature, { width: _w, height: _h });
         }
       } catch (eSize) {
         /* measure best-effort */
@@ -588,14 +588,14 @@ function fToggleViewer3D() {
         // refresh fires before the model lands. Re-render once settled.
         setTimeout(function () {
           try {
-            Jmol.script(jmolAppletNomeclature, "refresh");
+            fJSmolScript(jmolAppletNomeclature, "refresh");
           } catch (eLate) {
             /* 3D unavailable */
           }
         }, 600);
         return;
       }
-      Jmol.script(jmolAppletNomeclature, "refresh");
+      fJSmolScript(jmolAppletNomeclature, "refresh");
     });
     $("#controls3D").removeClass("hide");
   }
@@ -1308,7 +1308,7 @@ function fDeselectMol() {
   try { window.__mulerUserPickedMol = false; } catch (eUp) { /* best-effort */ }
 
   myMol3D = null;
-  Jmol.script(jmolAppletNomeclature, "zap");
+  fJSmolScript(jmolAppletNomeclature, "zap");
   try {
     if (typeof MuLERMoCScenario !== "undefined") MuLERMoCScenario.reload3DOnce = false;
   } catch (eFlag) {
@@ -1498,7 +1498,7 @@ function fZoom2D(dir) {
 function fZoom3D(dir) {
   try {
     if (typeof Jmol !== "undefined" && typeof jmolAppletNomeclature !== "undefined") {
-      Jmol.script(jmolAppletNomeclature, dir > 0 ? "quit;zoomTo IN;" : "quit; zoomTo OUT;");
+      fJSmolScript(jmolAppletNomeclature, dir > 0 ? "quit;zoomTo IN;" : "quit; zoomTo OUT;");
     }
   } catch (e) {
     /* JSmol unavailable */
@@ -3419,11 +3419,119 @@ function patchtheNitrogen() {
 
 // ── fLoadMol3D ────────────────────────────────────────────────────────────
 
+// ── Safe JSmol access ─────────────────────────────────────────────────────
+// The JSmol library loads async (no document.write: Chrome may block the
+// cross-site parser-blocking script on poor connectivity) and the applet
+// initializes after that. Every JSmol call below goes through fJSmol*
+// wrappers: fail-closed (null / no-op) with a pending-3D note instead of
+// throwing, so a cold/dead applet can never abort molecule loading, naming,
+// or menu selection. The pending load is resent from the jmol_isReady hook.
+var jmolAppletNomeclature = null;
+
+function fJSmolLive() {
+  try {
+    if (typeof Jmol === "undefined" || !Jmol || !Jmol.__mulerSafe) return false;
+    if (typeof jmolAppletNomeclature === "undefined" || !jmolAppletNomeclature) return false;
+    if (typeof window !== "undefined" && window.JSmolReadyFlag !== true) return false;
+    return true;
+  } catch (e) { return false; }
+}
+
+function fMulerNotePending3D() {
+  try {
+    if (typeof selectedMol !== "undefined" && selectedMol) window.__mulerPending3D = selectedMol;
+  } catch (e) { /* best-effort */ }
+}
+
+function fJSmolScript(applet, cmd) {
+  if (!fJSmolLive()) { fMulerNotePending3D(); return null; }
+  try { return Jmol.script(applet, cmd); } catch (e) { fMulerNotePending3D(); return null; }
+}
+
+function fJSmolScriptWait(applet, cmd) {
+  if (!fJSmolLive()) { fMulerNotePending3D(); return null; }
+  try { return Jmol.scriptWait(applet, cmd); } catch (e) { fMulerNotePending3D(); return null; }
+}
+
+function fJSmolScriptEcho(applet, cmd) {
+  if (!fJSmolLive()) { fMulerNotePending3D(); return ""; }
+  try { return Jmol.scriptEcho(applet, cmd); } catch (e) { fMulerNotePending3D(); return ""; }
+}
+
+function fJSmolGetPropertyAsArray(applet, prop, query) {
+  if (!fJSmolLive()) { fMulerNotePending3D(); return null; }
+  try { return Jmol.getPropertyAsArray(applet, prop, query); } catch (e) { fMulerNotePending3D(); return null; }
+}
+
+function fJSmolGetPropertyAsString(applet, prop) {
+  if (!fJSmolLive()) { fMulerNotePending3D(); return null; }
+  try { return Jmol.getPropertyAsString(applet, prop); } catch (e) { fMulerNotePending3D(); return null; }
+}
+
+function fJSmolResizeApplet(applet, dims) {
+  if (!fJSmolLive()) return;
+  try { Jmol.resizeApplet(applet, dims); } catch (e) { /* best-effort */ }
+}
+
+// Marks the real JSmol API as guarded (idempotent): after this, direct
+// Jmol.* calls that slip through still fail closed instead of throwing.
+function fMulerSafeJSmol() {
+  try {
+    if (typeof Jmol === "undefined" || !Jmol) return;
+    if (Jmol.__mulerSafe) return;
+    try {
+      var _sc = Jmol.script, _sw = Jmol.scriptWait, _se = Jmol.scriptEcho,
+        _gpa = Jmol.getPropertyAsArray, _gps = Jmol.getPropertyAsString, _rs = Jmol.resizeApplet;
+      if (typeof _sc === "function") Jmol.script = function (a, c) {
+        try { if (!fJSmolLive()) { fMulerNotePending3D(); return null; } return _sc(a, c); }
+        catch (e) { fMulerNotePending3D(); return null; }
+      };
+      if (typeof _sw === "function") Jmol.scriptWait = function (a, c) {
+        try { if (!fJSmolLive()) { fMulerNotePending3D(); return null; } return _sw(a, c); }
+        catch (e) { fMulerNotePending3D(); return null; }
+      };
+      if (typeof _se === "function") Jmol.scriptEcho = function (a, c) {
+        try { if (!fJSmolLive()) { fMulerNotePending3D(); return ""; } return _se(a, c); }
+        catch (e) { fMulerNotePending3D(); return ""; }
+      };
+      if (typeof _gpa === "function") Jmol.getPropertyAsArray = function (a, p, q) {
+        try { if (!fJSmolLive()) { fMulerNotePending3D(); return null; } return _gpa(a, p, q); }
+        catch (e) { fMulerNotePending3D(); return null; }
+      };
+      if (typeof _gps === "function") Jmol.getPropertyAsString = function (a, p) {
+        try { if (!fJSmolLive()) { fMulerNotePending3D(); return null; } return _gps(a, p); }
+        catch (e) { fMulerNotePending3D(); return null; }
+      };
+      if (typeof _rs === "function") Jmol.resizeApplet = function (a, d) {
+        try { if (!fJSmolLive()) return; return _rs(a, d); } catch (e) { /* best-effort */ }
+      };
+      Jmol.__mulerSafe = true;
+    } catch (eI) { /* best-effort */ }
+  } catch (e) { /* best-effort */ }
+}
+
+// The JSmol library loads synchronously at parse time (see the head script),
+// so its API is present by the time this file runs. Install the fail-closed
+// patches immediately: with a blocked/slow CDN the applet may not exist yet,
+// and every JSmol call must degrade to a pending note instead of throwing.
+try { if (typeof fMulerSafeJSmol === "function") fMulerSafeJSmol(); } catch (eW0) { /* best-effort */ }
+
 function fLoadMol3D() {
   const selectedExample = nameExamples[selectedMol];
   if (!selectedExample) {
     return;
   }
+  // A live load supersedes any pending cold-boot resend for an older molecule.
+  try { if (typeof fJSmolLive === "function" && fJSmolLive()) window.__mulerPending3D = null; } catch (eP) {}
+  // Hard failure (library itself missing, e.g. blocked CDN): say so once.
+  // Transient unreadiness stays silent — the ready-hook resend covers it.
+  try {
+    if ((typeof Jmol === "undefined" || !Jmol) && !window.__mulerJSmolToasted) {
+      window.__mulerJSmolToasted = true;
+      try { if (typeof fScenarioToast === "function") fScenarioToast("3D unavailable (JSmol failed to load) — 2D continues to work."); } catch (eT) {}
+      try { console.warn("[JSmol] library failed to load; 3D disabled for this session."); } catch (eC) {}
+    }
+  } catch (eW) { /* best-effort */ }
 
   let myMol3D = selectedExample.file3D;
   let movetoCmd =
@@ -3439,7 +3547,7 @@ function fLoadMol3D() {
   const zoomCmd = (!movetoCmd && Number.isFinite(initialZoom) && initialZoom > 0)
     ? "zoom " + initialZoom + ";"
     : "";
-  Jmol.script(
+  fJSmolScript(
     jmolAppletNomeclature,
     "frank off;load " +
       myMol3D +
@@ -3493,12 +3601,12 @@ function fFetchAndParse3D() {
 
 function showAtomSymbols3D(restoreNumbering) {
   if (atomSymbols3DFlag) {
-    Jmol.script(
+    fJSmolScript(
       jmolAppletNomeclature,
       "select all; labels %e;" + JmolSelection + ";",
     );
   } else {
-    Jmol.script(
+    fJSmolScript(
       jmolAppletNomeclature,
       "select all; labels off;" + JmolSelection + ";",
     );
@@ -3513,9 +3621,9 @@ function showAtomSymbols3D(restoreNumbering) {
 
 function showHydrogens3D() {
   if (hydrogens3DFlag) {
-    Jmol.script(jmolAppletNomeclature, "hide none;");
+    fJSmolScript(jmolAppletNomeclature, "hide none;");
   } else {
-    Jmol.script(
+    fJSmolScript(
       jmolAppletNomeclature,
       "select _H and connected(_C); hide selected;" + JmolSelection + ";",
     );
@@ -3530,9 +3638,9 @@ function showHydrogens3D() {
 
 function rotate3D() {
   if (rotateFlag) {
-    Jmol.script(jmolAppletNomeclature, "rotate spin 60;");
+    fJSmolScript(jmolAppletNomeclature, "rotate spin 60;");
   } else {
-    Jmol.script(jmolAppletNomeclature, "rotate  off;");
+    fJSmolScript(jmolAppletNomeclature, "rotate  off;");
   }
 }
 
@@ -3738,7 +3846,7 @@ window.fSaveJmolPng = function () {
   );
   let safeLabel = (currentMolName || "").replace(/'/g, "");
 
-  Jmol.script(
+  fJSmolScript(
     jmolAppletNomeclature,
     "set echo  bottom center; color echo black; font echo 24 ; echo " +
       safeLabel +
@@ -3748,7 +3856,7 @@ window.fSaveJmolPng = function () {
       "_3D.png';",
   );
   setTimeout(function () {
-    Jmol.script(jmolAppletNomeclature, "set echo off;");
+    fJSmolScript(jmolAppletNomeclature, "set echo off;");
   }, 500);
 };
 
@@ -4622,7 +4730,7 @@ function fClearHighlights() {
   if (!jsmeNomeclatureApplet) return;
   jsmeNomeclatureApplet.resetAtomColors(0);
   jsmeNomeclatureApplet.resetBondColors(0);
-  Jmol.script(
+  fJSmolScript(
     jmolAppletNomeclature,
     "select all;  selectionHalos off; color bonds none; color atoms none;",
   );
@@ -5718,7 +5826,7 @@ function fExplainNameComp() {
             _estFrag3D.indexOf(bondList3D[_eb][0]) >= 0 &&
             _estFrag3D.indexOf(bondList3D[_eb][1]) >= 0
           ) {
-            Jmol.script(
+            fJSmolScript(
               jmolAppletNomeclature,
               "select atomno=" + bondList3D[_eb][0] + ", atomno=" + bondList3D[_eb][1] + "; color bond [X79dc6d];",
             );
@@ -6919,7 +7027,7 @@ function fHighlightAtomChain3D(chainAtoms3D, skipH, skipBonds, skipAtoms) {
   var _atomClause = skipAtoms
     ? ""
     : ";color selectionHalos[X79dc6d]; selectionHalos on; color atoms [X79dc6d]";
-  Jmol.script(
+  fJSmolScript(
     jmolAppletNomeclature,
     "select all; selectionHalos off; color atoms none; color bonds none;" + arg +
       _atomClause +
@@ -6952,7 +7060,7 @@ function fColorFragmentBonds3D(fragAtoms, includeH) {
   }
   if (script) {
     try {
-      Jmol.script(jmolAppletNomeclature, script);
+      fJSmolScript(jmolAppletNomeclature, script);
     } catch (e) {
       /* 3D unavailable */
     }
@@ -7411,7 +7519,7 @@ function fHighlightFG3D(FGno) {
       (fSupportsAlkylBranchPrefixes() || fEtherPrefixGroups().length > 0) && branch.atoms.length > 0)) {
     if (!allowBranchFallback || branch.atoms.length === 0) {
       // pure hydrocarbon or no branch match — clear any existing highlight
-      Jmol.script(
+      fJSmolScript(
         jmolAppletNomeclature,
         "select all; selectionHalos off; color atoms none; color bonds none;",
       );
@@ -7426,7 +7534,7 @@ function fHighlightFG3D(FGno) {
       }
     }
     highAtoms3DArg += "; select connected(selected) and _H or selected;";
-    Jmol.script(
+    fJSmolScript(
       jmolAppletNomeclature,
       "select all; selectionHalos off; color atoms none; color bonds none;" +
         highAtoms3DArg +
@@ -7491,7 +7599,7 @@ function fHighlightFG3D(FGno) {
         }
       }
       highAtoms3DArg += "; select connected(selected) and _H or selected;";
-      Jmol.script(
+      fJSmolScript(
         jmolAppletNomeclature,
         "select all; selectionHalos off; color atoms none; color bonds none;" +
           highAtoms3DArg +
@@ -7715,7 +7823,7 @@ function fHighlightFG3D(FGno) {
     }
 
     if (highAtoms3D.length === 0) {
-      Jmol.script(
+      fJSmolScript(
         jmolAppletNomeclature,
         "select all; selectionHalos off; color atoms none; color bonds none;",
       );
@@ -7731,7 +7839,7 @@ function fHighlightFG3D(FGno) {
     }
 
     // Merged into one script (vs. relying on the earlier fClearHighlights() call) to avoid a Jmol script-queue race.
-    Jmol.script(
+    fJSmolScript(
       jmolAppletNomeclature,
       "select all; selectionHalos off; color atoms none; color bonds none;" +
         highAtoms3DArg +
@@ -7994,7 +8102,7 @@ function fShowNumbering3D() {
 // ── removeEcho3D ──────────────────────────────────────────────────────────
 
 function removeEcho3D() {
-  Jmol.script(jmolAppletNomeclature, " set echo  off;");
+  fJSmolScript(jmolAppletNomeclature, " set echo  off;");
 }
 
 // ── fShowNumber3D ─────────────────────────────────────────────────────────
@@ -8048,7 +8156,7 @@ function fShowNumber3D(n, chain) {
     num +
     ";";
 
-  Jmol.script(jmolAppletNomeclature, s);
+  fJSmolScript(jmolAppletNomeclature, s);
 }
 
 // ── fHighlightMultiBonds ──────────────────────────────────────────────────
@@ -8180,7 +8288,7 @@ function fHighlightMultiBonds3D(bondCompPos) {
     if (i < highBonds3D.length - 1) {
       highAtoms3DArg += ",";
     }
-    Jmol.script(
+    fJSmolScript(
       jmolAppletNomeclature,
       "select atomno=" +
         highBonds3D[i][0] +
@@ -8190,14 +8298,14 @@ function fHighlightMultiBonds3D(bondCompPos) {
     );
   }
 
-  Jmol.script(
+  fJSmolScript(
     jmolAppletNomeclature,
     highAtoms3DArg +
       "; color selectionHalos[X79dc6d]; selectionHalos on; color atoms [X79dc6d];",
   );
   if (!fShowBondAtoms()) {
     // Bonds-only mode: undo the atom halo — keep just the green bonds above.
-    Jmol.script(
+    fJSmolScript(
       jmolAppletNomeclature,
       "select all; selectionHalos off; color atoms none;",
     );
@@ -8217,7 +8325,7 @@ function fHighlightMultiBonds3D(bondCompPos) {
         ba2 = bondList3D[b][1],
         bOrder = bondList3D[b][2];
       if (bOrder === 1 && highAtomSet.has(ba1) && highAtomSet.has(ba2)) {
-        Jmol.script(
+        fJSmolScript(
           jmolAppletNomeclature,
           "select atomno=" + ba1 + ", atomno=" + ba2 + "; color bond cpk;",
         );
@@ -8311,7 +8419,7 @@ function fHighlightSingleBondsCC3D(atomSetOrNull) {
     if (i < highBonds3D.length - 1) {
       highAtoms3DArg += ",";
     }
-    Jmol.script(
+    fJSmolScript(
       jmolAppletNomeclature,
       "select atomno=" +
         highBonds3D[i][0] +
@@ -8320,14 +8428,14 @@ function fHighlightSingleBondsCC3D(atomSetOrNull) {
         "; color bond [X79dc6d];",
     );
   }
-  Jmol.script(
+  fJSmolScript(
     jmolAppletNomeclature,
     highAtoms3DArg +
       "; color selectionHalos[X79dc6d]; selectionHalos on; color atoms [X79dc6d];",
   );
   if (!fShowBondAtoms()) {
     // Bonds-only mode: undo the atom halo — keep just the green bonds above.
-    Jmol.script(
+    fJSmolScript(
       jmolAppletNomeclature,
       "select all; selectionHalos off; color atoms none;",
     );
@@ -8361,7 +8469,7 @@ function fSetMolVis3D(theVisModel) {
         JmolSelection;
       break;
   }
-  Jmol.script(jmolAppletNomeclature, mySpt);
+  fJSmolScript(jmolAppletNomeclature, mySpt);
 }
 
 // ── fViewerHeights2D3D ────────────────────────────────────────────────────
@@ -8535,7 +8643,7 @@ function fResizeViewers() {
     var h = vh.h3 > 0 ? vh.h3 : Math.round((w3 * 220) / 480);
     try {
       if (typeof Jmol !== "undefined" && typeof jmolAppletNomeclature !== "undefined") {
-        Jmol.resizeApplet(jmolAppletNomeclature, { width: w3, height: h });
+        fJSmolResizeApplet(jmolAppletNomeclature, { width: w3, height: h });
       }
     } catch (e3D) { /* 3D applet unavailable */ }
     // The applet info table div sets the visible 3D height: assert it to the
@@ -8693,6 +8801,31 @@ var _resizeSentOn3DReady = false;
         _resizeSentOn3DReady = true;
         try { setTimeout(function () { fResizeViewers(); }, 300); } catch (eT) { /* timer unavailable */ }
       }
+      // Cold-boot resend: a 3D load skipped while JSmol was dead is replayed
+      // once the applet reports ready — molecule-guarded, no rebuild.
+      try {
+        var _pm = null, _sel = null;
+        try { _pm = window.__mulerPending3D || null; } catch (ePm) { _pm = null; }
+        try { _sel = (typeof selectedMol !== "undefined") ? selectedMol : null; } catch (eSm) { _sel = null; }
+        if (_pm && _sel && _pm === _sel && typeof fJSmolLive === "function" && fJSmolLive()) {
+          try { window.__mulerPending3D = null; } catch (eC) { /* best-effort */ }
+          try { if (typeof fLoadMol3D === "function") fLoadMol3D(); } catch (eL) { /* best-effort */ }
+          try { if (typeof showAtomSymbols3D === "function") showAtomSymbols3D(); } catch (eA) { /* best-effort */ }
+          try { if (typeof showHydrogens3D === "function") showHydrogens3D(); } catch (eH) { /* best-effort */ }
+          try { if (typeof rotate3D === "function") rotate3D(); } catch (eR) { /* best-effort */ }
+          try {
+            if (typeof MuLERMoCScenario !== "undefined" && MuLERMoCScenario.present &&
+              typeof fScenarioPresent === "function" && typeof fScenarioNormMode === "function" &&
+              typeof fScenarioClickNameBox === "function") {
+              var _ps = fScenarioPresent();
+              var _st = (_ps && _ps.steps) ? _ps.steps[_ps.index] : null;
+              if (_st && _st.selectedMol === _sel && _st.nameAnalysisMode && fScenarioNormMode(_st.nameAnalysisMode) !== "none") {
+                fScenarioClickNameBox(_st, ++MuLERMoCScenario.applyToken);
+              }
+            }
+          } catch (eSH) { /* scenario re-highlight best-effort */ }
+        }
+      } catch (ePR) { /* resend best-effort */ }
     };
   } catch (eW) { /* hook unavailable */ }
 })();

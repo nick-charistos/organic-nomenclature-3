@@ -24,6 +24,11 @@
   <script src="jsme/jsme.nocache.js"></script>
   <script src="js/vendor/jquery/jquery-4.0.0.min.js"></script>
   <script>
+    // JSmol library loads synchronously at parse time: Jmol.getApplet writes
+    // the applet HTML via document.write, which is only safe during parsing
+    // (a post-parse call wipes the page to just the applet table). The
+    // document.write warning in the console stays a warning; actual CDN
+    // failures are handled gracefully by the fail-closed JSmol wrappers.
     (function () {
       var mode = "cdn";
       try {

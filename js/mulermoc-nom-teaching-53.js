@@ -1116,11 +1116,11 @@ $(document).ready(function () {
     } else {
       $("#nomeclature3D").slideToggle(200, function () {
         // if (window.jmolAppletNomeclature)
-        Jmol.script(jmolAppletNomeclature, "refresh");
+        fJSmolScript(jmolAppletNomeclature, "refresh");
       });
       // $("#nomeclature3D").removeClass("hide");
       $("#controls3D").removeClass("hide");
-      // Jmol.script(jmolAppletNomeclature, "refresh");
+      // fJSmolScript(jmolAppletNomeclature, "refresh");
     }
   });
 

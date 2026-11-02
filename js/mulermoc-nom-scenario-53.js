@@ -433,7 +433,7 @@ function fScenarioGetMoveto() {
     // 1. orientationInfo.moveTo — most reliable.
     try {
       if (typeof Jmol.getPropertyAsArray !== "undefined") {
-        var info = Jmol.getPropertyAsArray(jmolAppletNomeclature, "orientationInfo", "info");
+        var info = fJSmolGetPropertyAsArray(jmolAppletNomeclature, "orientationInfo", "info");
         var mt = info && info.moveTo;
         if (typeof mt === "string" && /^moveto\b/i.test(mt.trim())) return fScenarioMovetoInstant(mt.trim());
         if (info && typeof info === "object" && typeof info["moveTo"] === "string" &&
@@ -445,7 +445,7 @@ function fScenarioGetMoveto() {
     // 2. scriptWait("show moveto").
     try {
       if (typeof Jmol.scriptWait !== "undefined") {
-        var w = String(Jmol.scriptWait(jmolAppletNomeclature, "show moveto") || "");
+        var w = String(fJSmolScriptWait(jmolAppletNomeclature, "show moveto") || "");
         var line = fScenarioExtractMoveto(w);
         if (line) return line;
       }
@@ -455,7 +455,7 @@ function fScenarioGetMoveto() {
     // 3. scriptEcho channel — `show` output sometimes lands here.
     try {
       if (typeof Jmol.scriptEcho !== "undefined") {
-        var ec = String(Jmol.scriptEcho(jmolAppletNomeclature, "show moveto") || "");
+        var ec = String(fJSmolScriptEcho(jmolAppletNomeclature, "show moveto") || "");
         var line2 = fScenarioExtractMoveto(ec);
         if (line2) return line2;
       }
@@ -1998,7 +1998,7 @@ function fScenarioApply(step) {
       setTimeout(function () {
         if (tok !== MuLERMoCScenario.applyToken) return; // stale
         try {
-          Jmol.script(jmolAppletNomeclature, mv);
+          fJSmolScript(jmolAppletNomeclature, mv);
         } catch (e) {
           /* 3D unavailable */
         }
@@ -2148,9 +2148,9 @@ function fScenarioRestoreChrome(viewers) {
         var _w3 = (_ap3 && _ap3.clientWidth) || 480;
         var _h3 = (_ap3 && _ap3.clientHeight) || 240;
         if (Jmol.resizeApplet && typeof jmolAppletNomeclature !== "undefined") {
-          Jmol.resizeApplet(jmolAppletNomeclature, { width: _w3, height: _h3 });
+          fJSmolResizeApplet(jmolAppletNomeclature, { width: _w3, height: _h3 });
         }
-        Jmol.script(jmolAppletNomeclature, "refresh");
+        fJSmolScript(jmolAppletNomeclature, "refresh");
       } catch (e3) {
         /* 3D unavailable */
       }
@@ -3987,7 +3987,7 @@ function fScenarioChrome(show) {
   // 2D must not clear the 3D model.
   if (!show3D && typeof Jmol !== "undefined") {
     try {
-      Jmol.script(jmolAppletNomeclature, "zap");
+      fJSmolScript(jmolAppletNomeclature, "zap");
     } catch (e) {
       /* 3D unavailable */
     }
