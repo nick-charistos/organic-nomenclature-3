@@ -1555,7 +1555,7 @@ header {
 
 .boxed {
   padding: 5px 6px;
-  border: 2px solid var(--lightBlue);
+  border: 1px solid var(--lightBlue);
   margin-right: -2px;
   background-color: #fff;
 }

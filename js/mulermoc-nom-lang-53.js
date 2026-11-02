@@ -311,6 +311,10 @@ function fMulerPaintStaticChrome() {
     if (modes[2] && modes[2].firstChild) modes[2].firstChild.textContent = fMulerT("skeletal") + " ";
   } catch (e) {}
   try {
+    var zz = document.getElementById("zigzagCheck");
+    if (zz) zz.innerHTML = (lang === "en" ? "CH<sub>n</sub> symbols" : "Σύμβολα CH<sub>n</sub>") + '<span class="checkBox"></span>';
+  } catch (e) {}
+  try {
     var cands = document.querySelectorAll("#atomColorMode .atomColorModeRadio");
     if (cands[0] && cands[0].firstChild) cands[0].firstChild.textContent = fMulerT("byAtom") + " ";
     if (cands[1] && cands[1].firstChild) cands[1].firstChild.textContent = fMulerT("byGroup") + " ";
@@ -480,7 +484,7 @@ function fMulerTranslateTips(root) {
       "#scenarioToast", ".nameStyleExpand",
       ".sshow", ".scTabText", ".scStepTitleLabel", ".scMolBadge",
       ".scNoteFontSize option", "#dropLabel", ".dropLi",
-      "#zigzagCheck", "#hydrogensCheck", "#rotateCheck",
+      "#hydrogensCheck", "#rotateCheck",
       "#nameAnalysisExplain .explainText", ".scNoteEditorTitle"];
     for (var s = 0; s < sels.length; s++) {
       var nodes;
