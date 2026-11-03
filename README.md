@@ -5,6 +5,7 @@ A Greek-first interactive learning platform for organic nomenclature, built arou
 Designed and developed by Nickolas Charistos
 
 **Current baseline:** v53 is live (`index.html` → v53) — **141 molecules**, full English version (`?lang=en`, Greek default; per-step scenario language, molecule-carrying switch) over the v52 base: unified rich note editor (inline WYSIWYG, modal WYSIWYG + HTML source, lazy legacy-text upgrade, staged Apply/Cancel); safe rich HTML notes (DOMPurify), rule-table components, compact icon toolbar, Snap-free native `MuSVG` 2D overlay. The main JSME applet stays in depict mode (2D highlight pipeline); ORGNL stays full-edit for future inputs. The default preloaded scenario is `Αλκάνια-Αιθάνιο-τεστ`. See [docs/Presentation-Step-Rich-Text-PLAN.md](docs/Presentation-Step-Rich-Text-PLAN.md).
+**Authoring line:** v54 exists (`mulermoc-nom-54.html`, molecule edit/create drafts with engine + PubChem preview, per-molecule save) but is not live — see [docs/CHANGELOG.md](docs/CHANGELOG.md) (`[v54]`) and [docs/STAGE2-AUTHORING-54.md](docs/STAGE2-AUTHORING-54.md).
 **Previous version:** v52 remains runnable at root (`mulermoc-nom-52.html`), along with v51…v42. v52 added the unified inline/modal rich editor; v53 adds the English layer.
 **Entry point:** [index.html](index.html) → [mulermoc-nom-53.html](mulermoc-nom-53.html) (live); `mulermoc-nom-52.html` and earlier versions `mulermoc-nom-51.html`…`-42.html` runnable alongside
 

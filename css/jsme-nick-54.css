@@ -177,8 +177,14 @@ header {
   outline-offset: 2px;
 }
 
-/* Viewer title-bar button row: [2D][3D][gear]. Buttons lay out in a row;
-   .settingsBtn absolute positioning is neutralized inside the container. */
+#editMolBtn svg, #newMolBtn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Viewer title-bar button rows: left [2D][3D], right [edit][new][gear].
+   Buttons lay out in a row; .settingsBtn absolute positioning is
+   neutralized inside both containers. */
 #viewerVisBtns {
   position: absolute;
   left: 16px;
@@ -194,6 +200,105 @@ header {
 #viewerVisBtns .settingsBtn {
   position: static;
   transform: none;
+}
+
+/* Viewer title-bar right cluster: [edit][new][gear]. The container takes the
+   single absolute slot once (v54 Stage 2: two draft entries + gear); buttons
+   lay out in a row inside it, mirroring #viewerVisBtns on the left. */
+#viewerSettingsBtnDiv {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 300;
+}
+
+#viewerSettingsBtnDiv .settingsBtn {
+  position: static;
+  transform: none;
+}
+
+/* Molecule draft bar (v54 Stage 2): [status … Submit][Cancel] row between the
+   2D radios and the 3D viewer. Hidden unless a draft session is active. */
+#molDraftBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--veryLightBlue);
+  border-radius: 4px;
+  margin: 6px 0;
+}
+#molDraftBar.hide {
+  display: none;
+}
+#molDraftStatus {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--darkBlue);
+  text-align: left;
+}
+#molDraftBar .settingsBtn.draftBtn {
+  position: static;
+  transform: none;
+  font-size: 0.85rem;
+  width: auto;
+  height: auto;
+  padding: 4px 10px;
+}
+
+/* Draft naming placeholder + submit preview (v54 Stage 2, Step 3). */
+.draftHint {
+  font-style: italic;
+  opacity: 0.65;
+  padding: 8px 4px;
+}
+.draftPreview {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 4px;
+}
+.draftEngine {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+.draftOracleRow {
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+/* Draft entries are authoring-only: never in presentation. */
+#pageContainer.presenting #editMolBtn,
+#pageContainer.presenting #newMolBtn {
+  display: none;
+}
+
+/* Draft tweaks (v54 Stage 2 tweaks round): inactive entry + drafting dim. */
+.settingsBtn.btnInactive,
+.btnInactive {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* Drafting: every control cluster dims except the draft bar and the two entry
+   buttons (one carries .active). Functional guards (fSelectMol, name boxes,
+   fScenarioCapture) are the backstops. */
+#pageContainer.drafting #menuCol,
+#pageContainer.drafting #view2DBtn,
+#pageContainer.drafting #view3DBtn,
+#pageContainer.drafting #viewerSettingsBtn,
+#pageContainer.drafting #nameAnalysis,
+#pageContainer.drafting #nameSettingsBtnDiv,
+#pageContainer.drafting #view2DTools,
+#pageContainer.drafting #view3DTools,
+#pageContainer.drafting #scenarioAuthorBar,
+#pageContainer.drafting #scenarioPanels {
+  opacity: 0.45;
+  pointer-events: none;
 }
 
 /* Text visibility toggles: bold label instead of an icon. */

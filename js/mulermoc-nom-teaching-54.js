@@ -569,7 +569,7 @@ function fInitNomeclatureMenu() {
   if (moleculeGroupingMode === "all") {
     let counter = 0;
     fSortPropsByCarbonCount(names).forEach((prop) => {
-      let myMolFormula = nameExamples[prop].formula.replace(
+      let myMolFormula = (nameExamples[prop].formula || prop).replace(
         /(\d+)/g,
         "<sub>$1</sub>",
       );
@@ -598,7 +598,7 @@ function fInitNomeclatureMenu() {
     myHTML += `<div class='crossMenuLi' data-group-key='${groupKey}'> ${groupLabels[groupKey]}</div>
       <div class='exmplContainer closed'><div class='menuListContainer'>`;
     groups[groupKey].forEach((prop) => {
-      let myMolFormula = nameExamples[prop].formula.replace(
+      let myMolFormula = (nameExamples[prop].formula || prop).replace(
         /(\d+)/g,
         "<sub>$1</sub>",
       );
@@ -985,6 +985,12 @@ $(document).ready(function () {
     if ($(this).hasClass("disabledRadio")) {
       return;
     }
+    // Draft session (v54 Stage 2): radios are hidden while editing; guard in
+    // case the bar is reached anyway — finish the draft first.
+    if (typeof window !== "undefined" && window.MulerDraft) {
+      try { if (typeof fScenarioToast === "function") fScenarioToast(fMolDraftT("draftLocked", "Finish the draft first (Submit/Cancel).")); } catch (eD) {}
+      return;
+    }
     let currMode2DNo = $(this)
       .parent()
       .children(".radioCheckContainer")
@@ -1028,6 +1034,11 @@ $(document).ready(function () {
 
   $("#zigzagCheck").on("click", function () {
     if ($(this).hasClass("disabledCheck")) {
+      return;
+    }
+    // Draft session (v54 Stage 2): see the mode2DOption guard above.
+    if (typeof window !== "undefined" && window.MulerDraft) {
+      try { if (typeof fScenarioToast === "function") fScenarioToast(fMolDraftT("draftLocked", "Finish the draft first (Submit/Cancel).")); } catch (eD) {}
       return;
     }
     // Generic .checkBoxContainer handler fires after this and toggles the class,
@@ -1144,6 +1155,12 @@ $(document).ready(function () {
   $(document).on("click", ".nameCompBox", function (event) {
     event.preventDefault();
     event.stopPropagation();
+    // Draft session (v54 Stage 2): naming is cleared to a placeholder; box
+    // clicks must not re-highlight or explain.
+    if (typeof window !== "undefined" && window.MulerDraft) {
+      try { if (typeof fScenarioToast === "function") fScenarioToast(fMolDraftT("draftLocked", "Finish the draft first (Submit/Cancel).")); } catch (eD) {}
+      return;
+    }
     // Hidden (dash) boxes are inert: no highlight, no explanation change.
     if ($(this).hasClass("comp-hidden")) return;
     const scrollX = window.scrollX;

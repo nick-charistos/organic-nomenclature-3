@@ -182,6 +182,11 @@
                     step="10" value="300" disabled />
                   <span id="viewerBothHeightVal" class="viewerHeightVal">Auto</span>
                 </div>
+                <div id="customMolSetting" class="settingRow">
+                  <div class="settingLabel">Προσαρμοσμένα μόρια:</div>
+                  <button type="button" id="customMolSaveBtn" class="viewerFullBtn" onclick="fMolDraftSaveSelected()">Λήψη .js</button>
+                  <span id="customMolCount" class="viewerHeightVal">0 στη συνεδρία</span>
+                </div>
               </div>
             </div>
 
@@ -191,6 +196,7 @@
               <div id="jsmeNomeclatureORGNL" class="hide"></div>
               -->
               <div id="jsmeNomeclature" class="hide"></div>
+              <div id="jsmeEditDraft" class="hide"></div>
               <div id="jsmeNomeclatureSVG"></div>
             </div>
             <div id="radio2DMode">
@@ -282,6 +288,10 @@
   </div>
 
   <script src="js/jsme-nick-nomeclature-moc2-data_54.js?v=54.1"></script>
+  <!-- Accepted custom molecules (v54 Stage 2): save one MULERMOC_<name>_data.js
+       per molecule from Ρυθμίσεις → Προσαρμοσμένα μόρια. Drop collected
+       files next to the data file and register each one, e.g.:
+       <script src="js/MULERMOC_dimethyl_ether_data.js?v=54.1"></script> -->
   <script src="js/ui-icons.js?v=53.1"></script>
   <script src="js/mulermoc-nom-core-54.js?v=54.1"></script>
   <script src="js/mulermoc-nom-molview-54.js?v=54.1"></script>

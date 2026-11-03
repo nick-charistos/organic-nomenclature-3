@@ -1,5 +1,15 @@
 # Stage 2 + authoring/exercises roadmap (v54+, 2026-11-03)
 
+> **Status 2026-11-04: Stage 1 + draft flow built (Steps 0–4 + fixes).**
+> Dedicated edit applet, Edit/New entries, draft session + guards, Submit
+> (engine + PubChem preview, depict SVG view, Draw back-flip, freshness
+> state machine), Accept (fork/update-in-place, readable keys, dup + 3D
+> gates, manual per-molecule save), formula generator, menu fixes. Open:
+> RDKit local 3D (gates Accept), generic 2D-variant derivation, EN draft
+> name + verdict, any-molecule export button, 2B author correction,
+> exercise types (Q4 first).
+> `index.html` intentionally still → v53 (v54 is the authoring line).
+
 ## Where we are (Stage 1, done, uncommitted)
 - v54 forked from v53; `index.html` still → v53.
 - Single JSME applet (`depict,marker,depictaction,toggle`); ORGNL retired (commented, restorable).

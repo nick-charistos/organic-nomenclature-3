@@ -38,6 +38,40 @@ var MULER_STRINGS = {
   hideComp: { gr: "Απόκρυψη συνθετικού", en: "Hide component" },
   show2D: { gr: "Εμφάνιση 2D", en: "Show 2D" },
   show3D: { gr: "Εμφάνιση 3D", en: "Show 3D" },
+  editMol: { gr: "Επεξεργασία μορίου", en: "Edit molecule" },
+  newMol: { gr: "Νέο μόριο", en: "New molecule" },
+  editNeedsMol: { gr: "Επίλεξε μόριο για επεξεργασία.", en: "Select a molecule to edit." },
+  draftEdit: { gr: "Επεξεργασία", en: "Editing" },
+  draftNew: { gr: "Νέο μόριο (προσχέδιο)", en: "New molecule (draft)" },
+  draftSubmit: { gr: "Υποβολή", en: "Submit" },
+  draftCancel: { gr: "Άκυρο", en: "Cancel" },
+  draftLocked: { gr: "Ολοκλήρωσε το προσχέδιο (Υποβολή/Άκυρο).", en: "Finish the draft first (Submit/Cancel)." },
+  draftSubmitNext: { gr: "Η υποβολή έρχεται στο Βήμα 3.", en: "Submit arrives in Step 3." },
+  submitEmpty: { gr: "Άδειο σχέδιο — σχεδίασε κάτι πρώτα.", en: "Empty drawing — draw something first." },
+  submitRing: { gr: "Οι δακτύλιοι είναι εκτός σκοπού — μόνο άκυκλες δομές.", en: "Rings are out of scope — acyclic structures only." },
+  submitEngineFail: { gr: "Η μηχανή απέτυχε — έλεγξε το σχέδιο.", en: "Engine failed — check the drawing." },
+  submitRunning: { gr: "Υποβολή…", en: "Submitting…" },
+  submitFetching: { gr: "Αναζήτηση PubChem…", en: "Looking up PubChem…" },
+  submitNoRecord: { gr: "Χωρίς εγγραφή PubChem — μόνο μηχανή.", en: "No PubChem record — engine only." },
+  submitNo3D: { gr: "Χωρίς τρισδιάστατο μοντέλο στο PubChem — μόνο 2D.", en: "No 3D model on PubChem — 2D only." },
+  draftUpdate: { gr: "Ενημέρωση", en: "Update" },
+  draftDraw: { gr: "Σχεδίαση", en: "Draw" },
+  draftPreview: { gr: "Προεπισκόπηση", en: "Preview" },
+  draftAccept: { gr: "Αποδοχή", en: "Accept" },
+  acceptNeedsSubmit: { gr: "Πάτα πρώτα Υποβολή για προεπισκόπηση.", en: "Press Submit for a preview first." },
+  acceptDup: { gr: "Υπάρχει ήδη — επίλεξε το από το μενού.", en: "Already exists — pick it from the menu." },
+  acceptSaved: { gr: "Το αρχείο κατέβηκε — βάλτο δίπλα στα δεδομένα.", en: "File downloaded — place it next to the data file." },
+  acceptKept: { gr: "Αποδεκτή στη συνεδρία — αποθήκευσέ τη από Ρυθμίσεις.", en: "Accepted into this session — save it from Settings." },
+  customMols: { gr: "Προσαρμοσμένα μόρια:", en: "Custom molecules:" },
+  customMolSave: { gr: "Λήψη .js", en: "Download .js" },
+  customMolSession: { gr: "στη συνεδρία", en: "this session" },
+  pickCustomToSave: { gr: "Επίλεξε ένα προσαρμοσμένο μόριο.", en: "Pick a custom molecule." },
+  acceptStale: { gr: "Το σχέδιο άλλαξε — πάτα ξανά Υποβολή.", en: "Drawing changed — press Submit again." },
+  acceptWaitFetch: { gr: "Αναζήτηση PubChem σε εξέλιξη — περίμενε λίγο.", en: "Still looking up PubChem — wait a moment." },
+  acceptNeedsPubChem3D: { gr: "Αποδοχή μόνο με εγγραφή PubChem + 3D — θα επανέλθουμε με το RDKit.", en: "Acceptance requires a PubChem record with 3D — coming back with RDKit." },
+  draftIUPACRow: { gr: "IUPAC (PubChem)", en: "IUPAC (PubChem)" },
+  draftCommonRow: { gr: "Κοινή (PubChem)", en: "Common (PubChem)" },
+  draftSysRow: { gr: "Συστηματική", en: "Systematic" },
   zoomIn: { gr: "Μεγέθυνση", en: "Zoom in" },
   zoomOut: { gr: "Σμίκρυνση", en: "Zoom out" },
   saveImage: { gr: "Αποθήκευση εικόνας", en: "Save image" },
@@ -300,8 +334,8 @@ function fMulerPaintStaticChrome() {
   set("#radioChainMode .settingLabel", fMulerT("chainCalc"));
   try {
     var labels = document.querySelectorAll("#viewerSettingsPanel .settingLabel");
-    // positional: 1 showOrig2D, 2 hlAtoms, 3 hlBonds, 4 hlBondAtoms, 5 atomColor2D, 6 atomSymbols3D, 7 maxHeight1, 8 bothHeight
-    var map = ["chainCalc", "showOrig2D", "hlAtoms", "hlBonds", "hlBondAtoms", "atomColor2D", "atomSymbols3D", "maxHeight1", "bothHeight"];
+    // positional: 1 showOrig2D, 2 hlAtoms, 3 hlBonds, 4 hlBondAtoms, 5 atomColor2D, 6 atomSymbols3D, 7 maxHeight1, 8 bothHeight, 9 customMols
+    var map = ["chainCalc", "showOrig2D", "hlAtoms", "hlBonds", "hlBondAtoms", "atomColor2D", "atomSymbols3D", "maxHeight1", "bothHeight", "customMols"];
     for (var li = 0; li < labels.length && li < map.length; li++) {
       var t = fMulerT(map[li]);
       if (t && labels[li].firstChild) labels[li].firstChild.textContent = t + " ";
@@ -328,6 +362,13 @@ function fMulerPaintStaticChrome() {
     if (cands[0] && cands[0].firstChild) cands[0].firstChild.textContent = fMulerT("byAtom") + " ";
     if (cands[1] && cands[1].firstChild) cands[1].firstChild.textContent = fMulerT("byGroup") + " ";
   } catch (e) {}
+  try {
+    var csb = document.getElementById("customMolSaveBtn");
+    if (csb) {
+      csb.textContent = fMulerT("customMolSave");
+      csb.setAttribute("data-tooltip", fMulerT("customMolSave"));
+    }
+  } catch (e) {}
   setTip("#zoomOutBtn", fMulerT("zoomOut") + " 2D");
   setTip("#zoomInBtn", fMulerT("zoomIn") + " 2D");
   setTip("#save2DBtn", fMulerT("saveImage") + " 2D");
@@ -336,6 +377,8 @@ function fMulerPaintStaticChrome() {
   setTip("#save3DBtn", fMulerT("saveImage") + " 3D");
   setTip("#view2DBtn", fMulerT("show2D"));
   setTip("#view3DBtn", fMulerT("show3D"));
+  setTip("#editMolBtn", fMulerT("editMol"));
+  setTip("#newMolBtn", fMulerT("newMol"));
   setTip("#viewerSettingsBtn", fMulerT("settings"));
   setTip("#nameSettingsBtn", fMulerT("namingSettings"));
   setTip("#readNameBtn", fMulerT("readName"));

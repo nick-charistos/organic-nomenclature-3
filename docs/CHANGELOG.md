@@ -4,6 +4,21 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ---
 
+## [v54] (molecule edit/create draft flow; live stays v53, `index.html` → v53)
+
+New parallel file set `mulermoc-nom-54.html` + `js/*-54.js` + `css/*-54.css`, forked from v53.
+
+### Draft editor applet (v54)
+- Dedicated `jsmeEditDraft` applet in pure edit mode by construction (next to the depict-only display applet). Runtime `options()` cannot flip depict/edit (proven in-browser against the bundled JSME), so there is no mode flipping anywhere: the display pipeline never leaves depict, drafts live entirely in the edit applet. The earlier single-applet `options()` enforcement pair was removed.
+- Title-bar Edit/New buttons (new `editMolecule`/`newMolecule` icons in `js/ui-icons.js`, left of the gear; `.active` entry, mutual `.btnInactive`, hidden in Present; Edit dimmed with no selection). New `#viewerSettingsBtnDiv` flex row (the shared `.settingsBtn` absolute rule used to stack them).
+
+### Draft session (v54 Stage 2)
+- Enter Edit (template = visible variant's MOL) or New (blank canvas); `selectedMol` never touched, Cancel restores via full `fSelectMol`. Sandbox runs algorithmic-or-nothing (stored chains belong to the old atom order); 3D hidden not zapped; naming cleared to a placeholder; radios locked; functional guards in `fSelectMol`/name boxes/step capture plus page-wide `.drafting` dim. Present forces read-only.
+- Submit → engine + PubChem preview: empty/cyclic guard (union-find cycle check — core only warns-and-falls back), engine name, verbatim PubChem rows (IUPAC/ether-Common/Systematic, same verbatim-only rule), PubChem SDF 3D via Blob URL (record-without-3D and novel drawings stay 2D-only with an explanatory note, never a failure). Preview renders in the depict SVG view; a Draw button flips back to the editor. Submit/Accept/Draw/Cancel form a freshness state machine with stale detection (live JSME callbacks + authoritative Accept-time SMILES re-check with self-heal).
+- Accept: forks stored templates into `custom_*`, updates custom templates in place (key stable, history appended). Readable keys (`custom_2_methylpropane`, systematic preferred, Greek-letter expansion, collision suffix, hash fallback). Duplicate guard (normalized SMILES + PubChem CID). PubChem-3D gate blocks 3D-less accepts (RDKit TODO for local ETKDG generation).
+- Manual per-molecule save from a new Ρυθμίσεις row (`MULERMOC_<name>_data.js`, merge-safe `Object.assign` so collected files coexist); boot merge folds them into `nameExamples`. No auto-download; no schema change.
+- Expanded structural formula generator for menu labels (`CH3CH(Br)CH3`, `HOOC`/`COOH` end rules, `CH=O`/`O=CH`, keto `CO` drop, `NO2` merge; 24-vector headless matrix green). Menu renders a key fallback for formula-less entries and rebuilds on Accept (grouping switches already did).
+
 ## [v53] (English version: full UI + molecule naming in English, Greek default preserved)
 
 New parallel file set `mulermoc-nom-53.html` + `js/*-53.js` + `css/*-53.css`, forked from v52. Single codebase with `?lang=` toggle (no `-en` file fork); Greek remains the default. Scenarios stay author-language; new EN scenarios to be authored later by teachers/MSc students.

@@ -7,6 +7,10 @@
 let selectedMol;
 let jsmeNomeclatureApplet;
 let jsmeNomeclatureAppletORGNL;
+// Dedicated draft editor (v54 Stage 2): pure edit mode by construction —
+// runtime options() cannot flip depict/edit, so the display applet stays
+// depict-only and drafts get their own full-edit instance.
+let jsmeEditDraftApplet;
 let atomSymbols3DFlag = true;
 let hydrogens3DFlag = true;
 let rotateFlag = false;
@@ -261,6 +265,8 @@ const svgEyeOff = (window.MuLERIcons && window.MuLERIcons.eyeOff) || "";
 const svgEyeState = (window.MuLERIcons && window.MuLERIcons.eyeState) || "";
 const svgNameExpand = (window.MuLERIcons && window.MuLERIcons.nameExpand) || "";
 const svgMolInfo = (window.MuLERIcons && window.MuLERIcons.info) || "";
+const svgEditMol = (window.MuLERIcons && window.MuLERIcons.editMolecule) || "";
+const svgNewMol = (window.MuLERIcons && window.MuLERIcons.newMolecule) || "";
 
 // Per-component name visibility helpers (eye toggles). Masking is applied at
 // box-construction time in fShowNameAnalysis so every rebuild (mode switch,
@@ -327,8 +333,8 @@ fInitViewerBothHeight();
 // ── jsmeOnLoad ────────────────────────────────────────────────────────────
 // Main applet stays in depict mode: 2D highlights are read back from
 // getMolecularAreaGraphicsString(), which needs the depiction pipeline.
-// v54 Stage 1: single applet — depict + toggle covers user edit/draw input,
-// so the ORGNL full-edit applet is retired (block kept below for restore).
+// Drafts use the dedicated full-edit jsmeEditDraft applet below (runtime
+// options() cannot flip depict/edit — only construction options can).
 
 function jsmeOnLoad() {
   jsmeNomeclatureApplet = new JSApplet.JSME(
@@ -336,7 +342,7 @@ function jsmeOnLoad() {
     "590px",
     "240px",
     {
-      options: " marker","guicolor": "#c8d9ec",  "guiAtomColor": "#1b275d", 
+      options: "depict, marker, toggle, depictaction, noreaction,nomultipart,noquery","guicolor": "#c8d9ec",  "guiAtomColor": "#1b275d", 
       depictbg: "#fff",
       atombgsize: "0.6",
     },
@@ -361,6 +367,29 @@ function jsmeOnLoad() {
   jsmeNomeclatureApplet.setBackGroundColorPalette(bgAtom);
 
   carbonHydrogens = Array(jsmeNomeclatureApplet.totalNumberOfAtoms()).fill(0);
+
+  // Dedicated draft editor (v54 Stage 2): constructed in pure edit mode (no
+  // depict, no toggle — runtime options() cannot flip modes, proven). Visible
+  // only during molecule drafts; the display applet above stays depict-only.
+  // Guarded so a draft-only failure can never abort boot.
+  try {
+    jsmeEditDraftApplet = new JSApplet.JSME(
+      "jsmeEditDraft",
+      "590px",
+      "240px",
+      {
+        options: "marker, norbutton, noxbutton, atommovebutton, autonumber, noreaction,nomultipart,noquery","guicolor": "#c8d9ec",  "guiAtomColor": "#1b275d",
+        depictbg: "#fff",
+        atombgsize: "0.6",
+      },
+    );
+    try { jsmeEditDraftApplet.setAtomMolecularAreaFontSize(9); } catch (eF2) {}
+    try { jsmeEditDraftApplet.setMolecularAreaLineWidth(0.6); } catch (eL2) {}
+    try { jsmeEditDraftApplet.setBackGroundColorPalette(bgAtom); } catch (eP2) {}
+  } catch (eDraft) {
+    try { console.warn("[draft] edit applet unavailable", eDraft); } catch (eL3) {}
+    try { jsmeEditDraftApplet = null; } catch (eN) {}
+  }
 
   // ORGNL retired 2026-11-02 (v54 Stage 1): single-applet depict+toggle.
   // Restore if a dedicated full-edit applet is ever needed again.
@@ -418,6 +447,18 @@ function jsmeOnLoad() {
 }
 
 function fClassifyAllMolecules() {
+  // v54 Stage 2: merge accepted custom drafts (custom .js payload, loaded by
+  // mulermoc-nom-54.html when the file exists next to the data file).
+  // Missing file -> the script tag 404s and this block no-ops.
+  try {
+    if (typeof nameExamplesCustom !== "undefined" && nameExamplesCustom) {
+      for (var _ck in nameExamplesCustom) {
+        if (Object.prototype.hasOwnProperty.call(nameExamplesCustom, _ck) && !nameExamples[_ck]) {
+          nameExamples[_ck] = nameExamplesCustom[_ck];
+        }
+      }
+    }
+  } catch (eCust) {}
   const previousMol = selectedMol;
   // Snapshot live analysis globals: the loop recomputes them per molecule,
   // so restore afterwards instead of leaving the last molecule's state behind
@@ -491,7 +532,7 @@ function fClassifyAllMolecules() {
 // bold text, same .active contract as the gear) + gear into #viewerSettingsBtnDiv.
 // Uses existing `svgSettings` constant and the fToggleViewerSettings() handler.
 function fInitViewerSettingsBtn() {
-  const markup = `<button id='viewerSettingsBtn' class='settingsBtn' onclick='fToggleViewerSettings()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("settings") : "Ρυθμίσεις") + `'>${svgSettings}</button>`;
+  const markup = `<button id='editMolBtn' class='settingsBtn' onclick='fEditMolDraft()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("editMol") : "Επεξεργασία μορίου") + `'>${svgEditMol}</button><button id='newMolBtn' class='settingsBtn' onclick='fNewMolDraft()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("newMol") : "Νέο μόριο") + `'>${svgNewMol}</button><button id='viewerSettingsBtn' class='settingsBtn' onclick='fToggleViewerSettings()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("settings") : "Ρυθμίσεις") + `'>${svgSettings}</button>`;
   const visMarkup = `<button id='view2DBtn' class='settingsBtn visBtn active' onclick='fToggleViewer2D()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("show2D") : "Εμφάνιση 2D") + `'>2D</button><button id='view3DBtn' class='settingsBtn visBtn active' onclick='fToggleViewer3D()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("show3D") : "Εμφάνιση 3D") + `'>3D</button>`;
   function insert() {
     try {
@@ -510,6 +551,7 @@ function fInitViewerSettingsBtn() {
         const icon = window.MuLERIcons && window.MuLERIcons[key];
         if (icon && !el.innerHTML) el.innerHTML = icon;
       });
+      try { if (typeof fMolDraftSyncButtons === "function") fMolDraftSyncButtons(); } catch (eDs) { /* boot state best-effort */ }
     } catch (e) {
       // defensive - don't throw in init
       console.warn("viewerSettings init failed", e);
@@ -630,6 +672,1105 @@ function fToggleViewerSettings() {
     try { fViewerMaxHeightSync(); } catch (eS) { /* slider sync best-effort */ }
     try { fViewerBothHeightSync(); } catch (eS2) { /* slider sync best-effort */ }
   }
+}
+
+// ── molecule draft session (v54 Stage 2, Step 2) ───────────────────────────
+// Single draft session shared by Edit (template) and New (blank).
+// selectedMol is never touched: Cancel restores by re-render (fSelectMol),
+// the same known-good path as the cold-boot resend. Submit (engine + PubChem)
+// arrives in Step 3; the Submit button below is a stub until then.
+window.MulerDraft = window.MulerDraft || null;
+
+function fMolDraftT(key, fallback) {
+  try {
+    if (typeof fMulerT === "function") {
+      var s = fMulerT(key);
+      if (s && s !== key) return s;
+    }
+  } catch (eT) {}
+  return fallback;
+}
+
+function fMolDraftToast(msg) {
+  try {
+    if (typeof fScenarioToast === "function") { fScenarioToast(msg); return; }
+  } catch (eT) {}
+  try { alert(msg); } catch (eA) {}
+}
+
+function fMolDraftPresenting() {
+  try {
+    return !!(typeof MuLERMoCScenario !== "undefined" && MuLERMoCScenario.present);
+  } catch (eP) { return false; }
+}
+
+// Stored MOL for the currently displayed 2D variant (edit-selected
+// representation: condensed/expanded/skeletal; zigzag shares Skeletal).
+function fMolDraftVariantMol() {
+  try {
+    if (typeof selectedMol === "undefined" || !selectedMol) return null;
+    if (typeof nameExamples === "undefined" || !nameExamples[selectedMol]) return null;
+    var ex = nameExamples[selectedMol];
+    var m = (typeof mode2D !== "undefined") ? mode2D : "condensed";
+    if (m === "expanded" && ex.structure2D_Expanded) return ex.structure2D_Expanded;
+    if ((m === "skeletal" || m === "condensedZigZag") && ex.structure2D_Skeletal) return ex.structure2D_Skeletal;
+    if (ex.structure2D_Condensed) return ex.structure2D_Condensed;
+    if (ex.structure2D_Expanded) return ex.structure2D_Expanded;
+    if (ex.structure2D_Skeletal) return ex.structure2D_Skeletal;
+  } catch (eM) {}
+  return null;
+}
+
+function fMolDraftBarEl() {
+  var bar = null;
+  try { bar = document.getElementById("molDraftBar"); } catch (eG) { bar = null; }
+  if (bar) return bar;
+  var host = null;
+  try { host = document.getElementById("radio2DMode"); } catch (eH) { host = null; }
+  if (!host || !host.parentNode) return null;
+  bar = document.createElement("div");
+  bar.id = "molDraftBar";
+  bar.className = "hide";
+  host.parentNode.insertBefore(bar, host.nextSibling);
+  return bar;
+}
+
+function fMolDraftShowBar(statusText) {
+  var bar = fMolDraftBarEl();
+  if (!bar) return;
+  var tS = fMolDraftT("draftSubmit", "Submit");
+  var tAKey = "draftAccept";
+  try { if (window.MulerDraft && window.MulerDraft.acceptKey) tAKey = window.MulerDraft.acceptKey; } catch (eAk) {}
+  var tA = fMolDraftT(tAKey, tAKey === "draftUpdate" ? "Update" : "Accept");
+  var tD = fMolDraftT("draftDraw", "Draw");
+  var tC = fMolDraftT("draftCancel", "Cancel");
+  bar.innerHTML = "<span id='molDraftStatus'></span>" +
+    "<button id='molDraftSubmitBtn' type='button' class='settingsBtn draftBtn' onclick='fMolDraftSubmit()'>" + tS + "</button>" +
+    "<button id='molDraftAcceptBtn' type='button' class='settingsBtn draftBtn' onclick='fMolDraftAccept()'>" + tA + "</button>" +
+    "<button id='molDraftDrawBtn' type='button' class='settingsBtn draftBtn hide' onclick='fMolDraftBackToEdit()'>" + tD + "</button>" +
+    "<button id='molDraftCancelBtn' type='button' class='settingsBtn draftBtn' onclick='fMolDraftCancel()'>" + tC + "</button>";
+  try {
+    var st = document.getElementById("molDraftStatus");
+    if (st) st.textContent = statusText || "";
+    var bs = document.getElementById("molDraftSubmitBtn");
+    if (bs) bs.setAttribute("data-tooltip", tS);
+    var ba = document.getElementById("molDraftAcceptBtn");
+    if (ba) ba.setAttribute("data-tooltip", tA);
+    var bd = document.getElementById("molDraftDrawBtn");
+    if (bd) bd.setAttribute("data-tooltip", tD);
+    var bc = document.getElementById("molDraftCancelBtn");
+    if (bc) bc.setAttribute("data-tooltip", tC);
+  } catch (eT) {}
+  bar.classList.remove("hide");
+  try { fMolDraftSyncBar(); } catch (eSy) {}
+}
+
+function fMolDraftHideBar() {
+  try {
+    var bar = document.getElementById("molDraftBar");
+    if (bar) bar.classList.add("hide");
+  } catch (eH) {}
+}
+
+// Draft bar state machine (v54 Stage 2): Submit and Accept are mutually
+// exclusive freshness indicators — ready (Submit lit), working (both dim),
+// submitted (Accept lit). Derived purely from the draft object.
+function fMolDraftSyncBar() {
+  try {
+    var d = window.MulerDraft;
+    var bs = document.getElementById("molDraftSubmitBtn");
+    var ba = document.getElementById("molDraftAcceptBtn");
+    if (!bs || !ba || !d) return;
+    var submitActive = true, acceptActive = false;
+    if (d.submitting) { submitActive = false; acceptActive = false; }
+    else if (d.stale) { submitActive = true; acceptActive = false; }
+    else if (d.submitted && d.pubchem && d.sdf3D) { submitActive = false; acceptActive = true; }
+    else { submitActive = true; acceptActive = false; }
+    if (submitActive) { bs.classList.add("active"); bs.classList.remove("btnInactive"); }
+    else { bs.classList.remove("active"); bs.classList.add("btnInactive"); }
+    if (acceptActive) { ba.classList.add("active"); ba.classList.remove("btnInactive"); }
+    else { ba.classList.remove("active"); ba.classList.add("btnInactive"); }
+    var bw = document.getElementById("molDraftDrawBtn");
+    if (bw) {
+      if (d.submitted) bw.classList.remove("hide");
+      else bw.classList.add("hide");
+    }
+  } catch (eS) {}
+}
+
+// Draft view flips (v54 Stage 2): the editor and the depict (SVG) view take
+// turns — Enter/Cancel/Submit/Draw all route through these two helpers.
+function fMolDraftShowEditor() {
+  try { $("#jsmeEditDraft").removeClass("hide"); } catch (eA) {}
+  try { $("#jsmeNomeclatureSVG").addClass("hide"); } catch (eS) {}
+  try { $("#radio2DMode").addClass("hide"); } catch (eR) {}
+  try {
+    if (typeof jsmeEditDraftApplet !== "undefined" && jsmeEditDraftApplet &&
+        typeof jsmeEditDraftApplet.deferredRepaint === "function") jsmeEditDraftApplet.deferredRepaint();
+  } catch (eRp) {}
+  try { if (typeof fResizeViewers === "function") fResizeViewers(); } catch (eR2) {}
+}
+
+function fMolDraftShowPreviewView() {
+  try { $("#jsmeEditDraft").addClass("hide"); } catch (eA) {}
+  try { $("#jsmeNomeclature").addClass("hide"); } catch (eM) {}
+  try { $("#jsmeNomeclatureSVG").removeClass("hide"); } catch (eS) {}
+  try { if (typeof fResizeViewers === "function") fResizeViewers(); } catch (eR2) {}
+}
+
+function fMolDraftBackToEdit() {
+  if (!window.MulerDraft || fMolDraftPresenting()) return;
+  fMolDraftShowEditor();
+  // No state change: the preview stays fresh until the user actually draws
+  // (stale callbacks + the Accept-time SMILES re-check own that).
+}
+
+function fMolDraftMarkStale() {
+  try {
+    if (!window.MulerDraft || window.MulerDraft.submitting) return;
+    if (!window.MulerDraft.submitted) return; // nothing to stale yet
+    window.MulerDraft.stale = true;
+    try {
+      var st = document.getElementById("molDraftStatus");
+      if (st) st.textContent = fMolDraftT("acceptStale", "Drawing changed — press Submit again.");
+    } catch (eSt) {}
+    fMolDraftSyncBar();
+  } catch (eM) {}
+}
+
+// Best-effort live edit detection: structural edits mark the preview stale
+// immediately. Guarded — the exact callback name is unverified against the
+// bundled JSME; the Accept-time SMILES re-check is authoritative and cannot
+// miss. Registered on the dedicated edit applet (the display applet is never
+// touched mid-draft, so it needs no watcher).
+function fMolDraftWatchEdits() {
+  try {
+    if (typeof jsmeEditDraftApplet === "undefined" || !jsmeEditDraftApplet) return;
+    try {
+      if (typeof jsmeEditDraftApplet.setCallBack === "function") {
+        jsmeEditDraftApplet.setCallBack("AfterStructureModified", function () { fMolDraftMarkStale(); });
+      }
+    } catch (eC) {}
+  } catch (eW) {}
+}
+
+function fMolDraftClearNaming(statusText) {
+  try { if (typeof fClearHighlights === "function") fClearHighlights(); } catch (eH) {}
+  try {
+    var na = document.getElementById("nameAnalysis");
+    if (na) na.innerHTML = "<div class='draftHint'>" + String(statusText || "") + "</div>";
+  } catch (eN) {}
+  try {
+    var rt = document.getElementById("ruleTheory");
+    if (rt) rt.innerHTML = "";
+  } catch (eR) {}
+  try {
+    var ex = document.getElementById("nameAnalysisExplain");
+    if (ex) ex.innerHTML = "";
+  } catch (eE) {}
+}
+
+function fMolDraftEnter(mode) {
+  if (fMolDraftPresenting()) return;
+  if (window.MulerDraft) return;
+  var sourceMol = null;
+  try { sourceMol = (typeof selectedMol !== "undefined") ? selectedMol : null; } catch (eS) { sourceMol = null; }
+  if (mode === "edit") {
+    if (!sourceMol || typeof nameExamples === "undefined" || !nameExamples[sourceMol]) {
+      fMolDraftToast(fMolDraftT("editNeedsMol", "Select a molecule to edit."));
+      return;
+    }
+  }
+  var variant = "condensed";
+  try { variant = (typeof mode2D !== "undefined") ? mode2D : "condensed"; } catch (eV) {}
+  var had3D = false;
+  try {
+    var b3 = document.getElementById("view3DBtn");
+    had3D = !!(b3 && b3.classList.contains("active"));
+  } catch (eB) { had3D = false; }
+  window.MulerDraft = { mode: mode, sourceMol: sourceMol, variant: variant, had3D: had3D };
+  // Update-in-place when the template is itself a custom draft (registry
+  // membership survives reloads: the custom file seeds the registry at boot).
+  // Stored (141) templates always fork — curated data is never overwritten.
+  try {
+    window.MulerDraft.sourceIsCustom = !!(mode === "edit" && sourceMol &&
+      typeof window.nameExamplesCustom !== "undefined" && window.nameExamplesCustom &&
+      Object.prototype.hasOwnProperty.call(window.nameExamplesCustom, sourceMol));
+  } catch (eSc) { try { window.MulerDraft.sourceIsCustom = false; } catch (eS2) {} }
+  try {
+    window.MulerDraft.acceptKey = window.MulerDraft.sourceIsCustom ? "draftUpdate" : "draftAccept";
+  } catch (eAk) {}
+  // Drafting chrome: dim every other control cluster (CSS) + light the entry
+  // button. Undone symmetrically in fMolDraftCancel.
+  try {
+    var _pc = document.getElementById("pageContainer");
+    if (_pc) _pc.classList.add("drafting");
+  } catch (eP) {}
+  try {
+    var _eb = document.getElementById(mode === "edit" ? "editMolBtn" : "newMolBtn");
+    if (_eb) _eb.classList.add("active");
+  } catch (eAb) {}
+  // Mutual exclusion: the other entry goes visually inactive while a draft
+  // is live (its handler early-returns anyway; this is display only).
+  try {
+    var _ob = document.getElementById(mode === "edit" ? "newMolBtn" : "editMolBtn");
+    if (_ob) _ob.classList.add("btnInactive");
+  } catch (eOb) {}
+  // Edit applet must exist (constructed at boot; guarded so a draft-only
+  // failure never strands the UI mid-chrome — nothing visible changed yet).
+  try {
+    if (typeof jsmeEditDraftApplet === "undefined" || !jsmeEditDraftApplet ||
+        typeof jsmeEditDraftApplet.readMolFile !== "function") {
+      fMolDraftToast("Editor unavailable — reload the page.");
+      return;
+    }
+  } catch (eEA) { return; }
+  // 3D away (hide, not zap — viewport fragility), then the editor view.
+  try { if (had3D && typeof fToggleViewer3D === "function") fToggleViewer3D(); } catch (e3) {}
+  // The display applet stays hidden throughout the draft (depict pipeline
+  // untouched); the drawing lives in the dedicated edit applet below.
+  fMolDraftShowEditor();
+  if (mode === "edit") {
+    var mol = fMolDraftVariantMol();
+    if (!mol) {
+      window.MulerDraft = null;
+      try {
+        var _pc2 = document.getElementById("pageContainer");
+        if (_pc2) _pc2.classList.remove("drafting");
+      } catch (eP2) {}
+      try {
+        var _eb2 = document.getElementById("editMolBtn");
+        if (_eb2) _eb2.classList.remove("active");
+        var _ob2 = document.getElementById("newMolBtn");
+        if (_ob2) _ob2.classList.remove("btnInactive");
+      } catch (eAb2) {}
+      try { $("#jsmeEditDraft").addClass("hide"); } catch (eH2) {}
+      fMolDraftToast(fMolDraftT("editNeedsMol", "Select a molecule to edit."));
+      return;
+    }
+    try { jsmeEditDraftApplet.readMolFile(mol); } catch (eM) {}
+    try { if (typeof molZoom2D !== "undefined") jsmeEditDraftApplet.setMolecularAreaScale(molZoom2D); } catch (eZ) {}
+    fMolDraftClearNaming(fMolDraftT("draftEdit", "Editing") + ": " + sourceMol);
+    fMolDraftShowBar(fMolDraftT("draftEdit", "Editing") + ": " + sourceMol);
+  } else {
+    try { jsmeEditDraftApplet.clear(); } catch (eC) {}
+    fMolDraftClearNaming(fMolDraftT("draftNew", "New molecule (draft)"));
+    fMolDraftShowBar(fMolDraftT("draftNew", "New molecule (draft)"));
+  }
+  // The edit applet is edit-mode by construction — no toggle, no enforcement.
+  setTimeout(function () { try { if (typeof fResizeViewers === "function") fResizeViewers(); } catch (eR2) {} }, 0);
+  try { fMolDraftWatchEdits(); } catch (eW) {}
+}
+
+function fEditMolDraft() {
+  fMolDraftEnter("edit");
+}
+function fNewMolDraft() {
+  fMolDraftEnter("new");
+}
+// ── Submit: engine + PubChem preview (v54 Stage 2, Step 3) ─────────────────
+// Sandbox mirror of fLoadMol2D's analysis tail (read applet -> globals ->
+// engine -> overlay), minus the stored-entry classification write:
+// selectedMol stays untouched, so Cancel restores via fSelectMol.
+function fMolDraftHasRing() {
+  // Union-find cycle check over the parsed 2D bond pairs (1-based [a1,a2]).
+  // Engine-independent: core only warns-and-falls-back on cyclic input.
+  try {
+    if (typeof bondList === "undefined" || !bondList || !bondList.length) return false;
+    var parent = {};
+    var find = function (x) {
+      while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; }
+      return x;
+    };
+    for (var i = 0; i < bondList.length; i++) {
+      var b = bondList[i];
+      if (!b || b[0] == null || b[1] == null) continue;
+      var a = b[0], c = b[1];
+      if (!(a in parent)) parent[a] = a;
+      if (!(c in parent)) parent[c] = c;
+      if (find(a) === find(c)) return true;
+      parent[find(a)] = find(c);
+    }
+  } catch (eR) {}
+  return false;
+}
+
+function fMolDraftNorm(s) {
+  return String(s == null ? "" : s).toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+// Expanded structural formula for the menu (v54 Stage 2, Step 4 fix).
+// Regenerates the stored-data convention (CH3CH(Br)CH3, CH2=C(CH3)2) from the
+// live post-submit globals, so accepted molecules label like stored ones:
+// main-chain walk, SYM+Hn per atom (H from standard valence minus heavy-bond
+// orders — self-consistent with explicit/implicit H alike), single bonds
+// implicit, =/_ emitted, branches parenthesized. Reads sandbox state;
+// selectedMol untouched. Returns "" on any gap (menu falls back to the key).
+var MOLDRAFT_STDVALENCE = { C: 4, N: 3, O: 2, F: 1, Cl: 1, Br: 1, I: 1 };
+
+function fMolDraftBondOrderMap() {
+  var map = {};
+  try {
+    if (typeof bondList === "undefined" || !bondList) return map;
+    for (var i = 0; i < bondList.length; i++) {
+      var b = bondList[i];
+      if (!b || b[0] == null || b[1] == null) continue;
+      var a = Math.min(b[0], b[1]), c = Math.max(b[0], b[1]), o = b[2] || 1;
+      var k = a + "-" + c;
+      if (!map[k] || map[k] < o) map[k] = o;
+    }
+  } catch (eM) {}
+  return map;
+}
+
+function fMolDraftAtomEl(n) {
+  try {
+    var t = allAtomsTypeList[n - 1];
+    return (t == null ? "" : String(t));
+  } catch (eT) { return ""; }
+}
+
+function fMolDraftHeavyNbs(n) {
+  var out = [], seen = {};
+  try {
+    if (typeof bondList === "undefined" || !bondList) return out;
+    for (var i = 0; i < bondList.length; i++) {
+      var b = bondList[i];
+      if (!b || b[0] == null || b[1] == null) continue;
+      var other = (b[0] === n) ? b[1] : (b[1] === n) ? b[0] : null;
+      if (other == null || seen[other]) continue;
+      var t = fMolDraftAtomEl(other);
+      if (!t || t === "H" || t === "h") continue;
+      seen[other] = true;
+      out.push({ atom: other, order: b[2] || 1 });
+    }
+  } catch (eN) {}
+  return out;
+}
+
+function fMolDraftHCount(el, nbs) {
+  var v = MOLDRAFT_STDVALENCE[el];
+  if (v == null) return 0;
+  var used = 0;
+  for (var i = 0; i < nbs.length; i++) used += nbs[i].order;
+  return Math.max(0, v - used);
+}
+
+function fMolDraftGroup(el, h) {
+  if (!el) return "";
+  if (el === "H") return "H";
+  return el + (h >= 1 ? ("H" + (h > 1 ? h : "")) : "");
+}
+
+function fMolDraftBondSym(o) { return o === 3 ? "_" : (o === 2 ? "=" : ""); }
+
+function fMolDraftExcl(self) { var m = {}; try { m[self] = true; } catch (eX) {} return m; }
+
+// Recursive node renderer. endForm: "first" | "mid" | "last" | "single"
+// (chain members, end-aware FG terminals) or "branch" (substituent roots,
+// trailing forms). Depth-guarded: submit already ring-rejected, this is belt
+// and braces against corrupted globals.
+function fMolDraftRenderNode(atom, excluded, endForm, depth) {
+  if ((depth || 0) > 25) return "";
+  var el = fMolDraftAtomEl(atom);
+  if (!el || el === "H") return "";
+  var allNbs = [];
+  try { allNbs = fMolDraftHeavyNbs(atom); } catch (eN) {}
+  var nbs = [];
+  for (var i = 0; i < allNbs.length; i++) {
+    if (excluded && excluded[allNbs[i].atom]) continue;
+    nbs.push(allNbs[i]);
+  }
+  // H counts ALL heavy bonds (chain members included); only branch
+  // rendering excludes chain neighbors.
+  var h = fMolDraftHCount(el, allNbs);
+  // Single heavy-atom molecules: literal water/ammonia (methane etc. fall
+  // through to the generic path below).
+  if (endForm === "single" && nbs.length === 0) {
+    if (el === "O" && h === 2) return "H2O";
+    if (el === "N" && h === 3) return "NH3";
+  }
+  if (el === "C") {
+    var oxDouble = null, triN = null, ohC = null;
+    for (var j = 0; j < nbs.length; j++) {
+      var ce = fMolDraftAtomEl(nbs[j].atom);
+      if (nbs[j].order === 2 && ce === "O" && !oxDouble) oxDouble = nbs[j];
+      else if (nbs[j].order === 3 && ce === "N" && !triN) triN = nbs[j];
+      else if (nbs[j].order === 1 && ce === "O" && !ohC) {
+        var onb = fMolDraftHeavyNbs(nbs[j].atom);
+        if (fMolDraftHCount("O", onb) >= 1) ohC = nbs[j];
+      }
+    }
+    var rest = function (skip) {
+      var r = [];
+      for (var q = 0; q < nbs.length; q++) {
+        if (skip && nbs[q].atom === skip.atom) continue;
+        r.push(nbs[q]);
+      }
+      return r;
+    };
+    // Acid carbon: =O + -OH (always terminal by valence; branch roots trail).
+    if (oxDouble && ohC) {
+      if (endForm === "single") return "HCOOH";
+      if (endForm === "first") return "HOOC";
+      return "COOH";
+    }
+    // Formaldehyde (only heavy neighbor is the =O): literal.
+    if (oxDouble && h >= 2 && nbs.length === 1) return "HCHO";
+    // Aldehyde carbon: H + =O, at least one C neighbor (true acyl R-CHO;
+    // formyl/ester -OR neighbors fall through to the keto drop below).
+    // NOTE: scanned over ALL neighbors — the R group is usually the (excluded)
+    // chain neighbor.
+    var hasC = false;
+    for (var k = 0; k < allNbs.length; k++) {
+      if (oxDouble && allNbs[k].atom === oxDouble.atom) continue;
+      if (fMolDraftAtomEl(allNbs[k].atom) === "C") { hasC = true; break; }
+    }
+    if (oxDouble && h >= 1 && !ohC && hasC) {
+      return endForm === "first" ? "O=CH" : "CH=O";
+    }
+    // Keto/ester/formyl carbonyl: absorb the =O (H prefix keeps formyl HCO).
+    if (oxDouble && !ohC) {
+      return (h >= 1 ? "H" : "") + "CO" + fMolDraftRenderChildren(rest(oxDouble), h, atom, (depth || 0) + 1);
+    }
+    // Nitrile carbon (majority stored style drops the triple marker: CN).
+    if (triN && !oxDouble && !ohC) {
+      return "C" + "N" + fMolDraftRenderChildren(rest(triN), h, atom, (depth || 0) + 1);
+    }
+  }
+  return fMolDraftGroup(el, h) + fMolDraftRenderChildren(nbs, h, atom, (depth || 0) + 1);
+}
+
+function fMolDraftRenderChildren(kids, h, self, depth) {
+  if (!kids || !kids.length) return "";
+  if ((depth || 0) > 25) return "";
+  var ds = [];
+  for (var i = 0; i < kids.length; i++) {
+    var el = fMolDraftAtomEl(kids[i].atom);
+    var nb = fMolDraftHeavyNbs(kids[i].atom);
+    var own = [];
+    for (var w = 0; w < nb.length; w++) {
+      if (nb[w].atom === self) continue;
+      own.push(nb[w]);
+    }
+    ds.push({ atom: kids[i].atom, order: kids[i].order, el: el,
+      h: fMolDraftHCount(el, nb), leaf: own.length === 0 });
+  }
+  if (ds.length === 1) {
+    var c = ds[0];
+    if (c.order === 1) {
+      // Alkoxy branch (-O-R, esters): inline O + tail (COOCH3, not CO(OCH3)).
+      // The O is H-free with its own carbon tail; -OH keeps parens below.
+      if (c.el === "O" && c.h === 0) {
+        var oOwn = [];
+        try {
+          var oNb = fMolDraftHeavyNbs(c.atom);
+          for (var oI = 0; oI < oNb.length; oI++) {
+            if (oNb[oI].atom === self) continue;
+            oOwn.push(oNb[oI]);
+          }
+        } catch (eO) {}
+        if (oOwn.length >= 1) {
+          // Forced inline (h=2): the -R tail linearizes like an ethyl branch.
+          return "O" + fMolDraftRenderChildren(oOwn, 2, c.atom, depth);
+        }
+      }
+      var sub = fMolDraftRenderNode(c.atom, fMolDraftExcl(self), "branch", depth);
+      if (h === 2) return sub; // inline (trailing CH2OH, ethyl branches)
+      return "(" + sub + ")"; // (Br) (OH) (CH3) (NO2) ...
+    }
+    // Multiple-bonded single child: inline, marker kept (generic fallback;
+    // aldehyde/nitrile FG forms are handled in fMolDraftRenderNode).
+    if (c.leaf) {
+      if (c.order === 3 && c.el === "N") return "N";
+      return fMolDraftBondSym(c.order) + fMolDraftGroup(c.el, c.h);
+    }
+    return fMolDraftBondSym(c.order) + fMolDraftRenderNode(c.atom, fMolDraftExcl(self), "branch", depth);
+  }
+  var allSingle = true, uniformOrder = true;
+  for (var s2 = 0; s2 < ds.length; s2++) {
+    if (ds[s2].order !== 1) { allSingle = false; }
+    if (ds[s2].order !== ds[0].order) { uniformOrder = false; }
+  }
+  if (allSingle || uniformOrder) {
+    var subs = [];
+    for (var s3 = 0; s3 < ds.length; s3++) subs.push(fMolDraftRenderNode(ds[s3].atom, fMolDraftExcl(self), "branch", depth));
+    var first = subs[0], same = true;
+    for (var s4 = 1; s4 < subs.length; s4++) {
+      if (subs[s4] !== first) { same = false; break; }
+    }
+    if (same) {
+      var n = subs.length, cnt = n > 1 ? n : "";
+      var bare = /^[A-Z][a-z]?$/.test(first);
+      if (bare && first === "O") return "O" + cnt; // NO2 inner (=O twins merge)
+      if (allSingle && bare && h >= 1 && /^(F|Cl|Br|I)$/.test(first)) return first + cnt; // CHCl2
+      if (allSingle) return "(" + first + ")" + cnt; // (Cl)2 (CH3)2
+      // Uniform multiple-bond twins that are not bare O (no stored-Data
+      // precedent): fall through to the parenthesized path below.
+    }
+  }
+  var out = "";
+  for (var m = 0; m < ds.length; m++) {
+    out += "(" + (ds[m].order === 1 ? "" : fMolDraftBondSym(ds[m].order)) +
+      fMolDraftRenderNode(ds[m].atom, fMolDraftExcl(self), "branch", depth) + ")";
+  }
+  return out;
+}
+
+function fMolDraftExpandedFormula() {
+  try {
+    if (typeof mainChainAtomsList === "undefined" || !mainChainAtomsList || !mainChainAtomsList.length) return "";
+    if (typeof allAtomsTypeList === "undefined" || !allAtomsTypeList) return "";
+    var chain = mainChainAtomsList.slice();
+    var orderMap = fMolDraftBondOrderMap();
+    var texts = [];
+    for (var i = 0; i < chain.length; i++) {
+      var ex = {};
+      if (i > 0) ex[chain[i - 1]] = true;
+      if (i < chain.length - 1) ex[chain[i + 1]] = true;
+      var ef = chain.length === 1 ? "single" : (i === 0 ? "first" : (i === chain.length - 1 ? "last" : "mid"));
+      texts.push(fMolDraftRenderNode(chain[i], ex, ef, 0));
+    }
+    var out = "";
+    for (var k = 0; k < texts.length; k++) {
+      out += texts[k];
+      if (k < texts.length - 1) {
+        var a = Math.min(chain[k], chain[k + 1]), c = Math.max(chain[k], chain[k + 1]);
+        out += fMolDraftBondSym(orderMap[a + "-" + c] || 1);
+      }
+    }
+    return out;
+  } catch (eF) { return ""; }
+}
+
+function fMolDraftEsc(s) {
+  return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function fMolDraftReadDrawing() {
+  // The drawing lives in the dedicated edit applet (display applet untouched).
+  var molText = "", smiles = "", hasAny = false;
+  try {
+    if (typeof jsmeEditDraftApplet !== "undefined" && jsmeEditDraftApplet) {
+      try { if (typeof jsmeEditDraftApplet.hasMolecule === "function") hasAny = !!jsmeEditDraftApplet.hasMolecule(); } catch (eH) {}
+      try { if (typeof jsmeEditDraftApplet.molFile === "function") molText = jsmeEditDraftApplet.molFile(); } catch (eM) {}
+      try {
+        if (typeof jsmeEditDraftApplet.getSmiles === "function") smiles = jsmeEditDraftApplet.getSmiles();
+        else if (typeof jsmeEditDraftApplet.smiles === "function") smiles = jsmeEditDraftApplet.smiles();
+      } catch (eS) {}
+    }
+  } catch (eA) {}
+  smiles = String(smiles || "").trim();
+  if (!hasAny) hasAny = !!(molText && molText.length > 200) || !!smiles;
+  return { molText: molText || "", smiles: smiles, hasAny: hasAny };
+}
+
+function fMolDraftRenderPreview() {
+  var d = window.MulerDraft;
+  if (!d || !d.submitted) return;
+  try {
+    var na = document.getElementById("nameAnalysis");
+    if (!na) return;
+    var html = "<div class='draftPreview'><div class='draftEngine'>" + fMolDraftEsc(d.engineName) + "</div>";
+    if (typeof d.pubchem === "undefined") {
+      html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitFetching", "Looking up PubChem…")) + "</div>";
+    } else if (d.pubchem) {
+      var hit = d.pubchem;
+      var iupac = hit.iupacPubchem || hit.iupac || null;
+      var title = hit.title || hit.titlePubchem || null;
+      var sys = hit.systematic || hit.iupacEN || null;
+      var norm = fMolDraftNorm;
+      if (iupac) html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("draftIUPACRow", "IUPAC (PubChem)")) + ": " + fMolDraftEsc(iupac) + "</div>";
+      if (title && /ether$/i.test(String(title).trim()) && norm(title) !== norm(iupac)) html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("draftCommonRow", "Common (PubChem)")) + ": " + fMolDraftEsc(title) + "</div>";
+      if (sys && norm(sys) !== norm(iupac) && norm(sys) !== norm(title)) html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("draftSysRow", "Systematic")) + ": " + fMolDraftEsc(sys) + "</div>";
+      if (!iupac && !title) html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitNoRecord", "No PubChem record — engine only.")) + "</div>";
+      if (d.sdfDone && !d.sdf3D) html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitNo3D", "No 3D model on PubChem — 2D only.")) + "</div>";
+    } else {
+      html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitNoRecord", "No PubChem record — engine only.")) + "</div>";
+    }
+    html += "</div>";
+    na.innerHTML = html;
+  } catch (eR) {}
+}
+
+function fMolDraftShow3D(sdf) {
+  try {
+    var b3 = document.getElementById("view3DBtn");
+    if (b3 && !b3.classList.contains("active") && typeof fToggleViewer3D === "function") {
+      fToggleViewer3D();
+      if (window.MulerDraft) window.MulerDraft.preview3D = true;
+    }
+    var blob = new Blob([sdf], { type: "chemical/x-mdl-sdfile" });
+    var url = URL.createObjectURL(blob);
+    if (window.MulerDraft && window.MulerDraft.blobUrl) {
+      try { URL.revokeObjectURL(window.MulerDraft.blobUrl); } catch (eRv) {}
+    }
+    if (window.MulerDraft) window.MulerDraft.blobUrl = url;
+  } catch (eB) { return; }
+  try {
+    if (typeof fJSmolScript === "function") {
+      fJSmolScript(jmolAppletNomeclature, "frank off;load \"" + window.MulerDraft.blobUrl + "\"; select all; center selected;script spt/init-3.spt;");
+    }
+  } catch (eJ) {}
+  try { if (typeof fSetMolVis3D === "function") fSetMolVis3D(); } catch (eV) {}
+  try { if (typeof fParseSDF3D === "function") fParseSDF3D(sdf); } catch (eP1) {}
+  try { if (typeof fDetectMolType3D === "function") fDetectMolType3D(); } catch (eP2) {}
+  try { if (typeof fCalcMainChain3D === "function") fCalcMainChain3D(); } catch (eP3) {}
+  try { if (typeof showAtomSymbols3D === "function") showAtomSymbols3D(); } catch (eA2) {}
+  try { if (typeof showHydrogens3D === "function") showHydrogens3D(); } catch (eH2) {}
+  try { if (typeof rotate3D === "function") rotate3D(); } catch (eR2) {}
+  try { if (typeof fResizeViewers === "function") fResizeViewers(); } catch (eR3) {}
+}
+
+function fMolDraftRestoreChainMode(forcedMode) {
+  var m = (typeof forcedMode !== "undefined") ? forcedMode : null;
+  try {
+    if (m == null && window.MulerDraft) m = window.MulerDraft.savedChainMode;
+  } catch (eR) {}
+  try {
+    if (m != null) mainChainMode = m;
+  } catch (eM) {}
+  try { if (typeof fUpdateChainModeButton === "function") fUpdateChainModeButton(); } catch (eB) {}
+}
+
+async function fMolDraftSubmit() {
+  if (!window.MulerDraft || fMolDraftPresenting()) return;
+  if (window.MulerDraft.submitting) return;
+  // 1. read + validate (empty drawing -> toast, no state change).
+  var drawing = fMolDraftReadDrawing();
+  if (!drawing.hasAny) {
+    fMolDraftToast(fMolDraftT("submitEmpty", "Empty drawing — draw something first."));
+    return;
+  }
+  window.MulerDraft.submitting = true;
+  try {
+    var st = document.getElementById("molDraftStatus");
+    if (st) st.textContent = fMolDraftT("submitRunning", "Submitting…");
+  } catch (eSt) {}
+  try { fMolDraftSyncBar(); } catch (eSy0) {}
+  // 0. sync the drawing onto the display applet: the engine/overlay pipeline
+  // reads the main (depict) applet, which the user never touches mid-draft.
+  // The main applet never leaves depict mode, so highlights just work.
+  try {
+    var _draftMol = "";
+    if (typeof jsmeEditDraftApplet !== "undefined" && jsmeEditDraftApplet &&
+        typeof jsmeEditDraftApplet.molFile === "function") _draftMol = jsmeEditDraftApplet.molFile() || "";
+    if (_draftMol && typeof jsmeNomeclatureApplet !== "undefined" && jsmeNomeclatureApplet &&
+        typeof jsmeNomeclatureApplet.readMolFile === "function") {
+      jsmeNomeclatureApplet.readMolFile(_draftMol);
+      try { if (typeof molZoom2D !== "undefined") jsmeNomeclatureApplet.setMolecularAreaScale(molZoom2D); } catch (eZ) {}
+    }
+  } catch (eSync) {}
+  // 2. sandbox engine run over the applet content. Algorithmic-or-nothing:
+  // stored chains belong to the old atom order and are never valid here.
+  var savedMode = null;
+  try { savedMode = (typeof mainChainMode !== "undefined") ? mainChainMode : null; } catch (eM0) {}
+  window.MulerDraft.savedChainMode = savedMode;
+  try { mainChainMode = "algorithmic"; } catch (eM1) {}
+  try { if (typeof fUpdateChainModeButton === "function") fUpdateChainModeButton(); } catch (eBc) {}
+  var engineFailed = false;
+  try {
+    if (typeof fAnalyseStructure === "function") fAnalyseStructure();
+    if (typeof fDetectMolType === "function") fDetectMolType();
+  } catch (eAn) { engineFailed = true; }
+  if (!engineFailed && fMolDraftHasRing()) {
+    fMolDraftRestoreChainMode();
+    window.MulerDraft.submitting = false;
+    fMolDraftToast(fMolDraftT("submitRing", "Rings are out of scope — acyclic structures only."));
+    return;
+  }
+  try {
+    if (typeof fGuessName === "function") fGuessName();
+  } catch (eGn) { engineFailed = true; }
+  var engineName = "";
+  try { engineName = (typeof currentMolName !== "undefined") ? String(currentMolName || "") : ""; } catch (eN) {}
+  if (engineFailed || !engineName) {
+    fMolDraftRestoreChainMode();
+    window.MulerDraft.submitting = false;
+    fMolDraftToast(fMolDraftT("submitEngineFail", "Engine failed — check the drawing."));
+    return;
+  }
+  try {
+    if (typeof fUpdateSVG === "function") fUpdateSVG();
+  } catch (eSvg) {}
+  // Engine done: flip to the depict (SVG) view — the molecule stays editable
+  // via the Draw button, which flips back without touching draft state.
+  try { fMolDraftShowPreviewView(); } catch (eV) {}
+  window.MulerDraft.smiles = drawing.smiles;
+  window.MulerDraft.molText = drawing.molText;
+  window.MulerDraft.engineName = engineName;
+  window.MulerDraft.submitted = true;
+  window.MulerDraft.stale = false;
+  window.MulerDraft.pubchem = undefined;
+  window.MulerDraft.sdf3D = null;
+  window.MulerDraft.sdfDone = false;
+  fMolDraftRenderPreview();
+  try {
+    var st2 = document.getElementById("molDraftStatus");
+    if (st2) st2.textContent = fMolDraftT("draftPreview", "Preview") + ": " + engineName;
+  } catch (eSt2) {}
+  // 3. PubChem oracle (async, molecule-guarded like the info panel refresh).
+  var submittingSmiles = drawing.smiles;
+  if (!submittingSmiles) {
+    window.MulerDraft.submitting = false;
+    try { fMolDraftSyncBar(); } catch (eSy1) {}
+    return;
+  }
+  var hit = null;
+  try {
+    if (typeof fFetchIUPAC_EN === "function") hit = await fFetchIUPAC_EN(submittingSmiles);
+  } catch (eP) { hit = null; }
+  if (!window.MulerDraft || window.MulerDraft.smiles !== submittingSmiles) return; // superseded/cancelled
+  window.MulerDraft.pubchem = hit || null;
+  fMolDraftRenderPreview();
+  // 4. 3D from the PubChem SDF when the record has one; novel drawings keep
+  // the 2D-only note (no local 3D generation yet — the RDKit gap).
+  var sdf = null;
+  try {
+    if (hit && typeof fFetchSDF3D_PubChem === "function") sdf = await fFetchSDF3D_PubChem(submittingSmiles);
+  } catch (eS) { sdf = null; }
+  if (!window.MulerDraft || window.MulerDraft.smiles !== submittingSmiles) return;
+  window.MulerDraft.submitting = false;
+  window.MulerDraft.sdfDone = true;
+  if (sdf) {
+    window.MulerDraft.sdf3D = sdf;
+    fMolDraftShow3D(sdf);
+  }
+  fMolDraftRenderPreview();
+  try { fMolDraftSyncBar(); } catch (eSy2) {}
+}
+// Shared visual teardown (Cancel + Accept): hides the draft chrome and
+// restores display mode. Returns the snapshot callers need (3D visibility,
+// chain mode, preview blob). Does NOT reselect — callers own that.
+function fMolDraftTeardownDisplay() {
+  var snap = { back3D: false, preview3D: false, savedMode: null, blobUrl: null };
+  try {
+    if (window.MulerDraft) {
+      snap.back3D = !!window.MulerDraft.had3D;
+      snap.preview3D = !!window.MulerDraft.preview3D;
+      snap.blobUrl = window.MulerDraft.blobUrl || null;
+      try { snap.savedMode = window.MulerDraft.savedChainMode; } catch (eSm) {}
+    }
+  } catch (eG) {}
+  window.MulerDraft = null;
+  if (snap.blobUrl) { try { URL.revokeObjectURL(snap.blobUrl); } catch (eRv) {} }
+  fMolDraftHideBar();
+  try {
+    var _pc = document.getElementById("pageContainer");
+    if (_pc) _pc.classList.remove("drafting");
+  } catch (eP) {}
+  try {
+    var _e1 = document.getElementById("editMolBtn");
+    if (_e1) { _e1.classList.remove("active"); _e1.classList.remove("btnInactive"); }
+    var _e2 = document.getElementById("newMolBtn");
+    if (_e2) { _e2.classList.remove("active"); _e2.classList.remove("btnInactive"); }
+  } catch (eA2) {}
+  // Back to display mode first (applets hidden, SVG + radios shown).
+  try { $("#jsmeNomeclature").addClass("hide"); } catch (eA) {}
+  try { $("#jsmeEditDraft").addClass("hide"); } catch (eED) {}
+  try { $("#jsmeNomeclatureSVG").removeClass("hide"); } catch (eS) {}
+  try { $("#radio2DMode").removeClass("hide"); } catch (eR) {}
+  try {
+    if (snap.back3D && typeof fToggleViewer3D === "function") {
+      var b3 = document.getElementById("view3DBtn");
+      if (b3 && !b3.classList.contains("active")) fToggleViewer3D();
+    } else if (!snap.back3D && snap.preview3D && typeof fToggleViewer3D === "function") {
+      // Preview showed 3D for PubChem SDF although it was hidden pre-draft.
+      var b3h = document.getElementById("view3DBtn");
+      if (b3h && b3h.classList.contains("active")) fToggleViewer3D();
+    }
+  } catch (e3) {}
+  // Chain mode back to the author's setting (submit forced algorithmic);
+  // the caller's fSelectMol re-syncs the radio UI from it.
+  fMolDraftRestoreChainMode(snap.savedMode);
+  setTimeout(function () { try { if (typeof fResizeViewers === "function") fResizeViewers(); } catch (eR2) {} }, 0);
+  return snap;
+}
+
+function fMolDraftCancel() {
+  if (!window.MulerDraft) return;
+  fMolDraftTeardownDisplay();
+  // Full reselect — the same path recovery flows use — rebuilds naming + 3D.
+  try { if (typeof fSelectMol === "function") fSelectMol(); } catch (eF) {}
+}
+
+// Human-readable custom keys: custom_<english-name> (systematic preferred).
+// Greek letters expand (α-pinene stays distinct from β-pinene); ultimate
+// fallback is the stable SMILES hash. Duplicate structures are blocked by the
+// Accept guard, so same-name collisions only arise from stereoisomers etc.
+var MOLDRAFT_GR2EN = { "α": "alpha", "β": "beta", "γ": "gamma", "δ": "delta", "ε": "epsilon", "ζ": "zeta", "η": "eta", "θ": "theta", "ι": "iota", "κ": "kappa", "λ": "lambda", "μ": "mu", "ν": "nu", "ξ": "xi", "ο": "omicron", "π": "pi", "ρ": "rho", "σ": "sigma", "ς": "sigma", "τ": "tau", "υ": "upsilon", "φ": "phi", "χ": "chi", "ψ": "psi", "ω": "omega" };
+
+function fMolDraftSlugBase(src) {
+  var raw = "";
+  try {
+    raw = (src && (src.systematicEN || src.systematic || src.iupacEN || src.titlePubchem || src.title)) || "";
+  } catch (eR) { raw = ""; }
+  var s = String(raw || "").toLowerCase();
+  try {
+    s = s.replace(/[α-ω]/g, function (ch) { return MOLDRAFT_GR2EN[ch] || ""; });
+  } catch (eG) {}
+  s = s.replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "").replace(/_+/g, "_");
+  if (s.length > 48) s = s.slice(0, 48).replace(/_+$/g, "");
+  return s || "";
+}
+
+// ASCII-safe key (no transliteration needed beyond the Greek map above);
+// collision loop keeps it unique against stored + custom keys.
+function fMolDraftMakeKey(normSmi, nameSrc) {
+  var stem = "";
+  try { stem = fMolDraftSlugBase(nameSrc); } catch (eS) { stem = ""; }
+  if (!stem) {
+    var h = 5381;
+    var s = String(normSmi || "");
+    for (var i = 0; i < s.length; i++) h = (((h << 5) + h) + s.charCodeAt(i)) >>> 0;
+    return "custom_" + ("00000" + h.toString(16)).slice(-6);
+  }
+  var key = "custom_" + stem, n = 2;
+  try {
+    while (typeof nameExamples !== "undefined" && nameExamples[key]) key = "custom_" + stem + "_" + (n++);
+  } catch (eC) {}
+  return key;
+}
+
+function fMolDraftFileSlug(rec) {
+  // Filename mirrors the key: MULERMOC_<stem>_data.js. Key always starts
+  // with "custom_"; legacy hash keys yield MULERMOC_a3f9c2_data.js the same way.
+  var stem = "";
+  try {
+    if (rec && rec.key && String(rec.key).indexOf("custom_") === 0) stem = String(rec.key).slice(7);
+    else stem = fMolDraftSlugBase(rec);
+  } catch (eR) { stem = ""; }
+  if (!stem) stem = "custom";
+  return "MULERMOC_" + stem + "_data.js";
+}
+
+function fMolDraftDownloadSingle(rec) {
+  // One molecule per file (Accept auto-save). Merge-safe assignment so any
+  // number of collected files coexist regardless of load order — a plain
+  // `var nameExamplesCustom = ...` would let file #2 clobber file #1.
+  try {
+    if (!rec || !rec.key) return false;
+    var one = {};
+    one[rec.key] = rec;
+    var header = "/* MuLER custom draft molecule (v54 Stage 2, manual save from Ρυθμίσεις).\n" +
+      "   Molecule: " + rec.key + (rec.grName ? " (" + rec.grName + ")" : "") + "\n" +
+      "   Status: " + (rec.status || "draft") + " | " + new Date().toISOString().slice(0, 10) + "\n" +
+      "   Place next to the data file (js/) and register it:\n" +
+      "   <script src=\"js/" + fMolDraftFileSlug(rec) + "\"><\/script> */\n" +
+      "window.nameExamplesCustom = Object.assign(window.nameExamplesCustom || {}, " +
+      JSON.stringify(one, null, 2) + ");\n";
+    if (typeof fScenarioSaveBlobDownload === "function") {
+      return !!fScenarioSaveBlobDownload(fMolDraftFileSlug(rec), new Blob([header], { type: "text/javascript" }));
+    }
+  } catch (eD) {
+    try { console.warn("[draft] custom file download failed", eD); } catch (eL) {}
+  }
+  return false;
+}
+
+// Manual save (Ρυθμίσεις row): downloads the selected session-custom
+// molecule. Stored entries are excluded for now — the any-molecule export
+// button reuses this function later by dropping the registry check.
+function fMolDraftSaveSelected() {
+  if (fMolDraftPresenting()) return;
+  var sel = null;
+  try { sel = (typeof selectedMol !== "undefined") ? selectedMol : null; } catch (eS) { sel = null; }
+  var rec = null;
+  try {
+    if (sel && typeof window.nameExamplesCustom !== "undefined" && window.nameExamplesCustom &&
+        Object.prototype.hasOwnProperty.call(window.nameExamplesCustom, sel)) rec = window.nameExamplesCustom[sel];
+  } catch (eR) { rec = null; }
+  if (!rec) {
+    fMolDraftToast(fMolDraftT("pickCustomToSave", "Pick a custom molecule."));
+    return;
+  }
+  if (fMolDraftDownloadSingle(rec)) {
+    fMolDraftToast(fMolDraftT("acceptSaved", "File downloaded — place it next to the data file."));
+  }
+}
+
+function fMolDraftSyncSaveBtn() {
+  try {
+    var n = 0;
+    try {
+      if (typeof window.nameExamplesCustom !== "undefined" && window.nameExamplesCustom) {
+        n = Object.keys(window.nameExamplesCustom).length;
+      }
+    } catch (eN) {}
+    var cc = document.getElementById("customMolCount");
+    if (cc) cc.textContent = n + " " + fMolDraftT("customMolSession", "this session");
+    var btn = document.getElementById("customMolSaveBtn");
+    if (btn) {
+      var sel = null;
+      try { sel = (typeof selectedMol !== "undefined") ? selectedMol : null; } catch (eS) {}
+      var isCustom = false;
+      try {
+        isCustom = !!(sel && typeof window.nameExamplesCustom !== "undefined" && window.nameExamplesCustom &&
+          Object.prototype.hasOwnProperty.call(window.nameExamplesCustom, sel));
+      } catch (eC) {}
+      btn.disabled = !isCustom;
+      if (isCustom) btn.classList.remove("btnInactive");
+      else btn.classList.add("btnInactive");
+    }
+  } catch (eS) {}
+}
+
+function fMolDraftAccept() {
+  var d = window.MulerDraft;
+  if (!d || fMolDraftPresenting()) return;
+  if (!d.submitted || !d.engineName) {
+    fMolDraftToast(fMolDraftT("acceptNeedsSubmit", "Press Submit for a preview first."));
+    return;
+  }
+  // Freshness: drawing changed since the preview? Re-read and compare —
+  // authoritative even if the live edit callbacks turn out to be no-ops.
+  // Self-healing: identical structure clears a spurious stale flag.
+  try {
+    var _cur = fMolDraftReadDrawing();
+    var _curSmi = fMolDraftNorm((_cur && _cur.smiles) || "");
+    if (!_curSmi || _curSmi !== fMolDraftNorm(d.smiles || "")) {
+      d.stale = true;
+      try {
+        var _st = document.getElementById("molDraftStatus");
+        if (_st) _st.textContent = fMolDraftT("acceptStale", "Drawing changed — press Submit again.");
+      } catch (eStF) {}
+      try { fMolDraftSyncBar(); } catch (eSyF) {}
+      fMolDraftToast(fMolDraftT("acceptStale", "Drawing changed — press Submit again."));
+      return;
+    }
+    d.stale = false;
+  } catch (eFr) {}
+  // RDKit TODO: without local 3D generation, only PubChem-3D molecules are
+  // acceptable. Pending fetch -> wait; confirmed-missing -> blocked, stay in
+  // draft. Revisit when ETKDG lands (generate locally, then accept).
+  if (typeof d.pubchem === "undefined" || !d.sdfDone) {
+    fMolDraftToast(fMolDraftT("acceptWaitFetch", "Still looking up PubChem — wait a moment."));
+    return;
+  }
+  if (!d.pubchem || !d.sdf3D) {
+    fMolDraftToast(fMolDraftT("acceptNeedsPubChem3D", "Acceptance requires a PubChem record with 3D — coming back with RDKit."));
+    return;
+  }
+  // Duplicate guard: exact-SMILES (normalized) + PubChem CID against stored
+  // entries. Canonical-SMILES comparison waits on the RDKit decision.
+  // Own record excluded on the update path (custom re-accept, below).
+  var normSmi = fMolDraftNorm(d.smiles);
+  var selfKey = (d.sourceIsCustom && d.sourceMol) || null;
+  var dupKey = null;
+  try {
+    var keys = (typeof nameExamples !== "undefined") ? Object.keys(nameExamples) : [];
+    for (var i = 0; i < keys.length; i++) {
+      var e = nameExamples[keys[i]];
+      if (!e) continue;
+      if (selfKey && keys[i] === selfKey) continue;
+      try {
+        if (e.smiles && fMolDraftNorm(e.smiles) === normSmi) { dupKey = keys[i]; break; }
+        if (d.pubchem && d.pubchem.cid && e.pubchemCID && String(e.pubchemCID) === String(d.pubchem.cid)) { dupKey = keys[i]; break; }
+      } catch (eC) {}
+    }
+  } catch (eK) {}
+  if (dupKey) {
+    fMolDraftToast(fMolDraftT("acceptDup", "Already exists — pick it from the menu.") + " (" + dupKey + ")");
+    return;
+  }
+  var hit = d.pubchem || null;
+  var key = fMolDraftMakeKey(normSmi, hit);
+  var isUpdate = !!(d.sourceIsCustom && d.sourceMol && typeof nameExamples !== "undefined" && nameExamples[d.sourceMol]);
+  if (isUpdate) key = d.sourceMol;
+  var slotsCopy = null;
+  try { slotsCopy = JSON.parse(JSON.stringify((typeof nameComponentsList !== "undefined") ? nameComponentsList : [])); } catch (eSl) { slotsCopy = []; }
+  var cls = null;
+  try { if (typeof fGetMoleculeClassification === "function") cls = fGetMoleculeClassification(); } catch (eCl) { cls = null; }
+  var formula = "";
+  try { if (typeof fMolDraftExpandedFormula === "function") formula = fMolDraftExpandedFormula() || ""; } catch (eFo) { formula = ""; }
+  // Single-slot storage (v54 Stage 2, 2D variants): the MOL text IS the
+  // variant it was drawn in — Edit keeps its source slot, New drawings are
+  // JSME-native heavy-atom MOLs (= condensed composition; the CHn look is
+  // produced by the overlay pipeline, not the file). Missing slots stay
+  // missing: mode radios disable via the existing fLoadMol2D fallback.
+  var molSlot = "structure2D_Condensed";
+  if (d.mode === "edit") {
+    molSlot = d.variant === "expanded" ? "structure2D_Expanded" :
+      (d.variant === "skeletal" || d.variant === "condensedZigZag") ? "structure2D_Skeletal" :
+      "structure2D_Condensed";
+  }
+  var rec = {
+    key: key,
+    formula: formula,
+    smiles: d.smiles,
+    classification: cls,
+    grName: d.engineName,
+    slots: slotsCopy,
+    systematicEN: (hit && (hit.systematic || hit.iupacEN)) || null,
+    iupacPubchem: (hit && (hit.iupacPubchem || hit.iupac)) || null,
+    titlePubchem: (hit && (hit.title || hit.titlePubchem)) || null,
+    pubchemCID: (hit && hit.cid) || null,
+    sdf3D: d.sdf3D || null,
+    file3D: null,
+    author: "",
+    status: "draft",
+    history: [{ t: Date.now(), action: "accepted", mode: d.mode, source: d.sourceMol || null }]
+  };
+  rec[molSlot] = d.molText;
+  if (isUpdate) {
+    // Update in place: same key, same registry object — drop any stale
+    // variant slot first (the edited view may live in another slot now),
+    // keep the filename-relevant key stable, append history.
+    var prev = null;
+    try { prev = nameExamples[key] || null; } catch (ePv) { prev = null; }
+    if (!prev) { return; }
+    delete prev.structure2D_Condensed;
+    delete prev.structure2D_Expanded;
+    delete prev.structure2D_Skeletal;
+    prev[molSlot] = d.molText;
+    prev.formula = formula;
+    prev.smiles = d.smiles;
+    prev.classification = cls;
+    prev.grName = d.engineName;
+    prev.slots = slotsCopy;
+    prev.systematicEN = rec.systematicEN;
+    prev.iupacPubchem = rec.iupacPubchem;
+    prev.titlePubchem = rec.titlePubchem;
+    prev.pubchemCID = rec.pubchemCID;
+    prev.sdf3D = rec.sdf3D;
+    try {
+      prev.history = prev.history || [];
+      prev.history.push({ t: Date.now(), action: "updated", mode: d.mode, source: d.sourceMol || null });
+    } catch (eH) {}
+    rec = prev;
+  } else {
+    try {
+      window.nameExamplesCustom = window.nameExamplesCustom || {};
+    } catch (eRg) {}
+    try { window.nameExamplesCustom[key] = rec; } catch (eR2) {}
+    try { nameExamples[key] = rec; } catch (eN) { return; }
+  }
+  fMolDraftTeardownDisplay();
+  // Rebuild the menu so the new row exists before fSelectMol marks it
+  // (same path as a grouping switch, which is why toggling grouping worked).
+  try { if (typeof fInitNomeclatureMenu === "function") fInitNomeclatureMenu(); } catch (eM) {}
+  try { selectedMol = key; } catch (eSel) { return; }
+  try { if (typeof fSelectMol === "function") fSelectMol(); } catch (eF) {}
+  try { if (typeof fMolDraftSyncButtons === "function") fMolDraftSyncButtons(); } catch (eDs) {}
+  fMolDraftToast(fMolDraftT("acceptKept", "Accepted into this session — save it from Settings."));
+}
+
+// Edit-entry visual state: inactive when no molecule is selected (menu-only
+// steps, deselected). Click-time guard in fMolDraftEnter is the backstop;
+// this is display only. Called from fSelectMol/fDeselectMol tails.
+function fMolDraftSyncButtons() {
+  try {
+    var eb = document.getElementById("editMolBtn");
+    if (!eb) return;
+    var hasMol = false;
+    try {
+      hasMol = (typeof selectedMol !== "undefined") && !!selectedMol &&
+        (typeof nameExamples !== "undefined") && !!nameExamples[selectedMol];
+    } catch (eM) { hasMol = false; }
+    if (hasMol) eb.classList.remove("btnInactive");
+    else eb.classList.add("btnInactive");
+  } catch (eS) {}
+  try { if (typeof fMolDraftSyncSaveBtn === "function") fMolDraftSyncSaveBtn(); } catch (eSy) {}
 }
 
 document.addEventListener("click", function (e) {
@@ -1339,6 +2480,13 @@ function fSyncAtomColorModeDisabled() {
 // ── fSelectMol ────────────────────────────────────────────────────────────
 
 function fSelectMol() {
+  // Draft session (v54 Stage 2): menu/row clicks must not clobber the draft
+  // canvas (fLoadMol2D reads into the same applet). Cancel nulls the flag
+  // before its own fSelectMol, so restore still works.
+  if (typeof window !== "undefined" && window.MulerDraft) {
+    try { if (typeof fScenarioToast === "function") fScenarioToast(fMolDraftT("draftLocked", "Finish the draft first (Submit/Cancel).")); } catch (eD) {}
+    return;
+  }
   if (!selectedMol || !nameExamples[selectedMol]) {
     return;
   }
@@ -1383,6 +2531,9 @@ function fSelectMol() {
   } catch (eEnPop) {
     /* engine best-effort */
   }
+  // Draft entries: Edit needs a selected molecule (visual state only; the
+  // click-time guard in fMolDraftEnter is the backstop).
+  try { if (typeof fMolDraftSyncButtons === "function") fMolDraftSyncButtons(); } catch (eDs) {}
 }
 
 // ── fDeselectMol ──────────────────────────────────────────────────────────
@@ -1414,6 +2565,7 @@ function fDeselectMol() {
   try { fShowNameAnalysis(); } catch (eNA2) { try { console.error("[COLD-BOOT] fShowNameAnalysis failed in fDeselectMol", eNA2); } catch (eL2) {} }
   fUpdateDiagr2DButton();
   fUpdateChainModeButton();
+  try { if (typeof fMolDraftSyncButtons === "function") fMolDraftSyncButtons(); } catch (eDs) {}
 }
 
 // ── fInitProps ────────────────────────────────────────────────────────────
@@ -3642,6 +4794,15 @@ function fLoadMol3D() {
   } catch (eW) { /* best-effort */ }
 
   let myMol3D = selectedExample.file3D;
+  // v54 Stage 2 accepted drafts: no file3D on disk — inline SDF via Blob URL.
+  if (!myMol3D && selectedExample.sdf3D) {
+    try {
+      myMol3D = URL.createObjectURL(new Blob([selectedExample.sdf3D], { type: "chemical/x-mdl-sdfile" }));
+    } catch (eBlob) { myMol3D = null; }
+  }
+  if (!myMol3D) {
+    return;
+  }
   let movetoCmd =
     selectedExample.hasOwnProperty("moveto") && selectedExample.moveto
       ? String(selectedExample.moveto).trim().replace(/;?\s*$/, "; ")
@@ -3680,6 +4841,20 @@ function fFetchAndParse3D() {
   }
   const mol = selectedMol; // stale-mol guard
   const url = nameExamples[selectedMol].file3D;
+  // v54 Stage 2 accepted drafts: inline SDF, nothing to fetch.
+  if (!url && nameExamples[selectedMol].sdf3D) {
+    try {
+      fParseSDF3D(nameExamples[selectedMol].sdf3D);
+      fDetectMolType3D();
+      fCalcMainChain3D();
+    } catch (eInline) { /* 3D parse best-effort */ }
+    try {
+      if (typeof window.fScenarioOn3DParsed === "function") window.fScenarioOn3DParsed(mol);
+    } catch (e) {
+      /* scenario absent */
+    }
+    return;
+  }
   fetch(url)
     .then(function (r) {
       return r.text();
@@ -8617,15 +9792,17 @@ function fViewerHeights2D3D(raw) {
     var chrome = 0;
     var show2D = false, show3D = false;
     if (vc) {
-      // Visibility is read off the actually-toggled units: for 2D either the
-      // nested SVG overlay or the live JSME applet (v54 Stage 1 edit/draw —
-      // exactly one is visible; the DIV itself never hides) and the 3D
+      // Visibility is read off the actually-toggled units: for 2D the nested
+      // SVG overlay, the live JSME applet, or the dedicated draft editor
+      // (exactly one is visible; the DIV itself never hides) and the 3D
       // container. Both hosts are skipped in chrome accounting below (their
       // heights are viewers, not chrome).
       try {
         var _svg2D = document.getElementById("jsmeNomeclatureSVG");
         var _app2D = document.getElementById("jsmeNomeclature");
-        if ((_svg2D && _svg2D.offsetParent !== null) || (_app2D && _app2D.offsetParent !== null)) show2D = true;
+        var _ed2D = document.getElementById("jsmeEditDraft");
+        if ((_svg2D && _svg2D.offsetParent !== null) || (_app2D && _app2D.offsetParent !== null) ||
+            (_ed2D && _ed2D.offsetParent !== null)) show2D = true;
       } catch (eV2) { /* overlay lookup unavailable */ }
       var kids = vc.children;
       for (var i = 0; i < kids.length; i++) {
@@ -8764,7 +9941,9 @@ function fResizeViewers() {
       try {
         var _s2 = document.getElementById("jsmeNomeclatureSVG");
         var _a2 = document.getElementById("jsmeNomeclature");
-        _vis2 = !!((_s2 && _s2.offsetParent !== null) || (_a2 && _a2.offsetParent !== null));
+        var _e2 = document.getElementById("jsmeEditDraft");
+        _vis2 = !!((_s2 && _s2.offsetParent !== null) || (_a2 && _a2.offsetParent !== null) ||
+          (_e2 && _e2.offsetParent !== null));
         var _s3 = document.getElementById("nomeclature3D");
         _vis3 = !!(_s3 && _s3.offsetParent !== null);
       } catch (eVis) { /* visibility check unavailable */ }
@@ -8785,9 +9964,19 @@ function fResizeViewers() {
       ) {
         jsmeNomeclatureApplet.setSize(aw, svgH);
       }
-      // ORGNL retired v54 Stage 1: no second applet to size.
     } catch (eS) { /* applet unavailable */ }
   }
+  // Draft editor: same box as the SVG view it replaces (sized only while
+  // visible — a display:none setSize would collapse it to zero).
+  try {
+    var _edDiv = document.getElementById("jsmeEditDraft");
+    if (_edDiv && _edDiv.offsetParent !== null &&
+        typeof jsmeEditDraftApplet !== "undefined" && jsmeEditDraftApplet && jsmeEditDraftApplet.setSize) {
+      _edDiv.style.width = aw + "px";
+      _edDiv.style.height = svgH + "px";
+      jsmeEditDraftApplet.setSize(aw, svgH);
+    }
+  } catch (eE) { /* edit applet unavailable */ }
   // Overlays derive from the applet graphics: re-apply the zoom scale (this
   // re-fits the depiction — setSize alone leaves it small/stale, as any zoom
   // press demonstrates), rebuild the overlay + replay numbering. Highlight

@@ -501,6 +501,16 @@ function fScenarioViewerOn(kind) {
 }
 
 function fScenarioCapture() {
+  // Draft session (v54 Stage 2): a mid-draft save would store the OLD
+  // molecule (selectedMol is untouched by design) — block with a toast.
+  if (typeof window !== "undefined" && window.MulerDraft) {
+    try {
+      var _dl = "Finish the draft first (Submit/Cancel).";
+      try { if (typeof fMulerT === "function") { var _t = fMulerT("draftLocked"); if (_t && _t !== "draftLocked") _dl = _t; } } catch (eT) {}
+      fScenarioToast(_dl);
+    } catch (eD) {}
+    return null;
+  }
   if (!MuLERMoCScenario.ready) {
     fScenarioToast("Scenario: app not ready yet.");
     return null;
