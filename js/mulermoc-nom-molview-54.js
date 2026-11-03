@@ -1293,6 +1293,27 @@ function fMolDraftRenderPreview() {
   } catch (eR) {}
 }
 
+// Inline SDF loader (v54 fix): JSmol's `load <url>` file loader rejects
+// `blob:` URLs ("invalid url") when j2sPath/serverURL point at the remote
+// CDN — a blob lives only in page memory and is not fetchable by the php
+// proxy. Passing the SDF text via `load data ... end` avoids any URL fetch
+// and works on file:// and https:// alike. Returns true when issued.
+function fJSmolLoadInlineSDF(applet, sdfText, tailCmd) {
+  try {
+    var clean = String(sdfText == null ? "" : sdfText);
+    if (!clean) return false;
+    // SDF V2000 has no double quotes, but a stray one would break the
+    // `load data "..."` wrapper — neutralize defensively.
+    clean = clean.replace(/"/g, "'");
+    if (clean.charAt(clean.length - 1) !== "\n") clean += "\n";
+    var tail = String(tailCmd == null ? "" : tailCmd);
+    var cmd = "frank off;load data \"model.sdf\"\n" + clean + "end \"model.sdf\"; select all; center selected;" + tail;
+    if (typeof fJSmolScript === "function") fJSmolScript(applet, cmd);
+    else if (typeof Jmol !== "undefined" && Jmol && typeof Jmol.script === "function") Jmol.script(applet, cmd);
+    return true;
+  } catch (eIn) { return false; }
+}
+
 function fMolDraftShow3D(sdf) {
   try {
     var b3 = document.getElementById("view3DBtn");
@@ -1300,16 +1321,12 @@ function fMolDraftShow3D(sdf) {
       fToggleViewer3D();
       if (window.MulerDraft) window.MulerDraft.preview3D = true;
     }
-    var blob = new Blob([sdf], { type: "chemical/x-mdl-sdfile" });
-    var url = URL.createObjectURL(blob);
-    if (window.MulerDraft && window.MulerDraft.blobUrl) {
-      try { URL.revokeObjectURL(window.MulerDraft.blobUrl); } catch (eRv) {}
-    }
-    if (window.MulerDraft) window.MulerDraft.blobUrl = url;
-  } catch (eB) { return; }
+  } catch (eV) {}
+  if (!sdf) return;
+  // Inline DATA load — never a blob: URL (see helper note above).
   try {
-    if (typeof fJSmolScript === "function") {
-      fJSmolScript(jmolAppletNomeclature, "frank off;load \"" + window.MulerDraft.blobUrl + "\"; select all; center selected;script spt/init-3.spt;");
+    if (typeof fJSmolLoadInlineSDF === "function") {
+      fJSmolLoadInlineSDF(jmolAppletNomeclature, sdf, "script spt/init-3.spt;");
     }
   } catch (eJ) {}
   try { if (typeof fSetMolVis3D === "function") fSetMolVis3D(); } catch (eV) {}
@@ -1441,19 +1458,17 @@ async function fMolDraftSubmit() {
 }
 // Shared visual teardown (Cancel + Accept): hides the draft chrome and
 // restores display mode. Returns the snapshot callers need (3D visibility,
-// chain mode, preview blob). Does NOT reselect — callers own that.
+// chain mode). Does NOT reselect — callers own that.
 function fMolDraftTeardownDisplay() {
-  var snap = { back3D: false, preview3D: false, savedMode: null, blobUrl: null };
+  var snap = { back3D: false, preview3D: false, savedMode: null };
   try {
     if (window.MulerDraft) {
       snap.back3D = !!window.MulerDraft.had3D;
       snap.preview3D = !!window.MulerDraft.preview3D;
-      snap.blobUrl = window.MulerDraft.blobUrl || null;
       try { snap.savedMode = window.MulerDraft.savedChainMode; } catch (eSm) {}
     }
   } catch (eG) {}
   window.MulerDraft = null;
-  if (snap.blobUrl) { try { URL.revokeObjectURL(snap.blobUrl); } catch (eRv) {} }
   fMolDraftHideBar();
   try {
     var _pc = document.getElementById("pageContainer");
@@ -4794,11 +4809,28 @@ function fLoadMol3D() {
   } catch (eW) { /* best-effort */ }
 
   let myMol3D = selectedExample.file3D;
-  // v54 Stage 2 accepted drafts: no file3D on disk — inline SDF via Blob URL.
+  // v54 Stage 2 accepted drafts: no file3D on disk — inline SDF text via
+  // `load data` (blob: URLs are rejected by JSmol's file loader online).
   if (!myMol3D && selectedExample.sdf3D) {
+    let movetoInline =
+      selectedExample.hasOwnProperty("moveto") && selectedExample.moveto
+        ? String(selectedExample.moveto).trim().replace(/;?\s*$/, "; ")
+        : "";
+    const initialZoomInline = selectedExample.initialZoom3D;
+    const zoomInline = (!movetoInline && Number.isFinite(initialZoomInline) && initialZoomInline > 0)
+      ? "zoom " + initialZoomInline + ";"
+      : "";
     try {
-      myMol3D = URL.createObjectURL(new Blob([selectedExample.sdf3D], { type: "chemical/x-mdl-sdfile" }));
-    } catch (eBlob) { myMol3D = null; }
+      if (typeof fJSmolLoadInlineSDF === "function") {
+        fJSmolLoadInlineSDF(jmolAppletNomeclature, selectedExample.sdf3D,
+          "script spt/init-3.spt;" + zoomInline + movetoInline);
+      }
+    } catch (eInline) {}
+    try { if (typeof fSetMolVis3D === "function") fSetMolVis3D(); } catch (eV) {}
+    try {
+      if (typeof MuLERMoCScenario !== "undefined") MuLERMoCScenario.reload3DOnce = false;
+    } catch (eFlag) { /* flag best-effort */ }
+    return;
   }
   if (!myMol3D) {
     return;
