@@ -229,8 +229,8 @@ header {
   gap: 8px;
   padding: 6px 10px;
   background: var(--veryLightBlue);
-  border-radius: 4px;
-  margin: 6px 0;
+  /* border-radius: 4px; */
+  /* margin: 6px 0; */
 }
 #molDraftBar.hide {
   display: none;
@@ -257,15 +257,89 @@ header {
   padding: 8px 4px;
 }
 .draftPreview {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 6px 4px;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding: 10px 10px;
+	background: #fff;
+	border: 1px solid var(--redAlert);
+	border-radius: 4px;
 }
+
 .draftEngine {
   font-weight: 700;
   font-size: 1.05rem;
 }
+.draftEngineEN {
+  font-weight: 700;
+  font-size: 0.95rem;
+  opacity: 0.85;
+}
+
+.draftPreviewTitle {
+	font-weight: 700;
+	font-size: 1rem;
+	/* opacity: 0.7; */
+	color: var(--redAlert);
+	border-bottom: 2px solid var(--redAlert);
+	margin-bottom: 5px;
+	padding-bottom: 5px;
+	padding-left: 5px;
+	margin-left: -5px;
+}
+/* Tri-state name verdict: [✓|?|✕] control left of each predicted name. */
+.draftVRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.draftVRow .draftEngine,
+.draftVRow .draftEngineEN {
+  flex: 1;
+}
+.draftVerdict {
+  display: flex;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+.draftVBtn {
+	width: 20px;
+	height: 20px;
+	padding: 0;
+	border: 1px solid var(--darkBlue);
+	border-radius: 3px;
+	background: var(--veryLightEarth);
+	color: var(--darkBlue);
+	font-size: 0.8rem;
+	line-height: 1;
+	cursor: pointer;
+	font-weight: bold;
+	font-family: "Roboto", arial;
+}
+.draftVBtn.active[data-v='correct'] {
+  background: #1e7e34;
+  border-color: #1e7e34;
+  color: #fff;
+}
+.draftVBtn.active[data-v='wrong'] {
+  background: #b3261e;
+  border-color: #b3261e;
+  color: #fff;
+}
+.draftVBtn.active[data-v='unconfirmed'] {
+  background: #666;
+  border-color: #666;
+  color: #fff;
+}
+/* Verdict tints on the predicted names: red = wrong (engine-work queue),
+   green = author-confirmed, neutral = unconfirmed. */
+.draftV-correct {
+  color: #1e7e34;
+}
+.draftV-wrong {
+  color: #b3261e;
+}
+
 .draftOracleRow {
   font-size: 0.9rem;
   opacity: 0.85;
@@ -291,7 +365,7 @@ header {
 #pageContainer.drafting #view2DBtn,
 #pageContainer.drafting #view3DBtn,
 #pageContainer.drafting #viewerSettingsBtn,
-#pageContainer.drafting #nameAnalysis,
+/* #pageContainer.drafting #nameAnalysis, */
 #pageContainer.drafting #nameSettingsBtnDiv,
 #pageContainer.drafting #view2DTools,
 #pageContainer.drafting #view3DTools,

@@ -6,8 +6,8 @@
 > first, then resume from the baseline below + `git log --oneline -5` +
 > `git status`. OpenCode sessions themselves stay machine-local.
 
-> **Current baseline (2026-11-02): v53 live.** `index.html` →
-> `mulermoc-nom-53.html`, 141 `nameExamples` keys. Full English version (`?lang=en`, Greek default; per-step scenario language, molecule-carrying switch, grouping-carrying switch with menu-state restore) over the v52 base. New: molecule info panel (SMILES + PubChem IUPAC, live-only). v53 adds: 207-string chrome table with build-time translation, slot-transliterated systematic EN names + PubChem/CIR oracle with live verdict tints, oxocarboxylic merge (`κετο-` → systematic `οξο-` with derived locants), ester `-oate` fix. v52 base has a unified rich note
+> **Current baseline (2026-11-04): v54 live.** `index.html` →
+> `mulermoc-nom-54.html`, 141 `nameExamples` keys plus author customs. Full English version (`?lang=en`, Greek default; per-step scenario language, molecule-carrying switch, grouping-carrying switch with menu-state restore) over the v52 base. New in v54: molecule Edit/New drafts (dedicated edit applet, engine + PubChem preview with GR + predicted EN, per-name correct/wrong/unconfirmed verdicts with PubChem auto-check for EN, freshness state machine), Accept into `custom_*` molecules (same-molecule redraw updates in place, new molecule forks, stored never overwritten) with generated 2D variants (linearized school-condensed, H-expanded, JSME zigzag skeletal) and per-molecule save; inline SDF 3D loading; atom-mapped chain-stepper 3D tracking. v53 adds: 207-string chrome table with build-time translation, slot-transliterated systematic EN names + PubChem/CIR oracle with live verdict tints, oxocarboxylic merge (`κετο-` → systematic `οξο-` with derived locants), ester `-oate` fix, molecule info panel (SMILES + PubChem IUPAC, live-only). v52 base has a unified rich note
 > editor: inline WYSIWYG, modal WYSIWYG + HTML source view, staged Apply/Cancel
 > with dirty confirm, and lazy legacy-text upgrade. The 2026-10-26 refinement
 > adds block lists, per-block font size/alignment, an image sizing dialog, a

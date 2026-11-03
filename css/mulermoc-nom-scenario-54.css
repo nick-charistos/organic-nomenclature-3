@@ -789,7 +789,11 @@
    border-radius: 6px;
    opacity: 0;
    transition: opacity .2s;
-   max-width: 80vw
+   max-width: 80vw;
+   /* Text-only notice: never intercept clicks, visible or not. Without
+      this the faded (opacity 0) fixed element keeps hit-testing and blocks
+      buttons behind it. */
+   pointer-events: none;
 }
 
 #scenarioToast.show {

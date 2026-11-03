@@ -226,9 +226,20 @@ function fScenarioToast(msg) {
   try { if (typeof fMulerTByGr === "function") msg = fMulerTByGr(msg); } catch (e) {}
   t.textContent = msg;
   t.classList.add("show");
-  setTimeout(function () {
-    t.classList.remove("show");
-  }, 2600);
+  // Overlapping toasts share one element: a stale timer from an earlier
+  // toast must not hide its replacement early (e.g. dup notice right after
+  // a stale notice).
+  try { if (window.__scToastTimer) clearTimeout(window.__scToastTimer); } catch (eC) {}
+  try {
+    window.__scToastTimer = setTimeout(function () {
+      t.classList.remove("show");
+      try { window.__scToastTimer = null; } catch (eN) {}
+    }, 2600);
+  } catch (eT) {
+    setTimeout(function () {
+      t.classList.remove("show");
+    }, 2600);
+  }
 }
 
 // Destructive-action guard: a small modal confirm (singleton, like the toast).

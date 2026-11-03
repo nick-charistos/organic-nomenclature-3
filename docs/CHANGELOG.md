@@ -4,9 +4,9 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ---
 
-## [v54] (molecule edit/create draft flow; live stays v53, `index.html` → v53)
+## [v54] (molecule edit/create draft flow; LIVE, `index.html` → v54)
 
-New parallel file set `mulermoc-nom-54.html` + `js/*-54.js` + `css/*-54.css`, forked from v53.
+New parallel file set `mulermoc-nom-54.html` + `js/*-54.js` + `css/*-54.css`, forked from v53. v54 went live 2026-11-04 (was authoring-only before).
 
 ### Draft editor applet (v54)
 - Dedicated `jsmeEditDraft` applet in pure edit mode by construction (next to the depict-only display applet). Runtime `options()` cannot flip depict/edit (proven in-browser against the bundled JSME), so there is no mode flipping anywhere: the display pipeline never leaves depict, drafts live entirely in the edit applet. The earlier single-applet `options()` enforcement pair was removed.
@@ -14,10 +14,20 @@ New parallel file set `mulermoc-nom-54.html` + `js/*-54.js` + `css/*-54.css`, fo
 
 ### Draft session (v54 Stage 2)
 - Enter Edit (template = visible variant's MOL) or New (blank canvas); `selectedMol` never touched, Cancel restores via full `fSelectMol`. Sandbox runs algorithmic-or-nothing (stored chains belong to the old atom order); 3D hidden not zapped; naming cleared to a placeholder; radios locked; functional guards in `fSelectMol`/name boxes/step capture plus page-wide `.drafting` dim. Present forces read-only.
-- Submit → engine + PubChem preview: empty/cyclic guard (union-find cycle check — core only warns-and-falls back), engine name, verbatim PubChem rows (IUPAC/ether-Common/Systematic, same verbatim-only rule), PubChem SDF 3D via Blob URL (record-without-3D and novel drawings stay 2D-only with an explanatory note, never a failure). Preview renders in the depict SVG view; a Draw button flips back to the editor. Submit/Accept/Draw/Cancel form a freshness state machine with stale detection (live JSME callbacks + authoritative Accept-time SMILES re-check with self-heal).
+- Submit → engine + PubChem preview: empty/cyclic guard (union-find cycle check — core only warns-and-falls back), engine name, verbatim PubChem rows (IUPAC/ether-Common/Systematic, same verbatim-only rule), PubChem SDF 3D via inline `load data` (blob: URLs are rejected by JSmol's file loader online — `fJSmolLoadInlineSDF`; record-without-3D and novel drawings stay 2D-only with an explanatory note, never a failure). Preview renders in the depict SVG view; a Draw button flips back to the editor. Submit/Accept/Draw/Cancel form a freshness state machine with stale detection (live JSME callbacks + authoritative Accept-time SMILES re-check with self-heal).
 - Accept: forks stored templates into `custom_*`, updates custom templates in place (key stable, history appended). Readable keys (`custom_2_methylpropane`, systematic preferred, Greek-letter expansion, collision suffix, hash fallback). Duplicate guard (normalized SMILES + PubChem CID). PubChem-3D gate blocks 3D-less accepts (RDKit TODO for local ETKDG generation).
 - Manual per-molecule save from a new Ρυθμίσεις row (`MULERMOC_<name>_data.js`, merge-safe `Object.assign` so collected files coexist); boot merge folds them into `nameExamples`. No auto-download; no schema change.
 - Expanded structural formula generator for menu labels (`CH3CH(Br)CH3`, `HOOC`/`COOH` end rules, `CH=O`/`O=CH`, keto `CO` drop, `NO2` merge; 24-vector headless matrix green). Menu renders a key fallback for formula-less entries and rebuilds on Accept (grouping switches already did).
+
+### Draft flow fixes (v54, live day)
+- Inline SDF 3D for drafts and accepted customs (`fJSmolLoadInlineSDF`, `load data ... end`): JSmol's `load <url>` rejects `blob:` URLs online (remote `j2sPath`/`serverURL`), so Blob-URL loading was replaced everywhere SDF text is at hand.
+- Edit identity rule: an Edit that redraws the SAME molecule updates the custom entry in place (CID-first, normalized-SMILES fallback); an Edit producing a different molecule always forks a new `custom_*`; stored (141) templates are never overwritten (same-molecule redraw of stored blocks as a duplicate). Accept-button label (`Update`/`Accept`) follows the runtime decision; the dup guard excludes self only on the true update path.
+- Draft bar state machine, hardened: Submit dims once a fresh preview is up and re-lights on Draw; Accept and the Draw flip are lit only in preview view (edit mode dims them); Draw returns to the editor and hides 3D like Edit entry; `molDraftDrawBtn` reads Επεξεργασία; draft-status names the edited variant. The strand this fixes: Submit can never be dead while drawing is possible (every drawable state goes through Draw).
+- Toasts: overlapping toasts no longer hide each other early (pending timer cleared on re-toast); `#scenarioToast` is `pointer-events: none` so the faded notice never blocks clicks behind it.
+- Chain stepper 3D tracking: per-molecule 2D↔3D heavy-atom isomorphism map translates the adopted chain atom-by-atom (symmetry-safe — neopentane's 6 identical C–C–C paths cycle correctly); signature match then ordinal are fallbacks. Also applied at load-time snap.
+- Draft preview now shows the predicted EN name under the GR engine name (sandbox-safe transliteration, PubChem systematic fallback for Greek-common esters/complex ethers) under a "Πρόβλεψη Ονομασίας" title.
+- Tri-state name verdicts (`[✓|?|✕]` per predicted name, correct/wrong/unconfirmed): EN auto-checks via the shared oracle comparator when untouched (human always wins); tints (green/red/neutral); reset on resubmit; persisted as `nameCheck` (+ history + save-file header line) so each saved file is labeled eval data for engine work. Accept stays non-blocking with an outcome toast.
+- Three-slot 2D derivation at Accept (drawn variant verbatim + generated siblings): drawn MOL in its slot, school-condensed via main-chain linearization, expanded via topped-up explicit H, skeletal via JSME zigzag ladder (display applet → edit applet → built-in, validated, logged) with drawn-geometry fallback; update-in-place rewrites all three slots; the accepted menu row is marked, grouped open, and scrolled into view.
 
 ## [v53] (English version: full UI + molecule naming in English, Greek default preserved)
 

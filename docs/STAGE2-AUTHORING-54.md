@@ -1,17 +1,16 @@
 # Stage 2 + authoring/exercises roadmap (v54+, 2026-11-03)
 
-> **Status 2026-11-04: Stage 1 + draft flow built (Steps 0–4 + fixes).**
+> **Status 2026-11-04: v54 LIVE (`index.html` → v54). Stage 1 + draft flow built (Steps 0–4 + fixes).**
 > Dedicated edit applet, Edit/New entries, draft session + guards, Submit
-> (engine + PubChem preview, depict SVG view, Draw back-flip, freshness
-> state machine), Accept (fork/update-in-place, readable keys, dup + 3D
-> gates, manual per-molecule save), formula generator, menu fixes. Open:
-> RDKit local 3D (gates Accept), generic 2D-variant derivation, EN draft
-> name + verdict, any-molecule export button, 2B author correction,
+> (engine + PubChem preview incl. predicted EN + verdicts, depict SVG view, Draw back-flip, freshness
+> state machine), Accept (fork/update-in-place by molecule identity, readable keys, dup + 3D
+> gates, manual per-molecule save), 3-slot 2D generation (linearized school-condensed, H-expanded,
+> JSME zigzag skeletal ladder), formula generator, menu fixes, chain-stepper atom map, toast hardening. Open:
+> RDKit local 3D (gates Accept), beautify button (spec'd), 2B author correction,
 > exercise types (Q4 first).
-> `index.html` intentionally still → v53 (v54 is the authoring line).
 
-## Where we are (Stage 1, done, uncommitted)
-- v54 forked from v53; `index.html` still → v53.
+## Where we are (Stage 1, done; v54 live)
+- v54 forked from v53; `index.html` → v54 since 2026-11-04.
 - Single JSME applet (`depict,marker,depictaction,toggle`); ORGNL retired (commented, restorable).
 - `Επεξεργασία/Σχεδίαση 2D (JSME)` checkbox shows live applet / hides SVG + radios (delegated-handler order fixed).
 - Applet re-fits via `fResizeViewers()` on show; height probe counts applet as 2D viewer (`viewerMaxHeight`/`viewerBothHeight` apply).

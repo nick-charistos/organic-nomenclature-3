@@ -56,6 +56,15 @@ let mainChainPool3D = []
 // Owner molecule at 3D-pool build time (3D parse is async; the stepper
 // only highlights 3D when this matches the live selection).
 let mainChainPool3DKey = null
+// 2D↔3D heavy-atom correspondence (v54 stepper fix): the 2D (JSME) and 3D
+// (SDF) pools rank the same molecule from different atom orderings, so
+// ordinal stepping diverges on reordered graphs — and signatures cannot tell
+// symmetry-equivalent chains apart (neopentane: 6 identical C–C–C paths).
+// Cache: Array (0-based full-list 2D idx → 0-based full-list 3D idx) plus
+// the 3D heavy adjacency for contiguity checks. Rebuilt when the key or the
+// heavy-atom counts stop matching; cleared in fInitProps like the pools.
+let molAtomMap2D3D = null
+let molAtomMapKey = null
 
 // ── Naming globals ────────────────────────────────────────────────────────
 let nameComponentsList = []
@@ -2355,11 +2364,502 @@ function fHorizontalEquivalentIndex(pool, reference) {
 // Independently numbered 3D atoms must match chemistry, not a 2D pool ordinal.
 function fMatchNumberedMainChain3D() {
     if (mainChainPool3DKey !== selectedMol || !mainChainPool3D.length) return
+    // Atom-map first: exact correspondence, symmetry-safe and consistent
+    // with what the stepper will show for the same 2D chain.
+    try {
+        if (typeof fTranslateChain2D3D === "function") {
+            var _m3 = fTranslateChain2D3D(mainChainAtomsList)
+            if (_m3) { mainChainAtoms3D = _m3.slice(); return }
+        }
+    } catch (eM) {}
     const signature = fNumberedChainSignature(mainChainAtomsList, allAtomsTypeList, bondList)
     if (signature === null) return
     const match = mainChainPool3D.find(p =>
         fNumberedChainSignature(p.chain, allAtomsTypeList3D, bondList3D) === signature)
     if (match) mainChainAtoms3D = match.chain.slice()
+}
+
+// ── 2D↔3D heavy-atom map (v54 stepper fix) ─────────────────────────────────
+// Backtracking isomorphism between the 2D heavy-atom graph (JSME index space)
+// and the 3D one (SDF position space) on (element, heavy-degree, bond-order)
+// invariants. Graphs here are tiny and acyclic — sub-millisecond. Any valid
+// isomorphism will do: bijectivity alone guarantees distinct 2D chains map
+// to distinct 3D chains, so stepping visibly cycles symmetric equivalents.
+// Heavy atoms only (explicit-H counts legitimately differ between MOL/SDF).
+// Pure engine code: no DOM, no jQuery.
+function fHeavyAdj2D3D(types, bonds) {
+    var n = 0
+    try { n = types.length } catch (eN) { n = 0 }
+    var heavy = {}, adj = [], ord = {}
+    for (var i = 0; i < n; i++) {
+        var t = null
+        try { t = types[i] } catch (eT) {}
+        if (t == null) continue
+        var s = String(t)
+        if (s === "H" || s === "h" || s === "") continue
+        heavy[i] = true
+        adj[i] = []
+    }
+    try {
+        for (var b = 0; b < bonds.length; b++) {
+            var bb = bonds[b]
+            if (!bb) continue
+            var x = (bb[0] | 0) - 1, y = (bb[1] | 0) - 1, o = bb[2] || 1
+            if (!heavy[x] || !heavy[y]) continue
+            adj[x].push(y); adj[y].push(x)
+            var k = (x < y) ? x + "-" + y : y + "-" + x
+            if (!ord[k] || ord[k] < o) ord[k] = o
+        }
+    } catch (eB) {}
+    return { adj: adj, ord: ord, heavy: heavy }
+}
+
+function fOrderOf2D3D(ord, a, b) {
+    var k = (a < b) ? a + "-" + b : b + "-" + a
+    return ord[k] || 1
+}
+
+function fBuildHeavyMap2D3D(ignoreOrder) {
+    try {
+        if (typeof allAtomsTypeList === "undefined" || typeof allAtomsTypeList3D === "undefined") return null
+        if (typeof bondList === "undefined" || typeof bondList3D === "undefined") return null
+        if (!allAtomsTypeList || !allAtomsTypeList3D || !bondList || !bondList3D) return null
+        var A = fHeavyAdj2D3D(allAtomsTypeList, bondList)
+        var B = fHeavyAdj2D3D(allAtomsTypeList3D, bondList3D)
+        var N2 = [], N3 = [], degA = {}, degB = {}
+        for (var i in A.heavy) { i = +i; N2.push(i); degA[i] = A.adj[i].length }
+        for (var j in B.heavy) { j = +j; N3.push(j); degB[j] = B.adj[j].length }
+        if (!N2.length || N2.length !== N3.length) return null
+        var elA = function (x) { try { return String(allAtomsTypeList[x]) } catch (e) { return "" } }
+        var elB = function (y) { try { return String(allAtomsTypeList3D[y]) } catch (e) { return "" } }
+        // Rare-element / high-degree first: tiny search tree on these graphs.
+        N2.sort(function (p, q) {
+            if (degA[q] !== degA[p]) return degA[q] - degA[p]
+            if (elA(p) < elA(q)) return -1
+            if (elA(p) > elA(q)) return 1
+            return p - q
+        })
+        var assign = {}, used = {}
+        var consistent = function (x, y) {
+            var nbrs = A.adj[x] || []
+            for (var k = 0; k < nbrs.length; k++) {
+                var nx = nbrs[k]
+                if (!(nx in assign)) continue
+                var ny = assign[nx]
+                if ((B.adj[y] || []).indexOf(ny) < 0) return false
+                if (!ignoreOrder && fOrderOf2D3D(B.ord, y, ny) !== fOrderOf2D3D(A.ord, x, nx)) return false
+            }
+            // Reverse: every already-mapped 3D neighbor of y must be the image
+            // of a 2D neighbor of x (forward-only checks admit spurious maps).
+            var yNbrs = B.adj[y] || []
+            for (var r = 0; r < yNbrs.length; r++) {
+                var ny2 = yNbrs[r], wx = null
+                for (var q in assign) { if (assign[q] === ny2) { wx = +q; break } }
+                if (wx === null) continue
+                if (nbrs.indexOf(wx) < 0) return false
+                if (!ignoreOrder && fOrderOf2D3D(A.ord, x, wx) !== fOrderOf2D3D(B.ord, y, ny2)) return false
+            }
+            return true
+        }
+        var bt = function (pos) {
+            if (pos >= N2.length) return true
+            var x = N2[pos]
+            for (var c = 0; c < N3.length; c++) {
+                var y = N3[c]
+                if (used[y]) continue
+                if (elB(y) !== elA(x)) continue
+                if (degB[y] !== degA[x]) continue
+                assign[x] = y; used[y] = true
+                if (consistent(x, y) && bt(pos + 1)) return true
+                delete assign[x]; used[y] = false
+            }
+            return false
+        }
+        if (!bt(0)) return null
+        var arr = []
+        try { arr.length = allAtomsTypeList.length } catch (eL) {}
+        for (var m in assign) arr[+m] = assign[m]
+        return { arr: arr, adj3: B.adj, n2: allAtomsTypeList.length, n3: allAtomsTypeList3D.length }
+    } catch (e) { return null }
+}
+
+// Translate a 1-based 2D (JSME) chain to 1-based 3D (SDF/JSmol atomno) positions.
+// Null when no exact correspondence exists (caller falls back to signature,
+// then ordinal, then leaves 3D untouched).
+function fTranslateChain2D3D(chain) {
+    try {
+        if (!Array.isArray(chain) || !chain.length) return null
+        if (typeof selectedMol === "undefined" || !selectedMol) return null
+        var n2 = 0, n3 = 0
+        try { n2 = allAtomsTypeList.length; n3 = allAtomsTypeList3D.length } catch (eL) { return null }
+        if (!n2 || !n3) return null
+        var M = null
+        try { M = molAtomMap2D3D } catch (eG) { M = null }
+        var K = null
+        try { K = molAtomMapKey } catch (eK) { K = null; }
+        if (!M || !M.arr || K !== selectedMol || M.n2 !== n2 || M.n3 !== n3) {
+            M = fBuildHeavyMap2D3D(false) || fBuildHeavyMap2D3D(true)
+            try { molAtomMap2D3D = M; molAtomMapKey = selectedMol } catch (eS) {}
+        }
+        if (!M || !M.arr) return null
+        var out = []
+        for (var k = 0; k < chain.length; k++) {
+            var i2 = chain[k] - 1, i3 = M.arr[i2]
+            if (i3 == null || i3 < 0) return null
+            out.push(i3 + 1)
+        }
+        for (var c = 0; c < out.length - 1; c++) {
+            var a = out[c] - 1, b = out[c + 1] - 1
+            if (!M.adj3[a] || M.adj3[a].indexOf(b) < 0) return null
+        }
+        return out
+    } catch (e) { return null }
+}
+
+// ── 2D-variant Mol generators (v54 Stage 2) ─────────────────────────────────
+// Pure V2000 text tools: parse once, derive the school-geometry siblings.
+// Condensed = linear main chain + orthogonal branches (school form); expanded
+// = condensed + explicit H; skeletal comes from JSME (molview side, scientific
+// zigzag). Deterministic and offline. No DOM, no jQuery.
+function fParseMolV2000(text) {
+  try {
+    if (!text) return null;
+    var lines = String(text).split("\n");
+    if (lines.length < 5) return null;
+    var nA = parseInt(lines[3].substring(0, 3), 10);
+    var nB = parseInt(lines[3].substring(3, 6), 10);
+    if (!(nA >= 0) || !(nB >= 0)) return null;
+    var atoms = [], bonds = [];
+    for (var i = 0; i < nA; i++) {
+      var L = lines[4 + i] || "";
+      atoms.push({
+        x: parseFloat(L.substring(0, 10)) || 0,
+        y: parseFloat(L.substring(10, 20)) || 0,
+        el: (L.substring(31, 34) || "").trim() || "C"
+      });
+    }
+    for (var j = 0; j < nB; j++) {
+      var parts = (lines[4 + nA + j] || "").trim().split(/\s+/);
+      var a = parseInt(parts[0], 10), b = parseInt(parts[1], 10), o = parseInt(parts[2], 10) || 1;
+      if (!(a >= 1 && a <= nA && b >= 1 && b <= nA)) continue;
+      bonds.push([a, b, o]);
+    }
+    return { head: [lines[0] || "", lines[1] || "", lines[2] || ""], atoms: atoms, bonds: bonds };
+  } catch (e) { return null; }
+}
+
+function fWriteMolV2000(head, atoms, bonds) {
+  try {
+    var out = [];
+    out.push(head && head[0] != null ? head[0] : "");
+    out.push(head && head[1] != null ? head[1] : "  MuLERMoC 2D");
+    out.push(head && head[2] != null ? head[2] : "");
+    out.push(String(atoms.length).padStart(3, " ") + String(bonds.length).padStart(3, " ") + "  0  0  0  0  0  0  0  0  0  0999 V2000");
+    for (var i = 0; i < atoms.length; i++) {
+      var a = atoms[i];
+      out.push(a.x.toFixed(4).padStart(10, " ") + a.y.toFixed(4).padStart(10, " ") + "    0.0000 " + String(a.el || "C").padEnd(3, " ") + " 0  0  0  0  0  0  0  0  0  0  0  0");
+    }
+    for (var j = 0; j < bonds.length; j++) {
+      var b = bonds[j];
+      out.push(String(b[0]).padStart(3, " ") + String(b[1]).padStart(3, " ") + String(b[2] || 1).padStart(3, " ") + "  0  0  0");
+    }
+    out.push("M  END");
+    return out.join("\n") + "\n";
+  } catch (e) { return null; }
+}
+
+function fIsHeavyEl2D(el) {
+  var s = String(el == null ? "" : el);
+  return !(s === "H" || s === "h" || s === "");
+}
+
+// Heavy subgraph, atom order and coordinates kept, bonds renumbered.
+function fStripHydrogensMol(text) {
+  try {
+    var m = fParseMolV2000(text);
+    if (!m || !m.atoms.length) return null;
+    var map = {}, atoms = [];
+    for (var i = 0; i < m.atoms.length; i++) {
+      if (!fIsHeavyEl2D(m.atoms[i].el)) continue;
+      map[i + 1] = atoms.length + 1;
+      atoms.push({ x: m.atoms[i].x, y: m.atoms[i].y, el: m.atoms[i].el });
+    }
+    if (!atoms.length) return null;
+    var bonds = [];
+    for (var j = 0; j < m.bonds.length; j++) {
+      var b = m.bonds[j];
+      if (map[b[0]] && map[b[1]]) bonds.push([map[b[0]], map[b[1]], b[2]]);
+    }
+    return fWriteMolV2000(m.head, atoms, bonds);
+  } catch (e) { return null; }
+}
+
+var MOLGEN_STDVALENCE = { C: 4, N: 3, O: 2, F: 1, Cl: 1, Br: 1, I: 1 };
+
+// Expanded form: heavy skeleton + explicit H at standard lengths, placed by
+// largest-free-sector bisection (matches the stored 0.78-grid convention
+// closely enough for depiction; connectivity is what matters). Pre-existing
+// explicit H are kept; missing ones are topped up. Unknown elements: kept,
+// never added to.
+function fGenExpandedMol(text) {
+  try {
+    var m = fParseMolV2000(text);
+    if (!m || !m.atoms.length) return null;
+    var n = m.atoms.length;
+    var adj = [], ord = {};
+    for (var a = 0; a < n; a++) adj[a] = [];
+    for (var b = 0; b < m.bonds.length; b++) {
+      var bb = m.bonds[b];
+      var x = bb[0] - 1, y = bb[1] - 1;
+      if (x < 0 || y < 0 || x >= n || y >= n) continue;
+      adj[x].push(y); adj[y].push(x);
+      var k = (x < y) ? x + "-" + y : y + "-" + x;
+      if (!ord[k] || ord[k] < bb[2]) ord[k] = bb[2];
+    }
+    var atoms = [];
+    for (var c = 0; c < n; c++) atoms.push({ x: m.atoms[c].x, y: m.atoms[c].y, el: m.atoms[c].el });
+    var bonds = [];
+    for (var d = 0; d < m.bonds.length; d++) bonds.push([m.bonds[d][0], m.bonds[d][1], m.bonds[d][2]]);
+    var HLEN = 0.78;
+    for (var h = 0; h < n; h++) {
+      var el = String(m.atoms[h].el || "");
+      if (!fIsHeavyEl2D(el)) continue;
+      var v = MOLGEN_STDVALENCE[el];
+      if (v == null) continue;
+      var used = 0;
+      for (var q = 0; q < adj[h].length; q++) {
+        var nb = adj[h][q];
+        var kk = (h < nb) ? h + "-" + nb : nb + "-" + h;
+        used += ord[kk] || 1;
+      }
+      var missing = v - used;
+      for (var t = 0; t < missing; t++) {
+        var angs = [];
+        for (var r = 0; r < adj[h].length; r++) {
+          var p = atoms[adj[h][r]];
+          angs.push(Math.atan2(p.y - atoms[h].y, p.x - atoms[h].x));
+        }
+        angs.sort(function (p1, p2) { return p1 - p2; });
+        var bestA = 0;
+        if (angs.length) {
+          var bestG = -1;
+          for (var s = 0; s < angs.length; s++) {
+            var a1 = angs[s], a2 = (s + 1 < angs.length) ? angs[s + 1] : angs[0] + 2 * Math.PI;
+            var g = a2 - a1;
+            if (g > bestG) { bestG = g; bestA = a1 + g / 2; }
+          }
+        }
+        atoms.push({ x: atoms[h].x + HLEN * Math.cos(bestA), y: atoms[h].y + HLEN * Math.sin(bestA), el: "H" });
+        var ni = atoms.length - 1;
+        adj[h].push(ni); adj.push([h]);
+        bonds.push([h + 1, ni + 1, 1]);
+      }
+    }
+    return fWriteMolV2000(m.head, atoms, bonds);
+  } catch (e) { return null; }
+}
+
+// School-form condensed layout: main chain collinear (1.17 spacing, the
+// stored-condensed convention), branches orthogonal alternating sides, sp
+// centers stay on the line like the stored files. H atoms are dropped
+// (condensed = heavy only). Chain entries are 1-based numbers into the source
+// MOL's atom list (engine mainChainAtomsList of the same drawing).
+function fLinearizeMol(text, chain) {
+  try {
+    var m = fParseMolV2000(text);
+    if (!m || !m.atoms.length) return null;
+    if (!Array.isArray(chain) || !chain.length) return null;
+    var n = m.atoms.length;
+    var map = {}, order = [];
+    for (var i = 0; i < n; i++) {
+      if (!fIsHeavyEl2D(m.atoms[i].el)) continue;
+      map[i + 1] = order.length;
+      order.push(i);
+    }
+    if (!order.length) return null;
+    var ch = [];
+    for (var c = 0; c < chain.length; c++) {
+      var a0 = (chain[c] | 0) - 1;
+      if (a0 >= 0 && a0 < n && map[a0 + 1] != null) ch.push(a0);
+    }
+    if (!ch.length) return null;
+    var adj = [];
+    for (var h0 = 0; h0 < n; h0++) adj[h0] = [];
+    for (var b = 0; b < m.bonds.length; b++) {
+      var bb = m.bonds[b];
+      var x = bb[0] - 1, y = bb[1] - 1;
+      if (x < 0 || y < 0 || x >= n || y >= n) continue;
+      if (map[x + 1] == null || map[y + 1] == null) continue;
+      adj[x].push(y); adj[y].push(x);
+    }
+    var DX = 1.17, DY = 1.17;
+    var pos = {}, inChain = {};
+    for (var k = 0; k < ch.length; k++) { inChain[ch[k]] = true; pos[ch[k]] = { x: k * DX, y: 0 }; }
+    var visited = {};
+    for (var kc = 0; kc < ch.length; kc++) visited[ch[kc]] = true;
+    // Queue: {node, x, y, dx, dy} — first continuation keeps direction,
+    // extra forks rotate 90° (rare in scope, depiction-only).
+    var queue = [];
+    for (var ci = 0; ci < ch.length; ci++) {
+      var c0 = ch[ci], sideCount = 0;
+      for (var nb = 0; nb < adj[c0].length; nb++) {
+        var br = adj[c0][nb];
+        if (visited[br]) continue;
+        var side = (sideCount % 2 === 0) ? -1 : 1;
+        sideCount++;
+        queue.push({ node: br, x: ci * DX, y: side * DY, dx: 0, dy: side });
+      }
+    }
+    while (queue.length) {
+      var it = queue.shift();
+      if (visited[it.node]) continue;
+      visited[it.node] = true;
+      pos[it.node] = { x: it.x, y: it.y };
+      var first = true;
+      for (var w = 0; w < adj[it.node].length; w++) {
+        var cand = adj[it.node][w];
+        if (visited[cand]) continue;
+        if (first) {
+          queue.push({ node: cand, x: it.x + it.dx * DX, y: it.y + it.dy * DY, dx: it.dx, dy: it.dy });
+          first = false;
+        } else {
+          queue.push({ node: cand, x: it.x - it.dy * DX, y: it.y + it.dx * DY, dx: -it.dy, dy: it.dx });
+        }
+      }
+    }
+    var atoms = [], newIdx = {};
+    for (var o = 0; o < order.length; o++) {
+      var oi = order[o];
+      var pp = pos[oi] || { x: m.atoms[oi].x, y: m.atoms[oi].y };
+      newIdx[oi + 1] = atoms.length + 1;
+      atoms.push({ x: pp.x, y: pp.y, el: m.atoms[oi].el });
+    }
+    var bonds = [];
+    for (var j = 0; j < m.bonds.length; j++) {
+      var bj = m.bonds[j];
+      if (newIdx[bj[0]] && newIdx[bj[1]]) bonds.push([newIdx[bj[0]], newIdx[bj[1]], bj[2]]);
+    }
+    return fWriteMolV2000(m.head, atoms, bonds);
+  } catch (e) { return null; }
+}
+
+// Scientific zigzag layout (university skeletal form): chain walk with
+// alternating ±30° segments at uniform bond lengths, triple bonds kept
+// collinear like the stored files, branches bisecting the external angle.
+// Heavy atoms only; chain entries are 1-based numbers into the source MOL.
+// Deterministic fallback when JSME cannot lay out SMILES in this build.
+function fZigzagMol(text, chain) {
+  try {
+    var m = fParseMolV2000(text);
+    if (!m || !m.atoms.length) return null;
+    if (!Array.isArray(chain) || !chain.length) return null;
+    var n = m.atoms.length;
+    var map = {}, order = [];
+    for (var i = 0; i < n; i++) {
+      if (!fIsHeavyEl2D(m.atoms[i].el)) continue;
+      map[i + 1] = order.length;
+      order.push(i);
+    }
+    if (!order.length) return null;
+    var ch = [];
+    for (var c = 0; c < chain.length; c++) {
+      var a0 = (chain[c] | 0) - 1;
+      if (a0 >= 0 && a0 < n && map[a0 + 1] != null) ch.push(a0);
+    }
+    if (!ch.length) return null;
+    var adj = [], ord = {};
+    for (var h0 = 0; h0 < n; h0++) adj[h0] = [];
+    for (var b = 0; b < m.bonds.length; b++) {
+      var bb = m.bonds[b];
+      var x = bb[0] - 1, y = bb[1] - 1;
+      if (x < 0 || y < 0 || x >= n || y >= n) continue;
+      if (map[x + 1] == null || map[y + 1] == null) continue;
+      adj[x].push(y); adj[y].push(x);
+      var k = (x < y) ? x + "-" + y : y + "-" + x;
+      if (!ord[k] || ord[k] < bb[2]) ord[k] = bb[2];
+    }
+    var bo = function (a, c) {
+      var kk = (a < c) ? a + "-" + c : c + "-" + a;
+      return ord[kk] || 1;
+    };
+    var L = 1.17, CX = L * 0.8660254, CY = L * 0.5;
+    var norm2 = function (vx, vy) {
+      var l = Math.sqrt(vx * vx + vy * vy);
+      if (!(l > 1e-9)) return null;
+      return { x: vx / l, y: vy / l };
+    };
+    var pos = {}, visited = {}, segDir = {};
+    pos[ch[0]] = { x: 0, y: 0 }; visited[ch[0]] = true;
+    var sgn = -1, pdx = CX, pdy = CY, prevTriple = false;
+    for (var k = 1; k < ch.length; k++) {
+      var oPrev = bo(ch[k - 1], ch[k]);
+      if (oPrev === 3 || prevTriple) { /* keep direction (sp collinear) */ }
+      else { sgn = -sgn; pdx = CX; pdy = sgn * CY; }
+      prevTriple = (oPrev === 3);
+      pos[ch[k]] = { x: pos[ch[k - 1]].x + pdx, y: pos[ch[k - 1]].y + pdy };
+      visited[ch[k]] = true;
+      segDir[k] = { x: pdx, y: pdy };
+    }
+    // Branch directions from chain atoms (external-angle bisector).
+    var queue = [];
+    for (var ci = 0; ci < ch.length; ci++) {
+      var c0 = ch[ci], usedC = 0;
+      var dIn = (ci > 0) ? segDir[ci] : null;
+      var dOut = (ci < ch.length - 1) ? segDir[ci + 1] : null;
+      for (var nb = 0; nb < adj[c0].length; nb++) {
+        var br = adj[c0][nb];
+        if (visited[br]) continue;
+        var bd;
+        if (!dIn && !dOut) { bd = { x: 1, y: 0 }; }
+        else if (!dIn) { bd = norm2(-dOut.x, -dOut.y) || { x: -1, y: 0 }; }
+        else if (!dOut) { bd = { x: dIn.x, y: dIn.y }; }
+        else {
+          var fx = dIn.x - dOut.x, fy = dIn.y - dOut.y;
+          bd = norm2(fx, fy);
+          if (!bd) { bd = norm2(-dOut.y, dOut.x) || { x: 0, y: 1 }; }
+        }
+        if (usedC > 0) {
+          var r2 = (usedC % 2 === 1) ? 1 : -1;
+          bd = norm2(-bd.y * r2, bd.x * r2) || bd;
+        }
+        usedC++;
+        queue.push({ node: br, fx: c0, dx: bd.x, dy: bd.y, rot: 0 });
+      }
+    }
+    while (queue.length) {
+      var it = queue.shift();
+      if (visited[it.node]) continue;
+      visited[it.node] = true;
+      var Pp = pos[it.fx] || m.atoms[it.fx];
+      pos[it.node] = { x: Pp.x + it.dx * L, y: Pp.y + it.dy * L };
+      var kids = 0;
+      for (var w = 0; w < adj[it.node].length; w++) {
+        var cand = adj[it.node][w];
+        if (visited[cand]) continue;
+        var nd;
+        if (kids === 0) { nd = { x: it.dx, y: it.dy }; }
+        else {
+          var rr = (kids % 2 === 1) ? 1 : -1;
+          nd = norm2(-it.dy * rr, it.dx * rr) || { x: -it.dx, y: -it.dy };
+        }
+        kids++;
+        queue.push({ node: cand, fx: it.node, dx: nd.x, dy: nd.y });
+      }
+    }
+    var atoms = [], newIdx = {};
+    for (var o = 0; o < order.length; o++) {
+      var oi = order[o];
+      var pp = pos[oi] || { x: m.atoms[oi].x, y: m.atoms[oi].y };
+      newIdx[oi + 1] = atoms.length + 1;
+      atoms.push({ x: pp.x, y: pp.y, el: m.atoms[oi].el });
+    }
+    var bonds = [];
+    for (var j = 0; j < m.bonds.length; j++) {
+      var bj = m.bonds[j];
+      if (newIdx[bj[0]] && newIdx[bj[1]]) bonds.push([newIdx[bj[0]], newIdx[bj[1]], bj[2]]);
+    }
+    return fWriteMolV2000(m.head, atoms, bonds);
+  } catch (e) { return null; }
 }
 
 // ── fGuessName ────────────────────────────────────────────────────────────
