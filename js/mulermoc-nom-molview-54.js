@@ -532,7 +532,7 @@ function fClassifyAllMolecules() {
 // bold text, same .active contract as the gear) + gear into #viewerSettingsBtnDiv.
 // Uses existing `svgSettings` constant and the fToggleViewerSettings() handler.
 function fInitViewerSettingsBtn() {
-  const markup = `<button id='editMolBtn' class='settingsBtn' onclick='fEditMolDraft()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("editMol") : "Επεξεργασία μορίου") + `'>${svgEditMol}</button><button id='newMolBtn' class='settingsBtn' onclick='fNewMolDraft()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("newMol") : "Νέο μόριο") + `'>${svgNewMol}</button><button id='viewerSettingsBtn' class='settingsBtn' onclick='fToggleViewerSettings()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("settings") : "Ρυθμίσεις") + `'>${svgSettings}</button>`;
+  const markup = `<button id='editMolBtn' class='settingsBtn hide' onclick='fEditMolDraft()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("editMol") : "Επεξεργασία μορίου") + `'>${svgEditMol}</button><button id='newMolBtn' class='settingsBtn hide' onclick='fNewMolDraft()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("newMol") : "Νέο μόριο") + `'>${svgNewMol}</button><button id='viewerSettingsBtn' class='settingsBtn' onclick='fToggleViewerSettings()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("settings") : "Ρυθμίσεις") + `'>${svgSettings}</button>`;
   const visMarkup = `<button id='view2DBtn' class='settingsBtn visBtn active' onclick='fToggleViewer2D()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("show2D") : "Εμφάνιση 2D") + `'>2D</button><button id='view3DBtn' class='settingsBtn visBtn active' onclick='fToggleViewer3D()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("show3D") : "Εμφάνιση 3D") + `'>3D</button>`;
   function insert() {
     try {
@@ -904,31 +904,18 @@ function fMolDraftBeautify() {
   }
   var savedMode = null;
   try { savedMode = (typeof mainChainMode !== "undefined") ? mainChainMode : null; } catch (eM0) {}
-  try {
-    if (drawing.molText && typeof jsmeNomeclatureApplet !== "undefined" && jsmeNomeclatureApplet &&
-        typeof jsmeNomeclatureApplet.readMolFile === "function") {
-      jsmeNomeclatureApplet.readMolFile(drawing.molText);
-    }
-    try { mainChainMode = "algorithmic"; } catch (eM1) {}
-    try { if (typeof fUpdateChainModeButton === "function") fUpdateChainModeButton(); } catch (eBc) {}
-    if (typeof fAnalyseStructure === "function") fAnalyseStructure();
-    if (typeof fDetectMolType === "function") fDetectMolType();
-  } catch (eAn) {
-    try { if (savedMode != null) mainChainMode = savedMode; } catch (eRs) {}
-    try { if (typeof fUpdateChainModeButton === "function") fUpdateChainModeButton(); } catch (eBc2) {}
-    fMolDraftToast(fMolDraftT("submitEngineFail", "Engine failed — check the drawing."));
-    return;
-  }
-  if (fMolDraftHasRing()) {
-    try { if (savedMode != null) mainChainMode = savedMode; } catch (eRr) {}
-    try { if (typeof fUpdateChainModeButton === "function") fUpdateChainModeButton(); } catch (eBc3) {}
-    fMolDraftToast(fMolDraftT("submitRing", "Rings are out of scope — acyclic structures only."));
+  // Same shared sandbox pass as Submit (chain rebuild included — a bare
+  // analyse+detect was the pre-submit damage).
+  var _sb = { ok: false, ring: false };
+  try { _sb = fMolDraftSandboxAnalyse(drawing.molText) || _sb; } catch (eSb) {}
+  try { if (savedMode != null) mainChainMode = savedMode; } catch (eRm0) {}
+  try { if (typeof fUpdateChainModeButton === "function") fUpdateChainModeButton(); } catch (eBc0) {}
+  if (!_sb.ok) {
+    fMolDraftToast(fMolDraftT(_sb.ring ? "submitRing" : "submitEngineFail", _sb.ring ? "Rings are out of scope — acyclic structures only." : "Engine failed — check the drawing."));
     return;
   }
   var chainNow = null;
   try { chainNow = (typeof mainChainAtomsList !== "undefined") ? mainChainAtomsList : null; } catch (eCh) {}
-  try { if (savedMode != null) mainChainMode = savedMode; } catch (eRm) {}
-  try { if (typeof fUpdateChainModeButton === "function") fUpdateChainModeButton(); } catch (eBc4) {}
   var lin = null;
   try { if (typeof fLinearizeMol === "function") lin = fLinearizeMol(drawing.molText, chainNow); } catch (eL) { lin = null; }
   if (!lin) {
@@ -997,9 +984,29 @@ function fMolDraftClearNaming(statusText) {
   } catch (eE) {}
 }
 
+// Drawing master switch (repurposed Ρυθμίσεις checkbox, default off):
+// the Edit/New title-bar entries exist only while drawing is enabled.
+// Called at button build, on toggle, and from fMolDraftSyncButtons.
+function fMolDraftSyncEntryButtons() {
+  try {
+    var on = false;
+    try { on = !!document.getElementById("originalJSMECheck").classList.contains("selectedCheck"); } catch (eC) {}
+    var eb = document.getElementById("editMolBtn");
+    var nb = document.getElementById("newMolBtn");
+    if (eb) { if (on) eb.classList.remove("hide"); else eb.classList.add("hide"); }
+    if (nb) { if (on) nb.classList.remove("hide"); else nb.classList.add("hide"); }
+  } catch (eS) {}
+}
+
 function fMolDraftEnter(mode) {
   if (fMolDraftPresenting()) return;
   if (window.MulerDraft) return;
+  try {
+    if (!document.getElementById("originalJSMECheck").classList.contains("selectedCheck")) {
+      fMolDraftToast(fMolDraftT("draftEnableFirst", "Enable drawing from Settings first."));
+      return;
+    }
+  } catch (eSw) { return; }
   var sourceMol = null;
   try { sourceMol = (typeof selectedMol !== "undefined") ? selectedMol : null; } catch (eS) { sourceMol = null; }
   if (mode === "edit") {
@@ -1581,6 +1588,36 @@ function fMolDraftRestoreChainMode(forcedMode) {
   try { if (typeof fUpdateChainModeButton === "function") fUpdateChainModeButton(); } catch (eB) {}
 }
 
+// Shared sandbox engine pass (Submit + Beautify): syncs the given MOL text
+// onto the display applet, forces algorithmic mode, and runs the FULL naming
+// tail including fGuessName — the chain rebuild lives there. A bare
+// analyse+detect leaves the previous molecule's chain behind (that was the
+// pre-submit beautify damage). Returns { ok, ring }. Restores nothing:
+// Submit keeps algorithmic through its preview (teardown restores via
+// savedChainMode); Beautify restores immediately via its own saved mode.
+function fMolDraftSandboxAnalyse(molText) {
+  try {
+    if (molText && typeof jsmeNomeclatureApplet !== "undefined" && jsmeNomeclatureApplet &&
+        typeof jsmeNomeclatureApplet.readMolFile === "function") {
+      jsmeNomeclatureApplet.readMolFile(molText);
+      try { if (typeof molZoom2D !== "undefined") jsmeNomeclatureApplet.setMolecularAreaScale(molZoom2D); } catch (eZ) {}
+    }
+  } catch (eSync) {}
+  try { mainChainMode = "algorithmic"; } catch (eM1) {}
+  try { if (typeof fUpdateChainModeButton === "function") fUpdateChainModeButton(); } catch (eBc) {}
+  try {
+    if (typeof fAnalyseStructure === "function") fAnalyseStructure();
+    if (typeof fDetectMolType === "function") fDetectMolType();
+  } catch (eAn) { return { ok: false, ring: false }; }
+  try {
+    if (typeof fMolDraftHasRing === "function" && fMolDraftHasRing()) return { ok: false, ring: true };
+  } catch (eR) {}
+  try {
+    if (typeof fGuessName === "function") fGuessName();
+  } catch (eGn) { return { ok: false, ring: false }; }
+  return { ok: true, ring: false };
+}
+
 async function fMolDraftSubmit() {
   if (!window.MulerDraft || fMolDraftPresenting()) return;
   if (window.MulerDraft.submitting) return;
@@ -1596,40 +1633,29 @@ async function fMolDraftSubmit() {
     if (st) st.textContent = fMolDraftT("submitRunning", "Submitting…");
   } catch (eSt) {}
   try { fMolDraftSyncBar(); } catch (eSy0) {}
-  // 0. sync the drawing onto the display applet: the engine/overlay pipeline
-  // reads the main (depict) applet, which the user never touches mid-draft.
-  // The main applet never leaves depict mode, so highlights just work.
+  // 0+2. shared sandbox engine pass (Submit + Beautify): syncs the drawing
+  // onto the display applet (the engine/overlay pipeline reads the main
+  // depict applet, which the user never touches mid-draft — the main applet
+  // never leaves depict mode, so highlights just work) and runs the full
+  // naming tail. Algorithmic-or-nothing: stored chains belong to the old
+  // atom order and are never valid here.
+  var _draftMol = "";
   try {
-    var _draftMol = "";
     if (typeof jsmeEditDraftApplet !== "undefined" && jsmeEditDraftApplet &&
         typeof jsmeEditDraftApplet.molFile === "function") _draftMol = jsmeEditDraftApplet.molFile() || "";
-    if (_draftMol && typeof jsmeNomeclatureApplet !== "undefined" && jsmeNomeclatureApplet &&
-        typeof jsmeNomeclatureApplet.readMolFile === "function") {
-      jsmeNomeclatureApplet.readMolFile(_draftMol);
-      try { if (typeof molZoom2D !== "undefined") jsmeNomeclatureApplet.setMolecularAreaScale(molZoom2D); } catch (eZ) {}
-    }
   } catch (eSync) {}
-  // 2. sandbox engine run over the applet content. Algorithmic-or-nothing:
-  // stored chains belong to the old atom order and are never valid here.
   var savedMode = null;
   try { savedMode = (typeof mainChainMode !== "undefined") ? mainChainMode : null; } catch (eM0) {}
   window.MulerDraft.savedChainMode = savedMode;
-  try { mainChainMode = "algorithmic"; } catch (eM1) {}
-  try { if (typeof fUpdateChainModeButton === "function") fUpdateChainModeButton(); } catch (eBc) {}
-  var engineFailed = false;
-  try {
-    if (typeof fAnalyseStructure === "function") fAnalyseStructure();
-    if (typeof fDetectMolType === "function") fDetectMolType();
-  } catch (eAn) { engineFailed = true; }
-  if (!engineFailed && fMolDraftHasRing()) {
+  var _sb = { ok: false, ring: false };
+  try { _sb = fMolDraftSandboxAnalyse(_draftMol) || _sb; } catch (eSb) {}
+  if (!_sb.ok) {
     fMolDraftRestoreChainMode();
     window.MulerDraft.submitting = false;
-    fMolDraftToast(fMolDraftT("submitRing", "Rings are out of scope — acyclic structures only."));
+    fMolDraftToast(fMolDraftT(_sb.ring ? "submitRing" : "submitEngineFail", _sb.ring ? "Rings are out of scope — acyclic structures only." : "Engine failed — check the drawing."));
     return;
   }
-  try {
-    if (typeof fGuessName === "function") fGuessName();
-  } catch (eGn) { engineFailed = true; }
+  var engineFailed = false;
   var engineName = "";
   try { engineName = (typeof currentMolName !== "undefined") ? String(currentMolName || "") : ""; } catch (eN) {}
   if (engineFailed || !engineName) {
@@ -2205,6 +2231,7 @@ function fMolDraftAccept() {
 // steps, deselected). Click-time guard in fMolDraftEnter is the backstop;
 // this is display only. Called from fSelectMol/fDeselectMol tails.
 function fMolDraftSyncButtons() {
+  try { if (typeof fMolDraftSyncEntryButtons === "function") fMolDraftSyncEntryButtons(); } catch (eEb) {}
   try {
     var eb = document.getElementById("editMolBtn");
     if (!eb) return;

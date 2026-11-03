@@ -1094,26 +1094,23 @@ $(document).ready(function () {
     fShowNameAnalysis();
   });
 
-  // v54 Stage 1: single-applet edit/draw — checked = show the live JSME
-  // applet (depict + click-to-edit) and hide the rendered SVG overlay;
-  // unchecked = back to the rendered SVG. ORGNL retired, no ORGNL refs.
+  // v54 Stage 2: drawing master switch — checked = show the Edit/New
+  // title-bar entries (authoring drafts); unchecked = hidden, default. The
+  // old single-applet show/hide behavior is gone (the dedicated edit applet
+  // owns the canvas now). Mid-draft toggle is blocked: the bar's Cancel
+  // owns exit while a draft is live.
   $("#originalJSME").on("click", ".checkBoxContainer", function () {
-    // Delegated (parent-bound) handler runs AFTER the generic direct-bound
-    // .checkBoxContainer toggler, so the class is already the NEW state:
-    // selectedCheck = just checked = show the editor.
-    const enableEdit = $("#originalJSMECheck").hasClass("selectedCheck");
-    if (enableEdit) {
-      $("#jsmeNomeclature").removeClass("hide");
-      $("#jsmeNomeclatureSVG").addClass("hide");
-      $("#radio2DMode").addClass("hide");
-      // Re-fit after layout settles: setSize(aw, svgH) + zoom re-apply, so
-      // the applet lands pixel-identical to the SVG view it replaces.
-      setTimeout(function () { try { if (typeof fResizeViewers === "function") fResizeViewers(); } catch (eR) {} }, 0);
-    } else {
-      $("#jsmeNomeclature").addClass("hide");
-      $("#jsmeNomeclatureSVG").removeClass("hide");
-      $("#radio2DMode").removeClass("hide");
+    var draftLive = false;
+    try { draftLive = !!(typeof window !== "undefined" && window.MulerDraft); } catch (eD) {}
+    if (draftLive) {
+      // Generic toggler already flipped the class: flip it back + toast.
+      try {
+        $("#originalJSMECheck").removeClass("selectedCheck").addClass("unselectedCheck");
+      } catch (eRv) {}
+      try { if (typeof fScenarioToast === "function") fScenarioToast(fMolDraftT("draftLocked", "Finish the draft first (Submit/Cancel).")); } catch (eT) {}
+      return;
     }
+    try { if (typeof fMolDraftSyncEntryButtons === "function") fMolDraftSyncEntryButtons(); } catch (eSy) {}
   });
 
   $("#viewFinalJSMESetting").on("click", ".checkBoxContainer", function () {
