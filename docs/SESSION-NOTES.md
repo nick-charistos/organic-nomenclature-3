@@ -1,7 +1,7 @@
 # Session notes — 2026-10-03 (resume point for next session)
 
-> **Resume pointer (cross-machine):** last commit `d081c88` (2026-11-04) —
-> v54 shared sandbox engine pass + drawing master switch + docs, tree clean. Routine:
+> **Resume pointer (cross-machine):** last commit `aa6d250` (2026-11-04) —
+> v54 review follow-ups (switch default ON, dead code, stage2 refresh), tree clean. Routine:
 > end-of-day commit + push and update this pointer; on the other machine pull
 > first, then resume from the baseline below + `git log --oneline -5` +
 > `git status`. OpenCode sessions themselves stay machine-local.
