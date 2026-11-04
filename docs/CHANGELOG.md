@@ -29,7 +29,7 @@ New parallel file set `mulermoc-nom-54.html` + `js/*-54.js` + `css/*-54.css`, fo
 - Tri-state name verdicts (`[✓|?|✕]` per predicted name, correct/wrong/unconfirmed): EN auto-checks via the shared oracle comparator when untouched (human always wins); tints (green/red/neutral); reset on resubmit; persisted as `nameCheck` (+ history + save-file header line) so each saved file is labeled eval data for engine work. Accept stays non-blocking with an outcome toast.
 - Three-slot 2D derivation at Accept (drawn variant verbatim + generated siblings): drawn MOL in its slot, school-condensed via main-chain linearization, expanded via topped-up explicit H, skeletal via JSME zigzag ladder (display applet → edit applet → built-in, validated, logged) with drawn-geometry fallback; update-in-place rewrites all three slots; the accepted menu row is marked, grouped open, and scrolled into view.
 - Beautify button (`Ομορφοποίηση`, school slots only): rewrites the canvas with the linearizer, marks stale so resubmit recaptures. Shares one sandbox engine pass with Submit (`fMolDraftSandboxAnalyse`, chain rebuild included) — the earlier split caused pre-submit beautify to lay out on the template's stale chain.
-- Drawing master switch: the old `Επεξεργασία/Σχεδίαση 2D` Ρυθμίσεις checkbox is now "Σχεδίαση και προσθήκη μορίων" (default off); Edit/New entries exist only while enabled, mid-draft toggle blocked, Enter refuses while off.
+- Drawing master switch: the old `Επεξεργασία/Σχεδίαση 2D` Ρυθμίσεις checkbox is now "Σχεδίαση και προσθήκη μορίων" (default on, entries visible at boot); Edit/New entries exist only while enabled, mid-draft toggle blocked, Enter refuses while off.
 
 ## [v53] (English version: full UI + molecule naming in English, Greek default preserved)
 

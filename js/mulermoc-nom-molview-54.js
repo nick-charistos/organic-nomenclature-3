@@ -1003,11 +1003,15 @@ function fMolDraftEnter(mode) {
   if (fMolDraftPresenting()) return;
   if (window.MulerDraft) return;
   try {
-    if (!document.getElementById("originalJSMECheck").classList.contains("selectedCheck")) {
+    var _sw = document.getElementById("originalJSMECheck");
+    if (!_sw || !(_sw.classList && _sw.classList.contains("selectedCheck"))) {
       fMolDraftToast(fMolDraftT("draftEnableFirst", "Enable drawing from Settings first."));
       return;
     }
-  } catch (eSw) { return; }
+  } catch (eSw) {
+    fMolDraftToast(fMolDraftT("draftEnableFirst", "Enable drawing from Settings first."));
+    return;
+  }
   var sourceMol = null;
   try { sourceMol = (typeof selectedMol !== "undefined") ? selectedMol : null; } catch (eS) { sourceMol = null; }
   if (mode === "edit") {
@@ -1656,10 +1660,9 @@ async function fMolDraftSubmit() {
     fMolDraftToast(fMolDraftT(_sb.ring ? "submitRing" : "submitEngineFail", _sb.ring ? "Rings are out of scope — acyclic structures only." : "Engine failed — check the drawing."));
     return;
   }
-  var engineFailed = false;
   var engineName = "";
   try { engineName = (typeof currentMolName !== "undefined") ? String(currentMolName || "") : ""; } catch (eN) {}
-  if (engineFailed || !engineName) {
+  if (!engineName) {
     fMolDraftRestoreChainMode();
     window.MulerDraft.submitting = false;
     fMolDraftToast(fMolDraftT("submitEngineFail", "Engine failed — check the drawing."));

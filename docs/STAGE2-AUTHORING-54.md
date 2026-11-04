@@ -6,7 +6,7 @@
 > state machine), Accept (fork/update-in-place by molecule identity, readable keys, dup + 3D
 > gates, manual per-molecule save), 3-slot 2D generation (linearized school-condensed, H-expanded,
 > JSME zigzag skeletal ladder), formula generator, menu fixes, chain-stepper atom map, toast hardening. Open:
-> RDKit local 3D (gates Accept), beautify button (spec'd), 2B author correction,
+> RDKit local 3D (gates Accept for record-less drawings), 2B author correction,
 > exercise types (Q4 first).
 
 ## Where we are (Stage 1, done; v54 live)
@@ -34,7 +34,7 @@
 - Duplicate guard: canonical SMILES compare against existing 141 + other drafts at submit.
 
 ## Open questions (tomorrow)
-1. 2D mode variants: derive at submit (JSME-side) vs store one molfile + convert on switch?
+1. ~~2D mode variants: derive at submit (JSME-side) vs store one molfile + convert on switch?~~ Answered 2026-11-04: derive at Accept, store all three slots (drawn verbatim + linearized school-condensed + H-expanded + zigzag skeletal via JSME ladder with built-in fallback).
 2. RDKit.js: is `RDKit/` usable as WASM, or fetch remote? Fallback if neither?
 3. Correction granularity: free-text component edit vs slot-level (prefix/locant/stem/suffix) pickers?
 4. Exercise question types to lock fragment-event API before building author UI twice.
