@@ -2335,10 +2335,14 @@ function fHorizontalEquivalentIndex(pool, reference) {
             : (typeof window !== 'undefined' && window.MOL2D && window.MOL2D[selectedMol]
                 ? window.MOL2D[selectedMol][mode2D] : null)
         if (!text) return -1
-        lines = text.split(/\r?\n/)
-        if (Number(lines[3].slice(0, 3)) !== allAtomsTypeList.length) return -1
+        lines = String(text).split(/\r?\n/)
+        // Counts line located by shape (JSME depict output uses a 2-line
+        // header); fail closed on mismatch exactly as before.
+        const ci = (typeof fMolCountsLine === "function") ? fMolCountsLine(lines) : 3
+        if (ci < 0 || Number((lines[ci] || "").slice(0, 3)) !== allAtomsTypeList.length) return -1
+        var _ciOff = ci + 1
     } catch (e) { return -1 }
-    const coords = lines.slice(4, 4 + allAtomsTypeList.length).map(line =>
+    const coords = lines.slice(_ciOff, _ciOff + allAtomsTypeList.length).map(line =>
         [Number(line.slice(0, 10)), Number(line.slice(10, 20))])
     function score(chain) {
         let vertical = 0, travel = 0, length = 0
@@ -2521,30 +2525,63 @@ function fTranslateChain2D3D(chain) {
 // Condensed = linear main chain + orthogonal branches (school form); expanded
 // = condensed + explicit H; skeletal comes from JSME (molview side, scientific
 // zigzag). Deterministic and offline. No DOM, no jQuery.
+// V2000 counts-line locator: the counts line is NOT always at index 3.
+// Stored MOLs use the standard 3-line header, but JSME depict output uses a
+// 2-line header (name + blank), putting counts at index 2. Locate by shape
+// instead of position: first line (within the first 8) that starts with two
+// integers AND contains the V2000 tag. Atom/bond lines never contain the tag,
+// so false positives are impossible in practice. Returns the line index or -1.
+function fMolCountsLine(lines) {
+  try {
+    if (!lines || !lines.length) return -1;
+    var lim = Math.min(lines.length, 8);
+    for (var i = 0; i < lim; i++) {
+      var L = lines[i];
+      if (!L || L.indexOf("V2000") < 0) continue;
+      if (/^\s*\d{1,3}\s+\d{1,3}\b/.test(L)) return i;
+    }
+  } catch (e) {}
+  return -1;
+}
+
 function fParseMolV2000(text) {
   try {
     if (!text) return null;
-    var lines = String(text).split("\n");
+    var lines = String(text).split(/\r?\n/);
     if (lines.length < 5) return null;
-    var nA = parseInt(lines[3].substring(0, 3), 10);
-    var nB = parseInt(lines[3].substring(3, 6), 10);
+    var ci = fMolCountsLine(lines);
+    if (ci < 0) return null;
+    var nA = parseInt(lines[ci].substring(0, 3), 10);
+    var nB = parseInt(lines[ci].substring(3, 6), 10);
     if (!(nA >= 0) || !(nB >= 0)) return null;
+    // Fail closed on truncated reads (JSME async-layout race can return a
+    // header + counts line with a short/missing atom block): require the full
+    // declared body to be present, require a non-empty element field per atom
+    // (no phantom C@(0,0)), and require at least one valid bond when bonds
+    // were declared for a multi-atom molecule.
+    if (lines.length < ci + 1 + nA + nB) return null;
     var atoms = [], bonds = [];
     for (var i = 0; i < nA; i++) {
-      var L = lines[4 + i] || "";
+      var L = lines[ci + 1 + i] || "";
+      var _el = (L.substring(31, 34) || "").trim();
+      if (!_el) return null;
       atoms.push({
         x: parseFloat(L.substring(0, 10)) || 0,
         y: parseFloat(L.substring(10, 20)) || 0,
-        el: (L.substring(31, 34) || "").trim() || "C"
+        el: _el
       });
     }
     for (var j = 0; j < nB; j++) {
-      var parts = (lines[4 + nA + j] || "").trim().split(/\s+/);
+      var parts = (lines[ci + 1 + nA + j] || "").trim().split(/\s+/);
       var a = parseInt(parts[0], 10), b = parseInt(parts[1], 10), o = parseInt(parts[2], 10) || 1;
       if (!(a >= 1 && a <= nA && b >= 1 && b <= nA)) continue;
       bonds.push([a, b, o]);
     }
-    return { head: [lines[0] || "", lines[1] || "", lines[2] || ""], atoms: atoms, bonds: bonds };
+    if (nA > 1 && nB > 0 && bonds.length === 0) return null;
+    var head = [];
+    for (var hi = Math.max(0, ci - 3); hi < ci; hi++) head.push(lines[hi] || "");
+    while (head.length < 3) head.unshift("");
+    return { head: head, atoms: atoms, bonds: bonds };
   } catch (e) { return null; }
 }
 
@@ -2699,15 +2736,40 @@ function fLinearizeMol(text, chain) {
     for (var kc = 0; kc < ch.length; kc++) visited[ch[kc]] = true;
     // Queue: {node, x, y, dx, dy} — first continuation keeps direction,
     // extra forks rotate 90° (rare in scope, depiction-only).
+    // Terminal chain atoms lean their branches outward (±x): without this,
+    // end-group branches sit exactly above the anchor and geometry-based
+    // tests (e.g. HOOC-vs-COOH orientation) tie instead of deciding.
+    // Ether links (R-O-R) go fully horizontal from terminal atoms so C-O-C
+    // stays linear instead of kinking the R groups orthogonal.
     var queue = [];
     for (var ci = 0; ci < ch.length; ci++) {
-      var c0 = ch[ci], sideCount = 0;
+      var c0 = ch[ci], sideCount = 0, etherDone = false;
+      var lean = 0;
+      if (ci === 0) lean = -0.5;
+      else if (ci === ch.length - 1) lean = 0.5;
       for (var nb = 0; nb < adj[c0].length; nb++) {
         var br = adj[c0][nb];
         if (visited[br]) continue;
+        var isEtherLink = false;
+        try {
+          if ((ci === 0 || ci === ch.length - 1) && !etherDone &&
+              String(m.atoms[br].el || "").toUpperCase() === "O" && adj[br].length === 2) {
+            var _cc = 0;
+            for (var _oi = 0; _oi < adj[br].length; _oi++) {
+              if (String(m.atoms[adj[br][_oi]].el || "").toUpperCase() === "C") _cc++;
+            }
+            if (_cc === 2) isEtherLink = true;
+          }
+        } catch (eEl) { isEtherLink = false; }
+        if (isEtherLink) {
+          var _dir = (ci === 0) ? -1 : 1;
+          queue.push({ node: br, x: ci * DX + _dir * DX, y: 0, dx: _dir, dy: 0 });
+          etherDone = true;
+          continue;
+        }
         var side = (sideCount % 2 === 0) ? -1 : 1;
         sideCount++;
-        queue.push({ node: br, x: ci * DX, y: side * DY, dx: 0, dy: side });
+        queue.push({ node: br, x: ci * DX + lean * DX, y: side * DY, dx: 0, dy: side });
       }
     }
     while (queue.length) {

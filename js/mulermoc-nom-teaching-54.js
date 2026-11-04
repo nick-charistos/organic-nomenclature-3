@@ -1113,6 +1113,14 @@ $(document).ready(function () {
     try { if (typeof fMolDraftSyncEntryButtons === "function") fMolDraftSyncEntryButtons(); } catch (eSy) {}
   });
 
+  // v54: auto-linearize master preference (default on) — tidies school drawings
+  // to the canonical linear layout on Submit. Toggling is always allowed
+  // (it only affects the *next* Submit; nothing strands mid-draft), the bar
+  // button visibility follows on the next sync.
+  $("#autoLinearize").on("click", ".checkBoxContainer", function () {
+    try { if (typeof fMolDraftSyncBar === "function") fMolDraftSyncBar(); } catch (eSy2) {}
+  });
+
   $("#viewFinalJSMESetting").on("click", ".checkBoxContainer", function () {
     const enableFinalJSME = $("#finalJSMECheck").hasClass("unselectedCheck");
     if (enableFinalJSME) {

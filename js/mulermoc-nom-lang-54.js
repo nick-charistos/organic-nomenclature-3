@@ -57,7 +57,8 @@ var MULER_STRINGS = {
   submitNo3D: { gr: "Χωρίς τρισδιάστατο μοντέλο στο PubChem — μόνο 2D.", en: "No 3D model on PubChem — 2D only." },
   draftUpdate: { gr: "Ενημέρωση", en: "Update" },
   draftDraw: { gr: "Επεξεργασία", en: "Edit" },
-  draftBeautify: { gr: "Ομορφοποίηση", en: "Beautify" },
+  draftBeautify: { gr: "Γραμμικοποίηση", en: "Linearize" },
+  autoLinearize: { gr: "Αυτόματη γραμμικοποίηση:", en: "Auto-linearize:" },
   draftPreview: { gr: "Προεπισκόπηση", en: "Preview" },
   draftPreviewTitle: { gr: "Πρόβλεψη Ονομασίας", en: "Name Prediction" },
   draftCorrect: { gr: "Σωστό", en: "Correct" },
@@ -375,6 +376,16 @@ function fMulerPaintStaticChrome() {
     if (csb) {
       csb.textContent = fMulerT("customMolSave");
       csb.setAttribute("data-tooltip", fMulerT("customMolSave"));
+    }
+  } catch (e) {}
+  // autoLinearize label is id-addressed (NOT in the positional map above):
+  // inserting a row mid-panel would shift every index after it.
+  try {
+    var al1 = document.getElementById("autoLinearizeLabel");
+    if (al1) {
+      var alt = fMulerT("autoLinearize");
+      if (alt && al1.firstChild) al1.firstChild.textContent = alt + " ";
+      else if (alt) al1.textContent = alt + " ";
     }
   } catch (e) {}
   setTip("#zoomOutBtn", fMulerT("zoomOut") + " 2D");

@@ -159,6 +159,9 @@ async function fFetchIUPAC_EN(smiles, opts) {
   result.iupacPubchem = result.iupac || null;
   result.systematic = systematic || null;
   result.synonyms = synonyms || [];
+  // Canonical SMILES rides along from the PUG payload (no extra request);
+  // consumers (skeletal depict input, info panel) read it off the hit.
+  try { result.canonicalSmiles = result.canonicalSmiles || null; } catch (eC) {}
   console.log(
     "[IUPAC-EN] SMILES=" +
       smiles +
@@ -226,6 +229,7 @@ async function fEnrichMolWithIUPAC(key, opts) {
   entry.systematicEN = hit.systematic || null;
   entry.iupacEN = entry.systematicEN || entry.iupacPubchem || null;
   entry.pubchemCID = hit.cid || entry.pubchemCID || null;
+  entry.canonicalSmiles = hit.canonicalSmiles || entry.canonicalSmiles || null;
   entry.iupacSource = hit.source || "none";
   try { entry.iupacErr = hit.lastErr || null; } catch (eI) {}
   entry.needsHumanCheck =

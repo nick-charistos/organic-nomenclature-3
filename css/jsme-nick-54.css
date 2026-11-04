@@ -485,8 +485,8 @@ header {
   font-family: "Roboto Condensed", sans-serif;
   font-size: 0.813rem;
   color: #333;
-  min-width: 44px;
-  text-align: right;
+  /* min-width: 44px; */
+  /* text-align: right; */
 }
 
 /* "Full" viewport-height toggle beside the viewer-height sliders (v52):
@@ -735,6 +735,9 @@ header {
 .molInfoSmiles {
   font-family: monospace;
   word-break: break-all;
+}
+.molInfoRow a.molInfoLink {
+  color: var(--darkBlue);
 }
 .molInfoValue {
   word-break: break-word;
