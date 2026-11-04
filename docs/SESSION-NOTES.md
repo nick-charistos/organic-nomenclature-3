@@ -1,7 +1,8 @@
 # Session notes — 2026-10-03 (resume point for next session)
 
-> **Resume pointer (cross-machine):** last commit `aa6d250` (2026-11-04) —
-> v54 review follow-ups (switch default ON, dead code, stage2 refresh), tree clean. Routine:
+> **Resume pointer (cross-machine):** last commit `ab590dc` (2026-11-04) —
+> v54 draft flow (validated skeletal ladder, depict race fix, canonical SMILES,
+> auto-linearize, `?v=54.3`), verified live, tree clean. Routine:
 > end-of-day commit + push and update this pointer; on the other machine pull
 > first, then resume from the baseline below + `git log --oneline -5` +
 > `git status`. OpenCode sessions themselves stay machine-local.
@@ -2577,3 +2578,12 @@ follows; one Save → Present → Next → Exit round-trip.
 * Amber = 15 §E novel (confirmed no-record); 19 further missing were bulk-run throttling (spot re-checks resolve to match/red), motivating the error split.
 * Fetch layer now distinguishes transport failure (lavender `verdict-noerror`, `iupacFetchError`) from genuine no-record (amber). Only transport-like errors in `lastErr` count as failed; PubChem/CIR 404-style empties stay amber.
 * REVIEW §N watchlist written (10 red incl. prior-run dial row, 15 amber + transient note). Individual re-checks: butene_2 + hexen_2_yn_4_dioic_acid → systematic match; 3 throttled esters → red with exact oracle strings captured.
+
+## 2026-11-03/04 — v54 draft flow: validated skeletal ladder + depict race fix (verified live)
+
+* Commits: `d081c88` (shared sandbox engine pass + drawing master switch), `35d791e` (drawing engine + beautifier), `aa6d250` (switch default ON, dead `engineFailed` dropped, guarded Enter, STAGE2 refresh), `ab590dc` (this batch).
+* Skeletal ladder is JSME-first (display applet → edit applet on PubChem canonical SMILES) with built-in `fZigzagMol` fallback. Each rung validated at acquisition (`_acceptSkel`: parse + heavy count + non-zero coords + geometry differs from drawing) so a bad rung falls through instead of stranding the ladder; post-ladder validation stays as safety net. Per-rung console receipt (`won …` / `rejected (…)` / `accepted …`, `skelSrc=` in slots line).
+* Two parser defects fixed along the way: counts line located by shape (`fMolCountsLine`, JSME uses a 2-line header) and fail-closed parsing (no phantom `C@(0,0)` on truncated reads). Same locator applied to `fMakeAnnotatedSkeletal` + horizontal-equivalent chain check.
+* Depict layout race fixed: `fMolDraftDepictSmiles` is async (input once, poll `molFile()` up to 6×120ms until output carries the drawn heavy count); `fMolDraftAccept` async (sole caller is a fire-and-forget `onclick`). Root-caused from a 151-char truncated read + `heavy 9 vs 0` rejections.
+* Also in batch: canonical SMILES end-to-end (info panel shows PubChem canonical when available, links + copy follow display), auto-linearize default-on with manual button only when off, drawing master switch, `?v=54.3` cache-busters (mixed old/new files had muddied one debug round — bump busters with every JS change from now on).
+* Verified live by owner: `display(canon)` rung wins via read-until-stable (`depict settled`, `skelSrc=display`), builtin fallback intact. Standing rules re-armed: no commit without explicit word; `git status` clean at `ab590dc`.
