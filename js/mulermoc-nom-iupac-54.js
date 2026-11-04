@@ -58,7 +58,7 @@ function fResolveSystematicEN(iupacRaw, title, synonyms) {
   var low = raw.toLowerCase();
   if (RETAINED_TO_SYSTEMATIC_EN[low]) return RETAINED_TO_SYSTEMATIC_EN[low];
   if (fIsSystematicName(raw)) return raw;
-  if (/^(meth|eth|prop|but|pent|hex|hept|oct|non|dec)(ane|ene|yne|anol|anone|anal|oic acid|dioic acid|anenitrile|diol|dial|dione|anoate)$/i.test(low)) return raw || null;
+  if (/^(meth|eth|prop|but|pent|hex|hept|oct|non|dec|undec|dodec|tridec|tetradec|pentadec|hexadec|heptadec|octadec|nonadec|eicos)(ane|ene|yne|anol|anone|anal|oic acid|dioic acid|anenitrile|diol|dial|dione|anoate)$/i.test(low)) return raw || null;
   const pool = Array.isArray(synonyms) ? synonyms : [];
   // Prefer a locanted systematic synonym; skip inverted-index entries ("propanal, 2-methyl-").
   for (const s of pool) {

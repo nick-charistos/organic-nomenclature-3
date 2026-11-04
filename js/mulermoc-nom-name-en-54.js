@@ -3,7 +3,7 @@
 // Mirrors js/mulermoc-nom-core-53.js:145-177 Greek tables; no Greek mutation.
 // Validated against systematicEN oracle (PubChem/CIR + retained->systematic map).
 
-var EN_STEMS = ["meth", "eth", "prop", "but", "pent", "hex", "hept", "oct", "non", "dec"];
+var EN_STEMS = ["meth", "eth", "prop", "but", "pent", "hex", "hept", "oct", "non", "dec", "undec", "dodec", "tridec", "tetradec", "pentadec", "hexadec", "heptadec", "octadec", "nonadec", "eicos"];
 var EN_SUFFIX = {
   hydrocarbon: "ane",
   halogen: "ane",
@@ -136,7 +136,9 @@ function fAssembleBranchedEN(nCarbons, fg, kind, locants, subs) {
 // Maps are slot-positional: C9 stem εν->non must not shadow infix εν->en.
 var EN_STEM_GR = [
   ["μεθ", "meth"], ["αιθ", "eth"], ["προπ", "prop"], ["βουτ", "but"], ["πεντ", "pent"],
-  ["εξ", "hex"], ["επτ", "hept"], ["οκτ", "oct"], ["εν", "non"], ["δεκ", "dec"]
+  ["εξ", "hex"], ["επτ", "hept"], ["οκτ", "oct"], ["εν", "non"], ["δεκ", "dec"],
+  ["ενδεκ", "undec"], ["δωδεκ", "dodec"], ["δεκατρι", "tridec"], ["δεκατεσσερ", "tetradec"], ["δεκαπεντ", "pentadec"],
+  ["δεκαεξ", "hexadec"], ["δεκαεπτ", "heptadec"], ["δεκαοκτ", "octadec"], ["δεκαεννι", "nonadec"], ["εικοσ", "eicos"]
 ];
 var EN_INFIX_GR = [
   ["τετρα", "tetra"], ["τρι", "tri"], ["δι", "di"], ["πεντα", "penta"], ["εξα", "hexa"],
@@ -152,7 +154,11 @@ var EN_SUB_GR = [
   ["ισο", "iso"],
   ["τετρα", "tetra"], ["τρι", "tri"], ["δι", "di"],
   ["μεθυλο", "methyl"], ["αιθυλο", "ethyl"], ["προπυλο", "propyl"], ["βουτυλο", "butyl"], ["πεντυλο", "pentyl"],
+  ["ενδεκυλο", "undecyl"], ["δωδεκυλο", "dodecyl"], ["δεκατριυλο", "tridecyl"], ["δεκατεσσερυλο", "tetradecyl"], ["δεκαπεντυλο", "pentadecyl"],
+  ["δεκαεξυλο", "hexadecyl"], ["δεκαεπτυλο", "heptadecyl"], ["δεκαοκτυλο", "octadecyl"], ["δεκαεννυλο", "nonadecyl"], ["εικοσυλο", "eicosyl"],
   ["μεθυλ", "methyl"], ["αιθυλ", "ethyl"], ["προπυλ", "propyl"], ["βουτυλ", "butyl"],
+  ["ενδεκυλ", "undecyl"], ["δωδεκυλ", "dodecyl"], ["δεκατριυλ", "tridecyl"], ["δεκατεσσερυλ", "tetradecyl"], ["δεκαπεντυλ", "pentadecyl"],
+  ["δεκαεξυλ", "hexadecyl"], ["δεκαεπτυλ", "heptadecyl"], ["δεκαοκτυλ", "octadecyl"], ["δεκαεννυλ", "nonadecyl"], ["εικοσυλ", "eicosyl"],
   ["μεθ", "meth"], ["αιθ", "eth"], ["προπ", "prop"], ["βουτ", "but"], ["πεντ", "pent"],
   ["βρωμο", "bromo"], ["χλωρο", "chloro"], ["φθορο", "fluoro"], ["ιωδο", "iodo"],
   ["νιτρο", "nitro"], ["αμινο", "amino"], ["υδροξυ", "hydroxy"], ["καρβοξυ", "carboxy"], ["κυανο", "cyano"],

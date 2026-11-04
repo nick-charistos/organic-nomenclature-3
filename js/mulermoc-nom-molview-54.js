@@ -813,14 +813,15 @@ function fMolDraftSyncBar() {
       }
       else bw.classList.add("hide");
     }
-    // Beautify: school-slot drafts only, lit whenever not submitting (it
-    // creates staleness rather than consuming it — the editor flip + sync
-    // below re-light Submit, and resubmit recaptures the tidied drawing).
+    // Beautify: school-slot drafts only, and only in the editor view (it
+    // rewrites the canvas geometry — pointless while the depict preview is
+    // up; Draw flips back to the editor). Lit whenever not submitting; it
+    // creates staleness and resubmit recaptures the tidied drawing.
     var bb2 = document.getElementById("molDraftBeautifyBtn");
     if (bb2) {
       var schoolDraft = true;
       try { schoolDraft = !(d.mode === "edit" && (d.variant === "skeletal" || d.variant === "condensedZigZag")); } catch (eSd) {}
-      if (!schoolDraft) { bb2.classList.add("hide"); }
+      if (!schoolDraft || !editorVisible) { bb2.classList.add("hide"); }
       else {
         bb2.classList.remove("hide");
         if (!d.submitting) { bb2.classList.add("active"); bb2.classList.remove("btnInactive"); }
@@ -2008,45 +2009,65 @@ function fMolDraftAccept() {
   var formula = "";
   try { if (typeof fMolDraftExpandedFormula === "function") formula = fMolDraftExpandedFormula() || ""; } catch (eFo) { formula = ""; }
   // Three-slot derivation (v54): the drawn variant is stored verbatim (author
-  // is king of what they drew); siblings are generated. Condensed/expanded
-  // keep the school geometry (linearized main chain + orthogonal branches,
-  // H appended); skeletal is the JSME scientific zigzag from the drawing's
-  // own SMILES. Any generator gap falls back to the drawn geometry, so a
-  // missing slot degrades to the mode-radio fallback, never to a failure.
+  // is king of what they drew) — except skeletal, which is a generated
+  // scientific zigzag layout by mode contract, never drawn geometry (a
+  // beautified/linearized drawing stored as "skeletal" breaks the mode).
+  // Condensed keeps the school geometry (linearized main chain + orthogonal
+  // branches, H appended); skeletal is the JSME scientific zigzag from the
+  // drawing's own SMILES. Any generator gap falls back to the drawn geometry,
+  // so a missing slot degrades to the mode-radio fallback, never to a failure.
   var drawnVariant = (d.mode === "edit") ? d.variant : "condensed";
   var _chainLive = null;
   try { _chainLive = (typeof mainChainAtomsList !== "undefined") ? mainChainAtomsList : null; } catch (eCh) { _chainLive = null; }
-  // Skeletal source ladder (first valid wins): (a) display applet = depict
-  // pipeline, the layout-capable path in this build; (b) edit applet +
-  // repaint; (c) built-in deterministic zigzag. The edit-applet-only attempt
-  // proved a silent no-op (returns the drawn MOL unchanged), so it sits
-  // second and every miss logs loudly.
+  // Skeletal source ladder, deterministic-first: (a) built-in zigzag (pure
+  // function of MOL + chain — no applet, no timing, reproducible); (b/c)
+  // display/edit-applet SMILES depict as fallback (readGenericMolecularInput
+  // can no-op or race the layout; both are detected per rung). First valid
+  // wins. Validation below additionally requires the coordinates to actually
+  // differ from the drawing (string !== catches formatting only).
   var _skel = null, _skelSrc = "";
-  try {
-    if (typeof fMolDraftDepictSmiles === "function") {
-      if (typeof jsmeNomeclatureApplet !== "undefined" && jsmeNomeclatureApplet) {
-        _skel = fMolDraftDepictSmiles(jsmeNomeclatureApplet, d.smiles, d.molText) || null;
-        if (_skel && _skel !== d.molText) _skelSrc = "display";
-        else {
-          _skel = null;
-          try { console.warn("[draft] skeletal: display-applet depict unchanged/failed"); } catch (eL1) {}
+  var _sigOf = function (m) {
+    try {
+      if (!m) return "none";
+      if (typeof fParseMolV2000 !== "function") return "present";
+      var p = fParseMolV2000(m);
+      if (!p || !p.atoms || !p.atoms.length) return "unparseable";
+      var hc = 0, xs = 0, ys = 0;
+      for (var i = 0; i < p.atoms.length; i++) {
+        var e = String(p.atoms[i].el || "");
+        if (e && e !== "H" && e !== "h") {
+          hc++;
+          xs += Math.round((p.atoms[i].x || 0) * 100);
+          ys += Math.round((p.atoms[i].y || 0) * 100);
         }
+      }
+      return "heavy=" + hc + " x=" + xs + " y=" + ys;
+    } catch (eSg) { return "?"; }
+  };
+  try {
+    if (typeof fZigzagMol === "function") {
+      try { _skel = fZigzagMol(d.molText, _chainLive) || null; } catch (eZ) { _skel = null; }
+      if (_skel) { _skelSrc = "builtin"; try { console.log("[draft] skeletal: builtin ok " + _sigOf(_skel)); } catch (eL0) {} }
+      else { try { console.warn("[draft] skeletal: built-in zigzag failed"); } catch (eL1) {} }
+    } else {
+      try { console.warn("[draft] skeletal: builtin helper missing"); } catch (eL0b) {}
+    }
+    if (!_skel && typeof fMolDraftDepictSmiles === "function") {
+      if (typeof jsmeNomeclatureApplet !== "undefined" && jsmeNomeclatureApplet) {
+        var _d1 = null;
+        try { _d1 = fMolDraftDepictSmiles(jsmeNomeclatureApplet, d.smiles, d.molText) || null; } catch (eD1) { _d1 = null; }
+        try { console.log("[draft] skeletal: display rung " + (!_d1 ? "null" : (_d1 !== d.molText ? "won " + _sigOf(_d1) : "unchanged"))); } catch (eL2) {}
+        if (_d1 && _d1 !== d.molText) { _skel = _d1; _skelSrc = "display"; }
       }
       if (!_skel && typeof jsmeEditDraftApplet !== "undefined" && jsmeEditDraftApplet) {
-        _skel = fMolDraftDepictSmiles(jsmeEditDraftApplet, d.smiles, d.molText) || null;
-        if (_skel && _skel !== d.molText) _skelSrc = "edit";
-        else {
-          _skel = null;
-          try { console.warn("[draft] skeletal: edit-applet depict unchanged/failed"); } catch (eL2) {}
-        }
+        var _d2 = null;
+        try { _d2 = fMolDraftDepictSmiles(jsmeEditDraftApplet, d.smiles, d.molText) || null; } catch (eD2) { _d2 = null; }
+        try { console.log("[draft] skeletal: edit rung " + (!_d2 ? "null" : (_d2 !== d.molText ? "won " + _sigOf(_d2) : "unchanged"))); } catch (eL3) {}
+        if (_d2 && _d2 !== d.molText) { _skel = _d2; _skelSrc = "edit"; }
       }
-    } else {
-      try { console.warn("[draft] skeletal: depict helper missing"); } catch (eL0) {}
-    }
-    if (!_skel && typeof fZigzagMol === "function") {
-      try { _skel = fZigzagMol(d.molText, _chainLive) || null; } catch (eZ) { _skel = null; }
-      if (_skel) _skelSrc = "builtin";
-      else { try { console.warn("[draft] skeletal: built-in zigzag failed, using drawn geometry"); } catch (eL3) {} }
+      if (!_skel) { try { console.warn("[draft] skeletal: all depict rungs missed"); } catch (eL4) {} }
+    } else if (!_skel) {
+      try { console.warn("[draft] skeletal: depict helper missing"); } catch (eL5) {}
     }
   } catch (eSk) { _skel = null; }
   try {
@@ -2064,6 +2085,16 @@ function fMolDraftAccept() {
       if (!_ha || _ha !== _hb || _zero) {
         try { console.warn("[draft] skeletal: validation failed (heavy " + _ha + " vs " + _hb + ", zeroCoords " + _zero + ", src " + _skelSrc + ")"); } catch (eLv) {}
         _skel = null; _skelSrc = "";
+      } else {
+        // Coordinate-level change check: the string !== above catches
+        // formatting only — a depict echo with identical geometry must not
+        // pass as a fresh zigzag.
+        try {
+          if (_sigOf(d.molText) === _sigOf(_skel)) {
+            try { console.warn("[draft] skeletal: unchanged geometry (" + _skelSrc + "), discarding"); } catch (eUg) {}
+            _skel = null; _skelSrc = "";
+          }
+        } catch (eSg2) {}
       }
     }
   } catch (eSv) { _skel = null; _skelSrc = ""; }
@@ -2076,7 +2107,10 @@ function fMolDraftAccept() {
       molS = _skel || molC;
       if (!_skel) { try { console.warn("[draft] skeletal fallback: drawn geometry"); } catch (eW1) {} }
     } else if (drawnVariant === "skeletal" || drawnVariant === "condensedZigZag") {
-      molS = d.molText;
+      // Skeletal is always the ladder zigzag (see above) — the drawn MOL here
+      // is layout-agnostic input, often already linearized by Beautify.
+      molS = _skel || d.molText;
+      if (!_skel) { try { console.warn("[draft] skeletal fallback: drawn geometry"); } catch (eW2b) {} }
       var _lin = (typeof fLinearizeMol === "function") ? fLinearizeMol(d.molText, _chainLive) : null;
       if (!_lin) { try { console.warn("[draft] linearizer failed, condensed = drawn geometry"); } catch (eW2) {} }
       molC = _lin || d.molText;
@@ -2092,19 +2126,40 @@ function fMolDraftAccept() {
   } catch (eDv) { molC = d.molText; molE = null; molS = d.molText; }
   if (!molC) molC = d.molText;
   if (!molS) molS = molC;
+  // One-line slot geometry receipt (Y-inclusive: straight vs zigzag layouts
+  // share x-projections, so x-only sums cannot tell them apart).
+  try {
+    console.log("[draft] slots variant=" + drawnVariant + " skelSrc=" + (_skelSrc || "-") +
+      " C:[" + _sigOf(molC) + "] E:[" + _sigOf(molE) + "] S:[" + _sigOf(molS) + "] draw:[" + _sigOf(d.molText) + "]");
+  } catch (eLg2) {}
   // SMILES-to-MOL depict on any JSME applet (display = depict pipeline,
   // edit = fallback): read back the laid-out MOL, restore the applet content
   // immediately afterwards. Display-applet zoom is re-applied best-effort so
-  // the preview underneath keeps its scale. Null on any gap.
+  // the preview underneath keeps its scale. Clear-first: a silent import
+  // failure must read back EMPTY (loud miss via validation), never the
+  // previous canvas content masquerading as a fresh layout. One synchronous
+  // retry covers the async-layout race (first read can catch pre-layout MOL).
+  // Null on any gap.
   function fMolDraftDepictSmiles(applet, smiles, restoreMol) {
     try {
       if (!smiles || !applet) return null;
       if (typeof applet.readGenericMolecularInput !== "function") return null;
       if (typeof applet.molFile !== "function") return null;
-      applet.readGenericMolecularInput(smiles);
-      try { if (typeof applet.deferredRepaint === "function") applet.deferredRepaint(); } catch (eRp) {}
-      var out = "";
-      try { out = applet.molFile() || ""; } catch (eM) { out = ""; }
+      if (typeof applet.readMolFile === "function" && typeof applet.clear === "function") {
+        try { applet.clear(); } catch (eC) {}
+      }
+      var attempt = function () {
+        var out = "";
+        try { applet.readGenericMolecularInput(smiles); } catch (eI) { return ""; }
+        try { if (typeof applet.deferredRepaint === "function") applet.deferredRepaint(); } catch (eRp) {}
+        try { out = applet.molFile() || ""; } catch (eM) { out = ""; }
+        return out;
+      };
+      var out = attempt();
+      if ((!out || out.indexOf("V2000") < 0) && typeof applet.repaint === "function") {
+        try { applet.repaint(); } catch (eRp2) {}
+        out = attempt();
+      }
       try {
         if (restoreMol && typeof applet.readMolFile === "function") {
           applet.readMolFile(restoreMol);

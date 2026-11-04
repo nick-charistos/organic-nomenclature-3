@@ -154,7 +154,7 @@ function fGetMoleculeClassification() {
 // ── fInitNamingProps ──────────────────────────────────────────────────────
 
 function fInitNamingProps() {
-    nameMainCompList1 = ["μεθ", "αιθ", "προπ", "βουτ", "πεντ", "εξ", "επτ", "οκτ", "εν", "δεκ"]
+    nameMainCompList1 = ["μεθ", "αιθ", "προπ", "βουτ", "πεντ", "εξ", "επτ", "οκτ", "εν", "δεκ", "ενδεκ", "δωδεκ", "δεκατρι", "δεκατεσσερ", "δεκαπεντ", "δεκαεξ", "δεκαεπτ", "δεκαοκτ", "δεκαεννι", "εικοσ"]
 
     nameMainCompObj3 = {
         hydrocarbon: { suffix: "ιο", substitute: "" },

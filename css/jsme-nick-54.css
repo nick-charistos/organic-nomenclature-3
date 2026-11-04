@@ -228,7 +228,7 @@ header {
   align-items: center;
   gap: 8px;
   padding: 6px 10px;
-  background: var(--veryLightBlue);
+  background: var(--lightBlue);
   /* border-radius: 4px; */
   /* margin: 6px 0; */
 }
@@ -237,9 +237,10 @@ header {
 }
 #molDraftStatus {
   flex: 1;
-  font-size: 0.9rem;
-  color: var(--darkBlue);
+  font-size: 0.813rem;
+  color: #fff;
   text-align: left;
+  font-weight: 600;
 }
 #molDraftBar .settingsBtn.draftBtn {
   position: static;
