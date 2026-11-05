@@ -1,14 +1,14 @@
 # Session handoff — 2026-11-05 — 2D bond lengths, draft slot contract, pixel equalizer (v54 working copy)
 
-> **Status: BUILT, HEADLESS-VERIFIED, UNCOMMITTED. Browser click-through pending (owner).**
+> **Status: BUILT, HEADLESS-VERIFIED, COMMITTED (`d6513f0`, pushed). Browser
+> click-through pending (owner).**
 > `index.html` → `mulermoc-nom-54.html`. Cache-busters `?v=54.6`. Vars `MOLGEN_CC_LEN = 1.0`,
 > `MOLGEN_CH_LEN = 0.5` (owner values — exact half ratio).
 
 ## 1. Repository state (read this first on the other machine)
 
-- Branch: `main`. Last commit: `f49b810` (docs pointer → `ab590dc`).
-- **Working tree DIRTY — 10 files, NOT committed, NOT pushed** (owner rule: no commit
-  without explicit word). Nothing below exists anywhere except this machine until commit+push:
+- Branch: `main`. Committed + pushed as `d6513f0` (this doc) + pointer update.
+  Tree clean at push time.
   - `js/mulermoc-nom-core-54.js` — bond vars + wiring
   - `js/mulermoc-nom-molview-54.js` — slot contract, fork confirm, bar hints, equalizer,
     owner applet-option edits

@@ -1,12 +1,10 @@
 # Session notes — 2026-11-05 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `f49b810` + **DIRTY working tree (10 files,
-> UNCOMMITTED, see `git status`)** — v54 bond vars (1.0/0.5), draft slot contract +
-> fork confirm, per-mode pixel equalizer, owner applet-option edits, `?v=54.6`.
-> Full record: `docs/SESSION-HANDOFF-2026-11-05-2D-BONDLENGTHS.md`.
-> **To move machines: commit + push HERE first (needs owner word), then pull there +
-> hard reload.** Routine otherwise: end-of-day commit + push and update this pointer;
-> on the other machine pull first, then resume from the handoff §4 checklist +
+> **Resume pointer (cross-machine):** HEAD `d6513f0` (2026-11-05) — v54 bond vars
+> (1.0/0.5), draft slot contract + fork confirm, per-mode pixel equalizer, owner
+> applet-option edits, `?v=54.6`. Tree clean, pushed. Full record:
+> `docs/SESSION-HANDOFF-2026-11-05-2D-BONDLENGTHS.md`.
+> Routine on the other machine: pull first, then resume from the handoff §4 checklist +
 > `git log --oneline -5` + `git status`. OpenCode sessions stay machine-local.
 >
 > Previous pointer (2026-11-04, now superseded): last commit `ab590dc` — v54 draft flow
