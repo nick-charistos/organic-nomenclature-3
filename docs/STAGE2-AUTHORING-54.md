@@ -1,33 +1,28 @@
 # Stage 2 + authoring/exercises roadmap (v54+, 2026-11-03)
 
-> **Status 2026-11-04: v54 LIVE (`index.html` → v54). Stage 1 + draft flow built (Steps 0–4 + fixes).**
-> Dedicated edit applet, Edit/New entries, draft session + guards, Submit
-> (engine + PubChem preview incl. predicted EN + verdicts, depict SVG view, Draw back-flip, freshness
-> state machine), Accept (fork/update-in-place by molecule identity, readable keys, dup + 3D
-> gates, manual per-molecule save), 3-slot 2D generation (linearized school-condensed, H-expanded,
-> JSME zigzag skeletal ladder), formula generator, menu fixes, chain-stepper atom map, toast hardening. Open:
-> RDKit local 3D (gates Accept for record-less drawings), 2B author correction,
-> exercise types (Q4 first).
+> **Status 2026-11-05: v54 LIVE (`index.html` → v54). Draft flow shipped (commits `d081c88`, `35d791e`, `aa6d250`, `ab590dc`).**
+> Dedicated `jsmeEditDraft` edit applet (display applet stays depict-only; no `options()` flipping), Edit/New entries with drawing master switch (`Σχεδίαση και προσθήκη μορίων`, default on), draft session + guards (`selectedMol` untouched, Cancel restores, Present read-only), Submit → engine + PubChem preview (GR engine name + predicted EN + tri-state `[✓|?|✕]` verdicts persisted as `nameCheck`, depict SVG view, Draw back-flip, freshness state machine with SMILES re-check), Accept (same-molecule update vs fork by CID/normalized-SMILES identity, readable keys, dup + PubChem-3D gates, manual per-molecule `MULERMOC_*_data.js` save), 3-slot 2D at Accept (drawn verbatim + linearized school-condensed + H-expanded + JSME-first skeletal ladder with built-in fallback, each rung validated), Linearize + auto-linearize, canonical SMILES end-to-end, HOOC/ether layout fixes, condensed H-strip, V2000 shape scan, async depict race fix (`?v=54.3`). Full list: `docs/CHANGELOG.md [v54]`.
+> Open: RDKit local 3D (no `RDKit/` in tree — removed; gates Accept for record-less drawings), 2B author correction, exercise types (Q4 first).
 
-## Where we are (Stage 1, done; v54 live)
+## Where we are (v54 draft flow live; Stage 1 plan below is historical context)
 - v54 forked from v53; `index.html` → v54 since 2026-11-04.
 - Single JSME applet (`depict,marker,depictaction,toggle`); ORGNL retired (commented, restorable).
 - `Επεξεργασία/Σχεδίαση 2D (JSME)` checkbox shows live applet / hides SVG + radios (delegated-handler order fixed).
 - Applet re-fits via `fResizeViewers()` on show; height probe counts applet as 2D viewer (`viewerMaxHeight`/`viewerBothHeight` apply).
 
-## Stage 2A — submit drawing to the engine
-1. **Read the drawing**: `getMolFile()` / `getSmiles()` from `jsmeNomeclatureApplet` (already the analyzed applet).
-2. **Run the pipeline**: same path as `fClassifyAllMolecules` — `readMolFile` → `fAnalyseStructure` → `fDetectMolType` → `fGuessName` → `fUpdateSVG` → `fShowNameAnalysis`. Validate input first (empty drawing → toast, no state corruption; never overwrite `selectedMol` until explicit accept).
-3. **Three 2D modes**: condensed = CHn symbols, expanded = C symbols, skeletal = none. Check how `mode2D`/`modeSuffix` (`_2D_Skeletal`) derives variants today (stored `structure2D_*` per molecule). For a new drawing, derive all three variants from the single molfile at submit time so mode switching works immediately.
-4. **3D**: PubChem SDF 3D first (`fFetchSDF3D_PubChem`, exists), CIR fallback (`iupac-54.js`). Novel drawings have no record → need local generation: evaluate `RDKit/` dir in repo for RDKit.js WASM (ETKDG 3D + canonical SMILES + duplicate check). This is the only offline-safe path for truly new molecules.
-5. **Name validation**: engine guess → PubChem oracle (`fMatchEngineEN` shared comparator) → author sign-off. No auto-merge: validated-by-oracle ≠ accepted.
+## Stage 2A — submit drawing to the engine (SHIPPED in v54; kept as record)
+1. **Read the drawing**: `getMolFile()` / `getSmiles()` from the dedicated `jsmeEditDraft` applet (display applet never leaves depict; old single-applet plan retired).
+2. **Run the pipeline**: shared sandbox pass `fMolDraftSandboxAnalyse` (chain rebuild included) → `fMolDraftAutoTidy` (read → sandbox → linearize → write back → re-read); empty/cyclic guard (union-find), `selectedMol` untouched until Accept.
+3. **Three 2D modes**: derived at Accept (answered 2026-11-04, see Q1): drawn MOL verbatim in its slot + linearized school-condensed + topped-up H-expanded + JSME-first skeletal ladder (display → edit applet on PubChem canonical SMILES, built-in `fZigzagMol` fallback; `_acceptSkel` validates each rung).
+4. **3D**: PubChem SDF 3D first via inline `load data` (`fJSmolLoadInlineSDF` — `blob:` URLs rejected by JSmol online), CIR fallback (`iupac-54.js`). Novel/record-without-3D drawings stay 2D-only with a note; Accept is gated for 3D-less molecules. No `RDKit/` in tree (removed pre-v44) — local ETKDG generation is a TODO (fetch remote vs vendor decision open).
+5. **Name validation**: engine guess + predicted EN (sandbox transliteration, PubChem systematic fallback) → shared-comparator oracle verdicts (`fMatchEngineEN`, tri-state, non-blocking) → author sign-off. No auto-merge: validated-by-oracle ≠ accepted.
 
-## Stage 2B — author correction (bidirectional fragments)
+## Stage 2B — author correction (ROADMAP, not in v54)
 - Today: name-component click → atom highlight (one direction).
 - Add reverse: click atoms/bonds (2D applet + 3D) → selects name component(s); author edits component text / locants; display name recomputes from overridden slots; overrides stored per draft (not in engine tables).
 - Same infra later powers exercises/questions (fragment assembly, name↔structure matching) — design the selection events reusable, not author-panel-specific.
 
-## Persistence + review workflow (student tasks)
+## Persistence + review workflow (ROADMAP; v54 ships only manual per-molecule save)
 - Format: **JSON payload inside a `.js` file** (e.g. `js/jsme-nick-nomeclature-moc2-data_custom.js` defining `nameExamplesCustom`, merged at boot). Plain `.json` + `fetch` breaks on `file://`; script-tag `.js` works everywhere incl. Drupal embed.
 - Record schema (mirror `nameExamples` entry + workflow fields): `{ key, smiles, mol2D variants, classification, GR slots, nameEN, oracle snapshot, author, status: draft|engine-checked|author-corrected|expert-approved, history }`.
 - Flow: student draws → submits draft file → engine/oracle pre-check → author correction → expert validation → merge into app data. Assignable per-student (one draft file each).
@@ -35,6 +30,6 @@
 
 ## Open questions (tomorrow)
 1. ~~2D mode variants: derive at submit (JSME-side) vs store one molfile + convert on switch?~~ Answered 2026-11-04: derive at Accept, store all three slots (drawn verbatim + linearized school-condensed + H-expanded + zigzag skeletal via JSME ladder with built-in fallback).
-2. RDKit.js: is `RDKit/` usable as WASM, or fetch remote? Fallback if neither?
+2. RDKit.js: no `RDKit/` in tree (removed pre-v44). Decision open: fetch remote RDKit.js WASM vs vendor locally vs keep the 3D gate. Fallback today: record-less drawings stay 2D-only, Accept gated.
 3. Correction granularity: free-text component edit vs slot-level (prefix/locant/stem/suffix) pickers?
 4. Exercise question types to lock fragment-event API before building author UI twice.

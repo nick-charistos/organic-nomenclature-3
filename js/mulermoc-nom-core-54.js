@@ -2633,9 +2633,14 @@ function fStripHydrogensMol(text) {
 
 var MOLGEN_STDVALENCE = { C: 4, N: 3, O: 2, F: 1, Cl: 1, Br: 1, I: 1 };
 
-// Expanded form: heavy skeleton + explicit H at standard lengths, placed by
-// largest-free-sector bisection (matches the stored 0.78-grid convention
-// closely enough for depiction; connectivity is what matters). Pre-existing
+// 2D layout bond lengths (MOL units, hardcoded — adjust manually here).
+// All heavy–heavy bonds share MOLGEN_CC_LEN in every slot (condensed,
+// expanded skeleton, zigzag); C–H bonds use MOLGEN_CH_LEN (~half of C–C).
+var MOLGEN_CC_LEN = 1.0;
+var MOLGEN_CH_LEN = 0.3;
+
+// Expanded form: heavy skeleton + explicit H at MOLGEN_CH_LEN, placed by
+// largest-free-sector bisection (connectivity is what matters). Pre-existing
 // explicit H are kept; missing ones are topped up. Unknown elements: kept,
 // never added to.
 function fGenExpandedMol(text) {
@@ -2657,7 +2662,7 @@ function fGenExpandedMol(text) {
     for (var c = 0; c < n; c++) atoms.push({ x: m.atoms[c].x, y: m.atoms[c].y, el: m.atoms[c].el });
     var bonds = [];
     for (var d = 0; d < m.bonds.length; d++) bonds.push([m.bonds[d][0], m.bonds[d][1], m.bonds[d][2]]);
-    var HLEN = 0.78;
+    var HLEN = (typeof MOLGEN_CH_LEN !== "undefined") ? MOLGEN_CH_LEN : 0.585;
     for (var h = 0; h < n; h++) {
       var el = String(m.atoms[h].el || "");
       if (!fIsHeavyEl2D(el)) continue;
@@ -2696,8 +2701,8 @@ function fGenExpandedMol(text) {
   } catch (e) { return null; }
 }
 
-// School-form condensed layout: main chain collinear (1.17 spacing, the
-// stored-condensed convention), branches orthogonal alternating sides, sp
+// School-form condensed layout: main chain collinear (MOLGEN_CC_LEN spacing,
+// the stored-condensed convention), branches orthogonal alternating sides, sp
 // centers stay on the line like the stored files. H atoms are dropped
 // (condensed = heavy only). Chain entries are 1-based numbers into the source
 // MOL's atom list (engine mainChainAtomsList of the same drawing).
@@ -2729,7 +2734,7 @@ function fLinearizeMol(text, chain) {
       if (map[x + 1] == null || map[y + 1] == null) continue;
       adj[x].push(y); adj[y].push(x);
     }
-    var DX = 1.17, DY = 1.17;
+    var DX = (typeof MOLGEN_CC_LEN !== "undefined") ? MOLGEN_CC_LEN : 1.17, DY = (typeof MOLGEN_CC_LEN !== "undefined") ? MOLGEN_CC_LEN : 1.17;
     var pos = {}, inChain = {};
     for (var k = 0; k < ch.length; k++) { inChain[ch[k]] = true; pos[ch[k]] = { x: k * DX, y: 0 }; }
     var visited = {};
@@ -2844,7 +2849,7 @@ function fZigzagMol(text, chain) {
       var kk = (a < c) ? a + "-" + c : c + "-" + a;
       return ord[kk] || 1;
     };
-    var L = 1.17, CX = L * 0.8660254, CY = L * 0.5;
+    var L = (typeof MOLGEN_CC_LEN !== "undefined") ? MOLGEN_CC_LEN : 1.17, CX = L * 0.8660254, CY = L * 0.5;
     var norm2 = function (vx, vy) {
       var l = Math.sqrt(vx * vx + vy * vy);
       if (!(l > 1e-9)) return null;

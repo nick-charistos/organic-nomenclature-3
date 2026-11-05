@@ -342,7 +342,7 @@ function jsmeOnLoad() {
     "590px",
     "240px",
     {
-      options: "depict, marker, toggle, depictaction, noreaction,nomultipart,noquery, canonize","guicolor": "#c8d9ec",  "guiAtomColor": "#1b275d",
+      options: "depict, marker, toggle, noreaction,nomultipart,noquery","guicolor": "#c8d9ec",  "guiAtomColor": "#1b275d",
       depictbg: "#fff",
       atombgsize: "0.6",
     },
@@ -378,7 +378,7 @@ function jsmeOnLoad() {
       "590px",
       "240px",
       {
-        options: "marker, norbutton, noxbutton, atommovebutton, autonumber, noreaction,nomultipart,noquery, canonize","guicolor": "#c8d9ec",  "guiAtomColor": "#1b275d",
+        options: "marker, norbutton, noxbutton, atommovebutton, noreaction,nomultipart,noquery","guicolor": "#c8d9ec",  "guiAtomColor": "#1b275d",
         depictbg: "#fff",
         atombgsize: "0.6",
       },
@@ -1150,13 +1150,18 @@ function fMolDraftEnter(mode) {
     // slot Accept will write (siblings are generated, never touched by hand).
     var _vLab = "";
     try { _vLab = fMolDraftT(variant === "condensedZigZag" ? "skeletal" : variant, variant); } catch (eVl) { _vLab = ""; }
-    var _editStatus = fMolDraftT("draftEdit", "Editing") + ": " + sourceMol + (_vLab ? " — " + _vLab : "");
+    var _slotHint = "";
+    try { _slotHint = fMolDraftT("draftSlotOnly", "only this view updates"); } catch (eSh) { _slotHint = ""; }
+    var _editStatus = fMolDraftT("draftEdit", "Editing") + ": " + sourceMol + (_vLab ? " — " + _vLab : "") + (_slotHint ? " — " + _slotHint : "");
     fMolDraftClearNaming(_editStatus);
     fMolDraftShowBar(_editStatus);
   } else {
+    var _newHint = "";
+    try { _newHint = fMolDraftT("draftAllViews", "all 3 views will be generated"); } catch (eNh) { _newHint = ""; }
+    var _newStatus = fMolDraftT("draftNew", "New molecule (draft)") + (_newHint ? " — " + _newHint : "");
     try { jsmeEditDraftApplet.clear(); } catch (eC) {}
-    fMolDraftClearNaming(fMolDraftT("draftNew", "New molecule (draft)"));
-    fMolDraftShowBar(fMolDraftT("draftNew", "New molecule (draft)"));
+    fMolDraftClearNaming(_newStatus);
+    fMolDraftShowBar(_newStatus);
   }
   // The edit applet is edit-mode by construction — no toggle, no enforcement.
   setTimeout(function () { try { if (typeof fResizeViewers === "function") fResizeViewers(); } catch (eR2) {} }, 0);
@@ -1765,7 +1770,17 @@ async function fMolDraftSubmit() {
   fMolDraftRenderPreview();
   try {
     var st2 = document.getElementById("molDraftStatus");
-    if (st2) st2.textContent = fMolDraftT("draftPreview", "Preview") + ": " + engineName;
+    if (st2) {
+      var _idHint = "";
+      try {
+        if (d && d.mode === "edit" && typeof fMolDraftIsSameMolecule === "function") {
+          _idHint = fMolDraftIsSameMolecule()
+            ? fMolDraftT("draftSameHint", "same molecule, will update this view")
+            : fMolDraftT("draftForkHint", "different molecule, will fork as new");
+        }
+      } catch (eIh) { _idHint = ""; }
+      st2.textContent = fMolDraftT("draftPreview", "Preview") + ": " + engineName + (_idHint ? " — " + _idHint : "");
+    }
   } catch (eSt2) {}
   // 3. PubChem oracle (async, molecule-guarded like the info panel refresh).
   var submittingSmiles = drawing.smiles;
@@ -2065,6 +2080,18 @@ async function fMolDraftAccept() {
     fMolDraftToast(fMolDraftT("acceptDup", "Already exists — pick it from the menu.") + " (" + dupKey + ")");
     return;
   }
+  // Edit-different confirm: Edit edits one view, New creates. A different
+  // drawing in Edit forks — ask first (stored source untouched either way).
+  // Fail-open without the dialog helper; one-shot flag, cleared on Cancel.
+  if (d.mode === "edit" && !isSame && !d._forkConfirmed) {
+    var _fm = "", _fy = "";
+    try { _fm = fMolDraftT("draftForkConfirm", "This drawing is a different molecule — fork as new?"); } catch (eFm) { _fm = "Fork as new?"; }
+    try { _fy = fMolDraftT("draftForkYes", "Fork as new"); } catch (eFy) { _fy = "Fork as new"; }
+    if (typeof fScenarioConfirm === "function") {
+      try { fScenarioConfirm(_fm, function () { try { d._forkConfirmed = true; } catch (eFc) {} try { fMolDraftAccept(); } catch (eFa) {} }, _fy); } catch (eSc) {}
+      return;
+    }
+  }
   var hit = d.pubchem || null;
   var key = fMolDraftMakeKey(normSmi, hit);
   if (isUpdate) key = d.sourceMol;
@@ -2257,10 +2284,16 @@ async function fMolDraftAccept() {
     } else {
       // Condensed slot must stay heavy-only: the overlay adds implicit H
       // itself, so any hand-drawn explicit H would double-render. Strip
-      // first (drawn geometry otherwise kept verbatim).
+      // first. New mode additionally linearizes (MOLGEN_CC_LEN) so hand-drawn
+      // C–C lengths always land on the shared bond length; Edit-condensed
+      // keeps the author's geometry verbatim (single-slot update contract).
+      // (drawn geometry otherwise kept verbatim).
       molC = d.molText;
+      if (d && d.mode === "new" && typeof fLinearizeMol === "function") {
+        try { molC = fLinearizeMol(d.molText, _chainLive) || molC; } catch (eLn) {}
+      }
       if (typeof fStripHydrogensMol === "function") {
-        try { molC = fStripHydrogensMol(d.molText) || d.molText; } catch (eSt) {}
+        try { molC = (d && d.mode === "new") ? (fStripHydrogensMol(molC) || molC) : (fStripHydrogensMol(d.molText) || d.molText); } catch (eSt) {}
       }
       molE = (typeof fGenExpandedMol === "function") ? (fGenExpandedMol(molC) || null) : null;
       if (!molE) { try { console.warn("[draft] expanded generation failed — mode disabled"); } catch (eW4) {} }
@@ -2377,15 +2410,21 @@ async function fMolDraftAccept() {
   rec.structure2D_Expanded = molE;
   rec.structure2D_Skeletal = molS;
   if (isUpdate) {
-    // Update in place: same key, same registry object — all three slots
-    // rewritten (drawn variant verbatim, siblings regenerated), so the
-    // untouched representations cannot go stale. Key stable, history appended.
+    // Update in place, single slot: same molecule + layout-only edit rewrites
+    // only the edited representation (condensed: stripped verbatim; expanded:
+    // verbatim; skeletal: ladder output — never raw canvas). Siblings stay
+    // byte-untouched so their hand-tuned geometry cannot go stale. Metadata
+    // (formula/names/oracle) refreshes from the new preview; key stable.
     var prev = null;
     try { prev = nameExamples[key] || null; } catch (ePv) { prev = null; }
     if (!prev) { return; }
-    prev.structure2D_Condensed = molC;
-    prev.structure2D_Expanded = molE;
-    prev.structure2D_Skeletal = molS;
+    var _slot = "condensed";
+    try { _slot = (drawnVariant === "expanded") ? "expanded" : (drawnVariant === "skeletal" || drawnVariant === "condensedZigZag") ? "skeletal" : "condensed"; } catch (eSl2) { _slot = "condensed"; }
+    try {
+      if (_slot === "expanded" && molE) prev.structure2D_Expanded = molE;
+      else if (_slot === "skeletal" && molS) prev.structure2D_Skeletal = molS;
+      else if (molC) prev.structure2D_Condensed = molC;
+    } catch (eWs) {}
     prev.formula = formula;
     prev.smiles = d.smiles;
     prev.classification = cls;
@@ -2402,7 +2441,7 @@ async function fMolDraftAccept() {
     prev.sdf3D = rec.sdf3D;
     try {
       prev.history = prev.history || [];
-      prev.history.push({ t: Date.now(), action: "updated", mode: d.mode, source: d.sourceMol || null, verdict: { gr: _vc.gr, en: _vc.en } });
+      prev.history.push({ t: Date.now(), action: "updated-slot:" + _slot, mode: d.mode, source: d.sourceMol || null, verdict: { gr: _vc.gr, en: _vc.en } });
     } catch (eH) {}
     rec = prev;
   } else {
@@ -3420,7 +3459,9 @@ function fLoadMol2D() {
   }
 
   jsmeNomeclatureApplet.readMolFile(myMol2D);
-  jsmeNomeclatureApplet.setMolecularAreaScale(molZoom2D);
+  try { fApplyMol2DScale(); } catch (eSc) {
+    try { jsmeNomeclatureApplet.setMolecularAreaScale(molZoom2D); } catch (eS2) {}
+  }
   if (jsmeNomeclatureAppletORGNL && rawMol2D) {
     jsmeNomeclatureAppletORGNL.readMolFile(rawMol2D);
     jsmeNomeclatureAppletORGNL.setMolecularAreaScale(molZoom2D);
@@ -3450,6 +3491,50 @@ function fLoadMol2D() {
 }
 
 // ── fReapplyZoomScale2D ─────────────────────────────────────────────────────
+// Per-mode C–C pixel equalizer: JSME rescales each loaded MOL by whole-input
+// bond statistics, so expanded (heavy + short H) renders bigger C–C than
+// condensed from identical stored skeletons. The inverse is exact:
+// factor = meanAllBonds/meanHeavyBonds of the loaded MOL (1.0 when
+// heavy-only); effective scale = molZoom2D * factor. Derived live from
+// myMol2D at every scale application — nothing stored, user zoom stays in
+// molZoom2D, mode switches recompute via fLoadMol2D below.
+function fMol2DModeScaleFactor() {
+  try {
+    if (typeof fParseMolV2000 !== "function" || typeof myMol2D === "undefined" || !myMol2D) return 1;
+    var p = fParseMolV2000(myMol2D);
+    if (!p || !p.atoms || !p.atoms.length || !p.bonds || !p.bonds.length) return 1;
+    var sAll = 0, nAll = 0, sHv = 0, nHv = 0;
+    for (var i = 0; i < p.bonds.length; i++) {
+      var b = p.bonds[i];
+      if (!b || b[0] == null || b[1] == null) continue;
+      var a = p.atoms[b[0] - 1], c = p.atoms[b[1] - 1];
+      if (!a || !c) continue;
+      var d = Math.hypot(a.x - c.x, a.y - c.y);
+      if (!(d > 1e-9) || !isFinite(d)) continue;
+      var ah = a.el === "H" || a.el === "h", ch = c.el === "H" || c.el === "h";
+      sAll += d; nAll++;
+      if (!ah && !ch) { sHv += d; nHv++; }
+    }
+    if (!nAll || !nHv) return 1;
+    var f = (sAll / nAll) / (sHv / nHv);
+    if (!(f > 0) || !isFinite(f)) return 1;
+    if (f < 0.3) return 0.3;
+    if (f > 6) return 6;
+    return f;
+  } catch (e) { return 1; }
+}
+function fMol2DModeScale() {
+  var z = 2.0;
+  try { z = (typeof molZoom2D !== "undefined") ? molZoom2D : 2.0; } catch (eZ) {}
+  try { return z * fMol2DModeScaleFactor(); } catch (eF) { return z; }
+}
+function fApplyMol2DScale() {
+  try {
+    if (typeof jsmeNomeclatureApplet !== "undefined" && jsmeNomeclatureApplet) {
+      jsmeNomeclatureApplet.setMolecularAreaScale(fMol2DModeScale());
+    }
+  } catch (e) { /* applet unavailable */ }
+}
 // Re-applies the live absolute zoom scale on both applets, then rebuilds the
 // SVG overlay + replays numbering. Split out of fZoom2D so resizes can force
 // the same re-fit: setSize alone resizes the box but leaves a stale small
@@ -3459,7 +3544,7 @@ function fLoadMol2D() {
 function fReapplyZoomScale2D() {
   if (!jsmeNomeclatureApplet) return;
   try {
-    jsmeNomeclatureApplet.setMolecularAreaScale(molZoom2D);
+    fApplyMol2DScale();
     if (jsmeNomeclatureAppletORGNL) jsmeNomeclatureAppletORGNL.setMolecularAreaScale(molZoom2D);
   } catch (e) {
     /* applet unavailable */

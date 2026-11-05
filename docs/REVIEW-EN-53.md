@@ -40,7 +40,7 @@ Notes:
 - PubChem `IUPACName` is sometimes retained/trivial, sometimes an inverted index (`propanal, 2-methyl-`), sometimes a mixture synonym (`4-oxobutanoic acid` steroid record hit for `oxobutanoic acid` — key lacks locant, PubChem fuzzy-matched). `fResolveSystematicEN` decontaminates (double-space/`(...)` strip), requires locant-shaped synonyms, and never lets a synonym override a systematic-looking raw IUPAC.
 - `(E)-`/`(+-)-`/`rac-`/`DL-` stereo prefixes are stripped before compare (app has no stereo). `(E)-hex-2-en-4-yne` matches engine `hex-2-en-4-yne` under this rule.
 
-## E. Novel molecules without public record (15) — engineEN proposals for expert validation
+## E. Novel molecules without public record (16) — engineEN proposals for expert validation
 
 No PubChem record (CID 0 / 404) and CIR throttled/failed after retries. Engine output is structurally complete; P1/P4 to bless against `.mol` files. SMILES shown are JSME-extracted at boot.
 
@@ -50,6 +50,7 @@ No PubChem record (CID 0 / 404) and CIR throttled/failed after retries. Engine o
 - `isopropyl_4_dimethyl_3_5_heptanol_2`: `4-isopropyl-3,5-dimethylheptan-2-ol` (SMILES ``)
 - `diethyl_4_5_dimethyl_2_6_heptanone_3`: `4,5-diethyl-2,6-dimethylheptan-3-one` (SMILES ``)
 - `dimethyl_4_5_hexen_5_yn_1_one_3`: `4,5-dimethylhex-5-en-1-yn-3-one` (SMILES ``)
+- `methyl_6_hepten_3_dione_2_5`: engine proposal per §N amber list (no-record novel; P1/P4 to bless against the `.mol` file)
 - `ethyl_3_methyl_4_octen_3_yn_5_dione_2_7`: `3-ethyl-4-methyloct-3-en-5-yne-2,7-dione` (SMILES ``)
 - `isopropyl_4_dimethyl_3_6_octen_3_yn_7_dione_2_5`: `4-isopropyl-3,6-dimethyloct-3-en-7-yne-2,5-dione` (SMILES ``)
 - `ethyl_4_isopropyl_3_methyl_2_hexanal`: `4-ethyl-3-isopropyl-2-methylhexanal` (SMILES ``)
@@ -132,7 +133,7 @@ Canonical per-molecule verdicts from a full live run (all 141 selected, oracle f
 - `isobutyl_2_methylpropanoate` — engine `isobutyl 2-methylpropanoate` | oracle `2-methylpropyl 2-methylpropanoate` (retained isobutyl; engine form is PIN-preferred, §A-family — P3 confirms)
 - `isopropyl_2_3_dimethylbutanoate` — engine `isopropyl 2,3-dimethylbutanoate` | oracle `propan-2-yl 2,3-dimethylbutanoate` (retained isopropyl; engine form is PIN-preferred, §A-family — P3 confirms)
 
-**Amber — no PubChem/CIR record, nothing to validate against (15 novel molecules, all of §E, all confirmed missing live):**
+**Amber — no PubChem/CIR record, nothing to validate against (16 novel molecules, all of §E, all confirmed missing live):**
 `ethyl_4_dimethyl_3_5_heptyne_1`, `ethyl_3_methyl_4_hexen_3_yn_5_ol_2`, `ethyl_4_dimethyl_2_3_hepten_2_yne_5`, `isopropyl_4_dimethyl_3_5_heptanol_2`, `diethyl_4_5_dimethyl_2_6_heptanone_3`, `dimethyl_4_5_hexen_5_yn_1_one_3`, `methyl_6_hepten_3_dione_2_5`, `ethyl_3_methyl_4_octen_3_yn_5_dione_2_7`, `isopropyl_4_dimethyl_3_6_octen_3_yn_7_dione_2_5`, `ethyl_4_isopropyl_3_methyl_2_hexanal`, `ethyl_4_penten_4_yn_2_al`, `ethyl_2_methyl_3_hexen_2_yn_4_dial`, `ethyl_3_isopropyl_2_dimethyl_4_5_hexanoic_acid`, `ethyl_2_methyl_3_penten_2_yn_4_oic_acid`, `ethyl_3_isopropyl_2_dimethyl_4_5_hexadien_2_4_dioic_acid`, `ethyl_2_isopropyl_3_dimethyl_6_6_hepten_2_yn_4_dioic_acid` — engine proposals in §E stand; P1/P4 to bless against `.mol` files.
 
 **Bulk-run caveat (transient amber/lavender):** 19 further molecules returned no oracle data in this bulk run (`butene_2`, `penten_2_ol_1`, `penten_3_yne_1`, `hexen_2_yne_4`, `bromo_3_chloropentane_1`, `bromo_2_chlorobutane_3`, `ethyl_3_dimethyl_2_5_hexene_2`, `ethyl_3_dimethyl_2_5_hexane`, `dimethyl_2_3_pentadiene_1_3`, `dimethyl_2_3_penten_1_yne_4`, `methyl_3_pentadiene_1_3`, `methyl_3_penten_2_dial`, `penten_2_yn_4_oic_acid`, `hexen_2_yn_4_dioic_acid`, `methyl_6_hepten_3_dione_2_5` and the 4 esters above pre-classification). All have public records — this is CIR/PubChem throttling under bulk lookup (documented §D/§E), not absence. Spot re-checks with spacing confirm it (`butene_2` → systematic match, `hexen_2_yn_4_dioic_acid` → systematic match). Since the fetch-error/empty split, throttled lookups land on **lavender** (unknown), genuine no-records on **amber** — re-visit individually, don't bulk-retry.

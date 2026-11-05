@@ -1,4 +1,17 @@
-# Session notes — 2026-10-03 (resume point for next session)
+# Session notes — 2026-11-05 (resume point for next session, other machine)
+
+> **Resume pointer (cross-machine):** HEAD `f49b810` + **DIRTY working tree (10 files,
+> UNCOMMITTED, see `git status`)** — v54 bond vars (1.0/0.5), draft slot contract +
+> fork confirm, per-mode pixel equalizer, owner applet-option edits, `?v=54.6`.
+> Full record: `docs/SESSION-HANDOFF-2026-11-05-2D-BONDLENGTHS.md`.
+> **To move machines: commit + push HERE first (needs owner word), then pull there +
+> hard reload.** Routine otherwise: end-of-day commit + push and update this pointer;
+> on the other machine pull first, then resume from the handoff §4 checklist +
+> `git log --oneline -5` + `git status`. OpenCode sessions stay machine-local.
+>
+> Previous pointer (2026-11-04, now superseded): last commit `ab590dc` — v54 draft flow
+> (validated skeletal ladder, depict race fix, canonical SMILES, auto-linearize,
+> `?v=54.3`), verified live, tree clean.
 
 > **Resume pointer (cross-machine):** last commit `ab590dc` (2026-11-04) —
 > v54 draft flow (validated skeletal ladder, depict race fix, canonical SMILES,
@@ -139,7 +152,8 @@
   and white-currentColor hover backgrounds.
   Firefox/touch/screen-reader and real-scenario click-through remain pending.
 
-Working baseline (historical): **v43**, `index.html` → `mulermoc-nom-43.html`. Tree clean at `cb2460c`.
+> **HISTORICAL below (v43 era, `cb2460c`): superseded by the v54 live baseline at the top of this file. Kept as record — do not resume from here.**
+> Working baseline (historical): **v43**, `index.html` → `mulermoc-nom-43.html`. Tree clean at `cb2460c`.
 No JS runtime in the assistant environment — all changes were verified statically
 (braces HEAD-identical, grep audits) + user browser click-throughs. Re-verify in
 browser after any new change: all 3 modes, numbering, rule tables, menu grouping,
@@ -209,7 +223,7 @@ EN only if accomplished. Team P1–P6 roles in README. Stats primary for researc
 (P2/P5/P6, EPAL vs Lyceum). AI: engineering accelerator with small reviewed
 batches + browser gates; novelty lives in pedagogy + classroom evidence.
 
-## Resume checklist for next session
+## Resume checklist for next session (HISTORICAL — v43 era, superseded; current pointer is at top of file)
 1. `git log --oneline -5` + `git status` (expect clean at `cb2460c`).
 2. Ask user: JSmol API findings? (`scriptWait("show moveto")` output shape,
    replay-after-`fSelectMol` behavior, model-loaded signal.)
@@ -2587,3 +2601,22 @@ follows; one Save → Present → Next → Exit round-trip.
 * Depict layout race fixed: `fMolDraftDepictSmiles` is async (input once, poll `molFile()` up to 6×120ms until output carries the drawn heavy count); `fMolDraftAccept` async (sole caller is a fire-and-forget `onclick`). Root-caused from a 151-char truncated read + `heavy 9 vs 0` rejections.
 * Also in batch: canonical SMILES end-to-end (info panel shows PubChem canonical when available, links + copy follow display), auto-linearize default-on with manual button only when off, drawing master switch, `?v=54.3` cache-busters (mixed old/new files had muddied one debug round — bump busters with every JS change from now on).
 * Verified live by owner: `display(canon)` rung wins via read-until-stable (`depict settled`, `skelSrc=display`), builtin fallback intact. Standing rules re-armed: no commit without explicit word; `git status` clean at `ab590dc`.
+
+## 2026-11-05 — v54 2D bond lengths + New/Edit slot contract (working copy, uncommitted)
+
+* Bond vars (`core-54.js`, hardcoded per owner): `MOLGEN_CC_LEN = 1.17` (all heavy–heavy, every slot) + `MOLGEN_CH_LEN = 0.585` (~half C–C); linearizer / zigzag / expanded H top-up read them (was `1.17` / `0.78`). Headless-verified: C–C uniform 1.17 (linear + zigzag), 10 topped-up H all at 0.585. Stored 141 untouched.
+* New ignores the 2D radio (full triple generation; heavy skeleton linearized at Accept via the CC var). Edit same-molecule updates only the edited slot in place (history `updated-slot:<variant>`; skeletal still via ladder, never verbatim). Edit-different asks via `fScenarioConfirm` fork dialog (stored source untouched). Draft bar states the contract at entry + preview (same/different hint). New lang keys `draftSlotOnly/draftAllViews/draftSameHint/draftForkHint/draftForkConfirm/draftForkYes`.
+* `?v=54.4` cache-busters. `node --check` clean (core/molview/lang), `git diff --check` clean. Browser click-through pending (New Accept geometry, Edit single-slot update, fork dialog, bar hints).
+
+## 2026-11-05 (cont.) — H–H overlap check (CH=0.5 kept; placement, not length, is the residual cause)
+
+* Headless sweep over all 141 regen-expanded MOLs (`fGenExpandedMol` from condensed, current vars): non-vicinal H–H min per molecule. CH=0.5 → worst 0.170 (3 offenders: `isopropyl_4_dimethyl_3_5_heptanol_2`, `ethyl_2_methyl_3_pentanoic_acid`, `ethyl_3_isopropyl_2_dimethyl_4_5_hexanoic_acid`); CH 0.55–0.78 → worst 0.004–0.156, i.e. worse. Stored hand (ChemDraw) layouts clean everywhere (min 0.321). Conclusion: near-coincident H come from largest-free-sector bisection aiming neighbor H into shared pockets on canonical orthogonal-branch layouts — no HLEN in range clears it. Kept CH=0.5 (least-bad worst case + under-half goal). Real fix queued: collision-aware H placement (nudge if within threshold of placed atoms), verifiable with the same harness (`hh-overlap-check.js` / `hh-sweep-check.js` pattern).
+* Cache-busters `?v=54.5` (core vars changed again since 54.4).
+* Per-mode C–C pixel equalizer planned → built: `fMol2DModeScaleFactor()` (meanAll/meanHeavy of loaded MOL) + `fMol2DModeScale()`/`fApplyMol2DScale()`; display scale writes in `fLoadMol2D`, `fReapplyZoomScale2D` + both scenario apply sites route through it. Headless check under depict model: all expanded cases equalize to 1.40. `?v=54.6`. Browser pixel check pending (per-radio C–C equality, zoom ±, mode switch, Save→Present round-trip).
+
+## 2026-11-05 (cont.) — JSME depict investigation: no fixed-length lever (negative result)
+
+* Question: can depict views follow `MOLGEN_CC_LEN` absolutely (fixed bond length), so condensed shows CC live and expanded keeps stable C–C with short H?
+* Checked: official JSME option surface (`JSME_test.html` + Dash reference) exposes only reaction/noquery/oldlook/noatommovebutton/polarnitro/depict + display knobs (area scale = zoom, line width, font size, antialias) — no bond-length/depict-length parameter. Local pinned bundle (`jsme/*.cache.js`) contains no `bondLength`-family identifiers. Web search of docs/issues turned up no depict-length feature.
+* Measured behavior (console `lens()` bond tables, custom_decane): stored heavy 0.10 → applet 1.40 (condensed/skeletal), stored mixed (0.10 heavy + 0.585 H) → applet heavy 2.17 — i.e. depict rescales per-view by whole-input properties (mean-normalization fits the 0.51 reading exactly; count/extent dependence visible in the 2.17 reading). Ratios survive, absolutes don't.
+* Conclusion: through depict, absolute CC can never show and cross-view C–C pixel equality is unachievable (different mixes normalize differently). Vars remain data-level truth (stored MOLs, exports, edit-canvas template view, skeletal fallback) + live ratio control (expanded H/CC ratio renders exactly). Decision on the CH slider value left to owner (0.5 = shortest H + most expanded inflation; 0.78 = shipped-years look; 1.0 = middle).

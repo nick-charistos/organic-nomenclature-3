@@ -1384,7 +1384,8 @@ function fScenarioRestoreAuthorSettings() {
   try {
     if (typeof molZoom2D !== "undefined") molZoom2D = fScenarioValidZoom(a.zoom);
     if (typeof jsmeNomeclatureApplet !== "undefined" && jsmeNomeclatureApplet) {
-      jsmeNomeclatureApplet.setMolecularAreaScale(typeof molZoom2D !== "undefined" ? molZoom2D : 2.0);
+      if (typeof fApplyMol2DScale === "function") fApplyMol2DScale();
+      else jsmeNomeclatureApplet.setMolecularAreaScale(typeof molZoom2D !== "undefined" ? molZoom2D : 2.0);
     }
     if (typeof fUpdateSVG === "function") fUpdateSVG();
   } catch (eZoom) {
@@ -1961,7 +1962,8 @@ function fScenarioApply(step) {
   fScenarioApplyViewerMaxHeight(step);
   try {
     if (typeof jsmeNomeclatureApplet !== "undefined" && jsmeNomeclatureApplet) {
-      jsmeNomeclatureApplet.setMolecularAreaScale(molZoom2D);
+      if (typeof fApplyMol2DScale === "function") fApplyMol2DScale();
+      else jsmeNomeclatureApplet.setMolecularAreaScale(molZoom2D);
       if (typeof jsmeNomeclatureAppletORGNL !== "undefined" && jsmeNomeclatureAppletORGNL) {
         jsmeNomeclatureAppletORGNL.setMolecularAreaScale(molZoom2D);
       }
