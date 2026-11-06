@@ -1772,7 +1772,14 @@ function fMolDraftSandboxAnalyse(molText) {
   try {
     if (molText && typeof jsmeNomeclatureApplet !== "undefined" && jsmeNomeclatureApplet &&
         typeof jsmeNomeclatureApplet.readMolFile === "function") {
-      jsmeNomeclatureApplet.readMolFile(molText);
+      // Annotated sync (same as fLoadMol2D): [C] carbons render visible C
+      // labels so the preview SVG carries carbon labels + H counts. JSME
+      // normalizes [C] to label "C" internally (the 141 annotated stored
+      // molecules analyse correctly), so the engine below is unaffected;
+      // atom order/count are untouched, only the symbol field changes.
+      var _syncMol = molText;
+      try { if (typeof fMakeAnnotatedSkeletal === "function") _syncMol = fMakeAnnotatedSkeletal(molText) || molText; } catch (eAn2) { _syncMol = molText; }
+      jsmeNomeclatureApplet.readMolFile(_syncMol);
       try {
         if (typeof fApplyMol2DScale === "function") fApplyMol2DScale();
         else if (typeof molZoom2D !== "undefined") jsmeNomeclatureApplet.setMolecularAreaScale(molZoom2D);
@@ -2341,6 +2348,12 @@ async function fMolDraftAccept() {
   var _acceptSkel = function (cand, src, drawnMol) {
     try {
       if (!cand) return null;
+      // Sandbox-applet echo guard: the preview sync above is [C]-annotated,
+      // so JSME rung outputs may echo "[C]" symbols. Normalize to bare "C"
+      // (same 3-char field width, geometry untouched) before validation and
+      // storage — the skeletal slot's display path never annotates, and core
+      // element-identity checks expect "C".
+      try { cand = String(cand).replace(/\[C\]/g, "C  "); } catch (eBr) {}
       if (typeof fParseMolV2000 !== "function") { try { console.warn("[draft] skeletal: " + src + " skipped (no parser)"); } catch (eP0) {} return null; }
       var _pa = fParseMolV2000(drawnMol), _pb = fParseMolV2000(cand);
       var _ha = 0, _hb = 0, _qi, _zero = true;
