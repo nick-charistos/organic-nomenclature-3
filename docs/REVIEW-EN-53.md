@@ -140,6 +140,23 @@ Canonical per-molecule verdicts from a full live run (all 141 selected, oracle f
 
 **Lavender** is transient by nature (network failures, throttling, offline) and is never listed per molecule — any molecule can show it while unreachable. Offline, verdicts stay unmarked (no data, no claim).
 
+## O. OpenClatura second verdict (pending live run)
+
+Second oracle (rule-built systematic EN, deterministic Blue Book): `fMatchEngineEN_OC` /
+`fValidateENAgainstOC` (`name-en-54.js`, statuses match/mismatch/missing, `[EN-VALIDATE-OC]` /
+`[EN-MISMATCH-OC]` console). Live `OC` badge + outline on the name panel (EN only,
+`verdict-oc-*` classes + combined tooltip; PubChem fills untouched) and a read-only
+✓/✕/? glyph on the draft-preview OC row — verdicts never merge, engine names never
+auto-correct (PIN/systematic vs school conventions differ by design; P3 decides).
+
+Run: serve the repo root, open `?lang=en`, console `fValidateENAgainstOC()` (per-molecule
+OC fetch, throttled by hand — respect 10 req/s; amber §E rows are the priority since
+PubChem is mute there). Record the per-key table here when run.
+
+Display-verdict policy (owner choice, live only — batch tables above stay per-oracle):
+either oracle agreeing keeps the name panel untinted; red only on disagreement. Draft
+auto-check is OR (PubChem 3-way or OC), source-recorded in `nameCheck.enAutoSource`.
+
 ## Files
 
 - `js/mulermoc-nom-name-en-53.js` — EN tables + slot transliteration + validation (`fGuessNameEN_canon`, `fAssembleBranchedEN`, `fPopulateEngineENFromGreek`, `fValidateENAgainstOracle`).

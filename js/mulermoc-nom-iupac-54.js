@@ -124,6 +124,35 @@ async function fFetchIUPAC_EN_CIR(smiles) {
   return { source: "cir", cid: null, iupac: text, title: null };
 }
 
+// Second oracle: OpenClatura rule-built systematic EN (deterministic Blue
+// Book, MIT; https://openclatura.org/llms.txt). Speaks where record-lookup
+// oracles go silent (novel molecules). Display + second-opinion only — never
+// auto-corrects engine names (PIN/systematic vs school conventions differ by
+// design; P3 decides). Query form (/name?smiles=) is backslash-safe per their
+// encoding notes; format=json carries name + opsin_check + rules_hit.
+// One attempt, fail-soft; callers own throttling (10 req/s/IP) and guards.
+async function fFetchIUPAC_OC(smiles) {
+  const raw = String(smiles || "").trim();
+  if (!raw) throw new Error("empty SMILES");
+  const url =
+    "https://openclatura.org/name?smiles=" + encodeURIComponent(raw) + "&format=json";
+  const res = await fetch(url, { headers: { Accept: "application/json" } });
+  if (!res.ok) throw new Error("OpenClatura " + res.status + " for " + raw);
+  const data = await res.json();
+  if (!data || data.ok !== true || !data.name) {
+    throw new Error("OpenClatura: unnameable (" + ((data && data.error) || raw) + ")");
+  }
+  var opsin = null;
+  try { opsin = (data.opsin_check && data.opsin_check.status) || null; } catch (eO) {}
+  var rules = null;
+  try { rules = data.rules_hit || null; } catch (eR) {}
+  try {
+    if (data.smiles && data.smiles !== raw) console.log("[OC] echo differs sent=" + raw + " got=" + data.smiles);
+  } catch (eE) {}
+  console.log("[OC] SMILES=" + raw + " -> \"" + data.name + "\" (opsin " + (opsin || "?") + ")");
+  return { source: "openclatura", name: String(data.name), opsin: opsin, rulesHit: rules, echoSmiles: data.smiles || null };
+}
+
 async function fFetchIUPAC_EN(smiles, opts) {
   const o = opts || {};
   const retryMs = typeof o.retryMs === "number" ? o.retryMs : 800;
@@ -332,6 +361,45 @@ async function fEnrichFromJSME(opts) {
 // only when systematic is missing. Pending-guard avoids parallel storms when
 // stepping quickly through menus/scenarios.
 var __mulerIupacPending = {};
+var __mulerOCPending = {};
+// OpenClatura second-oracle fetch on selection (fire-and-forget, like the
+// PubChem path above but lighter: one attempt, no synonyms round). Cached on
+// the entry; the info panel repaints via the molecule-guarded refresh.
+function fLogMolSelectWithOC(key) {
+  let entry = null;
+  try {
+    entry =
+      typeof nameExamples !== "undefined" ? nameExamples[key] : null;
+  } catch (e) {
+    entry = null;
+  }
+  if (!entry) return;
+  const smiles = (entry.canonicalSmiles || entry.smiles) || null;
+  if (typeof window !== "undefined" && window.MULER_QUIET_FETCH) return;
+  if (!smiles || entry.openclaturaDone || __mulerOCPending[key]) return;
+  __mulerOCPending[key] = true;
+  fFetchIUPAC_OC(smiles)
+    .then(function (oc) {
+      try {
+        if (entry) {
+          entry.openclaturaEN = (oc && oc.name) || null;
+          entry.openclaturaOpsin = (oc && oc.opsin) || null;
+          entry.openclaturaDone = true;
+        }
+      } catch (eStore) { /* cache best-effort */ }
+      try { if (typeof fMulerMolInfoRefresh === "function") fMulerMolInfoRefresh(key); } catch (eMI) {}
+      try { if (typeof fMulerOCFetchDone === "function") fMulerOCFetchDone(key); } catch (eOC) {}
+    })
+    .catch(function (err) {
+      try { console.warn("[OC] select-fetch failed " + key, err); } catch (eL) {}
+      try { if (entry) { entry.openclaturaDone = true; entry.openclaturaEN = null; } } catch (eF) {}
+      try { if (typeof fMulerMolInfoRefresh === "function") fMulerMolInfoRefresh(key); } catch (eMI2) {}
+      try { if (typeof fMulerOCFetchDone === "function") fMulerOCFetchDone(key); } catch (eOC2) {}
+    })
+    .finally(function () {
+      __mulerOCPending[key] = false;
+    });
+}
 function fLogMolSelectWithIUPAC(key) {
   let entry = null;
   try {
@@ -387,6 +455,7 @@ function fLogMolSelectWithIUPAC(key) {
       );
       try { if (typeof fMulerENFetchDone === "function") fMulerENFetchDone(key); } catch (eH) {}
       try { if (typeof fMulerMolInfoRefresh === "function") fMulerMolInfoRefresh(key); } catch (eMI) {}
+      try { if (typeof fMulerOCFetchDone === "function") fMulerOCFetchDone(key); } catch (eOC) {}
     })
     .catch(function (err) {
       console.warn("[IUPAC-EN] select-fetch failed " + key, err);

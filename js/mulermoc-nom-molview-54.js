@@ -1204,6 +1204,19 @@ function fMolDraftHasRing() {
 function fMolDraftNorm(s) {
   return String(s == null ? "" : s).toLowerCase().replace(/\s+/g, " ").trim();
 }
+// Shared PubChem 3-way match (systematic/retained/title, stereo-stripped):
+// feeds the EN auto-check and the PubChem-row glyph alike, so they agree.
+function fMolDraftPCMatch(engineEN, hit) {
+  try {
+    if (!engineEN || !hit || typeof fNormNoStereo !== "function") return false;
+    var a = fNormNoStereo(String(engineEN).toLowerCase().trim());
+    if (!a) return false;
+    var s = fNormNoStereo(String((hit && (hit.systematic || hit.iupacEN)) || "").toLowerCase().trim());
+    var r = fNormNoStereo(String((hit && (hit.iupacPubchem || hit.iupac)) || "").toLowerCase().trim());
+    var t = fNormNoStereo(String((hit && (hit.title || hit.titlePubchem)) || "").toLowerCase().trim());
+    return !!((s && a === s) || (r && a === r) || (t && a === t));
+  } catch (e) { return false; }
+}
 
 // Stray-H guard for verbatim slots (H32 class): hand geometry can misplace an
 // H a full bond length off (right y, wrong x) and a verbatim Accept would keep
@@ -1622,9 +1635,39 @@ function fMolDraftRenderPreview() {
       var title = hit.title || hit.titlePubchem || null;
       var sys = hit.systematic || hit.iupacEN || null;
       var norm = fMolDraftNorm;
-      if (iupac) html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("draftIUPACRow", "IUPAC (PubChem)")) + ": " + fMolDraftEsc(iupac) + "</div>";
+      if (iupac) {
+        // Read-only agreement glyph (same shared match as the auto-check;
+        // non-interactive, unlike the Correct/Wrong verdict controls).
+        var _pcG = "?", _pcT = "";
+        try {
+          var _pcM = (typeof fMolDraftPCMatch === "function") ? fMolDraftPCMatch(d.engineEN, hit) : false;
+          if (_pcM) { _pcG = "✓"; _pcT = fMolDraftT("draftPCMatchTip", "PubChem agrees with the predicted name"); }
+          else { _pcG = "✕"; _pcT = fMolDraftT("draftPCMismatchTip", "Predicted name differs from PubChem — pending human review"); }
+        } catch (ePCM) {}
+        html += "<div class='draftOracleRow'><span class='draftOCMark' title='" + fMolDraftEsc(_pcT) + "'>" + _pcG + "</span> " + fMolDraftEsc(fMolDraftT("draftIUPACRow", "IUPAC (PubChem)")) + ": " + fMolDraftEsc(iupac) + "</div>";
+      }
       if (title && /ether$/i.test(String(title).trim()) && norm(title) !== norm(iupac)) html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("draftCommonRow", "Common (PubChem)")) + ": " + fMolDraftEsc(title) + "</div>";
       if (sys && norm(sys) !== norm(iupac) && norm(sys) !== norm(title)) html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("draftSysRow", "Systematic")) + ": " + fMolDraftEsc(sys) + "</div>";
+      // OpenClatura second oracle (rule-built EN): verbatim name + OPSIN
+      // round-trip status. Display only — never feeds verdicts (Phase 2).
+      // Speaks loudest on no-PubChem-record drafts (amber rows).
+      try {
+        var _ocD = (typeof d.openclatura !== "undefined") ? d.openclatura : undefined;
+        if (_ocD && _ocD.name) {
+          // Second-oracle verdict glyph (read-only): shared comparator against
+          // the predicted EN. Never touches verdictEN/nameCheck (Phase 2 rule).
+          var _ocG = "?", _ocT = "";
+          try {
+            var _ocV = (typeof fMatchENvsOC === "function") ? fMatchENvsOC(d.engineEN, _ocD.name) : "missing";
+            if (_ocV === "match") { _ocG = "✓"; _ocT = fMolDraftT("ocMatchTip", "OpenClatura agrees with the engine name"); }
+            else if (_ocV === "mismatch") { _ocG = "✕"; _ocT = fMolDraftT("ocMismatchTip", "Engine name differs from OpenClatura — pending human review"); }
+            else { _ocG = "?"; _ocT = fMolDraftT("ocMissingTip", "No OpenClatura answer"); }
+          } catch (eOCV) {}
+          html += "<div class='draftOracleRow'><span class='draftOCMark' title='" + fMolDraftEsc(_ocT) + "'>" + _ocG + "</span> " + fMolDraftEsc(fMolDraftT("draftOpenclatura", "IUPAC (OpenClatura)")) + ": " + fMolDraftEsc(_ocD.name) + ((_ocD.opsin && _ocD.opsin !== "matched") ? fMolDraftEsc(" (OPSIN: " + _ocD.opsin + ")") : "") + "</div>";
+        } else if (_ocD === undefined && d.submitted) {
+          html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("draftOCFetching", "Looking up OpenClatura…")) + "</div>";
+        }
+      } catch (eOCD) {}
       if (!iupac && !title) html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitNoRecord", "No PubChem record — engine only.")) + "</div>";
       if (d.sdfDone && !d.sdf3D) html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitNo3D", "No 3D model on PubChem — 2D only.")) + "</div>";
     } else {
@@ -1810,6 +1853,7 @@ async function fMolDraftSubmit() {
   window.MulerDraft.touchedGR = false;
   window.MulerDraft.touchedEN = false;
   window.MulerDraft.enAutoValidated = false;
+  try { window.MulerDraft.enAutoSource = null; } catch (eAS) {}
   window.MulerDraft.submitted = true;
   window.MulerDraft.stale = false;
   try { window.MulerDraft._strayConfirmed = false; } catch (eSC) {}
@@ -1853,21 +1897,59 @@ async function fMolDraftSubmit() {
       if (_sys) { _dd.engineEN = _sys; _dd.engineDelegated = true; }
     }
     // EN auto-validation (untouched only — a human verdict always wins):
-    // same three-way oracle match as fMatchEngineEN (systematic/retained/
-    // title, stereo-stripped). A match auto-checks the EN box as correct.
-    if (_dd && _dd.engineEN && !_dd.touchedEN && typeof fNormNoStereo === "function") {
-      var _a = fNormNoStereo(String(_dd.engineEN).toLowerCase().trim());
-      var _s2 = fNormNoStereo(String((hit && (hit.systematic || hit.iupacEN)) || "").toLowerCase().trim());
-      var _r2 = fNormNoStereo(String((hit && (hit.iupacPubchem || hit.iupac)) || "").toLowerCase().trim());
-      var _t2 = fNormNoStereo(String((hit && (hit.title || hit.titlePubchem)) || "").toLowerCase().trim());
-      if (_a && ((_s2 && _a === _s2) || (_r2 && _a === _r2) || (_t2 && _a === _t2))) {
+    // PubChem 3-way oracle match (shared helper, also feeds the row glyph).
+    // A match auto-checks the EN box as correct.
+    if (_dd && _dd.engineEN && !_dd.touchedEN && typeof fMolDraftPCMatch === "function") {
+      if (fMolDraftPCMatch(_dd.engineEN, hit)) {
         _dd.verdictEN = "correct";
         _dd.enAutoValidated = true;
+        _dd.enAutoSource = "pubchem";
       }
     }
   } catch (eED) {}
   try { if (typeof fMolDraftRefreshAcceptKey === "function") fMolDraftRefreshAcceptKey(); } catch (eK1) {}
   fMolDraftRenderPreview();
+  // 3b. OpenClatura second oracle (non-blocking): canonical SMILES first
+  // (best input, already in the hit — no extra request), drawing SMILES
+  // fallback. Molecule-guarded; repaints the preview on resolve. Fail-soft:
+  // a null just hides the OC row (console warned).
+  try {
+    if (typeof fFetchIUPAC_OC === "function") {
+      var _ocSmi = (hit && hit.canonicalSmiles) || submittingSmiles;
+      fFetchIUPAC_OC(_ocSmi).then(function (oc) {
+        try {
+          if (!window.MulerDraft || window.MulerDraft.smiles !== submittingSmiles) return;
+          window.MulerDraft.openclatura = oc && oc.name ? { name: oc.name, opsin: oc.opsin || null } : null;
+          // Second-oracle auto-check (OR with PubChem; untouched-only; human
+          // always wins): an OC match also marks the EN prediction correct,
+          // source-recorded for the eval-data header. Never un-marks.
+          try {
+            var _dd2 = window.MulerDraft;
+            if (_dd2 && _dd2.engineEN && !_dd2.touchedEN && _dd2.verdictEN !== "correct" &&
+                oc && oc.name && typeof fMatchENvsOC === "function" &&
+                fMatchENvsOC(_dd2.engineEN, oc.name) === "match") {
+              _dd2.verdictEN = "correct";
+              _dd2.enAutoValidated = true;
+              _dd2.enAutoSource = "openclatura";
+            }
+          } catch (eOCa) {}
+          try {
+            var _op = (oc && oc.name) || "", _oe = window.MulerDraft.engineEN || "";
+            var _ov = (typeof fMatchENvsOC === "function") ? fMatchENvsOC(_oe, _op) : "missing";
+            console.log("[EN-CHECK-OC] draft: predicted=\"" + _oe + "\" openclatura=\"" + _op + "\" verdict=" + _ov);
+          } catch (eOCl) {}
+          fMolDraftRenderPreview();
+        } catch (eOCr) {}
+      }).catch(function (eOC) {
+        try {
+          if (!window.MulerDraft || window.MulerDraft.smiles !== submittingSmiles) return;
+          window.MulerDraft.openclatura = null;
+          try { console.warn("[OC] draft fetch failed", eOC); } catch (eL) {}
+          fMolDraftRenderPreview();
+        } catch (eOCr2) {}
+      });
+    }
+  } catch (eOCf) {}
   // 4. 3D from the PubChem SDF when the record has one; novel drawings keep
   // the 2D-only note (no local 3D generation yet — the RDKit gap).
   var sdf = null;
@@ -2000,7 +2082,7 @@ function fMolDraftDownloadSingle(rec) {
     var header = "/* MuLER custom draft molecule (v54 Stage 2, manual save from Ρυθμίσεις).\n" +
       "   Molecule: " + rec.key + (rec.grName ? " (" + rec.grName + ")" : "") + "\n" +
       "   Status: " + (rec.status || "draft") + " | " + new Date().toISOString().slice(0, 10) + "\n" +
-      "   Names: GR " + _nc.gr + ", EN " + _nc.en + (_nc.enAutoValidated ? " (EN PubChem auto)" : "") + "\n" +
+      "   Names: GR " + _nc.gr + ", EN " + _nc.en + (_nc.enAutoValidated ? " (EN auto: " + (_nc.enAutoSource === "openclatura" ? "OpenClatura" : "PubChem") + ")" : "") + "\n" +
       "   Place next to the data file (js/) and register it:\n" +
       "   <script src=\"js/" + fMolDraftFileSlug(rec) + "\"><\/script> */\n" +
       "window.nameExamplesCustom = Object.assign(window.nameExamplesCustom || {}, " +
@@ -2467,11 +2549,12 @@ async function fMolDraftAccept() {
   }
   // Tri-state verdicts travel with the molecule: the saved file becomes
   // labeled eval data (predicted pair + oracle + human label) for engine work.
-  var _vc = { gr: "unconfirmed", en: "unconfirmed", enAutoValidated: false };
+  var _vc = { gr: "unconfirmed", en: "unconfirmed", enAutoValidated: false, enAutoSource: null };
   try {
     if (d.verdictGR === "correct" || d.verdictGR === "wrong") _vc.gr = d.verdictGR;
     if (d.verdictEN === "correct" || d.verdictEN === "wrong") _vc.en = d.verdictEN;
     _vc.enAutoValidated = !!d.enAutoValidated;
+    try { _vc.enAutoSource = (d.enAutoSource === "openclatura" || d.enAutoSource === "pubchem") ? d.enAutoSource : (_vc.enAutoValidated ? "pubchem" : null); } catch (eAS2) {}
   } catch (eVc) {}
   var rec = {
     key: key,
@@ -2486,6 +2569,8 @@ async function fMolDraftAccept() {
     systematicEN: (hit && (hit.systematic || hit.iupacEN)) || null,
     iupacPubchem: (hit && (hit.iupacPubchem || hit.iupac)) || null,
     titlePubchem: (hit && (hit.title || hit.titlePubchem)) || null,
+    openclaturaEN: (d.openclatura && d.openclatura.name) || null,
+    openclaturaOpsin: (d.openclatura && d.openclatura.opsin) || null,
     pubchemCID: (hit && hit.cid) || null,
     canonicalSmiles: (hit && hit.canonicalSmiles) || null,
     sdf3D: d.sdf3D || null,
@@ -2524,6 +2609,9 @@ async function fMolDraftAccept() {
     prev.systematicEN = rec.systematicEN;
     prev.iupacPubchem = rec.iupacPubchem;
     prev.titlePubchem = rec.titlePubchem;
+    prev.openclaturaEN = rec.openclaturaEN;
+    prev.openclaturaOpsin = rec.openclaturaOpsin;
+    try { if (rec.openclaturaEN) prev.openclaturaDone = true; } catch (eOCd) {}
     prev.pubchemCID = rec.pubchemCID;
     prev.canonicalSmiles = rec.canonicalSmiles;
     prev.sdf3D = rec.sdf3D;
@@ -3103,6 +3191,41 @@ function fRenderMolInfo() {
       }
     }
   } catch (eSys) { /* best-effort */ }
+  // OpenClatura row (second oracle, rule-built systematic EN): verbatim name
+  // with the OPSIN round-trip status in parens. Display only — never feeds
+  // validation or naming (Phase 2 decides that). Pending/failed states mirror
+  // the PubChem row above; fetch fires from the select path (fLogMolSelectWithOC).
+  try {
+    var _oc = null, _ocOpsin = null, _ocDone = false, _ocSmi = null;
+    try {
+      _oc = entry.openclaturaEN || null;
+      _ocOpsin = entry.openclaturaOpsin || null;
+      _ocDone = !!entry.openclaturaDone;
+      _ocSmi = entry.canonicalSmiles || entry.smiles || null;
+    } catch (eO) { /* best-effort */ }
+    if (_oc || _ocDone || _ocSmi) {
+    var rOC = document.createElement("div");
+    rOC.className = "molInfoRow";
+    var lOC = document.createElement("span");
+    lOC.className = "molInfoLabel";
+    lOC.textContent = T("molInfoOpenclatura", "IUPAC (OpenClatura)");
+    var vOC = document.createElement("span");
+    vOC.className = "molInfoValue";
+    if (_oc) {
+      // OPSIN status shows only when unmatched (matched = quiet confidence;
+      // mismatched/unparseable/error/skipped_* each mean something for review).
+      vOC.textContent = _oc + ((_ocOpsin && _ocOpsin !== "matched") ? " (OPSIN: " + _ocOpsin + ")" : "");
+    } else {
+      vOC.textContent = _ocDone
+        ? T("molInfoOCMissing", "No OpenClatura answer")
+        : T("molInfoFetching", "Αναζήτηση…");
+      try { vOC.classList.add("molInfoPending"); } catch (eP3) { /* best-effort */ }
+    }
+    rOC.appendChild(lOC);
+    rOC.appendChild(vOC);
+    try { box.appendChild(rOC); } catch (eBOC) { /* best-effort */ }
+    }
+  } catch (eOC) { /* best-effort */ }
   // Common-name row (ethers only): the verbatim PubChem Title, and only if
   // it actually looks like a common ether name (ends in "ether").
   // Systematic "...oxy..." titles are skipped, never translated or locally
@@ -3388,6 +3511,12 @@ function fSelectMol() {
       fLogMolSelectWithIUPAC(selectedMol);
   } catch (eIupacLog) {
     /* log best-effort */
+  }
+  try {
+    if (typeof fLogMolSelectWithOC === "function")
+      fLogMolSelectWithOC(selectedMol);
+  } catch (eOCLog) {
+    /* second oracle best-effort */
   }
 
   // v53 EN engine: transliterate Greek slots -> engineEN for validation.
@@ -6389,8 +6518,16 @@ function fMulerVerdictState(key, fetched) {
     if (ex.engineDelegated) return "oracle";
     if (typeof fMatchEngineEN !== "function") return null;
     var v = fMatchEngineEN(key);
+    // Merged plain rule (owner choice): either oracle agreeing with the
+    // predicted name silences red. OC data comes from fMatchEngineEN_OC.
+    var ocS = "missing";
+    try {
+      if (typeof fMatchEngineEN_OC === "function") ocS = fMatchEngineEN_OC(key).status || "missing";
+    } catch (eOCs) { ocS = "missing"; }
+    if (ocS === "match") return null;
     if (v.status === "mismatch") return "mismatch";
     if (v.status === "missing") {
+      if (ocS === "mismatch") return "mismatch";
       var pend = false, done = false, err = false;
       try { pend = !!(typeof window !== "undefined" && window.__mulerIupacPending && window.__mulerIupacPending[key]); } catch (eP) {}
       try { done = !!ex.iupacFetchDone; err = !!ex.iupacFetchError; } catch (eD) {}
@@ -6456,6 +6593,9 @@ function fMulerENFetchDone(key) {
     try { isEN = (typeof fMulerLang === "function" && fMulerLang() === "en"); } catch (eL) {}
     if (!isEN) return;
     var st = (typeof fMulerApplyVerdict === "function") ? fMulerApplyVerdict(key, true) : null;
+    // Re-assert the OC marker: the PubChem repaint above resets the container
+    // title, which would otherwise drop the OC sentence (classes survive).
+    try { if (typeof fMulerApplyOCVerdict === "function") fMulerApplyOCVerdict(key); } catch (eOC) {}
     var predicted = "", displayed = "";
     try {
       if (typeof nameExamples !== "undefined" && nameExamples[key]) predicted = nameExamples[key].engineEN || "";
@@ -6471,6 +6611,78 @@ function fMulerENFetchDone(key) {
       else if (typeof fMatchEngineEN === "function") { var _r = fMatchEngineEN(key); if (_r && _r.via) via = " via " + _r.via; }
     } catch (eV) {}
     console.log("[EN-CHECK] " + key + ": predicted=\"" + predicted + "\" displayed=\"" + displayed + "\" verdict=" + (st || "plain") + via);
+  } catch (e) { /* best-effort */ }
+}
+
+// Second-oracle (OpenClatura) verdict data: EN-only; null outside EN or
+// without a molecule. States match|mismatch|missing (no OC data yet — pending
+// and failed share the state, the tip tells them apart via openclaturaDone).
+function fMulerOCVerdict(key) {
+  try {
+    if (typeof fMulerLang === "function" && fMulerLang() !== "en") return null;
+    if (typeof nameExamples === "undefined" || !key || !nameExamples[key]) return null;
+    var ex = nameExamples[key];
+    if (!ex.engineEN) return null;
+    var r = (typeof fMatchEngineEN_OC === "function") ? fMatchEngineEN_OC(key) : null;
+    if (!r || r.status === "missing") {
+      var done = false;
+      try { done = !!ex.openclaturaDone; } catch (eD) {}
+      var tipM = "Looking up OpenClatura…", tkM = "ocPendingTip";
+      if (done) { tipM = "No OpenClatura answer"; tkM = "ocMissingTip"; }
+      try { if (typeof fMulerT === "function") tipM = fMulerT(tkM); } catch (eT) {}
+      return { state: "missing", tip: tipM };
+    }
+    var tk = (r.status === "match") ? "ocMatchTip" : "ocMismatchTip";
+    var tipF = (r.status === "match")
+      ? "OpenClatura agrees with the engine name"
+      : "Engine name differs from OpenClatura — pending human review";
+    try { if (typeof fMulerT === "function") tipF = fMulerT(tk); } catch (eT2) {}
+    return { state: r.status, tip: tipF + (r.oracle ? " — " + r.oracle : "") };
+  } catch (e) { return null; }
+}
+
+// In-place OC repaint (no rebuild): container outline classes + combined
+// tooltip. Runs after fMulerApplyVerdict (which owns the PubChem classes and
+// resets the title), so the two markers compose instead of clobbering.
+function fMulerApplyOCVerdict(key) {
+  try {
+    if (typeof selectedMol === "undefined" || selectedMol !== key) return null;
+    var cont = document.querySelector("#nameAnalysis .nameCompContainer");
+    if (!cont) return null;
+    try { cont.classList.remove("verdict-oc-match", "verdict-oc-mismatch", "verdict-oc-missing"); } catch (eR) {}
+    var v = (typeof fMulerOCVerdict === "function") ? fMulerOCVerdict(key) : null;
+    if (!v || !v.state) return null;
+    try { cont.classList.add("verdict-oc-" + v.state); } catch (eC) {}
+    try {
+      var t = "";
+      try { t = cont.getAttribute("title") || ""; } catch (eG) {}
+      t = String(t).split(" | ")[0];
+      cont.setAttribute("title", (t ? t + " | " : "") + "OC: " + v.tip);
+    } catch (eT) {}
+    return v.state;
+  } catch (e) { return null; }
+}
+
+// OC fetch completion: repaint the second marker in place + log. Skipped
+// unless the fetched molecule is on screen (same guard as the PubChem hook).
+// Recomputes the PubChem marker FIRST: a build-time red goes stale once OC
+// data lands (merge rule), and only a full recompute removes it.
+function fMulerOCFetchDone(key) {
+  try {
+    if (typeof selectedMol === "undefined" || selectedMol !== key) return;
+    var isEN = false;
+    try { isEN = (typeof fMulerLang === "function" && fMulerLang() === "en"); } catch (eL) {}
+    if (!isEN) return;
+    try { if (typeof fMulerApplyVerdict === "function") fMulerApplyVerdict(key, true); } catch (eV) {}
+    var ost = (typeof fMulerApplyOCVerdict === "function") ? fMulerApplyOCVerdict(key) : null;
+    var predicted = "", oc = "";
+    try {
+      if (typeof nameExamples !== "undefined" && nameExamples[key]) predicted = nameExamples[key].engineEN || "";
+    } catch (eP) {}
+    try {
+      if (typeof nameExamples !== "undefined" && nameExamples[key]) oc = nameExamples[key].openclaturaEN || "";
+    } catch (eO) {}
+    console.log("[EN-CHECK-OC] " + key + ": predicted=\"" + predicted + "\" openclatura=\"" + oc + "\" verdict=" + (ost || "plain"));
   } catch (e) { /* best-effort */ }
 }
 
@@ -6829,6 +7041,9 @@ function fShowNameAnalysis() {
   } catch (eO) { /* marker best-effort */ }
 
   $("#nameAnalysis").html(nameCompContainer);
+  // Second-oracle (OpenClatura) marker: same post-process as the in-place
+  // repaint, so rebuilds and fetch completions paint identically.
+  try { if (typeof fMulerApplyOCVerdict === "function") fMulerApplyOCVerdict(selectedMol); } catch (eOC) {}
   try { if (typeof fRenderMolInfo === "function") fRenderMolInfo(); } catch (eMI) {}
 
   // Fix 3: the explain line follows box visibility — hidden when zero

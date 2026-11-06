@@ -501,3 +501,46 @@ function fValidateENAgainstOracle() {
   for (const m of out.mismatch.slice(0, 20)) console.log("[EN-MISMATCH] " + m.key + ": engine=\"" + m.engine + "\" oracle=\"" + m.oracle + "\"");
   return out;
 }
+// Second-oracle verdict (OpenClatura, Phase 2): pure string compare of the
+// engine EN against the rule-built OC name (stereo-stripped, same normalizer
+// as the PubChem path). No retained/title fallbacks — OC emits one systematic
+// name. Statuses "match" | "mismatch" | "missing" (no OC data yet); the live
+// chip and the batch table below share this, so they cannot disagree.
+function fMatchENvsOC(engineEN, ocName) {
+  try {
+    var a = String(engineEN == null ? "" : engineEN).toLowerCase().trim();
+    var o = String(ocName == null ? "" : ocName).toLowerCase().trim();
+    if (!a || !o) return "missing";
+    if (typeof fNormNoStereo === "function") { a = fNormNoStereo(a); o = fNormNoStereo(o); }
+    return (a === o) ? "match" : "mismatch";
+  } catch (e) { return "missing"; }
+}
+function fMatchEngineEN_OC(key) {
+  var out = { status: "missing", via: "openclatura", engine: null, oracle: null };
+  try {
+    if (typeof nameExamples === "undefined" || !key || !nameExamples[key]) return out;
+    var e = nameExamples[key];
+    if (!e || !e.engineEN) return out;
+    out.engine = e.engineEN;
+    out.oracle = e.openclaturaEN || null;
+    if (!out.oracle) return out;
+    out.status = fMatchENvsOC(out.engine, out.oracle);
+    return out;
+  } catch (e2) { return out; }
+}
+function fValidateENAgainstOC() {
+  var out = { checked: 0, match: 0, mismatch: [], missing: 0 };
+  if (typeof nameExamples === "undefined") return out;
+  for (const k of Object.keys(nameExamples)) {
+    const e = nameExamples[k];
+    if (!e || !e.engineEN) continue;
+    out.checked++;
+    const r = fMatchEngineEN_OC(k);
+    if (r.status === "missing") { out.missing++; continue; }
+    if (r.status === "match") out.match++;
+    else out.mismatch.push({ key: k, engine: r.engine, oracle: r.oracle });
+  }
+  console.log("[EN-VALIDATE-OC] checked=" + out.checked + " match=" + out.match + " mismatch=" + out.mismatch.length + " missing=" + out.missing);
+  for (const m of out.mismatch.slice(0, 20)) console.log("[EN-MISMATCH-OC] " + m.key + ": engine=\"" + m.engine + "\" openclatura=\"" + m.oracle + "\"");
+  return out;
+}
