@@ -1205,6 +1205,50 @@ function fMolDraftNorm(s) {
   return String(s == null ? "" : s).toLowerCase().replace(/\s+/g, " ").trim();
 }
 
+// Stray-H guard for verbatim slots (H32 class): hand geometry can misplace an
+// H a full bond length off (right y, wrong x) and a verbatim Accept would keep
+// it forever. Reference is the drawing's own H distribution (min H-bond
+// length): flags H longer than 1.75× the shortest sibling — uniform hand,
+// legacy and regen H all pass (diagonal ≈1.0×, O–H variance covered); a
+// 2.24× stray like H32 flags. Plus unbonded H. Returns list.
+function fMolDraftStrayH(molText) {
+  var out = [];
+  try {
+    if (typeof fParseMolV2000 !== "function" || !molText) return out;
+    var p = fParseMolV2000(molText);
+    if (!p || !p.atoms || !p.atoms.length || !p.bonds) return out;
+    var isH = function (el) { return el === "H" || el === "h"; };
+    var hLens = [], i;
+    for (i = 0; i < p.bonds.length; i++) {
+      var b = p.bonds[i];
+      if (!b || b[0] == null || b[1] == null) continue;
+      var a = p.atoms[b[0] - 1], c = p.atoms[b[1] - 1];
+      if (!a || !c) continue;
+      if ((isH(a.el) && !isH(c.el)) || (!isH(a.el) && isH(c.el))) {
+        var hd = Math.hypot(a.x - c.x, a.y - c.y);
+        if (hd > 1e-9 && isFinite(hd)) hLens.push(hd);
+      }
+    }
+    if (!hLens.length) return out;
+    hLens.sort(function (x, y) { return x - y; });
+    var refH = hLens[0];
+    for (var hI = 0; hI < p.atoms.length; hI++) {
+      if (!isH(p.atoms[hI].el)) continue;
+      var par = -1;
+      for (var q = 0; q < p.bonds.length; q++) {
+        var bb = p.bonds[q];
+        if (!bb || bb[0] == null) continue;
+        if (bb[0] - 1 === hI) { par = bb[1] - 1; break; }
+        if (bb[1] - 1 === hI) { par = bb[0] - 1; break; }
+      }
+      if (par < 0) { out.push({ h: hI + 1, parent: 0, dist: -1, ratio: -1 }); continue; }
+      var dd = Math.hypot(p.atoms[hI].x - p.atoms[par].x, p.atoms[hI].y - p.atoms[par].y);
+      if (dd > 1.75 * refH) out.push({ h: hI + 1, parent: par + 1, dist: +dd.toFixed(3), ratio: +(dd / refH).toFixed(2) });
+    }
+  } catch (e) {}
+  return out;
+}
+
 // Same-molecule test for the Edit rule (CID-first, normalized-SMILES
 // fallback): redraw/beautify keeps atom order unstable in JSME SMILES, so a
 // raw string compare false-negatives on pure layout edits. Every
@@ -1690,9 +1734,13 @@ async function fMolDraftSubmit() {
   // Auto-linearize (Ρυθμίσεις, default on): tidy school drawings to the
   // canonical linear layout BEFORE the naming run, so preview + stored MOLs
   // always come from tidied geometry. Skeletal drafts pass through untouched
-  // (zigzag path owns that slot). Submit then proceeds unchanged.
+  // (zigzag path owns that slot). Edit mode skips it entirely: the template
+  // is already canonical and the author's deltas must survive Submit→Accept
+  // verbatim into their slot (single-slot update contract); manual Linearize
+  // stays available as an explicit action. Submit then proceeds unchanged.
   var _auto = true;
   try { _auto = (typeof fMolDraftAutoLinearizeOn === "function") ? fMolDraftAutoLinearizeOn() : true; } catch (eA) { _auto = true; }
+  try { if (window.MulerDraft && window.MulerDraft.mode === "edit") _auto = false; } catch (eM) {}
   if (_auto) {
     var _td = null;
     try { _td = fMolDraftAutoTidy(); } catch (eT) { _td = null; }
@@ -1764,6 +1812,7 @@ async function fMolDraftSubmit() {
   window.MulerDraft.enAutoValidated = false;
   window.MulerDraft.submitted = true;
   window.MulerDraft.stale = false;
+  try { window.MulerDraft._strayConfirmed = false; } catch (eSC) {}
   window.MulerDraft.pubchem = undefined;
   window.MulerDraft.sdf3D = null;
   window.MulerDraft.sdfDone = false;
@@ -2265,12 +2314,31 @@ async function fMolDraftAccept() {
   } catch (eSv) { _skel = null; _skelSrc = ""; }
   try { if (_skelSrc) console.log("[draft] skeletal from " + _skelSrc); } catch (eLg) {}
   var molC = null, molE = null, molS = null;
+  // Fork ⇒ full generation (New always + Edit-different): the result is a new
+  // molecule, so all three slots derive canonically and drawnVariant is
+  // ignored. Update ⇒ slot verbatim (single-slot contract). isUpdate is
+  // decided above from molecule identity, before derivation.
+  var isFork = true;
+  try { isFork = !isUpdate; } catch (eIF) { isFork = true; }
   try {
-    if (drawnVariant === "expanded") {
+    if (drawnVariant === "expanded" && !isFork) {
       molE = d.molText;
       molC = (typeof fStripHydrogensMol === "function") ? (fStripHydrogensMol(d.molText) || d.molText) : d.molText;
       molS = _skel || molC;
       if (!_skel) { try { console.warn("[draft] skeletal fallback: drawn geometry"); } catch (eW1) {} }
+    } else if (drawnVariant === "expanded" && isFork) {
+      // Edit-expanded fork: same full generation as New (linearize → top-up),
+      // never the hand geometry verbatim.
+      var _linE = (typeof fLinearizeMol === "function") ? fLinearizeMol(d.molText, _chainLive) : null;
+      if (!_linE) { try { console.warn("[draft] linearizer failed, condensed = drawn geometry"); } catch (eW1b) {} }
+      molC = _linE || d.molText;
+      if (typeof fStripHydrogensMol === "function") {
+        try { molC = (fStripHydrogensMol(molC) || molC); } catch (eStE) {}
+      }
+      molE = (typeof fGenExpandedMol === "function") ? (fGenExpandedMol(molC) || null) : null;
+      if (!molE) { try { console.warn("[draft] expanded generation failed — mode disabled"); } catch (eW1c) {} }
+      molS = _skel || molC;
+      if (!_skel) { try { console.warn("[draft] skeletal fallback: drawn geometry"); } catch (eW1d) {} }
     } else if (drawnVariant === "skeletal" || drawnVariant === "condensedZigZag") {
       // Skeletal is always the ladder zigzag (see above) — the drawn MOL here
       // is layout-agnostic input, often already linearized by Beautify.
@@ -2284,16 +2352,16 @@ async function fMolDraftAccept() {
     } else {
       // Condensed slot must stay heavy-only: the overlay adds implicit H
       // itself, so any hand-drawn explicit H would double-render. Strip
-      // first. New mode additionally linearizes (MOLGEN_CC_LEN) so hand-drawn
-      // C–C lengths always land on the shared bond length; Edit-condensed
-      // keeps the author's geometry verbatim (single-slot update contract).
+      // first. Forks additionally linearize (MOLGEN_CC_LEN) so hand-drawn
+      // C–C lengths always land on the shared bond length; updates keep the
+      // author's geometry verbatim (single-slot update contract).
       // (drawn geometry otherwise kept verbatim).
       molC = d.molText;
-      if (d && d.mode === "new" && typeof fLinearizeMol === "function") {
+      if (isFork && typeof fLinearizeMol === "function") {
         try { molC = fLinearizeMol(d.molText, _chainLive) || molC; } catch (eLn) {}
       }
       if (typeof fStripHydrogensMol === "function") {
-        try { molC = (d && d.mode === "new") ? (fStripHydrogensMol(molC) || molC) : (fStripHydrogensMol(d.molText) || d.molText); } catch (eSt) {}
+        try { molC = isFork ? (fStripHydrogensMol(molC) || molC) : (fStripHydrogensMol(d.molText) || d.molText); } catch (eSt) {}
       }
       molE = (typeof fGenExpandedMol === "function") ? (fGenExpandedMol(molC) || null) : null;
       if (!molE) { try { console.warn("[draft] expanded generation failed — mode disabled"); } catch (eW4) {} }
@@ -2309,7 +2377,27 @@ async function fMolDraftAccept() {
     console.log("[draft] slots variant=" + drawnVariant + " skelSrc=" + (_skelSrc || "-") +
       " C:[" + _sigOf(molC) + "] E:[" + _sigOf(molE) + "] S:[" + _sigOf(molS) + "] draw:[" + _sigOf(d.molText) + "]");
   } catch (eLg2) {}
-  // SMILES-to-MOL depict on any JSME applet (display = depict pipeline,
+  // Stray-H guard (H32 class): verbatim slots keep hand geometry including
+  // hand errors — an H a full bond length off its parent would be stored
+  // forever. Edit-expanded writes the drawing verbatim, so check molE here;
+  // regen'd slots carry our own validated H. Warn-only via confirm (one-shot
+  // flag, reset on every Submit); Cancel/Draw keeps the draft for fixing.
+  // Reference is the drawing's own H distribution (min H-bond length):
+  // uniform hand/legacy/regen H pass (0/141 stored expanded flagged).
+  if (d && d.mode === "edit" && drawnVariant === "expanded" && molE && !d._strayConfirmed) {
+    var _strays = [];
+    try { if (typeof fMolDraftStrayH === "function") _strays = fMolDraftStrayH(molE) || []; } catch (eSy) { _strays = []; }
+    if (_strays.length) {
+      var _sm = "", _sy = "";
+      try { _sm = fMolDraftT("draftStrayH", "Some H sit far from their atoms"); } catch (eSm) { _sm = "Stray H?"; }
+      try { _sy = fMolDraftT("draftStrayKeep", "Keep anyway"); } catch (eSy2) { _sy = "Keep anyway"; }
+      try { console.warn("[draft] stray H: " + _strays.length + " over 1.5x H scale (" + _strays.slice(0, 4).map(function (s) { return "H" + s.h + "/C" + s.parent + "x" + s.ratio; }).join(", ") + ")"); } catch (eLw) {}
+      if (typeof fScenarioConfirm === "function") {
+        try { fScenarioConfirm(_sm + " (" + _strays.length + ")", function () { try { d._strayConfirmed = true; } catch (eFc) {} try { fMolDraftAccept(); } catch (eFa) {} }, _sy); } catch (eSc2) {}
+        return;
+      }
+    }
+  }  // SMILES-to-MOL depict on any JSME applet (display = depict pipeline,
   // edit = fallback): read back the laid-out MOL, restore the applet content
   // immediately afterwards. Display-applet zoom is re-applied best-effort so
   // the preview underneath keeps its scale. Clear-first: a silent import
@@ -3459,6 +3547,7 @@ function fLoadMol2D() {
   }
 
   jsmeNomeclatureApplet.readMolFile(myMol2D);
+  try { fApplyMol2DFont(); } catch (eFo) {}
   try { fApplyMol2DScale(); } catch (eSc) {
     try { jsmeNomeclatureApplet.setMolecularAreaScale(molZoom2D); } catch (eS2) {}
   }
@@ -3528,10 +3617,34 @@ function fMol2DModeScale() {
   try { z = (typeof molZoom2D !== "undefined") ? molZoom2D : 2.0; } catch (eZ) {}
   try { return z * fMol2DModeScaleFactor(); } catch (eF) { return z; }
 }
+// Expanded-only label compensation, split out so fLoadMol2D can set the font
+// BEFORE readMolFile (first paint already correct) while fApplyMol2DScale
+// re-asserts it after every scale write. Idempotent; other modes reset to 9.
+function fApplyMol2DFont() {
+  try {
+    if (typeof jsmeNomeclatureApplet === "undefined" || !jsmeNomeclatureApplet) return;
+    var _f = 1, _m = "condensed";
+    try { _f = fMol2DModeScaleFactor(); } catch (eF2) { _f = 1; }
+    try { _m = (typeof mode2D !== "undefined") ? mode2D : "condensed"; } catch (eM2) { _m = "condensed"; }
+    var _fs = (_m === "expanded" && _f !== 1) ? (9 / _f) : 9;
+    if (!(_fs > 0) || !isFinite(_fs)) _fs = 9;
+    if (_fs < 7) _fs = 7;
+    if (_fs > 20) _fs = 20;
+    if (typeof jsmeNomeclatureApplet.setAtomMolecularAreaFontSize === "function") {
+      jsmeNomeclatureApplet.setAtomMolecularAreaFontSize(_fs);
+    }
+  } catch (eFs) { /* font compensation best-effort */ }
+}
 function fApplyMol2DScale() {
   try {
     if (typeof jsmeNomeclatureApplet !== "undefined" && jsmeNomeclatureApplet) {
       jsmeNomeclatureApplet.setMolecularAreaScale(fMol2DModeScale());
+      // Expanded-only label compensation: the equalizer scales the view down
+      // (factor < 1), which shrinks atom labels with it. Counter-scale the
+      // label font so expanded labels render at condensed pixel size
+      // (9 = boot value, set once in jsmeOnLoad). Other modes recompute
+      // factor 1.0 and reset to 9 here — no per-mode state, no leaks.
+      try { fApplyMol2DFont(); } catch (eF3) {}
     }
   } catch (e) { /* applet unavailable */ }
 }
@@ -10039,6 +10152,25 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
   numberingEmphasis = fLocantEmphasisIndices();
   clearInterval(myNumberingTimeout);
   numbersSVGElements = [];
+  // Expanded-only numbering compensation (mirrors the label compensation in
+  // fApplyMol2DFont): the equalizer scales the expanded view down while overlay
+  // glyphs stay fixed-size, so numbers would shrink against the labels.
+  // Counter-scale font + stroke + anchors in expanded only; other modes
+  // compute exactly 380/60/offsets (today's values) — no behavior change there.
+  let numFS = 380, numSW = 60, numK = 1;
+  try {
+    var _nf = 1, _nm = "condensed";
+    try { _nf = fMol2DModeScaleFactor(); } catch (eNF) { _nf = 1; }
+    try { _nm = (typeof mode2D !== "undefined") ? mode2D : "condensed"; } catch (eNM) { _nm = "condensed"; }
+    if (_nm === "expanded" && _nf !== 1) {
+      numFS = 380 / _nf;
+      if (!(numFS > 0) || !isFinite(numFS)) numFS = 380;
+      if (numFS < 296) numFS = 296;
+      if (numFS > 844) numFS = 844;
+      numSW = numFS * 60 / 380;
+      numK = numFS / 380;
+    }
+  } catch (eNK) { numFS = 380; numSW = 60; numK = 1; }
 
   molSvg = MuSVG("#jsmeNomeclatureSVG svg");
   switch (mode2D) {
@@ -10056,7 +10188,7 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
         },
       );
       const condensedAtomTextMap = fGetRenderedAtomTextMap();
-      numberOffset = [20, -280];
+      numberOffset = [Math.round(20 * numK), Math.round(-280 * numK)];
       for (let i = 0; i < highAtoms.length; i++) {
         currAtomTextElement = condensedAtomTextMap[highAtoms[i] - 1];
         if (!currAtomTextElement) {
@@ -10072,7 +10204,7 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
           : parseInt(currAtomTextElement.attr("x")) + numberOffset[0];
         y = parseInt(currAtomTextElement.attr("y")) + +numberOffset[1];
         r = 220;
-        numberString = `  <text id='number${i}' x='${x}' y='${y}' font-size='380px' font-weight='bold' font-family='Arial, sans-serif' fill='${(numberingEmphasis === null || numberingEmphasis.indexOf(i) >= 0) ? "#193F8F" : "#9ac1ed"}' stroke='white' stroke-width='60px' paint-order='stroke'>${i + 1}</text> `;
+        numberString = `  <text id='number${i}' x='${x}' y='${y}' font-size='${numFS}px' font-weight='bold' font-family='Arial, sans-serif' fill='${(numberingEmphasis === null || numberingEmphasis.indexOf(i) >= 0) ? "#193F8F" : "#9ac1ed"}' stroke='white' stroke-width='${numSW}px' paint-order='stroke'>${i + 1}</text> `;
         numbersSVGElements[i] = numberString;
       }
       break;
@@ -10090,7 +10222,7 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
         },
       );
       const condensedZigZagAtomTextMap = fGetRenderedAtomTextMap();
-      numberOffset = [20, -280];
+      numberOffset = [Math.round(20 * numK), Math.round(-280 * numK)];
       for (let i = 0; i < highAtoms.length; i++) {
         currAtomTextElement = condensedZigZagAtomTextMap[highAtoms[i] - 1];
         if (!currAtomTextElement) {
@@ -10099,7 +10231,7 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
         x = parseInt(currAtomTextElement.attr("x")) + numberOffset[0];
         y = parseInt(currAtomTextElement.attr("y")) + +numberOffset[1];
         r = 220;
-        numberString = `  <text id='number${i}' x='${x}' y='${y}' font-size='380px' font-weight='bold' font-family='Arial, sans-serif' fill='${(numberingEmphasis === null || numberingEmphasis.indexOf(i) >= 0) ? "#193F8F" : "#9ac1ed"}' stroke='white' stroke-width='60px' paint-order='stroke'>${i + 1}</text> `;
+        numberString = `  <text id='number${i}' x='${x}' y='${y}' font-size='${numFS}px' font-weight='bold' font-family='Arial, sans-serif' fill='${(numberingEmphasis === null || numberingEmphasis.indexOf(i) >= 0) ? "#193F8F" : "#9ac1ed"}' stroke='white' stroke-width='${numSW}px' paint-order='stroke'>${i + 1}</text> `;
         numbersSVGElements[i] = numberString;
       }
       break;
@@ -10117,7 +10249,7 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
         },
       );
       const expandedAtomTextMap = fGetRenderedAtomTextMap(false, true);
-      numberOffset = [-120, -280];
+      numberOffset = [Math.round(-120 * numK), Math.round(-280 * numK)];
       for (let i = 0; i < highAtoms.length; i++) {
         currAtomTextElement = expandedAtomTextMap[highAtoms[i] - 1];
         if (!currAtomTextElement) {
@@ -10126,7 +10258,7 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
         x = parseInt(currAtomTextElement.attr("x")) + numberOffset[0];
         y = parseInt(currAtomTextElement.attr("y")) + +numberOffset[1];
         r = 220;
-        numberString = `  <text id='number${i}' x='${x}' y='${y}' font-size='380px' font-weight='bold' font-family='Arial, sans-serif' fill='${(numberingEmphasis === null || numberingEmphasis.indexOf(i) >= 0) ? "#193F8F" : "#9ac1ed"}' stroke='white' stroke-width='60px' paint-order='stroke'>${i + 1}</text> `;
+        numberString = `  <text id='number${i}' x='${x}' y='${y}' font-size='${numFS}px' font-weight='bold' font-family='Arial, sans-serif' fill='${(numberingEmphasis === null || numberingEmphasis.indexOf(i) >= 0) ? "#193F8F" : "#9ac1ed"}' stroke='white' stroke-width='${numSW}px' paint-order='stroke'>${i + 1}</text> `;
         numbersSVGElements[i] = numberString;
       }
       break;
@@ -10148,7 +10280,7 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
           return allAtomsTypeList[atomNo - 1] === "C";
         },
       );
-      numberOffset = [-50, -180];
+      numberOffset = [Math.round(-50 * numK), Math.round(-180 * numK)];
       for (let i = 0; i < highAtoms.length; i++) {
         let _foundBond = false;
         for (let b = 0; b < bondList.length; b++) {
@@ -10177,7 +10309,7 @@ function fShowNumbering(time, overrideAtoms, overrideAtoms3D) {
         }
 
         r = 220;
-        numberString = `  <text id='number${i}' x='${x}' y='${y}' font-size='380px' font-weight='bold' font-family='Arial, sans-serif' fill='${(numberingEmphasis === null || numberingEmphasis.indexOf(i) >= 0) ? "#193F8F" : "#9ac1ed"}' stroke='white' stroke-width='60px' paint-order='stroke'>${i + 1}</text> `;
+        numberString = `  <text id='number${i}' x='${x}' y='${y}' font-size='${numFS}px' font-weight='bold' font-family='Arial, sans-serif' fill='${(numberingEmphasis === null || numberingEmphasis.indexOf(i) >= 0) ? "#193F8F" : "#9ac1ed"}' stroke='white' stroke-width='${numSW}px' paint-order='stroke'>${i + 1}</text> `;
         numbersSVGElements[i] = numberString;
       }
       break;

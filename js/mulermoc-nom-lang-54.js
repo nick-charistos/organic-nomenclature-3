@@ -81,6 +81,8 @@ var MULER_STRINGS = {
   draftIUPACRow: { gr: "IUPAC (PubChem)", en: "IUPAC (PubChem)" },
   draftCommonRow: { gr: "Κοινή (PubChem)", en: "Common (PubChem)" },
   draftSysRow: { gr: "Συστηματική", en: "Systematic" },
+  draftStrayH: { gr: "Κάποια Η είναι μακριά από τα άτομά τους", en: "Some H sit far from their atoms" },
+  draftStrayKeep: { gr: "Κράτησέ τα", en: "Keep anyway" },
   draftSlotOnly: { gr: "ενημερώνεται μόνο αυτή η όψη", en: "only this view updates" },
   draftAllViews: { gr: "θα δημιουργηθούν και οι 3 όψεις", en: "all 3 views will be generated" },
   draftSameHint: { gr: "ίδιο μόριο, θα ενημερωθεί αυτή η όψη", en: "same molecule, will update this view" },

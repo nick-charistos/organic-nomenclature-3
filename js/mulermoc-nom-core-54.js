@@ -2633,11 +2633,18 @@ function fStripHydrogensMol(text) {
 
 var MOLGEN_STDVALENCE = { C: 4, N: 3, O: 2, F: 1, Cl: 1, Br: 1, I: 1 };
 
+// Minimum clearance for a newly placed H against placed atoms that are
+// neither its parent nor vicinal to it (same rule as the overlap harness:
+// geminal/vicinal closeness is natural). Below this, the next-largest
+// angular gap is tried; the best candidate always wins, so clean molecules
+// keep byte-identical coords and only colliding placements move.
+var MOLGEN_H_MINSEP = 0.4;
+
 // 2D layout bond lengths (MOL units, hardcoded — adjust manually here).
 // All heavy–heavy bonds share MOLGEN_CC_LEN in every slot (condensed,
 // expanded skeleton, zigzag); C–H bonds use MOLGEN_CH_LEN (~half of C–C).
 var MOLGEN_CC_LEN = 1.0;
-var MOLGEN_CH_LEN = 0.3;
+var MOLGEN_CH_LEN = 0.5;
 
 // Expanded form: heavy skeleton + explicit H at MOLGEN_CH_LEN, placed by
 // largest-free-sector bisection (connectivity is what matters). Pre-existing
@@ -2682,16 +2689,113 @@ function fGenExpandedMol(text) {
           angs.push(Math.atan2(p.y - atoms[h].y, p.x - atoms[h].x));
         }
         angs.sort(function (p1, p2) { return p1 - p2; });
-        var bestA = 0;
-        if (angs.length) {
-          var bestG = -1;
+        // Candidate gaps, largest first. The old code took the largest gap
+        // unconditionally; we keep that as the first try (clean molecules are
+        // unaffected) and fall through to smaller gaps only on collision.
+        var gaps = [];
+        if (!angs.length) { gaps.push({ a: 0, g: 2 * Math.PI }); }
+        else {
           for (var s = 0; s < angs.length; s++) {
             var a1 = angs[s], a2 = (s + 1 < angs.length) ? angs[s + 1] : angs[0] + 2 * Math.PI;
-            var g = a2 - a1;
-            if (g > bestG) { bestG = g; bestA = a1 + g / 2; }
+            gaps.push({ a: a1 + (a2 - a1) / 2, g: a2 - a1 });
+          }
+          gaps.sort(function (g1, g2) { return g2.g - g1.g; });
+        }
+        var SEPN = (typeof MOLGEN_H_MINSEP !== "undefined") ? MOLGEN_H_MINSEP : 0.4;
+        // Clearance of a candidate point against placed atoms under the
+        // vicinal rule (harness-identical): the parent itself, atoms bonded
+        // to it, and H whose own parent is bonded to (or is) it are skipped.
+        var minClear = function (qx, qy, par) {
+          var md = 1e9;
+          for (var cI = 0; cI < atoms.length; cI++) {
+            if (cI === par) continue;
+            var cEl = String(atoms[cI].el || "");
+            var cIsH = (cEl === "H" || cEl === "h");
+            if (adj[cI].indexOf(par) >= 0) continue;
+            if (cIsH) {
+              var cPar = -1;
+              for (var cR = 0; cR < adj[cI].length; cR++) {
+                var cCand = adj[cI][cR];
+                if (!fIsHeavyEl2D(String(atoms[cCand].el || ""))) continue;
+                cPar = cCand; break;
+              }
+              if (cPar === par || (cPar >= 0 && adj[par].indexOf(cPar) >= 0)) continue;
+            }
+            var dd = Math.hypot(qx - atoms[cI].x, qy - atoms[cI].y);
+            if (dd < md) md = dd;
+          }
+          return md;
+        };
+        // Heavy parent of a placed H (its bond partner); -1 when unknown.
+        var heavyParOf = function (idx) {
+          for (var hR = 0; hR < adj[idx].length; hR++) {
+            var hCand = adj[idx][hR];
+            if (!fIsHeavyEl2D(String(atoms[hCand].el || ""))) continue;
+            return hCand;
+          }
+          return -1;
+        };
+        var bestX = atoms[h].x + HLEN, bestY = atoms[h].y, bestD = -1;
+        var splayed = false;
+        for (var gI = 0; gI < gaps.length; gI++) {
+          var cx = atoms[h].x + HLEN * Math.cos(gaps[gI].a);
+          var cy = atoms[h].y + HLEN * Math.sin(gaps[gI].a);
+          var md = minClear(cx, cy, h), mOff = -1;
+          if (md < SEPN) {
+            // Nearest offender, for the symmetric-splay attempt below.
+            var mBest = 1e9;
+            for (var oI = 0; oI < atoms.length; oI++) {
+              if (oI === h || adj[oI].indexOf(h) >= 0) continue;
+              var oEl = String(atoms[oI].el || "");
+              if ((oEl === "H" || oEl === "h")) {
+                var oPar = heavyParOf(oI);
+                if (oPar === h || (oPar >= 0 && adj[h].indexOf(oPar) >= 0)) continue;
+              }
+              var oD = Math.hypot(cx - atoms[oI].x, cy - atoms[oI].y);
+              if (oD < mBest) { mBest = oD; mOff = oI; }
+            }
+          }
+          if (md > bestD) { bestD = md; bestX = cx; bestY = cy; }
+          if (md >= SEPN) break;
+          // Symmetric splay (first colliding gap only): when the offender is
+          // a placed H, rotate it and the candidate apart by equal and
+          // opposite steps around their own parents (bond lengths kept), so
+          // both stay near their ideal sectors instead of one jumping sides.
+          // First clearing pair wins; otherwise the gap loop continues.
+          if (!splayed && gI === 0 && mOff >= 0) {
+            var oEl2 = String(atoms[mOff].el || "");
+            var oPar2 = heavyParOf(mOff);
+            if ((oEl2 === "H" || oEl2 === "h") && oPar2 >= 0) {
+              var aA0 = Math.atan2(atoms[mOff].y - atoms[oPar2].y, atoms[mOff].x - atoms[oPar2].x);
+              var aB0 = gaps[0].a;
+              var steps = [5, 10, 15, 20, 30, 45], sDone = false;
+              for (var sI = 0; sI < steps.length && !sDone; sI++) {
+                var rad = steps[sI] * Math.PI / 180;
+                var pairs = [[1, -1], [-1, 1]];
+                for (var pI = 0; pI < pairs.length && !sDone; pI++) {
+                  var ax = atoms[oPar2].x + HLEN * Math.cos(aA0 + pairs[pI][0] * rad);
+                  var ay = atoms[oPar2].y + HLEN * Math.sin(aA0 + pairs[pI][0] * rad);
+                  var bx = atoms[h].x + HLEN * Math.cos(aB0 + pairs[pI][1] * rad);
+                  var by = atoms[h].y + HLEN * Math.sin(aB0 + pairs[pI][1] * rad);
+                  var cA = minClear(ax, ay, oPar2), cB = minClear(bx, by, h);
+                  // A moved: exclude the candidate spot itself is unnecessary
+                  // (B not placed yet); but A must also clear B's new spot.
+                  var cAB = Math.hypot(ax - bx, ay - by);
+                  var cMin = Math.min(cA, cB, cAB);
+                  if (cMin > bestD) { bestD = cMin; bestX = bx; bestY = by; }
+                  if (cMin >= SEPN) {
+                    atoms[mOff].x = ax; atoms[mOff].y = ay;
+                    bestX = bx; bestY = by; bestD = cMin;
+                    sDone = true;
+                  }
+                }
+              }
+              splayed = true;
+              if (sDone) break;
+            }
           }
         }
-        atoms.push({ x: atoms[h].x + HLEN * Math.cos(bestA), y: atoms[h].y + HLEN * Math.sin(bestA), el: "H" });
+        atoms.push({ x: bestX, y: bestY, el: "H" });
         var ni = atoms.length - 1;
         adj[h].push(ni); adj.push([h]);
         bonds.push([h + 1, ni + 1, 1]);
