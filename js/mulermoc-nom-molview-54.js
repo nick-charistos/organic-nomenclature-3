@@ -746,11 +746,11 @@ function fMolDraftShowBar(statusText) {
   var tB = fMolDraftT("draftBeautify", "Beautify");
   var tC = fMolDraftT("draftCancel", "Cancel");
   bar.innerHTML = "<span id='molDraftStatus'></span>" +
-    "<button id='molDraftSubmitBtn' type='button' class='settingsBtn draftBtn' onclick='fMolDraftSubmit()'>" + tS + "</button>" +
-    "<button id='molDraftAcceptBtn' type='button' class='settingsBtn draftBtn' onclick='fMolDraftAccept()'>" + tA + "</button>" +
-    "<button id='molDraftDrawBtn' type='button' class='settingsBtn draftBtn hide' onclick='fMolDraftBackToEdit()'>" + tD + "</button>" +
-    "<button id='molDraftBeautifyBtn' type='button' class='settingsBtn draftBtn hide' onclick='fMolDraftBeautify()'>" + tB + "</button>" +
-    "<button id='molDraftCancelBtn' type='button' class='settingsBtn draftBtn' onclick='fMolDraftCancel()'>" + tC + "</button>";
+    "<button id='molDraftSubmitBtn' type='button' class='settingsBtn draftBtn' onclick='fMolDraftSubmit()'>" + fMolDraftEsc(tS) + "</button>" +
+    "<button id='molDraftAcceptBtn' type='button' class='settingsBtn draftBtn' onclick='fMolDraftAccept()'>" + fMolDraftEsc(tA) + "</button>" +
+    "<button id='molDraftDrawBtn' type='button' class='settingsBtn draftBtn hide' onclick='fMolDraftBackToEdit()'>" + fMolDraftEsc(tD) + "</button>" +
+    "<button id='molDraftBeautifyBtn' type='button' class='settingsBtn draftBtn hide' onclick='fMolDraftBeautify()'>" + fMolDraftEsc(tB) + "</button>" +
+    "<button id='molDraftCancelBtn' type='button' class='settingsBtn draftBtn' onclick='fMolDraftCancel()'>" + fMolDraftEsc(tC) + "</button>";
   try {
     var st = document.getElementById("molDraftStatus");
     if (st) st.textContent = statusText || "";
@@ -856,6 +856,11 @@ function fMolDraftShowPreviewView() {
 
 function fMolDraftBackToEdit() {
   if (!window.MulerDraft || fMolDraftPresenting()) return;
+  // Invalidate any in-flight Submit oracle/3D continuations: they are keyed
+  // on _submitId and abort when it changes, so a Draw mid-fetch cannot paint
+  // the old drawing's oracle over the new canvas. Accept-time re-check stays
+  // authoritative, but the UX no longer desyncs until then.
+  try { if (window.MulerDraft.submitting) window.MulerDraft._submitId = (window.MulerDraft._submitId || 0) + 1; } catch (eSi) {}
   // Like Edit entry: 3D away (hide, not zap — viewport fragility), then the
   // editor view, so the refit below measures the settled layout.
   try {
@@ -1078,6 +1083,8 @@ function fMolDraftEnter(mode) {
     had3D = !!(b3 && b3.classList.contains("active"));
   } catch (eB) { had3D = false; }
   window.MulerDraft = { mode: mode, sourceMol: sourceMol, variant: variant, had3D: had3D };
+  try { window.MulerDraft._epoch = (window._MulerDraftEpoch = (window._MulerDraftEpoch || 0) + 1); } catch (eEp) { try { window.MulerDraft._epoch = Date.now(); } catch (eEp2) {} }
+  try { window.MulerDraft._submitId = 0; window.MulerDraft.accepting = false; } catch (eSi) {}
   // Update-in-place only when an Edit redraws the SAME molecule (beautify).
   // Edit producing a different molecule always forks a new custom entry;
   // stored (141) templates are never overwritten (option a). Source identity
@@ -1556,7 +1563,7 @@ function fMolDraftExpandedFormula() {
 }
 
 function fMolDraftEsc(s) {
-  return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
 function fMolDraftReadDrawing() {
@@ -1605,8 +1612,8 @@ function fMolDraftVerdictCtrl(lang, verdict, autoNote) {
     var out = "<span class='draftVerdict' data-dvlang='" + lang + "'>";
     for (var i = 0; i < states.length; i++) {
       var s = states[i];
-      var tip = fMolDraftT(tipKey[s], tipFb[s]);
-      if (autoNote && s === "correct") tip += " — " + fMolDraftT("draftAutoPubchem", "Validated by PubChem");
+      var tip = fMolDraftEsc(fMolDraftT(tipKey[s], tipFb[s]));
+      if (autoNote && s === "correct") tip += " — " + fMolDraftEsc(fMolDraftT("draftAutoPubchem", "Validated by PubChem"));
       out += "<button type='button' class='draftVBtn" + (verdict === s ? " active" : "") + "' data-v='" + s + "'" +
         " data-tooltip='" + tip + "' aria-pressed='" + (verdict === s ? "true" : "false") + "'" +
         " onclick='fMolDraftSetVerdict(\"" + lang + "\",\"" + s + "\")'>" + glyph[s] + "</button>";
@@ -1690,10 +1697,21 @@ function fJSmolLoadInlineSDF(applet, sdfText, tailCmd) {
     // SDF V2000 has no double quotes, but a stray one would break the
     // `load data "..."` wrapper — neutralize defensively.
     clean = clean.replace(/"/g, "'");
+    // Guard the `end "model.sdf"` terminator: a payload line that is exactly
+    // the terminator would truncate the DATA block early. Such content never
+    // occurs in PubChem SDF, but fail closed rather than issue a split load.
+    try {
+      var _lines = clean.split(/\r?\n/);
+      for (var _li = 0; _li < _lines.length; _li++) {
+        if (_lines[_li].trim() === 'end "model.sdf"') return false;
+      }
+    } catch (eTl) {}
     if (clean.charAt(clean.length - 1) !== "\n") clean += "\n";
     var tail = String(tailCmd == null ? "" : tailCmd);
     var cmd = "frank off;load data \"model.sdf\"\n" + clean + "end \"model.sdf\"; select all; center selected;" + tail;
-    if (typeof fJSmolScript === "function") fJSmolScript(applet, cmd);
+    if (typeof fJSmolScript === "function") {
+      if (fJSmolScript(applet, cmd) === null && typeof fMulerNotePending3D === "function") { try { fMulerNotePending3D(); } catch (eP3) {} return false; }
+    }
     else if (typeof Jmol !== "undefined" && Jmol && typeof Jmol.script === "function") Jmol.script(applet, cmd);
     return true;
   } catch (eIn) { return false; }
@@ -1708,12 +1726,20 @@ function fMolDraftShow3D(sdf) {
     }
   } catch (eV) {}
   if (!sdf) return;
-  // Inline DATA load — never a blob: URL (see helper note above).
+  // Inline DATA load — never a blob: URL (see helper note above). When JSmol
+  // is not live the wrapper returns false: keep the 2D-only note and surface
+  // the standard pending-3D path instead of recording an invisible 3D model.
+  var _issued = false;
   try {
     if (typeof fJSmolLoadInlineSDF === "function") {
-      fJSmolLoadInlineSDF(jmolAppletNomeclature, sdf, "script spt/init-3.spt;");
+      _issued = !!fJSmolLoadInlineSDF(jmolAppletNomeclature, sdf, "script spt/init-3.spt;");
     }
-  } catch (eJ) {}
+  } catch (eJ) { _issued = false; }
+  if (!_issued) {
+    try { if (typeof fMulerNotePending3D === "function") fMulerNotePending3D(); } catch (eP3b) {}
+    try { fMolDraftToast(fMolDraftT("submitNo3D", "No 3D model on PubChem — 2D only.")); } catch (eT3) {}
+    return;
+  }
   try { if (typeof fSetMolVis3D === "function") fSetMolVis3D(); } catch (eV) {}
   try { if (typeof fParseSDF3D === "function") fParseSDF3D(sdf); } catch (eP1) {}
   try { if (typeof fDetectMolType3D === "function") fDetectMolType3D(); } catch (eP2) {}
@@ -1747,7 +1773,10 @@ function fMolDraftSandboxAnalyse(molText) {
     if (molText && typeof jsmeNomeclatureApplet !== "undefined" && jsmeNomeclatureApplet &&
         typeof jsmeNomeclatureApplet.readMolFile === "function") {
       jsmeNomeclatureApplet.readMolFile(molText);
-      try { if (typeof molZoom2D !== "undefined") jsmeNomeclatureApplet.setMolecularAreaScale(molZoom2D); } catch (eZ) {}
+      try {
+        if (typeof fApplyMol2DScale === "function") fApplyMol2DScale();
+        else if (typeof molZoom2D !== "undefined") jsmeNomeclatureApplet.setMolecularAreaScale(molZoom2D);
+      } catch (eZ) {}
     }
   } catch (eSync) {}
   try { mainChainMode = "algorithmic"; } catch (eM1) {}
@@ -1792,6 +1821,9 @@ async function fMolDraftSubmit() {
     drawing.smiles = _td.smiles;
   }
   window.MulerDraft.submitting = true;
+  window.MulerDraft._submitId = (window.MulerDraft._submitId || 0) + 1;
+  var _mySid = window.MulerDraft._submitId;
+  var _myEpoch = window.MulerDraft._epoch;
   try {
     var st = document.getElementById("molDraftStatus");
     if (st) st.textContent = fMolDraftT("submitRunning", "Submitting…");
@@ -1866,7 +1898,8 @@ async function fMolDraftSubmit() {
     if (st2) {
       var _idHint = "";
       try {
-        if (d && d.mode === "edit" && typeof fMolDraftIsSameMolecule === "function") {
+        var _dh = window.MulerDraft;
+        if (_dh && _dh.mode === "edit" && typeof fMolDraftIsSameMolecule === "function") {
           _idHint = fMolDraftIsSameMolecule()
             ? fMolDraftT("draftSameHint", "same molecule, will update this view")
             : fMolDraftT("draftForkHint", "different molecule, will fork as new");
@@ -1886,7 +1919,7 @@ async function fMolDraftSubmit() {
   try {
     if (typeof fFetchIUPAC_EN === "function") hit = await fFetchIUPAC_EN(submittingSmiles);
   } catch (eP) { hit = null; }
-  if (!window.MulerDraft || window.MulerDraft.smiles !== submittingSmiles) return; // superseded/cancelled
+  if (!window.MulerDraft || window.MulerDraft._submitId !== _mySid || window.MulerDraft._epoch !== _myEpoch || window.MulerDraft.smiles !== submittingSmiles) return; // superseded/cancelled/Draw-mid-fetch
   window.MulerDraft.pubchem = hit || null;
   // Oracle fallback for the non-transliterable case (Greek-common
   // esters/complex ethers): same systematicEN the stored path delegates to.
@@ -1918,7 +1951,7 @@ async function fMolDraftSubmit() {
       var _ocSmi = (hit && hit.canonicalSmiles) || submittingSmiles;
       fFetchIUPAC_OC(_ocSmi).then(function (oc) {
         try {
-          if (!window.MulerDraft || window.MulerDraft.smiles !== submittingSmiles) return;
+          if (!window.MulerDraft || window.MulerDraft._submitId !== _mySid || window.MulerDraft._epoch !== _myEpoch || window.MulerDraft.smiles !== submittingSmiles) return;
           window.MulerDraft.openclatura = oc && oc.name ? { name: oc.name, opsin: oc.opsin || null } : null;
           // Second-oracle auto-check (OR with PubChem; untouched-only; human
           // always wins): an OC match also marks the EN prediction correct,
@@ -1942,7 +1975,7 @@ async function fMolDraftSubmit() {
         } catch (eOCr) {}
       }).catch(function (eOC) {
         try {
-          if (!window.MulerDraft || window.MulerDraft.smiles !== submittingSmiles) return;
+          if (!window.MulerDraft || window.MulerDraft._submitId !== _mySid || window.MulerDraft._epoch !== _myEpoch || window.MulerDraft.smiles !== submittingSmiles) return;
           window.MulerDraft.openclatura = null;
           try { console.warn("[OC] draft fetch failed", eOC); } catch (eL) {}
           fMolDraftRenderPreview();
@@ -1956,7 +1989,7 @@ async function fMolDraftSubmit() {
   try {
     if (hit && typeof fFetchSDF3D_PubChem === "function") sdf = await fFetchSDF3D_PubChem(submittingSmiles);
   } catch (eS) { sdf = null; }
-  if (!window.MulerDraft || window.MulerDraft.smiles !== submittingSmiles) return;
+  if (!window.MulerDraft || window.MulerDraft._submitId !== _mySid || window.MulerDraft._epoch !== _myEpoch || window.MulerDraft.smiles !== submittingSmiles) return;
   window.MulerDraft.submitting = false;
   window.MulerDraft.sdfDone = true;
   if (sdf) {
@@ -2146,10 +2179,12 @@ function fMolDraftSyncSaveBtn() {
 async function fMolDraftAccept() {
   var d = window.MulerDraft;
   if (!d || fMolDraftPresenting()) return;
+  if (d.accepting) return; // re-entrancy guard: double-click during depict polls
   if (!d.submitted || !d.engineName) {
     fMolDraftToast(fMolDraftT("acceptNeedsSubmit", "Press Submit for a preview first."));
     return;
   }
+  var _myEpochA = d._epoch, _mySidA = d._submitId;
   // Freshness: drawing changed since the preview? Re-read and compare —
   // authoritative even if the live edit callbacks turn out to be no-ops.
   // Self-healing: identical structure clears a spurious stale flag.
@@ -2219,10 +2254,12 @@ async function fMolDraftAccept() {
     try { _fm = fMolDraftT("draftForkConfirm", "This drawing is a different molecule — fork as new?"); } catch (eFm) { _fm = "Fork as new?"; }
     try { _fy = fMolDraftT("draftForkYes", "Fork as new"); } catch (eFy) { _fy = "Fork as new"; }
     if (typeof fScenarioConfirm === "function") {
-      try { fScenarioConfirm(_fm, function () { try { d._forkConfirmed = true; } catch (eFc) {} try { fMolDraftAccept(); } catch (eFa) {} }, _fy); } catch (eSc) {}
+      try { fScenarioConfirm(_fm, function () { try { if (window.MulerDraft !== d) return; d._forkConfirmed = true; } catch (eFc) {} try { fMolDraftAccept(); } catch (eFa) {} }, _fy); } catch (eSc) {}
       return;
     }
   }
+  d.accepting = true;
+  try { fMolDraftSyncBar(); } catch (eSyA) {}
   var hit = d.pubchem || null;
   var key = fMolDraftMakeKey(normSmi, hit);
   if (isUpdate) key = d.sourceMol;
@@ -2331,6 +2368,7 @@ async function fMolDraftAccept() {
       if (typeof jsmeNomeclatureApplet !== "undefined" && jsmeNomeclatureApplet) {
         var _d1 = null;
         try { _d1 = await fMolDraftDepictSmiles(jsmeNomeclatureApplet, _depictSmi, d.molText, _expectHeavy) || null; } catch (eD1) { _d1 = null; }
+        if (!window.MulerDraft || window.MulerDraft !== d || d._epoch !== _myEpochA || d._submitId !== _mySidA) { try { d.accepting = false; } catch (eAb1) {} return; } // Cancel during depict poll
         try { console.log("[draft] skeletal: display rung(" + _depictSrc + ") " + (!_d1 ? "null" : (_d1 !== d.molText ? "won " + _sigOf(_d1) : "unchanged"))); } catch (eL2) {}
         if (_d1 && _d1 !== d.molText) {
           var _a1 = null;
@@ -2341,6 +2379,7 @@ async function fMolDraftAccept() {
       if (!_skel && typeof jsmeEditDraftApplet !== "undefined" && jsmeEditDraftApplet) {
         var _d2 = null;
         try { _d2 = await fMolDraftDepictSmiles(jsmeEditDraftApplet, _depictSmi, d.molText, _expectHeavy) || null; } catch (eD2) { _d2 = null; }
+        if (!window.MulerDraft || window.MulerDraft !== d || d._epoch !== _myEpochA || d._submitId !== _mySidA) { try { d.accepting = false; } catch (eAb2) {} return; } // Cancel during depict poll
         try { console.log("[draft] skeletal: edit rung(" + _depictSrc + ") " + (!_d2 ? "null" : (_d2 !== d.molText ? "won " + _sigOf(_d2) : "unchanged"))); } catch (eL3) {}
         if (_d2 && _d2 !== d.molText) {
           var _a2 = null;
@@ -2475,7 +2514,7 @@ async function fMolDraftAccept() {
       try { _sy = fMolDraftT("draftStrayKeep", "Keep anyway"); } catch (eSy2) { _sy = "Keep anyway"; }
       try { console.warn("[draft] stray H: " + _strays.length + " over 1.5x H scale (" + _strays.slice(0, 4).map(function (s) { return "H" + s.h + "/C" + s.parent + "x" + s.ratio; }).join(", ") + ")"); } catch (eLw) {}
       if (typeof fScenarioConfirm === "function") {
-        try { fScenarioConfirm(_sm + " (" + _strays.length + ")", function () { try { d._strayConfirmed = true; } catch (eFc) {} try { fMolDraftAccept(); } catch (eFa) {} }, _sy); } catch (eSc2) {}
+        try { fScenarioConfirm(_sm + " (" + _strays.length + ")", function () { try { if (window.MulerDraft !== d) return; d._strayConfirmed = true; d.accepting = false; } catch (eFc) {} try { fMolDraftAccept(); } catch (eFa) {} }, _sy); } catch (eSc2) { try { d.accepting = false; } catch (eAb3) {} }
         return;
       }
     }
@@ -2537,7 +2576,10 @@ async function fMolDraftAccept() {
       try {
         if (restoreMol && typeof applet.readMolFile === "function") {
           applet.readMolFile(restoreMol);
-          try { if (typeof molZoom2D !== "undefined") applet.setMolecularAreaScale(molZoom2D); } catch (eZ) {}
+          try {
+            if (typeof fApplyMol2DScale === "function") fApplyMol2DScale();
+            else if (typeof molZoom2D !== "undefined") applet.setMolecularAreaScale(molZoom2D);
+          } catch (eZ) {}
         }
       } catch (eR) {}
       if (out && out.indexOf("V2000") >= 0) return out;
@@ -2571,6 +2613,7 @@ async function fMolDraftAccept() {
     titlePubchem: (hit && (hit.title || hit.titlePubchem)) || null,
     openclaturaEN: (d.openclatura && d.openclatura.name) || null,
     openclaturaOpsin: (d.openclatura && d.openclatura.opsin) || null,
+    openclaturaDone: !!((d.openclatura && d.openclatura.name) || null),
     pubchemCID: (hit && hit.cid) || null,
     canonicalSmiles: (hit && hit.canonicalSmiles) || null,
     sdf3D: d.sdf3D || null,
@@ -2590,7 +2633,7 @@ async function fMolDraftAccept() {
     // (formula/names/oracle) refreshes from the new preview; key stable.
     var prev = null;
     try { prev = nameExamples[key] || null; } catch (ePv) { prev = null; }
-    if (!prev) { return; }
+    if (!prev) { try { d.accepting = false; } catch (eAb4) {} return; }
     var _slot = "condensed";
     try { _slot = (drawnVariant === "expanded") ? "expanded" : (drawnVariant === "skeletal" || drawnVariant === "condensedZigZag") ? "skeletal" : "condensed"; } catch (eSl2) { _slot = "condensed"; }
     try {
@@ -2625,7 +2668,7 @@ async function fMolDraftAccept() {
       window.nameExamplesCustom = window.nameExamplesCustom || {};
     } catch (eRg) {}
     try { window.nameExamplesCustom[key] = rec; } catch (eR2) {}
-    try { nameExamples[key] = rec; } catch (eN) { return; }
+    try { nameExamples[key] = rec; } catch (eN) { try { d.accepting = false; } catch (eAb5) {} return; }
   }
   fMolDraftTeardownDisplay();
   // Rebuild the menu so the new row exists, then select it: the rebuild
@@ -5749,7 +5792,7 @@ function patchtheNitrogen() {
 // throwing, so a cold/dead applet can never abort molecule loading, naming,
 // or menu selection. The pending load is resent from the jmol_isReady hook.
 // The JSmol applet object is created by the parse-time inline script in
-// mulermoc-nom-53.html (Jmol.getApplet must run during parsing). Only
+// mulermoc-nom-54.html (Jmol.getApplet must run during parsing). Only
 // declare the binding if nothing assigned it yet — an unconditional
 // `var ... = null` here would wipe the live applet (execution order:
 // inline getApplet first, this file after).
@@ -6652,6 +6695,18 @@ function fMulerApplyOCVerdict(key) {
     try { cont.classList.remove("verdict-oc-match", "verdict-oc-mismatch", "verdict-oc-missing"); } catch (eR) {}
     var v = (typeof fMulerOCVerdict === "function") ? fMulerOCVerdict(key) : null;
     if (!v || !v.state) return null;
+    // OR rule (owner choice): either oracle agreeing silences the tint. The
+    // PubChem pass already goes quiet on OC-match (fMulerVerdictState); mirror
+    // it here — a plain PubChem side suppresses the OC mismatch/missing
+    // outline so e.g. propanedioic acid renders white/correct. fMulerVerdictState
+    // is the single source of truth (null = plain for systematic/retained/title
+    // agreement); the OC disagreement stays on record (console log,
+    // info-panel row, REVIEW tables), just untinted.
+    if (v.state === "mismatch" || v.state === "missing") {
+      try {
+        if (typeof fMulerVerdictState === "function" && fMulerVerdictState(key, true) == null) return null;
+      } catch (ePC) { /* fall through to the OC marker */ }
+    }
     try { cont.classList.add("verdict-oc-" + v.state); } catch (eC) {}
     try {
       var t = "";

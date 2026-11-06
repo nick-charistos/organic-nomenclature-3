@@ -9,25 +9,25 @@ Designed and developed by Nickolas Charistos
 **Previous version:** v53 remains runnable at root (`mulermoc-nom-53.html`), along with v52…v42. v53 added the English layer; v52 added the unified inline/modal rich editor.
 **Entry point:** [index.html](index.html) → [mulermoc-nom-54.html](mulermoc-nom-54.html) (live); `mulermoc-nom-53.html` and earlier versions `mulermoc-nom-52.html`…`-42.html` runnable alongside
 
-## English version (v53 in progress, Greek default preserved)
+## English version (v53 shipped, carried in v54 — Greek default preserved)
 
 - Preview: `mulermoc-nom-53.html?lang=en` (Greek without the flag). Single codebase, per-key EN fallback.
-- Chrome: `js/mulermoc-nom-lang-53.js` (207-string `?lang=` table, every Greek value source-verified + value-based `data-tooltip`/`aria-label`/`title`/`placeholder` translation with debounced MutationObserver, dynamic-prefix rules, present-panel/step-title/badge/tab/size-option/2D-3D-bar text nodes, EN TTS `fSpeakMuler`/`fWireENTTS`, two-button header switch carrying the selected molecule (`?mol=`); verified headless: 0 Greek of 254 tooltips, 0 Greek of 224 aria-labels, final audit 24 remaining Greek strings all authored-note/credit — zero chrome remainder; GR mode no-leak). EN renders directly at build time (no Greek-first flip; verified observer-neutered); GR default byte-identical.
+- Chrome: `js/mulermoc-nom-lang-54.js` (207-string `?lang=` table, every Greek value source-verified + value-based `data-tooltip`/`aria-label`/`title`/`placeholder` translation with debounced MutationObserver, dynamic-prefix rules, present-panel/step-title/badge/tab/size-option/2D-3D-bar text nodes, EN TTS `fSpeakMuler`/`fWireENTTS`, two-button header switch carrying the selected molecule (`?mol=`); verified headless: 0 Greek of 254 tooltips, 0 Greek of 224 aria-labels, final audit 24 remaining Greek strings all authored-note/credit — zero chrome remainder; GR mode no-leak). EN renders directly at build time (no Greek-first flip; verified observer-neutered); GR default byte-identical.
 - Didactic EN: `nameAnalysisExplain` all 17 modes + rule panel (titles/texts/tables via 91-pair `RULE_GR2EN`) + 9 theory texts + alkyl/alkoxy systematic tables + EN rule narration; validated 141×17+9 with 0 Greek in EN, GR throw-parity and zero EN leakage — see `docs/REVIEW-EN-53.md` §G.
-- Chemistry: `js/mulermoc-nom-name-en-53.js` (straight-chain + branched `fAssembleBranchedEN`, ether `fEtherSystematicEN`, ester `fEsterSystematicEN`, slot transliteration `fPopulateEngineENFromGreek` hooked in `fSelectMol`); oracle `js/mulermoc-nom-iupac-53.js` (PubChem `IUPACName` verbatim + `RETAINED_TO_SYSTEMATIC_EN` map + synonyms, `needsHumanCheck` on retained≠systematic; e.g. `formic→methanoic`, `methyl acetate→methyl ethanoate`).
+- Chemistry: `js/mulermoc-nom-name-en-54.js` (straight-chain + branched `fAssembleBranchedEN`, ether `fEtherSystematicEN`, ester `fEsterSystematicEN`, slot transliteration `fPopulateEngineENFromGreek` hooked in `fSelectMol`); oracle `js/mulermoc-nom-iupac-54.js` (PubChem `IUPACName` verbatim + `RETAINED_TO_SYSTEMATIC_EN` map + synonyms, `needsHumanCheck` on retained≠systematic; e.g. `formic→methanoic`, `methyl acetate→methyl ethanoate`).
 - Validation: in-browser full run 119/141 automated agreement (103 systematic + 14 retained-name + 2 PubChem-Title matches via `fValidateENAgainstOracle`; stereo prefixes stripped); offline pure-function run 107/141 on the same oracle snapshot. Remainder is an explicit human queue — see [docs/REVIEW-EN-53.md](docs/REVIEW-EN-53.md) (retained names, PIN locant omissions, oxo locants, common-vs-systematic substituents, 15 novel molecules without public record + engineEN proposals). Full re-run: serve repo root and open `zz-harness-53.html?lang=en`; fast offline check: `zz-test-en53.html`.
 - Scenarios stay author-language; new EN scenarios to be authored by teachers/MSc students. Each step stores its creation language and renders in it (mixed-language scenarios supported); the header toggle keeps the selected molecule (`?mol=`). Short guide: [docs/TEACHER-GUIDE-EN-53.md](docs/TEACHER-GUIDE-EN-53.md).
 
 | Layer | File |
 |---|---|
-| Core engine (analysis + naming) | [js/mulermoc-nom-core-53.js](js/mulermoc-nom-core-53.js) |
-| Viewer (JSME / JSmol / native SVG) | [js/mulermoc-nom-molview-53.js](js/mulermoc-nom-molview-53.js) |
-| Teaching (rules, narration, UI wiring) | [js/mulermoc-nom-teaching-53.js](js/mulermoc-nom-teaching-53.js) |
-| Scenario module (LEARN authoring + presentation) | [js/mulermoc-nom-scenario-53.js](js/mulermoc-nom-scenario-53.js) |
-| EN chrome + naming + oracle | [js/mulermoc-nom-lang-53.js](js/mulermoc-nom-lang-53.js), [js/mulermoc-nom-name-en-53.js](js/mulermoc-nom-name-en-53.js), [js/mulermoc-nom-iupac-53.js](js/mulermoc-nom-iupac-53.js) |
+| Core engine (analysis + naming) | [js/mulermoc-nom-core-54.js](js/mulermoc-nom-core-54.js) |
+| Viewer (JSME / JSmol / native SVG) | [js/mulermoc-nom-molview-54.js](js/mulermoc-nom-molview-54.js) |
+| Teaching (rules, narration, UI wiring) | [js/mulermoc-nom-teaching-54.js](js/mulermoc-nom-teaching-54.js) |
+| Scenario module (LEARN authoring + presentation) | [js/mulermoc-nom-scenario-54.js](js/mulermoc-nom-scenario-54.js) |
+| EN chrome + naming + oracle | [js/mulermoc-nom-lang-54.js](js/mulermoc-nom-lang-54.js), [js/mulermoc-nom-name-en-54.js](js/mulermoc-nom-name-en-54.js), [js/mulermoc-nom-iupac-54.js](js/mulermoc-nom-iupac-54.js) |
 | Shared icon helper | [js/ui-icons.js](js/ui-icons.js) |
-| Molecule data (141 molecules — 141 `nameExamples` keys) | [js/jsme-nick-nomeclature-moc2-data_53.js](js/jsme-nick-nomeclature-moc2-data_53.js) |
-| Styles | [css/jsme-nick-53.css](css/jsme-nick-53.css), [css/mulermoc-nom-scenario-53.css](css/mulermoc-nom-scenario-53.css) |
+| Molecule data (141 molecules — 141 `nameExamples` keys) | [js/jsme-nick-nomeclature-moc2-data_54.js](js/jsme-nick-nomeclature-moc2-data_54.js) |
+| Styles | [css/jsme-nick-54.css](css/jsme-nick-54.css), [css/mulermoc-nom-scenario-54.css](css/mulermoc-nom-scenario-54.css) |
 | Stored scenarios | [scenarios/](scenarios/) (`Αλκάνια-Αιθάνιο-τεστ` default, `Αλκάνια-Αιθάνιο` legacy retained, `Αλκένια-Αιθένιο`, `Αλκένια-Ονοματολογία_και_διακλαδώσεις`; Greek filenames stay URL-encoded in `?scenario=` links) |
 
 ---
@@ -45,7 +45,7 @@ Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (o
 
 ---
 
-## What works now (v52 live — unified rich note editor, 141 molecules, Snap-free viewer)
+## What works now (v54 live — draft flow over the v53 English layer and the v52 base, 141 molecules, Snap-free viewer)
 
 ### Chemistry engine
 - Greek IUPAC naming for alkanes/alkenes/alkynes, branched chains, halides, alcohols, aldehydes/ketones, carboxylic acids (incl. hydroxy/amino/oxo/keto), nitriles, amines, ethers (systematic + common names), esters (two-word names).
@@ -87,7 +87,7 @@ Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (o
 
 ## Four layers (LEARN-first)
 
-All layers reuse the same v52 engine (v51 is the previous runnable copy), embedded as a static app in Drupal:
+All layers reuse the same v54 engine (v52/v51 are previous runnable copies), embedded as a static app in Drupal:
 
 | # | Layer | Contract | State |
 |---|---|---|---|
@@ -96,7 +96,7 @@ All layers reuse the same v52 engine (v51 is the previous runnable copy), embedd
 | 3 | **PRACTICE** | exercises with corrective feedback (3 types v1) | not started — see [LAYERS-PLAN](docs/LAYERS-PLAN.md) |
 | 4 | **PLAY** | gamified quizzes; responses + times logged for research statistics | not started — Drupal owns auth/session/logging; see [LAYERS-PLAN](docs/LAYERS-PLAN.md) |
 
-Out of scope for now: quiz SPA, participant logging, CSV export, server-side classroom management, rings/aromatics, reactions, isomerism (reserved in schemas), English UI (conditional later phase).
+Out of scope for now: quiz SPA, participant logging, CSV export, server-side classroom management, rings/aromatics, reactions, isomerism (reserved in schemas).
 
 ---
 
@@ -126,7 +126,7 @@ Out of scope for now: quiz SPA, participant logging, CSV export, server-side cla
 
 ## Documents
 
-- [CHANGELOG.md](docs/CHANGELOG.md) — authoritative history (v54 live); [STUDENT-IMPORT.md](docs/STUDENT-IMPORT.md) — recurring `thesis-work` import procedure
+- [CHANGELOG.md](docs/CHANGELOG.md) — authoritative history (v54 live); [STAGE2-AUTHORING-54.md](docs/STAGE2-AUTHORING-54.md) — draft flow + roadmap; [DATA-PHASE-PLAN.md](docs/DATA-PHASE-PLAN.md) — data-phase plan; [STUDENT-IMPORT.md](docs/STUDENT-IMPORT.md) — recurring `thesis-work` import procedure
 - [didactic-scenario-plan.md](docs/didactic-scenario-plan.md) — scenario schema and authoring flow
 - [LAYERS-PLAN.md](docs/LAYERS-PLAN.md) — layer contracts, exercise types, research logging schema
 - [DEVELOPMENT-PLAN.md](docs/DEVELOPMENT-PLAN.md), [PROJECT-PLAN.md](docs/PROJECT-PLAN.md), [PROJECT-PLAN-GR.md](docs/PROJECT-PLAN-GR.md) — product/research plans (may lag the code)

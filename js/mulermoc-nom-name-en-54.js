@@ -1,6 +1,6 @@
 // mulermoc-nom-name-en-54.js
-// Parallel English systematic assembly (v53 slice 1: straight chains).
-// Mirrors js/mulermoc-nom-core-53.js:145-177 Greek tables; no Greek mutation.
+// Parallel English systematic assembly (v54: straight-chain to C20).
+// Mirrors js/mulermoc-nom-core-54.js Greek tables; no Greek mutation.
 // Validated against systematicEN oracle (PubChem/CIR + retained->systematic map).
 
 var EN_STEMS = ["meth", "eth", "prop", "but", "pent", "hex", "hept", "oct", "non", "dec", "undec", "dodec", "tridec", "tetradec", "pentadec", "hexadec", "heptadec", "octadec", "nonadec", "eicos"];
@@ -17,14 +17,14 @@ var EN_SUFFIX = {
   ether: "ane",
   ester: "oate"
 };
-var EN_MULTIPREFIX = ["", "di", "tri", "tetra", "penta", "hexa", "hepta", "octa"];
-var EN_ALKYL = { 1: "methyl", 2: "ethyl", 3: "propyl", 4: "butyl", 5: "pentyl", 6: "hexyl", 7: "heptyl", 8: "octyl" };
+var EN_MULTIPREFIX = ["", "di", "tri", "tetra", "penta", "hexa", "hepta", "octa", "nona", "deca", "undeca", "dodeca", "trideca", "tetradeca", "pentadeca", "hexadeca", "heptadeca", "octadeca", "nonadeca", "eicosa"];
+var EN_ALKYL = { 1: "methyl", 2: "ethyl", 3: "propyl", 4: "butyl", 5: "pentyl", 6: "hexyl", 7: "heptyl", 8: "octyl", 9: "nonyl", 10: "decyl", 11: "undecyl", 12: "dodecyl", 13: "tridecyl", 14: "tetradecyl", 15: "pentadecyl", 16: "hexadecyl", 17: "heptadecyl", 18: "octadecyl", 19: "nonadecyl", 20: "eicosyl" };
 
 // Straight-chain systematic name: stem(n) + unsaturation infix + FG suffix.
 // fg: hydrocarbon|alcohol|aldehyde|ketone|carboxylicAcid|cyanide|amine|nitro|halogen
 // unsat: { kind: 'ane'|'ene'|'yne'|'diene'|'diyne'|'en-yne', locants: '2-'|'1,3-'|'' }
 function fGuessNameEN_simple(nCarbons, fg, unsat) {
-  if (!nCarbons || nCarbons < 1 || nCarbons > 10) return null;
+  if (!nCarbons || nCarbons < 1 || nCarbons > EN_STEMS.length) return null;
   var stem = EN_STEMS[nCarbons - 1];
   var u = unsat || { kind: "ane", locants: "" };
   var loc = u.locants || "";

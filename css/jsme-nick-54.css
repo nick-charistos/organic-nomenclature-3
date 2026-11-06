@@ -2051,37 +2051,10 @@ header {
   background-color: var(--veryLightLavender);
   border-color: #a58fd6;
 }
-/* Second-oracle (OpenClatura) marker (EN only): an "OC" badge + outline that
-   compose with the PubChem fills above (outline vs fill, never both fills).
+/* Second-oracle (OpenClatura) marker (EN only): outline only, no badge.
    Verdict computed by fMulerOCVerdict; painted at build and in place. */
-.nameCompContainer[class*="verdict-oc-"] {
-  position: relative;
-}
-.nameCompContainer[class*="verdict-oc-"]::after {
-  content: "OC";
-  position: absolute;
-  top: -10px;
-  right: -6px;
-  font-size: 10px;
-  font-weight: bold;
-  font-family: Arial, sans-serif;
-  padding: 0 5px;
-  border-radius: 8px;
-  background-color: #8a8a8a;
-  color: #fff;
-  pointer-events: none;
-}
-.nameCompContainer.verdict-oc-match::after {
-  display: none;
-}
 .nameCompContainer.verdict-oc-mismatch {
   box-shadow: 0 0 0 2px #d98c8c;
-}
-.nameCompContainer.verdict-oc-mismatch::after {
-  background-color: #c05050;
-}
-.nameCompContainer.verdict-oc-missing::after {
-  background-color: #c2a15a;
 }
 
 /* Eye tooltip above the button (skin: shared rule at the top of this file) */

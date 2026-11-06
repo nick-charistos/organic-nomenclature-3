@@ -1,5 +1,7 @@
 # Session handoff — 2026-11-05 — 2D bond lengths, draft slot contract, pixel equalizer (v54 working copy)
 
+> **SUPERSEDED 2026-11-06: live is `5d40ebe ?v=54.16`. Do not resume from here — see `docs/SESSION-NOTES.md` 2026-11-06 entries + `docs/DATA-PHASE-PLAN.md` + `docs/CHANGELOG.md [v54]`. Collision-aware H placement + splay below shipped in `3126c93` (`?v=54.12`).**
+
 > **Status: BUILT, HEADLESS-VERIFIED, COMMITTED (`d6513f0`, pushed). Browser
 > click-through pending (owner).**
 > `index.html` → `mulermoc-nom-54.html`. Cache-busters `?v=54.6`. Vars `MOLGEN_CC_LEN = 1.0`,

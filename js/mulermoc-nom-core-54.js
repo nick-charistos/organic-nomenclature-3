@@ -2565,15 +2565,14 @@ function fParseMolV2000(text) {
       var L = lines[ci + 1 + i] || "";
       var _el = (L.substring(31, 34) || "").trim();
       if (!_el) return null;
-      atoms.push({
-        x: parseFloat(L.substring(0, 10)) || 0,
-        y: parseFloat(L.substring(10, 20)) || 0,
-        el: _el
-      });
+      var _x = parseFloat(L.substring(0, 10)), _y = parseFloat(L.substring(10, 20));
+      if (!isFinite(_x) || !isFinite(_y)) return null;
+      atoms.push({ x: _x, y: _y, el: _el });
     }
     for (var j = 0; j < nB; j++) {
       var parts = (lines[ci + 1 + nA + j] || "").trim().split(/\s+/);
-      var a = parseInt(parts[0], 10), b = parseInt(parts[1], 10), o = parseInt(parts[2], 10) || 1;
+      var a = parseInt(parts[0], 10), b = parseInt(parts[1], 10), o = parseInt(parts[2], 10);
+      if (!(o >= 1 && o <= 3)) continue;
       if (!(a >= 1 && a <= nA && b >= 1 && b <= nA)) continue;
       bonds.push([a, b, o]);
     }
@@ -2631,25 +2630,25 @@ function fStripHydrogensMol(text) {
   } catch (e) { return null; }
 }
 
-var MOLGEN_STDVALENCE = { C: 4, N: 3, O: 2, F: 1, Cl: 1, Br: 1, I: 1 };
+var MOLGEN_STDVALENCE = { C: 4, N: 3, O: 2, F: 1, Cl: 1, Br: 1, I: 1, S: 2, P: 3 }; // S/P: single-bond default; hypervalent forms unsupported (no auto-H beyond this)
 
 // Minimum clearance for a newly placed H against placed atoms that are
 // neither its parent nor vicinal to it (same rule as the overlap harness:
 // geminal/vicinal closeness is natural). Below this, the next-largest
 // angular gap is tried; the best candidate always wins, so clean molecules
 // keep byte-identical coords and only colliding placements move.
-var MOLGEN_H_MINSEP = 0.4;
+const MOLGEN_H_MINSEP = 0.4;
 
 // 2D layout bond lengths (MOL units, hardcoded — adjust manually here).
 // All heavy–heavy bonds share MOLGEN_CC_LEN in every slot (condensed,
 // expanded skeleton, zigzag); C–H bonds use MOLGEN_CH_LEN (~half of C–C).
-var MOLGEN_CC_LEN = 1.0;
-var MOLGEN_CH_LEN = 0.5;
+const MOLGEN_CC_LEN = 1.0;
+const MOLGEN_CH_LEN = 0.5;
 
 // Expanded form: heavy skeleton + explicit H at MOLGEN_CH_LEN, placed by
 // largest-free-sector bisection (connectivity is what matters). Pre-existing
-// explicit H are kept; missing ones are topped up. Unknown elements: kept,
-// never added to.
+// explicit H are kept; missing ones are topped up. Elements outside
+// MOLGEN_STDVALENCE: kept, never added to (no silent H).
 function fGenExpandedMol(text) {
   try {
     var m = fParseMolV2000(text);
@@ -2669,7 +2668,7 @@ function fGenExpandedMol(text) {
     for (var c = 0; c < n; c++) atoms.push({ x: m.atoms[c].x, y: m.atoms[c].y, el: m.atoms[c].el });
     var bonds = [];
     for (var d = 0; d < m.bonds.length; d++) bonds.push([m.bonds[d][0], m.bonds[d][1], m.bonds[d][2]]);
-    var HLEN = (typeof MOLGEN_CH_LEN !== "undefined") ? MOLGEN_CH_LEN : 0.585;
+    var HLEN = MOLGEN_CH_LEN;
     for (var h = 0; h < n; h++) {
       var el = String(m.atoms[h].el || "");
       if (!fIsHeavyEl2D(el)) continue;
@@ -2701,7 +2700,7 @@ function fGenExpandedMol(text) {
           }
           gaps.sort(function (g1, g2) { return g2.g - g1.g; });
         }
-        var SEPN = (typeof MOLGEN_H_MINSEP !== "undefined") ? MOLGEN_H_MINSEP : 0.4;
+        var SEPN = MOLGEN_H_MINSEP;
         // Clearance of a candidate point against placed atoms under the
         // vicinal rule (harness-identical): the parent itself, atoms bonded
         // to it, and H whose own parent is bonded to (or is) it are skipped.
@@ -2838,24 +2837,70 @@ function fLinearizeMol(text, chain) {
       if (map[x + 1] == null || map[y + 1] == null) continue;
       adj[x].push(y); adj[y].push(x);
     }
-    var DX = (typeof MOLGEN_CC_LEN !== "undefined") ? MOLGEN_CC_LEN : 1.17, DY = (typeof MOLGEN_CC_LEN !== "undefined") ? MOLGEN_CC_LEN : 1.17;
+    var DX = MOLGEN_CC_LEN, DY = MOLGEN_CC_LEN;
     var pos = {}, inChain = {};
     for (var k = 0; k < ch.length; k++) { inChain[ch[k]] = true; pos[ch[k]] = { x: k * DX, y: 0 }; }
     var visited = {};
     for (var kc = 0; kc < ch.length; kc++) visited[ch[kc]] = true;
     // Queue: {node, x, y, dx, dy} — first continuation keeps direction,
-    // extra forks rotate 90° (rare in scope, depiction-only).
+    // extra forks try +90/-90 first, then diagonal relief (depiction-only).
     // Terminal chain atoms lean their branches outward (±x): without this,
     // end-group branches sit exactly above the anchor and geometry-based
     // tests (e.g. HOOC-vs-COOH orientation) tie instead of deciding.
     // Ether links (R-O-R) go fully horizontal from terminal atoms so C-O-C
     // stays linear instead of kinking the R groups orthogonal.
+    // Overlap guard: quantized occupancy of placed atoms. Two methyls of
+    // the same tert-butyl centre used to receive the identical +90° rotation
+    // (perfect overlap); adjacent bulky branches could also land on each
+    // other. Candidates closer than LIN_MINSEP to a placed non-parent atom
+    // fall through to the next fallback angle (orthogonal first, diagonal
+    // relief next), so clean molecules keep byte-identical coords and only
+    // colliding placements move.
+    var LIN_MINSEP = 0.3 * DX;
+    // Claimed = queued but not yet placed (siblings pushed in the same
+    // batch are invisible to pos until popped — without this, two methyls of
+    // one tert-butyl centre both pass the check and land identically).
+    var _claimed = {};
+    var _linHit = function (x, y, selfNode, parentNode) {
+      try {
+        for (var _k in pos) {
+          if (!Object.prototype.hasOwnProperty.call(pos, _k)) continue;
+          var _ni = parseInt(_k, 10);
+          if (_ni === selfNode || _ni === parentNode) continue;
+          var _p = pos[_k];
+          var _ddx = _p.x - x, _ddy = _p.y - y;
+          if ((_ddx * _ddx + _ddy * _ddy) < LIN_MINSEP * LIN_MINSEP) return true;
+        }
+        for (var _q in _claimed) {
+          if (!Object.prototype.hasOwnProperty.call(_claimed, _q)) continue;
+          var _qi = parseInt(_q, 10);
+          if (_qi === selfNode || _qi === parentNode) continue;
+          var _c = _claimed[_q];
+          var _edx = _c.x - x, _edy = _c.y - y;
+          if ((_edx * _edx + _edy * _edy) < LIN_MINSEP * LIN_MINSEP) return true;
+        }
+      } catch (eH) {}
+      return false;
+    };
+    // Rotate a unit direction by degrees (length-preserving; diagonal
+    // fallbacks use 0.7071 so every bond stays MOLGEN_CC_LEN).
+    var _linRot = function (dx, dy, deg) {
+      try {
+        var r = deg * Math.PI / 180, c = Math.cos(r), s = Math.sin(r);
+        return [dx * c - dy * s, dx * s + dy * c];
+      } catch (eR) { return [dx, dy]; }
+    };
     var queue = [];
+    // Stagger: neighbouring chain atoms open opposite sides when both carry
+    // non-ether branches, so adjacent tert-butyl centres never start on top
+    // of each other. Isolated branches keep the historical -1 start.
+    var _nextParity = 0;
     for (var ci = 0; ci < ch.length; ci++) {
-      var c0 = ch[ci], sideCount = 0, etherDone = false;
+      var c0 = ch[ci], sideCount = 0, etherDone = false, placedHere = 0;
       var lean = 0;
       if (ci === 0) lean = -0.5;
       else if (ci === ch.length - 1) lean = 0.5;
+      var _startPar = _nextParity;
       for (var nb = 0; nb < adj[c0].length; nb++) {
         var br = adj[c0][nb];
         if (visited[br]) continue;
@@ -2872,29 +2917,89 @@ function fLinearizeMol(text, chain) {
         } catch (eEl) { isEtherLink = false; }
         if (isEtherLink) {
           var _dir = (ci === 0) ? -1 : 1;
-          queue.push({ node: br, x: ci * DX + _dir * DX, y: 0, dx: _dir, dy: 0 });
+          queue.push({ node: br, x: ci * DX + _dir * DX, y: 0, dx: _dir, dy: 0, p: c0 });
+          try { _claimed[br] = { x: ci * DX + _dir * DX, y: 0 }; } catch (eCl2) {}
           etherDone = true;
           continue;
         }
-        var side = (sideCount % 2 === 0) ? -1 : 1;
+        var side = (((sideCount + _startPar) % 2) === 0) ? -1 : 1;
         sideCount++;
-        queue.push({ node: br, x: ci * DX + lean * DX, y: side * DY, dx: 0, dy: side });
+        // Orthogonal first; on collision try the opposite side, then the two
+        // diagonals (length-preserving). First non-colliding wins.
+        var _cands = [
+          [ci * DX + lean * DX, side * DY, 0, side],
+          [ci * DX + lean * DX, -side * DY, 0, -side],
+          [ci * DX + lean * DX + 0.7071 * DX, side * 0.7071 * DY, 0.7071, side * 0.7071],
+          [ci * DX + lean * DX - 0.7071 * DX, side * 0.7071 * DY, -0.7071, side * 0.7071]
+        ];
+        var _pick = _cands[0];
+        for (var _qi = 0; _qi < _cands.length; _qi++) {
+          if (!_linHit(_cands[_qi][0], _cands[_qi][1], br, c0)) { _pick = _cands[_qi]; break; }
+          _pick = _cands[_qi];
+        }
+        queue.push({ node: br, x: _pick[0], y: _pick[1], dx: _pick[2], dy: _pick[3], p: c0 });
+        try { _claimed[br] = { x: _pick[0], y: _pick[1] }; } catch (eCl) {}
+        placedHere++;
       }
+      _nextParity = (placedHere > 0) ? (_startPar ^ 1) : 0;
     }
     while (queue.length) {
       var it = queue.shift();
       if (visited[it.node]) continue;
+      try { delete _claimed[it.node]; } catch (eDc) {}
+      // Pop-time recheck: a collider may have been placed after this item
+      // was queued (e.g. the neighbour branch centre). Relocate through the
+      // same fallback list before committing.
+      if (typeof it.p !== "undefined" && _linHit(it.x, it.y, it.node, it.p)) {
+        var _re = false;
+        for (var _ri = 0; _ri < 8; _ri++) {
+          var _rdeg = [0, 90, -90, 45, -45, 135, -135, 180][_ri];
+          var _rrv = _linRot(it.dx, it.dy, _rdeg);
+          var _rcx = pos[it.p].x + _rrv[0] * DX, _rcy = pos[it.p].y + _rrv[1] * DY;
+          if (!_linHit(_rcx, _rcy, it.node, it.p)) {
+            it.x = _rcx; it.y = _rcy; it.dx = _rrv[0]; it.dy = _rrv[1];
+            _re = true;
+            break;
+          }
+        }
+        if (!_re) { /* keep queued coords: overlap beats dropping the atom */ }
+      }
       visited[it.node] = true;
       pos[it.node] = { x: it.x, y: it.y };
-      var first = true;
+      // Fan-out: first child continues straight; each extra fork prefers
+      // +90°, -90°, then ±45° diagonals, +135/-135, 180°. Every extra scans
+      // the same fallback list against occupancy, so the second tert-butyl
+      // methyl no longer duplicates the first — it takes -90° (or diagonal
+      // relief when both orthogonals are taken). Single/double-child nodes
+      // keep their historical coords (straight / +90°) when uncollided.
+      var _kids = [];
       for (var w = 0; w < adj[it.node].length; w++) {
         var cand = adj[it.node][w];
         if (visited[cand]) continue;
-        if (first) {
-          queue.push({ node: cand, x: it.x + it.dx * DX, y: it.y + it.dy * DY, dx: it.dx, dy: it.dy });
-          first = false;
-        } else {
-          queue.push({ node: cand, x: it.x - it.dy * DX, y: it.y + it.dx * DY, dx: -it.dy, dy: it.dx });
+        _kids.push(cand);
+      }
+      for (var ki = 0; ki < _kids.length; ki++) {
+        var _done = false;
+        // First child: straight unless occupied; extras: alternate +90/-90
+        // first (historical), diagonals on collision.
+        var _order = (ki === 0) ? [0, 90, -90, 45, -45, 135, -135, 180] : [90, -90, 45, -45, 135, -135, 0, 180];
+        // Avoid re-offering the exact angle an earlier sibling just took:
+        // occupancy catches it anyway (dist 0), this just orders better.
+        for (var fi = 0; fi < _order.length; fi++) {
+          var _deg = _order[fi];
+          var _rv = _linRot(it.dx, it.dy, _deg);
+          var _cx = it.x + _rv[0] * DX, _cy = it.y + _rv[1] * DY;
+          if (!_linHit(_cx, _cy, _kids[ki], it.node)) {
+            queue.push({ node: _kids[ki], x: _cx, y: _cy, dx: _rv[0], dy: _rv[1], p: it.node });
+            try { _claimed[_kids[ki]] = { x: _cx, y: _cy }; } catch (eCl3) {}
+            _done = true;
+            break;
+          }
+        }
+        if (!_done) {
+          var _rvf = _linRot(it.dx, it.dy, (ki === 0) ? 0 : 90);
+          queue.push({ node: _kids[ki], x: it.x + _rvf[0] * DX, y: it.y + _rvf[1] * DY, dx: _rvf[0], dy: _rvf[1], p: it.node });
+          try { _claimed[_kids[ki]] = { x: it.x + _rvf[0] * DX, y: it.y + _rvf[1] * DY }; } catch (eCl4) {}
         }
       }
     }
@@ -2953,7 +3058,7 @@ function fZigzagMol(text, chain) {
       var kk = (a < c) ? a + "-" + c : c + "-" + a;
       return ord[kk] || 1;
     };
-    var L = (typeof MOLGEN_CC_LEN !== "undefined") ? MOLGEN_CC_LEN : 1.17, CX = L * 0.8660254, CY = L * 0.5;
+    var L = MOLGEN_CC_LEN, CX = L * 0.8660254, CY = L * 0.5;
     var norm2 = function (vx, vy) {
       var l = Math.sqrt(vx * vx + vy * vy);
       if (!(l > 1e-9)) return null;
