@@ -1,9 +1,10 @@
 # Session notes — 2026-11-05 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `d6513f0` (2026-11-05) — v54 bond vars
-> (1.0/0.5), draft slot contract + fork confirm, per-mode pixel equalizer, owner
-> applet-option edits, `?v=54.6`. Tree clean, pushed. Full record:
-> `docs/SESSION-HANDOFF-2026-11-05-2D-BONDLENGTHS.md`.
+> **Resume pointer (cross-machine):** HEAD `3126c93` (2026-11-06) — display compensation
+> (equalizer + label/numbering fonts), collision-aware H + splay, Edit contract
+> (slot update, fork confirm/full-gen, skip-tidy, stray guard), vars 1.0/0.5/0.4,
+> `?v=54.12`. Tree clean, pushed. Full record: `docs/SESSION-HANDOFF-2026-11-05-2D-BONDLENGTHS.md`
+> + `docs/SESSION-NOTES.md` 2026-11-05/06 entries.
 > Routine on the other machine: pull first, then resume from the handoff §4 checklist +
 > `git log --oneline -5` + `git status`. OpenCode sessions stay machine-local.
 >
