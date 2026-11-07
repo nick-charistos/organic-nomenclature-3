@@ -1,15 +1,20 @@
-# Session notes — 2026-11-05 (resume point for next session, other machine)
+# Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `5d40ebe` (2026-11-06) — OpenClatura second
+> **Resume pointer (cross-machine):** HEAD `f781ed7` (2026-11-07) — v54 Blue Book
+> EN audit + Traditional/Systematic toggle (`?v=54.22`): OC error states +
+> fetch throttle/timeout, icosa stems, retained-acid oracle normalization,
+> P-14.5.1 EN group swap, single seniority const, Traditional/Systematic radio
+> + paint-order fix + per-row settings panel + radio labels, iupac/ ignored.
+> Tree clean (one session temp file untracked by design:
+> `js/MULERMOC_methyl_4_ethoxybutanoate_data.js`). Full record:
+> `docs/CHANGELOG.md` v54.19–v54.22 + `docs/REVIEW-EN-53.md` §Q.
+> Routine on the other machine: pull first, then resume from
+> `git log --oneline -5` + `git status`. OpenCode sessions stay machine-local.
+>
+> Previous pointer (2026-11-06, now superseded): HEAD `5d40ebe` — OpenClatura second
 > oracle (display rows, verdict badge+glyph, merged verdicts, stale-marker fix),
 > `?v=54.16`. Tree clean, pushed. Full record: `docs/SESSION-HANDOFF-2026-11-05-2D-BONDLENGTHS.md`
 > + `docs/SESSION-NOTES.md` 2026-11-05/06 entries.
-> Routine on the other machine: pull first, then resume from the handoff §4 checklist +
-> `git log --oneline -5` + `git status`. OpenCode sessions stay machine-local.
->
-> Previous pointer (2026-11-04, now superseded): last commit `ab590dc` — v54 draft flow
-> (validated skeletal ladder, depict race fix, canonical SMILES, auto-linearize,
-> `?v=54.3`), verified live, tree clean.
 
 > **Resume pointer (cross-machine):** last commit `ab590dc` (2026-11-04) —
 > v54 draft flow (validated skeletal ladder, depict race fix, canonical SMILES,
