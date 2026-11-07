@@ -78,6 +78,8 @@ var MULER_STRINGS = {
   customSaveAllNone: { gr: "Τίποτα νέο για αποθήκευση — σχεδίασε και Αποδέξου ένα μόριο.", en: "Nothing new to save — draw and Accept a molecule first." },
   customSaveAllDone: { gr: "αρχεία κατέβηκαν — βάλτα δίπλα στα δεδομένα.", en: "files downloaded — place them next to the data file." },
   customSaveAllPartial: { gr: "Κάποια αρχεία απέτυχαν — δες την κονσόλα.", en: "Some files failed — see console." },
+  customSaveAllBundleDone: { gr: "μόρια αποθηκεύτηκαν σε ένα αρχείο — βάλτο δίπλα στα δεδομένα.", en: "molecules saved in one bundle file — place it next to the data file." },
+  customSaveAllFail: { gr: "Η αποθήκευση απέτυχε — δες την κονσόλα.", en: "Save failed — see console." },
   acceptStale: { gr: "Το σχέδιο άλλαξε — πάτα ξανά Υποβολή.", en: "Drawing changed — press Submit again." },
   acceptWaitFetch: { gr: "Αναζήτηση PubChem σε εξέλιξη — περίμενε λίγο.", en: "Still looking up PubChem — wait a moment." },
   acceptNeedsPubChem3D: { gr: "Αποδοχή μόνο με εγγραφή PubChem + 3D — θα επανέλθουμε με το RDKit.", en: "Acceptance requires a PubChem record with 3D — coming back with RDKit." },
@@ -298,7 +300,11 @@ var MULER_STRINGS = {
   alkoxyMenu: { gr: "Αλκοξυομάδες", en: "Alkoxy groups" },
   untitledDoc: { gr: "χωρίς τίτλο", en: "untitled" },
   stepCopy: { gr: "(αντίγραφο)", en: "(copy)" },
-  imgUnavailable: { gr: "Εικόνα μη διαθέσιμη", en: "Image unavailable" }
+  imgUnavailable: { gr: "Εικόνα μη διαθέσιμη", en: "Image unavailable" },
+  creditTeam: { gr: "Γιάννης Σκένδρος, Αναστασία Θεοφανίδου, Βασίλης Κουταλάς,", en: "Yannis Skendros, Anastasia Theofanidou, Vasilis Koutalas," },
+  creditProgram: { gr: "Μοριακός Σχεδιασμός και Μοντελοποίηση - Χημική Εκπαίδευση", en: "Molecular Design and Modelling - Chemistry Education" },
+  creditDept: { gr: "Τμήμα Χημείας", en: "Department of Chemistry" },
+  creditUni: { gr: "ΑΠΘ 2025-26", en: "AUTh 2025-26" }
 };
 // Dynamic labels keep a Greek prefix + variable tail; translate the prefix AND the tail.
 var MULER_PREFIX_GR2EN = [
@@ -451,6 +457,8 @@ function fMulerPaintStaticChrome() {
   setTip(".scenarioAuthor", fMulerT("scenarioAuthor"));
   setTip("#chainPrevBtn", fMulerT("prevChain"));
   setTip("#chainNextBtn", fMulerT("nextChain"));
+  // Footer credits are language-dependent (team/program/department lines).
+  try { if (typeof fShowCreditLibs === "function") fShowCreditLibs(); } catch (e) {}
 }
 
 // Step-language refresh: re-renders all language-dependent chrome in the

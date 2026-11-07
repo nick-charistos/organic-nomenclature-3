@@ -2201,11 +2201,49 @@ function fMolDraftDownloadSingle(rec) {  // One molecule per file (Accept auto-s
   return false;
 }
 
-// Manual save-all (Ρυθμίσεις row, v54.25): downloads one file per session-new
-// custom molecule (drawn/updated this session; untouched boot-loaded file
-// customs are skipped — their files exist). Stored entries excluded.
-// Filenames mirror keys; merge-safe headers keep every file individually
-// loadable (same single-file format as before, now looped).
+// Bundle download (v54.26): one file holding every given custom molecule as
+// its own merge-safe Object.assign statement (same JSON bytes as single
+// files, each under a section comment). One download = one Save dialog, so
+// "ask where to save" browsers reliably keep all molecules — the per-file
+// loop lost all but the last to stacked dialogs. Dropping the bundle into
+// js/ + registering works like single files (boot merge executes each
+// statement in order); statements stay human-splittable.
+function fMolDraftDownloadBundle(recs) {
+  try {
+    var list = Array.isArray(recs) ? recs.filter(function (r) { return r && r.key; }) : [];
+    if (!list.length) return false;
+    var date = "";
+    try { date = new Date().toISOString().slice(0, 10).replace(/-/g, ""); } catch (eD) { date = "nodate"; }
+    var filename = "MULERMOC_custom_" + date + "_" + list.length + "mols_data.js";
+    var header = "/* MuLER custom draft molecules, session bundle (v54 Stage 2).\n" +
+      "   Molecules (" + list.length + "): " + list.map(function (r) { return r.key + (r.grName ? " (" + r.grName + ")" : ""); }).join("; ") + "\n" +
+      "   Status/date: " + new Date().toISOString().slice(0, 10) + "\n" +
+      "   Place next to the data file (js/) and register it:\n" +
+      "   <script src=\"js/" + filename + "\"><\/script> */\n";
+    var body = "";
+    for (var i = 0; i < list.length; i++) {
+      var one = {};
+      one[list[i].key] = list[i];
+      var _nc = list[i].nameCheck || { gr: "unconfirmed", en: "unconfirmed" };
+      body += "\n/* " + list[i].key + (list[i].grName ? " (" + list[i].grName + ")" : "") +
+        " | Names: GR " + _nc.gr + ", EN " + _nc.en + " */\n" +
+        "window.nameExamplesCustom = Object.assign(window.nameExamplesCustom || {}, " +
+        JSON.stringify(one, null, 2) + ");\n";
+    }
+    if (typeof fScenarioSaveBlobDownload === "function") {
+      return !!fScenarioSaveBlobDownload(filename, new Blob([header + body], { type: "text/javascript" }));
+    }
+  } catch (eB) {
+    try { console.warn("[draft] custom bundle download failed", eB); } catch (eL) {}
+  }
+  return false;
+}
+
+// Manual save-all (Ρυθμίσεις row, v54.25–26): downloads one bundle file for
+// all session-new custom molecules (drawn/updated this session; untouched
+// boot-loaded file customs are skipped — their files exist). Stored entries
+// excluded. v54.26: single bundle instead of a per-file loop (stacked Save
+// dialogs kept only the last file on ask-before-download browsers).
 function fMolDraftSaveAllCustom() {
   if (fMolDraftPresenting()) return;
   var keys = [];
@@ -2214,17 +2252,17 @@ function fMolDraftSaveAllCustom() {
     fMolDraftToast(fMolDraftT("customSaveAllNone", "Nothing new to save — draw and Accept a molecule first."));
     return;
   }
-  var ok = 0;
+  var recs = [];
   for (var i = 0; i < keys.length; i++) {
     var rec = null;
     try { rec = window.nameExamplesCustom[keys[i]] || null; } catch (eR) { rec = null; }
-    if (rec && fMolDraftDownloadSingle(rec)) ok++;
+    if (rec) recs.push(rec);
   }
-  if (ok === keys.length) {
-    fMolDraftToast(ok + " " + fMolDraftT("customSaveAllDone", "files downloaded — place them next to the data file."));
+  if (recs.length && fMolDraftDownloadBundle(recs)) {
+    fMolDraftToast(recs.length + " " + fMolDraftT("customSaveAllBundleDone", "molecules saved in one bundle file — place it next to the data file."));
   } else {
-    try { console.warn("[draft] save-all: " + ok + "/" + keys.length + " files downloaded"); } catch (eW) {}
-    fMolDraftToast(fMolDraftT("customSaveAllPartial", "Some files failed — see console.") + " (" + ok + "/" + keys.length + ")");
+    try { console.warn("[draft] save-all bundle failed for " + keys.length + " molecules"); } catch (eW) {}
+    fMolDraftToast(fMolDraftT("customSaveAllFail", "Save failed — see console."));
   }
 }
 
