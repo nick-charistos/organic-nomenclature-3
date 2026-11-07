@@ -2156,8 +2156,27 @@ function fMolDraftFileSlug(rec) {
   return "MULERMOC_" + stem + "_data.js";
 }
 
-function fMolDraftDownloadSingle(rec) {
-  // One molecule per file (Accept auto-save). Merge-safe assignment so any
+// Session-new custom provenance (v54.25, save-all scope): keys Accept wrote
+// this session (forks + in-place slot updates). Boot-loaded file customs live
+// in the same registry but stay unmarked, so save-all skips files that
+// already exist on disk. Marks persist until reload — correct for the whole
+// session; customs are never deleted mid-session.
+function fMolDraftMarkNewCustom(key) {
+  try {
+    if (!key) return;
+    window._molDraftNewKeys = window._molDraftNewKeys || {};
+    window._molDraftNewKeys[String(key)] = true;
+  } catch (eM) {}
+}
+function fMolDraftNewCustomKeys() {
+  try {
+    var reg = (typeof window.nameExamplesCustom !== "undefined" && window.nameExamplesCustom) ? window.nameExamplesCustom : {};
+    var marks = (typeof window._molDraftNewKeys !== "undefined" && window._molDraftNewKeys) ? window._molDraftNewKeys : {};
+    return Object.keys(marks).filter(function (k) { return Object.prototype.hasOwnProperty.call(reg, k); });
+  } catch (eK) { return []; }
+}
+
+function fMolDraftDownloadSingle(rec) {  // One molecule per file (Accept auto-save). Merge-safe assignment so any
   // number of collected files coexist regardless of load order — a plain
   // `var nameExamplesCustom = ...` would let file #2 clobber file #1.
   try {
@@ -2182,24 +2201,30 @@ function fMolDraftDownloadSingle(rec) {
   return false;
 }
 
-// Manual save (Ρυθμίσεις row): downloads the selected session-custom
-// molecule. Stored entries are excluded for now — the any-molecule export
-// button reuses this function later by dropping the registry check.
-function fMolDraftSaveSelected() {
+// Manual save-all (Ρυθμίσεις row, v54.25): downloads one file per session-new
+// custom molecule (drawn/updated this session; untouched boot-loaded file
+// customs are skipped — their files exist). Stored entries excluded.
+// Filenames mirror keys; merge-safe headers keep every file individually
+// loadable (same single-file format as before, now looped).
+function fMolDraftSaveAllCustom() {
   if (fMolDraftPresenting()) return;
-  var sel = null;
-  try { sel = (typeof selectedMol !== "undefined") ? selectedMol : null; } catch (eS) { sel = null; }
-  var rec = null;
-  try {
-    if (sel && typeof window.nameExamplesCustom !== "undefined" && window.nameExamplesCustom &&
-        Object.prototype.hasOwnProperty.call(window.nameExamplesCustom, sel)) rec = window.nameExamplesCustom[sel];
-  } catch (eR) { rec = null; }
-  if (!rec) {
-    fMolDraftToast(fMolDraftT("pickCustomToSave", "Pick a custom molecule."));
+  var keys = [];
+  try { keys = fMolDraftNewCustomKeys(); } catch (eK) { keys = []; }
+  if (!keys.length) {
+    fMolDraftToast(fMolDraftT("customSaveAllNone", "Nothing new to save — draw and Accept a molecule first."));
     return;
   }
-  if (fMolDraftDownloadSingle(rec)) {
-    fMolDraftToast(fMolDraftT("acceptSaved", "File downloaded — place it next to the data file."));
+  var ok = 0;
+  for (var i = 0; i < keys.length; i++) {
+    var rec = null;
+    try { rec = window.nameExamplesCustom[keys[i]] || null; } catch (eR) { rec = null; }
+    if (rec && fMolDraftDownloadSingle(rec)) ok++;
+  }
+  if (ok === keys.length) {
+    fMolDraftToast(ok + " " + fMolDraftT("customSaveAllDone", "files downloaded — place them next to the data file."));
+  } else {
+    try { console.warn("[draft] save-all: " + ok + "/" + keys.length + " files downloaded"); } catch (eW) {}
+    fMolDraftToast(fMolDraftT("customSaveAllPartial", "Some files failed — see console.") + " (" + ok + "/" + keys.length + ")");
   }
 }
 
@@ -2215,15 +2240,12 @@ function fMolDraftSyncSaveBtn() {
     if (cc) cc.textContent = n + " " + fMolDraftT("customMolSession", "this session");
     var btn = document.getElementById("customMolSaveBtn");
     if (btn) {
-      var sel = null;
-      try { sel = (typeof selectedMol !== "undefined") ? selectedMol : null; } catch (eS) {}
-      var isCustom = false;
-      try {
-        isCustom = !!(sel && typeof window.nameExamplesCustom !== "undefined" && window.nameExamplesCustom &&
-          Object.prototype.hasOwnProperty.call(window.nameExamplesCustom, sel));
-      } catch (eC) {}
-      btn.disabled = !isCustom;
-      if (isCustom) btn.classList.remove("btnInactive");
+      // Save-all scope (v54.25): enabled when this session drew anything,
+      // independent of the current selection.
+      var hasNew = false;
+      try { hasNew = fMolDraftNewCustomKeys().length > 0; } catch (eC) { hasNew = false; }
+      btn.disabled = !hasNew;
+      if (hasNew) btn.classList.remove("btnInactive");
       else btn.classList.add("btnInactive");
     }
   } catch (eS) {}
@@ -2724,11 +2746,12 @@ async function fMolDraftAccept() {
       prev.history.push({ t: Date.now(), action: "updated-slot:" + _slot, mode: d.mode, source: d.sourceMol || null, verdict: { gr: _vc.gr, en: _vc.en } });
     } catch (eH) {}
     rec = prev;
+    try { if (typeof fMolDraftMarkNewCustom === "function") fMolDraftMarkNewCustom(key); } catch (eMk) {}
   } else {
     try {
       window.nameExamplesCustom = window.nameExamplesCustom || {};
     } catch (eRg) {}
-    try { window.nameExamplesCustom[key] = rec; } catch (eR2) {}
+    try { window.nameExamplesCustom[key] = rec; if (typeof fMolDraftMarkNewCustom === "function") fMolDraftMarkNewCustom(key); } catch (eR2) {}
     try { nameExamples[key] = rec; } catch (eN) { try { d.accepting = false; } catch (eAb5) {} return; }
   }
   fMolDraftTeardownDisplay();
