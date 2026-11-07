@@ -527,6 +527,24 @@ var EN_SYST_SUBST = {
   "sec-butoxy": "butan-2-yloxy"
 };
 
+// Substituted-stem test for the systematic bis/tris upgrade (P-16.3.4(a)):
+// a multiplied substituent whose stem is a hetero-substituted ALKYL group
+// (halo/nitro decorated branches, v54.23: chloromethyl, 2-chloroethyl, ...)
+// takes bis/tris/tetrakis/... + parens, e.g. dichloromethyl ->
+// bis(chloromethyl). Bare groups stay bare, and so do directly multiplied
+// hetero prefixes (dichloro, dinitro) — the yl$ anchor keeps those intact.
+function fIsSubstitutedStemEN(s) {
+  try {
+    var _t = String(s == null ? "" : s).toLowerCase();
+    return /yl$/.test(_t) && /(chloro|bromo|fluoro|iodo|nitro)/.test(_t);
+  }
+  catch (e) { return false; }
+}
+function fBisPrefixEN(p) {
+  var map = { di: "bis", tri: "tris", tetra: "tetrakis", penta: "pentakis", hexa: "hexakis", hepta: "heptakis", octa: "octakis" };
+  return Object.prototype.hasOwnProperty.call(map, p) ? map[p] : p;
+}
+
 // Systematic slot transform: segment-wise substitution (hyphen-separated
 // locants pass through; S(0)/S(2) locant slots unaffected). Greek input
 // expected; returns the input unchanged when nothing maps.
@@ -535,18 +553,41 @@ function fSystematicSubstSlot(slot, text) {
     if (slot !== 1 && slot !== 3 && slot !== 10) return text;
     var t = String(text == null ? "" : text);
     if (!t) return t;
-    var parts = t.split("-");
+    // Paren-aware split: hyphens inside parentheses (decorated multiplied
+    // forms, e.g. di(2-chloroethyl)) stay inside one segment. Inputs without
+    // parens split exactly as before (no legacy impact).
+    var parts = [];
+    try {
+      var _depth = 0, _cur = "";
+      for (var _ci = 0; _ci < t.length; _ci++) {
+        var _ch = t.charAt(_ci);
+        if (_ch === "(") _depth++;
+        else if (_ch === ")") _depth = Math.max(0, _depth - 1);
+        if (_ch === "-" && _depth === 0) { parts.push(_cur); _cur = ""; }
+        else _cur += _ch;
+      }
+      parts.push(_cur);
+    } catch (eSp) { parts = t.split("-"); }
     var out = [];
     for (var k = 0; k < parts.length; k++) {
       var w = parts[k];
       if (!w || /^\d[\d,]*$/.test(w)) { out.push(w); continue; }
+      // Parenthesized multiplied form from the Greek parens rule, e.g.
+      // "di(2-chloroethyl)" (transliterated δι(2-χλωροαιθυλο)).
+      var mp = /^(di|tri|tetra|penta|hexa|hepta|octa)\((.+)\)$/.exec(w);
+      if (mp && fIsSubstitutedStemEN(mp[2])) { out.push(fBisPrefixEN(mp[1]) + "(" + mp[2] + ")"); continue; }
       var m2 = /^(di|tri|tetra)([a-z].*)$/.exec(w);
       if (m2 && Object.prototype.hasOwnProperty.call(EN_SYST_SUBST, m2[2])) {
         var s2 = EN_SYST_SUBST[m2[2]];
         out.push(/\d/.test(s2) ? m2[1] + "(" + s2 + ")" : m2[1] + s2);
       } else if (Object.prototype.hasOwnProperty.call(EN_SYST_SUBST, w)) {
         out.push(EN_SYST_SUBST[w]);
-      } else out.push(w);
+      } else {
+        // Substituted-stem upgrade: "dichloromethyl" -> "bis(chloromethyl)".
+        var m3 = /^(di|tri|tetra|penta|hexa|hepta|octa)([a-z].*)$/.exec(w);
+        if (m3 && fIsSubstitutedStemEN(m3[2])) out.push(fBisPrefixEN(m3[1]) + "(" + m3[2] + ")");
+        else out.push(w);
+      }
     }
     return out.join("-");
   } catch (eS) { return text; }
