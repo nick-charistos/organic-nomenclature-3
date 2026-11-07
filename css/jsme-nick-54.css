@@ -2517,19 +2517,46 @@ header {
 
 .creditsContainer {
   display: flex;
-  gap: 10px 10px;
+  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 5px;
   justify-content: center;
-  padding: 5px;
+  align-items: center;
+  /* text-align: center; */
+  padding: 15px;
+}
+
+.creditsLib {
+	font-size: 0.813rem;
+	/* background: var(--lightBlue);
+	color: var(--veryLightEarth); */
+	  flex-direction: column;
+   align-items: center;
+}
+
+.creditsTitle {
+  font-family: "Roboto Condensed", sans-serif;
+  font-weight: 600;
+  font-size: 0.875rem;
+  /* color: var(--darkBlue); */
+  /* margin-bottom: 5px; */
+}
+
+.creditsAbout {
+  font-family: "Roboto Condensed", sans-serif;
+  font-weight: 600;
+  font-size: 1rem;
+
 }
 
 .creditsContainer a {
-  color: var(--veryLightBlue);
-  text-decoration: none;
-  font-weight: bold;
-  transition: all 0.2s;
-  display: inline-block;
-  border-bottom: 1px solid #fff;
-  padding-bottom: 1px;
+	color: inherit;
+	text-decoration: none;
+	/* font-weight: bold; */
+	transition: all 0.2s;
+	display: inline-block;
+	border-bottom: 1px solid transparent;
+	padding-bottom: 1px;
 }
 
 .creditsContainer a:hover {
@@ -2538,15 +2565,20 @@ header {
   transition: all 0.2s;
 }
 
+.footer {
+  background-color: var(--veryLightBlue);
+}
+
 #creditsUs {
   /* position: fixed;
     bottom: 0; */
   color: var(--veryLightBlue);
   font-size: 0.85rem;
-  padding: 10px;
+  /* padding: 10px; */
   background-color: var(--darkBlue);
   width: 100%;
-  height: 80px;
+  /* min-height: 80px; */
+  box-sizing: border-box;
 }
 
 /* Viewer tool buttons (2D zoom cluster + 2D/3D save buttons): one shared look.

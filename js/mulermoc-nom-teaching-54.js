@@ -71,7 +71,7 @@ function fBuildAlkylRuleTable() {
     ["tert-βουτυλο", "–C(CH<sub>3</sub>)<sub>3</sub>", "tert-Βουτύλιο", "tert-βουτυλο-", "2-methylpropan-2-yl (tert-butyl)"],
   ];
   var _enAlk = false;
-  try { _enAlk = typeof fMulerLang === "function" && fMulerLang() === "en"; } catch (e) {}
+  try { _enAlk = typeof fMulerLang === "function" && fMulerLang() === "en"; } catch (e) { }
   // EN: systematic names throughout (display + prefix), no common-name note.
   var _cap = function (s) { s = String(s); return s.charAt(0).toUpperCase() + s.slice(1); };
   return "<div class='VFlex namingRuleTable ruleAlkyl'>" +
@@ -106,7 +106,7 @@ function fBuildAlkoxyRuleTable() {
   const groupsEN = ["Methoxy", "Ethoxy", "Propoxy", "Isopropoxy", "Butoxy"];
   const prefixEN = ["methoxy-", "ethoxy-", "propoxy-", "isopropoxy-", "butoxy-"];
   var _enAlx = false;
-  try { _enAlx = typeof fMulerLang === "function" && fMulerLang() === "en"; } catch (e) {}
+  try { _enAlx = typeof fMulerLang === "function" && fMulerLang() === "en"; } catch (e) { }
   return "<div class='VFlex namingRuleTable ruleAlkyl ruleAlkoxy'>" +
     "<div class='HFlex ruleRow'><div class='ruleCase ruleTableTitle'>" + (_enAlx ? "Structure / linkage" : "Δομή / σύνδεση") + "</div>" +
     "<div class='ruleName ruleTableTitle'>" + (_enAlx ? "Alkoxy group / prefix" : "Αλκοξυομάδα / πρόθεμα") + "</div></div>" +
@@ -348,7 +348,7 @@ function fNarrateRule() {
   }
   const rawGR = namingRules.rulesTheory_1_8[selectedRule];
   let _lang = "gr";
-  try { _lang = (typeof fMulerLang === "function") ? fMulerLang() : "gr"; } catch (e) {}
+  try { _lang = (typeof fMulerLang === "function") ? fMulerLang() : "gr"; } catch (e) { }
   const rawText = (_lang === "en" && typeof fTranslateRuleHTML === "function") ? fTranslateRuleHTML(rawGR) : rawGR;
   let plainText = rawText
     .replace(/<[^>]*>/g, "")
@@ -369,7 +369,7 @@ function fNarrateRule() {
         const _ev = fPickEnglishVoice(voices);
         if (_ev) utterance.voice = _ev;
       }
-    } catch (e) {}
+    } catch (e) { }
   } else {
     utterance.lang = "el-GR";
     const greekVoices = voices.filter((v) => v.lang.startsWith("el"));
@@ -547,8 +547,8 @@ function fInitNomeclatureMenu() {
           : ((moleculeGroupingMode === "chemclass"
             ? chemicalClassLabels[key]
             : homologousSeriesLabels[key]) ||
-          classification?.taxonomy ||
-          "Μη ταξινομημένα");
+            classification?.taxonomy ||
+            "Μη ταξινομημένα");
     });
   }
 
@@ -591,7 +591,7 @@ function fInitNomeclatureMenu() {
       ? [...Object.keys(homologousSeriesLabels), "unclassified"]
       : moleculeGroupingMode === "chemclass"
         ? Object.keys(chemicalClassLabels)
-      : Object.keys(groups);
+        : Object.keys(groups);
 
   groupOrder.forEach((groupKey) => {
     if (!groups[groupKey] || !groups[groupKey].length) return;
@@ -723,23 +723,57 @@ function fCreateDropMenu(myItems) {
 // ── fShowCreditLibs ───────────────────────────────────────────────────────
 
 function fShowCreditLibs() {
+  var lang = "gr";
+  try { if (typeof fMulerLang === "function") lang = fMulerLang(); } catch (e) { }
+  var teamNames, ownerName, programName, deptName, uniTag, aboutText, chemInfoLibs, teamLabel, supervisorLabel;
+  try {
+    if (typeof fMulerT === "function" && typeof MULER_STRINGS !== "undefined" && MULER_STRINGS.creditTeam) {
+      teamNames = fMulerT("creditTeam");
+      ownerName = fMulerT("creditOwner");
+      programName = fMulerT("creditProgram");
+      deptName = fMulerT("creditDept");
+      uniTag = fMulerT("creditUni");
+      aboutText = fMulerT("creditAbout");
+      chemInfoLibs = fMulerT("creditChemInfoLibs");
+      teamLabel = fMulerT("creditTeamLabel");
+      supervisorLabel = fMulerT("creditSupervisorLabel");
+    } else { throw 0; }
+  } catch (e) {
+    var en = (lang === "en");
+    teamNames = en ? "Yannis Skendros, Anastasia Theofanidou, Vasilis Koutalas," : "Γιάννης Σκένδρος, Αναστασία Θεοφανίδου, Βασίλης Κουταλάς,";
+    ownerName = en ? "Nickolas Charistos" : "Νικόλας Χαριστός";
+    programName = en ? "Molecular Design and Modelling - Chemistry Education" : "Μοριακός Σχεδιασμός και Μοντελοποίηση - Χημική Εκπαίδευση";
+    deptName = en ? "Department of Chemistry" : "Τμήμα Χημείας";
+    uniTag = en ? "Aristotle University of Thessaloniki | 2025-26" : "ΑΠΘ | 2025-26";
+    aboutText = en ? "Learning organic nomenclature through molecular structure, naming, and linked representations." : "Μάθηση ονοματολογίας οργανικών ενώσεων μέσα από τη δομή, την ονομασία και διασυνδεόμενες αναπαραστάσεις των μορίων";
+    chemInfoLibs = en ? "Chemoinformatics Libraries" : "Βιβλιοθήκες Χημειοπληροφορικής";
+    teamLabel = en ? "Design and Development Team" : "Ομάδα Σχεδιασμού και Ανάπτυξης";
+    supervisorLabel = en ? "Supervisor" : "Επιβλέπων";
+  }
   let myCredits = `
-  <div class='creditsContainer'>
-    <div class=''>2D visualizations made with <strong>JSME</strong>: B. Bienfait and P. Ertl, J. Cheminform., 2013, 5, 24.</div>
-    <div> | </div>
-    <div class=''>3D visualizations made with <strong>JSmol</strong>: R. M. Hanson, J. Prilusky, Z. Renjian, T. Nakane and J. L. Sussman, Isr. J. Chem., 2013, 53, 207–216.</div>
+  <div class='creditsContainer creditsAbout'>
+    <div class=''>${aboutText}</div>
   </div>
-  `;
-
-  myCredits = `
+  <div class='creditsContainer creditsLib'>
+  <div class='creditsTitle' >${chemInfoLibs}</div>
+    <div class=''>  <span><a href='https://jsme-editor.org/' target='_blank' rel='noopener'><strong>JSME</strong> A free molecule editor in JavaScript</a></span>
+    </div>
+    
+    <div class=''> <span><a href='https://jmol.sourceforge.net/' target='_blank' rel='noopener'><strong>JSmol</strong> an open-source HTML5 viewer for chemical structures in 3D</a> </span>
+    </div>
+  </div>
   <div class='creditsContainer'>
-    <div class=''>Γιάννης Σκένδρος, Αναστασία Θεοφανίδου, Βασίλης Κουταλάς, <a href='https://nicharis.webpages.auth.gr/' target='_blank'> Νικόλας Χαριστός </a></div>
-  </div><div class='creditsContainer'>
-    <div class=''>ΠΜΣ <a href='https://molmod-edu.chem.auth.gr/' target='_blank'>Μοριακός Σχεδιασμός και Μοντελοποίηση - Χημική Εκπαίδευση</a></div>
-    <div>|</div>
-    <div class=''>Τμήμα Χημείας</div>
-    <div>|</div>
-    <div class=''>ΑΠΘ 2025-26</div>
+   <div class='creditsTitle' >${teamLabel}</div>
+    <div class=''>${teamNames} <a href='https://nicharis.webpages.auth.gr/' target='_blank' rel='noopener'> ${ownerName} </a></div>
+    <div class='creditsTitle' >${supervisorLabel}</div>
+    <div class=''><a href='https://nicharis.webpages.auth.gr/' target='_blank' rel='noopener'> ${ownerName} </a></div>
+  </div>
+  <div class='creditsContainer'>
+    <div class='creditsTitle'>${(lang === "en") ? "MSc" : "ΠΜΣ"} <a href='https://molmod-edu.chem.auth.gr/' target='_blank' rel='noopener'>${programName}</a></div>
+    
+    <div class=''>${deptName} &bull; ${uniTag}</div>
+   
+    
   </div>
   `;
   $("#creditsUs").html(myCredits);
@@ -845,11 +879,11 @@ $(document).ready(function () {
     window.nameBoxFlag = !window.nameBoxFlag;
     if (window.nameBoxFlag) {
       $(".nameCompBox ").removeClass("unboxed").addClass("boxed");
-       $(this).addClass("active");
+      $(this).addClass("active");
       $(this).html(svgNameBox).attr("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("showBoxes") : "Πλαίσια συνθετικών"));
     } else {
       $(".nameCompBox ").removeClass("boxed").addClass("unboxed");
-       $(this).removeClass("active");
+      $(this).removeClass("active");
       $(this)
         .html(svgNameBoxOff)
         .attr("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("hideBoxes") : "Χωρίς πλαίσια συνθετικών"));
@@ -861,10 +895,10 @@ $(document).ready(function () {
     window.nameCrossFlag = !window.nameCrossFlag;
     if (window.nameCrossFlag) {
       $(".nameCompPlus ").removeClass("hide");
-       $(this).addClass("active");
+      $(this).addClass("active");
       $(this).html(svgNameCross).attr("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("splitComps") : "Διαχωρισμένα συνθετικά"));
     } else {
-       $(this).removeClass("active");
+      $(this).removeClass("active");
       $(".nameCompPlus ").addClass("hide");
       $(this).html(svgNameCrossOff).attr("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("joinedComps") : "Ενωμένα συνθετικά"));
     }
@@ -929,7 +963,7 @@ $(document).ready(function () {
       const _vl = fVisStyleLabels();
       menuItmes = [_vl.ballnstick, _vl.spacefill, _vl.sticks];
     }
-  } catch (e) {}
+  } catch (e) { }
   fCreateDropMenu(menuItmes);
 
   $("html").on("click", function () {
@@ -988,7 +1022,7 @@ $(document).ready(function () {
     // Draft session (v54 Stage 2): radios are hidden while editing; guard in
     // case the bar is reached anyway — finish the draft first.
     if (typeof window !== "undefined" && window.MulerDraft) {
-      try { if (typeof fScenarioToast === "function") fScenarioToast(fMolDraftT("draftLocked", "Finish the draft first (Submit/Cancel).")); } catch (eD) {}
+      try { if (typeof fScenarioToast === "function") fScenarioToast(fMolDraftT("draftLocked", "Finish the draft first (Submit/Cancel).")); } catch (eD) { }
       return;
     }
     let currMode2DNo = $(this)
@@ -1038,7 +1072,7 @@ $(document).ready(function () {
     }
     // Draft session (v54 Stage 2): see the mode2DOption guard above.
     if (typeof window !== "undefined" && window.MulerDraft) {
-      try { if (typeof fScenarioToast === "function") fScenarioToast(fMolDraftT("draftLocked", "Finish the draft first (Submit/Cancel).")); } catch (eD) {}
+      try { if (typeof fScenarioToast === "function") fScenarioToast(fMolDraftT("draftLocked", "Finish the draft first (Submit/Cancel).")); } catch (eD) { }
       return;
     }
     // Generic .checkBoxContainer handler fires after this and toggles the class,
@@ -1119,16 +1153,16 @@ $(document).ready(function () {
   // owns exit while a draft is live.
   $("#originalJSME").on("click", ".checkBoxContainer", function () {
     var draftLive = false;
-    try { draftLive = !!(typeof window !== "undefined" && window.MulerDraft); } catch (eD) {}
+    try { draftLive = !!(typeof window !== "undefined" && window.MulerDraft); } catch (eD) { }
     if (draftLive) {
       // Generic toggler already flipped the class: flip it back + toast.
       try {
         $("#originalJSMECheck").removeClass("selectedCheck").addClass("unselectedCheck");
-      } catch (eRv) {}
-      try { if (typeof fScenarioToast === "function") fScenarioToast(fMolDraftT("draftLocked", "Finish the draft first (Submit/Cancel).")); } catch (eT) {}
+      } catch (eRv) { }
+      try { if (typeof fScenarioToast === "function") fScenarioToast(fMolDraftT("draftLocked", "Finish the draft first (Submit/Cancel).")); } catch (eT) { }
       return;
     }
-    try { if (typeof fMolDraftSyncEntryButtons === "function") fMolDraftSyncEntryButtons(); } catch (eSy) {}
+    try { if (typeof fMolDraftSyncEntryButtons === "function") fMolDraftSyncEntryButtons(); } catch (eSy) { }
   });
 
   // v54: auto-linearize master preference (default on) — tidies school drawings
@@ -1136,7 +1170,7 @@ $(document).ready(function () {
   // (it only affects the *next* Submit; nothing strands mid-draft), the bar
   // button visibility follows on the next sync.
   $("#autoLinearize").on("click", ".checkBoxContainer", function () {
-    try { if (typeof fMolDraftSyncBar === "function") fMolDraftSyncBar(); } catch (eSy2) {}
+    try { if (typeof fMolDraftSyncBar === "function") fMolDraftSyncBar(); } catch (eSy2) { }
   });
 
   $("#viewFinalJSMESetting").on("click", ".checkBoxContainer", function () {
@@ -1181,7 +1215,7 @@ $(document).ready(function () {
     // Draft session (v54 Stage 2): naming is cleared to a placeholder; box
     // clicks must not re-highlight or explain.
     if (typeof window !== "undefined" && window.MulerDraft) {
-      try { if (typeof fScenarioToast === "function") fScenarioToast(fMolDraftT("draftLocked", "Finish the draft first (Submit/Cancel).")); } catch (eD) {}
+      try { if (typeof fScenarioToast === "function") fScenarioToast(fMolDraftT("draftLocked", "Finish the draft first (Submit/Cancel).")); } catch (eD) { }
       return;
     }
     // Hidden (dash) boxes are inert: no highlight, no explanation change.
