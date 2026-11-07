@@ -1,16 +1,13 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `285c910` (2026-11-07) — v54
-> draft systematic EN row + either-variant auto-check (`?v=54.24`): Submit
-> computes `engineEN_sys`; preview shows a Systematic row when it differs
-> (Traditional first, shared verdict); PubChem/OC auto-checks + row glyphs
-> match either variant (`pubchem-sys`/`openclatura-sys` through the save
-> header). Traditional default unchanged. Tree clean (session temp file
-> ignored by design: `js/MULERMOC_methyl_4_ethoxybutanoate_data.js`).
-> Full record: `docs/CHANGELOG.md` v54.24 + `docs/REVIEW-EN-53.md` §Q.
-> Browser verification pending on the other machine (draft Submit on the
-> reported molecule → both rows → green auto-check with sys source → Accept
-> → reselect → toggle in EN mode; full 141 EN sweep; decline toasts).
+> **Resume pointer (cross-machine):** HEAD `2d1f48b` (2026-11-07) — v54
+> draft systematic EN row + either-variant auto-check (`?v=54.24`) + recorded
+> browser verification: both preview rows show, auto-check green, post-Accept
+> toggle offers the bis form (items 1–3 confirmed). Remaining: full 141 EN
+> sweep (item 4, not yet run) + P3 blessing of new Greek word forms.
+> Tree clean (session temp file ignored by
+> design: `js/MULERMOC_methyl_4_ethoxybutanoate_data.js`). Full record:
+> `docs/CHANGELOG.md` v54.24 + `docs/REVIEW-EN-53.md` §Q.
 > Routine on the other machine: pull first, then resume from
 > `git log --oneline -5` + `git status`. OpenCode sessions stay machine-local.
 >
