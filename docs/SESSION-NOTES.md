@@ -1,15 +1,18 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `2d1f48b` (2026-11-07) — v54
-> draft systematic EN row + either-variant auto-check (`?v=54.24`) + recorded
-> browser verification: both preview rows show, auto-check green, post-Accept
-> toggle offers the bis form (items 1–3 confirmed). Remaining: full 141 EN
-> sweep (item 4, not yet run) + P3 blessing of new Greek word forms.
-> Tree clean (session temp file ignored by
-> design: `js/MULERMOC_methyl_4_ethoxybutanoate_data.js`). Full record:
-> `docs/CHANGELOG.md` v54.24 + `docs/REVIEW-EN-53.md` §Q.
+> **Resume pointer (cross-machine):** HEAD `33012a5` (2026-11-07) — v54
+> save-all custom molecules (`?v=54.25`): `#customMolSaveBtn` downloads one
+> file per session-new custom in a single press (Accept-marked provenance;
+> boot-untouched customs skipped, stored excluded); button enables whenever
+> this session drew anything. Remaining from before: full 141 EN sweep +
+> P3 blessing of new Greek word forms. Tree clean (session temp file ignored
+> by design: `js/MULERMOC_methyl_4_ethoxybutanoate_data.js`). Full record:
+> `docs/CHANGELOG.md` v54.25.
 > Routine on the other machine: pull first, then resume from
 > `git log --oneline -5` + `git status`. OpenCode sessions stay machine-local.
+>
+> Previous pointer (2026-11-07, now superseded): HEAD `2d1f48b` — v54.24
+> verification record (both rows, green auto-check, toggle OK).
 >
 > Previous pointer (2026-11-07, now superseded): HEAD `0886181` — v54
 > decorated-branch naming + fail-closed locants (`?v=54.23`).
