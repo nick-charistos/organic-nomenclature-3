@@ -301,15 +301,16 @@ var MULER_STRINGS = {
   untitledDoc: { gr: "χωρίς τίτλο", en: "untitled" },
   stepCopy: { gr: "(αντίγραφο)", en: "(copy)" },
   imgUnavailable: { gr: "Εικόνα μη διαθέσιμη", en: "Image unavailable" },
-  creditTeam: { gr: "Γιάννης Σκένδρος, Αναστασία Θεοφανίδου, Βασίλης Κουταλάς,", en: "Yannis Skendros, Anastasia Theofanidou, Vasilis Koutalas," },
+  creditTeam: { gr: "Γιάννης Σκένδρος &bullet; Αναστασία Θεοφανίδου &bullet; Βασίλης Κουταλάς &bullet;", en: "Yannis Skendros &bullet; Anastasia Theofanidou &bullet; Vasilis Koutalas &bullet;" },
   creditOwner: { gr: "Νικόλας Χαριστός", en: "Nickolas Charistos" },
   creditProgram: { gr: "Μοριακός Σχεδιασμός και Μοντελοποίηση - Χημική Εκπαίδευση", en: "Molecular Design and Modelling - Chemistry Education" },
   creditDept: { gr: "Τμήμα Χημείας", en: "Department of Chemistry" },
-  creditUni: { gr: "ΑΠΘ 2025-26", en: "AUTh 2025-26" },
+  creditUni: { gr: "ΑΠΘ 2025-26", en: "Aristotle University of Thessaloniki 2025-26" },
   creditAbout: { gr: "Μάθηση ονοματολογίας οργανικών ενώσεων μέσα από τη δομή, την ονομασία και διασυνδεόμενες αναπαραστάσεις των μορίων", en: "Learning organic nomenclature through molecular structure, naming, and linked representations" },
   creditChemInfoLibs: { gr: "Βιβλιοθήκες Χημειοπληροφορικής", en: "Chemoinformatics Libraries" },
   creditTeamLabel: { gr: "Ομάδα Σχεδιασμού και Ανάπτυξης", en: "Design and Development Team" },
-  creditSupervisorLabel: { gr: "Επιβλέπων", en: "Supervisor" }
+  creditSupervisorLabel: { gr: "Επιβλέπων", en: "Supervisor" },
+  devNotice: { gr: "Υπό ανάπτυξη — πιθανά λάθη στην ονοματολογία.", en: "Under development — naming errors possible." }
 };
 // Dynamic labels keep a Greek prefix + variable tail; translate the prefix AND the tail.
 var MULER_PREFIX_GR2EN = [
@@ -464,6 +465,8 @@ function fMulerPaintStaticChrome() {
   setTip("#chainNextBtn", fMulerT("nextChain"));
   // Footer credits are language-dependent (team/program/department lines).
   try { if (typeof fShowCreditLibs === "function") fShowCreditLibs(); } catch (e) {}
+  // WIP notice text follows the effective language (never re-shows dismissed).
+  try { if (typeof fInitDevNotice === "function") fInitDevNotice(); } catch (eN) {}
 }
 
 // Step-language refresh: re-renders all language-dependent chrome in the

@@ -1,4 +1,6 @@
-# MuLERMoCs — Organic Nomenclature Learning Platform
+# Namelecule by Molwave — Organic Nomenclature Learning Platform
+
+> **Name (2026-11-07):** product **Namelecule** (`name` + `molecule`) under the **Molwave** platform vision; **MuLERMoCs** (*Multiple-Level External Representations for Molecular Concepts*) is retained as the research-framework codename for methods continuity.
 
 A Greek-first interactive learning platform for organic nomenclature, built around molecular structure, naming logic, and multiple representations. It is a no-build static web app (JSME, JSmol, jQuery, vanilla JavaScript; live v54 adds molecule edit/create drafts over the v53 full English UI + molecule-naming layer and the Snap-free v52 base, Greek default preserved) intended to be embedded in Drupal.
 

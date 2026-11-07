@@ -2549,6 +2549,43 @@ header {
 
 }
 
+/* ── Dev/WIP notice banner (top of #pageContainer, dismissible) ────────── */
+#devNotice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  background: #f2c230;
+  color: #3a2c00;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 4px 10px;
+}
+
+#devNoticeText {
+  flex: 1 1 auto;
+}
+
+#devNoticeClose {
+  flex: 0 0 auto;
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  color: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0 5px;
+  cursor: pointer;
+}
+
+#devNoticeClose:hover {
+  border-color: #3a2c00;
+}
+
 .creditsContainer a {
 	color: inherit;
 	text-decoration: none;
@@ -2853,6 +2890,11 @@ header {
   #creditsUs {
     font-size: 0.7rem;
     padding: 4px 10px;
+  }
+
+  #devNotice {
+    font-size: 0.7rem;
+    padding: 3px 8px;
   }
 
   #creditsLib {

@@ -779,6 +779,46 @@ function fShowCreditLibs() {
   $("#creditsUs").html(myCredits);
 }
 
+// ── fInitDevNotice ────────────────────────────────────────────────────────
+// Work-in-progress banner at the top of #pageContainer. Dismissal is
+// session-only (in-memory flag): it reappears on next visit. Repaint-safe:
+// never re-shows once dismissed, even on step-language chrome refreshes.
+function fInitDevNotice() {
+  try {
+    var dismissed = false;
+    try { dismissed = !!window.__mulerDevNoticeDismissed; } catch (eD) { /* flag unavailable */ }
+    var bar = document.getElementById("devNotice");
+    if (!bar) return;
+    if (dismissed) { bar.style.display = "none"; return; }
+    var txt = null;
+    try {
+      if (typeof fMulerT === "function" && typeof MULER_STRINGS !== "undefined" && MULER_STRINGS.devNotice) txt = fMulerT("devNotice");
+    } catch (eT) { txt = null; }
+    if (txt) {
+      var span = document.getElementById("devNoticeText");
+      if (span) span.textContent = txt;
+      bar.setAttribute("lang", (function () {
+        try { return (typeof fMulerLang === "function" && fMulerLang() === "en") ? "en" : "el"; }
+        catch (eL) { return "el"; }
+      })());
+      var closeBtn = document.getElementById("devNoticeClose");
+      if (closeBtn) {
+        closeBtn.setAttribute("aria-label", txt);
+        try { closeBtn.setAttribute("data-tooltip", txt); } catch (eTT) { /* tooltip attr unavailable */ }
+      }
+    }
+  } catch (e) { /* notice paint unavailable */ }
+}
+
+function fDismissDevNotice() {
+  try { window.__mulerDevNoticeDismissed = true; } catch (eF) { /* flag unavailable */ }
+  try {
+    var bar = document.getElementById("devNotice");
+    if (bar) bar.style.display = "none";
+  } catch (eH) { /* hide unavailable */ }
+  try { if (typeof fResizeViewers === "function") fResizeViewers(); } catch (eR) { /* refit unavailable */ }
+}
+
 // ── getMolData ────────────────────────────────────────────────────────────
 
 function getMolData() {
@@ -806,8 +846,10 @@ $(document).ready(function () {
   fInitTheory();
   fShowNameAnalysis();
   fShowCreditLibs();
+  fInitDevNotice();
 
   $(document).on("click", "#narrateBtn", fNarrateRule);
+  $(document).on("click", "#devNoticeClose", fDismissDevNotice);
 
   $(document).on("click", "#ruleTheory .ruleTheoryToggleBtn", function () {
     const $title = $(this).closest(".ruleTheoryTitle");

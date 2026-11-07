@@ -1,6 +1,8 @@
-# MuLERMoCs — Project Plan
-## Multiple-Level External Representations for Molecular Concepts
+# Namelecule by Molwave — Project Plan
+## MuLERMoCs: Multiple-Level External Representations for Molecular Concepts
 ### Organic Chemistry Interactive Learning & Research Platform
+
+> **Name (2026-11-07):** product **Namelecule** (`name` + `molecule`) under the **Molwave** platform vision; **MuLERMoCs** is retained as the research-framework codename.
 
 **Principal Investigator:** N. Charistos, Department of Chemistry, ΑΠΘ
 **Status:** Active development | v52 live (136 molecules — 136 `nameExamples` keys): unified rich note editor (inline WYSIWYG, modal WYSIWYG + HTML source, lazy legacy-text upgrade, staged Apply/Cancel and dirty-close confirm); safe rich HTML notes (DOMPurify), rule-table components, a compact icon toolbar, and a Snap-free native `MuSVG` 2D overlay; the v51 rich notes, v50 presentation rails/persistent naming shell, and the v49 MSc-student `thesis-work` import are retained; the 2026-10-26 thesis-work port adds 28 molecules (126 total), ketone/aldehyde/ether graph guards, methanal handling, sequential ketone numbering, and ether naming/highlight fixes; the 2026-10-28 acid extension adds 10 carboxylic acids (136 total) with acid graph guards and sequential acid numbering. Default scenario: `Αλκάνια-Αιθάνιο-τεστ`. `index.html` → v52, v51/v50/v49/v48/v47/v46/v45/v44 runnable at root, v43 frozen at tag `v43`, v42 frozen in repo2. Automated Chrome/Firefox matrices pass; `MuSVG.parse()` OOM/XML crash fixed. The two pre-existing skeletal JSmol failures and some manual coverage remain open.
