@@ -1,23 +1,21 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `0886181` (2026-11-07) — v54
-> decorated-branch naming + fail-closed locants (`?v=54.23`): `fMainChainLocant`/
-> `fDeclineNaming` guard all 7 naming-output sites (off-chain hetero declines,
-> never locant 0); halo/nitro single-FG substituted-alkyl branches
-> (`χλωρομεθυλο`/`2-χλωροαιθυλο`/nitro analogs, parens iff multiplied AND
-> locant-bearing, merged Greek-alphabetical, legacy byte-identical); EN
-> systematic `bis/tris/tetrakis` upgrade (paren-aware split, `yl$`-anchored so
-> direct `dichloro`/`dinitro` stay bare); reported molecule →
-> `4,4-διχλωρομεθυλοεπτάνιο` / `4,4-bis(chloromethyl)heptane`.
-> No-op on 141 proven (slots141 zero-`0` + 70/70 stored-MOL scan clean).
-> New Greek forms await P3 blessing. Tree clean (session temp file ignored by
-> design: `js/MULERMOC_methyl_4_ethoxybutanoate_data.js`). Full record:
-> `docs/CHANGELOG.md` v54.23 + `docs/REVIEW-EN-53.md` §Q.
-> Browser verification pending on the other machine (draft end-to-end on the
-> reported molecule: Submit → oracle auto-check green → Accept → reselect →
-> toggle; full 141 EN sweep byte-identical; decline toasts without crashes).
+> **Resume pointer (cross-machine):** HEAD `285c910` (2026-11-07) — v54
+> draft systematic EN row + either-variant auto-check (`?v=54.24`): Submit
+> computes `engineEN_sys`; preview shows a Systematic row when it differs
+> (Traditional first, shared verdict); PubChem/OC auto-checks + row glyphs
+> match either variant (`pubchem-sys`/`openclatura-sys` through the save
+> header). Traditional default unchanged. Tree clean (session temp file
+> ignored by design: `js/MULERMOC_methyl_4_ethoxybutanoate_data.js`).
+> Full record: `docs/CHANGELOG.md` v54.24 + `docs/REVIEW-EN-53.md` §Q.
+> Browser verification pending on the other machine (draft Submit on the
+> reported molecule → both rows → green auto-check with sys source → Accept
+> → reselect → toggle in EN mode; full 141 EN sweep; decline toasts).
 > Routine on the other machine: pull first, then resume from
 > `git log --oneline -5` + `git status`. OpenCode sessions stay machine-local.
+>
+> Previous pointer (2026-11-07, now superseded): HEAD `0886181` — v54
+> decorated-branch naming + fail-closed locants (`?v=54.23`).
 >
 > Previous pointer (2026-11-07, now superseded): HEAD `f781ed7` — v54 Blue Book
 > EN audit + Traditional/Systematic toggle (`?v=54.22`).
