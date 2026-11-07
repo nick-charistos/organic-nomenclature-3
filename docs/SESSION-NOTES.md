@@ -1,19 +1,18 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `5858e4f` (2026-11-07) — v54
-> bilingual footer credits (`?v=54.27`): titled about/libs/team/supervisor/
-> program sections via 9 lang keys + fallback; dead code removed;
-> `rel=noopener`; footer CSS; review fix `&bullet;`→`&bull;` (also folded in
-> the 5 remaining credit lang keys authored alongside). Remaining from
-> before: full 141 EN sweep + P3 blessing of new Greek word forms.
-> Tree clean (session temp file ignored by
-> design: `js/MULERMOC_methyl_4_ethoxybutanoate_data.js`). Full record:
-> `docs/CHANGELOG.md` v54.27.
+> **Resume pointer (cross-machine):** HEAD `289a230` (2026-11-07) — v54
+> footer excluded from viewer budget (`?v=54.28`): the content-driven
+> footer cost each viewer half its growth (265→165px at 800px viewport);
+> page now scrolls for the excess instead. Remaining from before: full
+> 141 EN sweep + P3 blessing of new Greek word forms. Tree clean (session
+> temp file ignored by design:
+> `js/MULERMOC_methyl_4_ethoxybutanoate_data.js`). Full record:
+> `docs/CHANGELOG.md` v54.28.
 > Routine on the other machine: pull first, then resume from
 > `git log --oneline -5` + `git status`. OpenCode sessions stay machine-local.
 >
-> Previous pointer (2026-11-07, now superseded): HEAD `b2b1114` — v54
-> save-all bundle file (`?v=54.26`).
+> Previous pointer (2026-11-07, now superseded): HEAD `5858e4f` — v54
+> bilingual footer credits (`?v=54.27`).
 >
 > Previous pointer (2026-11-07, now superseded): HEAD `0886181` — v54
 > decorated-branch naming + fail-closed locants (`?v=54.23`).
