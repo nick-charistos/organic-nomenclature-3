@@ -1094,6 +1094,24 @@ $(document).ready(function () {
     fShowNameAnalysis();
   });
 
+  $(document).on("click", "#radioSubstNaming .substNamingRadio", function () {
+    if ($(this).hasClass("disabledRadio")) {
+      return;
+    }
+    substNamingMode = $(this).attr("data-subst-mode") === "sys" ? "sys" : "school";
+    fUpdateSubstNamingButton();
+
+    if (!selectedMol || !nameExamples[selectedMol]) {
+      return;
+    }
+
+    nameAnalysisMode = "none";
+    fClearHighlights();
+    fUpdateSVG();
+    currNumberEl = 0;
+    fShowNameAnalysis();
+  });
+
   // v54 Stage 2: drawing master switch — checked = show the Edit/New
   // title-bar entries (authoring drafts); unchecked = hidden, default. The
   // old single-applet show/hide behavior is gone (the dedicated edit applet

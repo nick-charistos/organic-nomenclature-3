@@ -15,7 +15,10 @@ function fEncodeSMILESForURL(smiles) {
 }
 
 // Retained (PubChem preferred) -> school systematic. P3-owned; extend on review.
-// Covers C1-C2 acids/aldehydes + common ester alkyl-alkanoate pairs.
+// Covers C1-C2 acids/aldehydes + common ester alkyl-alkanoate pairs, plus the
+// general retained-ester pattern in fResolveSystematicEN below (Blue Book:
+// functional-class PINs keep retained acid stems — formate/acetate — while
+// the engine builds systematic alkyl alkanoates).
 var RETAINED_TO_SYSTEMATIC_EN = {
   "formic acid": "methanoic acid",
   "acetic acid": "ethanoic acid",
@@ -57,8 +60,20 @@ function fResolveSystematicEN(iupacRaw, title, synonyms) {
   var raw = String(iupacRaw || "").split(/\s\s+/)[0].replace(/\s*\(.*\)\s*$/, "").trim();
   var low = raw.toLowerCase();
   if (RETAINED_TO_SYSTEMATIC_EN[low]) return RETAINED_TO_SYSTEMATIC_EN[low];
+  // General retained ester-acid stems (Blue Book: functional-class PINs keep
+  // retained acid names — formate/acetate/propionate/butyrate — while the
+  // systematic engine builds alkyl alkanoates). Covers every alkyl variant
+  // (tert-butyl formate, propan-2-yl acetate, phenyl acetate...) without
+  // enumerating pairs. Runs before the systematic shape checks so a mapped
+  // systematic name is never overridden by them.
+  var _est = /^(.*)\s+(formate|acetate|propionate|butyrate)$/i.exec(raw);
+  if (_est && _est[1]) {
+    var _acid = { formate: "methanoate", acetate: "ethanoate", propionate: "propanoate", butyrate: "butanoate" };
+    var _sys = _acid[String(_est[2]).toLowerCase()];
+    if (_sys) return (_est[1] + " " + _sys).trim();
+  }
   if (fIsSystematicName(raw)) return raw;
-  if (/^(meth|eth|prop|but|pent|hex|hept|oct|non|dec|undec|dodec|tridec|tetradec|pentadec|hexadec|heptadec|octadec|nonadec|eicos)(ane|ene|yne|anol|anone|anal|oic acid|dioic acid|anenitrile|diol|dial|dione|anoate)$/i.test(low)) return raw || null;
+  if (/^(meth|eth|prop|but|pent|hex|hept|oct|non|dec|undec|dodec|tridec|tetradec|pentadec|hexadec|heptadec|octadec|nonadec|icos)(ane|ene|yne|anol|anone|anal|oic acid|dioic acid|anenitrile|diol|dial|dione|anoate)$/i.test(low)) return raw || null;
   const pool = Array.isArray(synonyms) ? synonyms : [];
   // Prefer a locanted systematic synonym; skip inverted-index entries ("propanal, 2-methyl-").
   for (const s of pool) {
@@ -124,19 +139,78 @@ async function fFetchIUPAC_EN_CIR(smiles) {
   return { source: "cir", cid: null, iupac: text, title: null };
 }
 
+// Debug helper: verbose oracle logs only with ?debug or window.MULER_DEBUG.
+// Failures stay console.warn (always visible); success chatter is gated.
+function fMulerDebugLog() {
+  try {
+    if (typeof window !== "undefined" && window.MULER_DEBUG) {
+      console.log.apply(console, arguments);
+    }
+  } catch (e) {}
+}
+
+// Shared OC throttle gate (10 req/s/IP documented limit): serialize
+// OpenClatura fetches with a minimum gap. Both callers (select path +
+// draft preview) funnel through fFetchIUPAC_OC, so gating here covers all.
+var __mulerOCGate = { last: 0, chain: Promise.resolve() };
+function fOCGateWait() {
+  var wait = 0;
+  try {
+    var now = Date.now();
+    wait = 150 - (now - __mulerOCGate.last);
+    if (!(wait > 0)) wait = 0;
+  } catch (eG) { wait = 0; }
+  var p = null;
+  try {
+    p = __mulerOCGate.chain.then(function () {
+      if (wait > 0) return new Promise(function (r) { setTimeout(r, wait); });
+      return null;
+    });
+  } catch (eC) { p = Promise.resolve(); }
+  try {
+    __mulerOCGate.chain = p.catch(function () {}).then(function () {});
+  } catch (eS) {}
+  return p;
+}
+
 // Second oracle: OpenClatura rule-built systematic EN (deterministic Blue
 // Book, MIT; https://openclatura.org/llms.txt). Speaks where record-lookup
 // oracles go silent (novel molecules). Display + second-opinion only — never
 // auto-corrects engine names (PIN/systematic vs school conventions differ by
 // design; P3 decides). Query form (/name?smiles=) is backslash-safe per their
 // encoding notes; format=json carries name + opsin_check + rules_hit.
-// One attempt, fail-soft; callers own throttling (10 req/s/IP) and guards.
-async function fFetchIUPAC_OC(smiles) {
+// One attempt, fail-soft; throttled internally (150ms gap), 8s timeout;
+// callers distinguish "unnameable" (no-answer) from transport errors via
+// the thrown message. Success chatter gated behind window.MULER_DEBUG.
+async function fFetchIUPAC_OC(smiles, opts) {
   const raw = String(smiles || "").trim();
   if (!raw) throw new Error("empty SMILES");
+  const o = opts || {};
+  const timeoutMs = typeof o.timeoutMs === "number" ? o.timeoutMs : 8000;
+  try { await fOCGateWait(); } catch (eG) {}
+  try { __mulerOCGate.last = Date.now(); } catch (eL) {}
   const url =
     "https://openclatura.org/name?smiles=" + encodeURIComponent(raw) + "&format=json";
-  const res = await fetch(url, { headers: { Accept: "application/json" } });
+  var ctrl = null, timer = null;
+  try {
+    if (typeof AbortController !== "undefined") {
+      ctrl = new AbortController();
+      timer = setTimeout(function () { try { ctrl.abort(); } catch (eA) {} }, timeoutMs);
+    }
+  } catch (eC) { ctrl = null; }
+  var res = null;
+  try {
+    res = await fetch(url, {
+      headers: { Accept: "application/json" },
+      signal: ctrl ? ctrl.signal : undefined,
+    });
+  } catch (eF) {
+    try { if (timer) clearTimeout(timer); } catch (eT) {}
+    var em = String((eF && eF.name) || "");
+    if (/abort/i.test(em)) throw new Error("OpenClatura timeout for " + raw);
+    throw new Error("OpenClatura network error for " + raw + ": " + String((eF && eF.message) || eF));
+  }
+  try { if (timer) clearTimeout(timer); } catch (eT2) {}
   if (!res.ok) throw new Error("OpenClatura " + res.status + " for " + raw);
   const data = await res.json();
   if (!data || data.ok !== true || !data.name) {
@@ -147,9 +221,9 @@ async function fFetchIUPAC_OC(smiles) {
   var rules = null;
   try { rules = data.rules_hit || null; } catch (eR) {}
   try {
-    if (data.smiles && data.smiles !== raw) console.log("[OC] echo differs sent=" + raw + " got=" + data.smiles);
+    if (data.smiles && data.smiles !== raw) fMulerDebugLog("[OC] echo differs sent=" + raw + " got=" + data.smiles);
   } catch (eE) {}
-  console.log("[OC] SMILES=" + raw + " -> \"" + data.name + "\" (opsin " + (opsin || "?") + ")");
+  fMulerDebugLog("[OC] SMILES=" + raw + " -> \"" + data.name + "\" (opsin " + (opsin || "?") + ")");
   return { source: "openclatura", name: String(data.name), opsin: opsin, rulesHit: rules, echoSmiles: data.smiles || null };
 }
 
@@ -385,6 +459,7 @@ function fLogMolSelectWithOC(key) {
           entry.openclaturaEN = (oc && oc.name) || null;
           entry.openclaturaOpsin = (oc && oc.opsin) || null;
           entry.openclaturaDone = true;
+          entry.openclaturaErr = false;
         }
       } catch (eStore) { /* cache best-effort */ }
       try { if (typeof fMulerMolInfoRefresh === "function") fMulerMolInfoRefresh(key); } catch (eMI) {}
@@ -392,7 +467,11 @@ function fLogMolSelectWithOC(key) {
     })
     .catch(function (err) {
       try { console.warn("[OC] select-fetch failed " + key, err); } catch (eL) {}
-      try { if (entry) { entry.openclaturaDone = true; entry.openclaturaEN = null; } } catch (eF) {}
+      // Distinguish genuine no-answer (unnameable/4xx payload → quiet amber)
+      // from transport errors (timeout/network → lavender error state).
+      var _noAns = false;
+      try { _noAns = /unnameable/i.test(String((err && err.message) || err)); } catch (eM) {}
+      try { if (entry) { entry.openclaturaDone = true; entry.openclaturaEN = null; entry.openclaturaErr = !_noAns; } } catch (eF) {}
       try { if (typeof fMulerMolInfoRefresh === "function") fMulerMolInfoRefresh(key); } catch (eMI2) {}
       try { if (typeof fMulerOCFetchDone === "function") fMulerOCFetchDone(key); } catch (eOC2) {}
     })

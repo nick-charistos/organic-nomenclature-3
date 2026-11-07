@@ -629,19 +629,18 @@ header {
   border: 1px solid var(--lightBlue);
 }
 
-/* Top row: main-chain stepper alone (left-aligned), only in ether+stepper case. */
-#nameSettingsRowTop {
+/* Extra settings rows (stepper, ether radios, subst radios): one control
+   set per row, below the main buttons row. Rows render only when they
+   have content (no empty rows by construction). */
+#nameSettingsPanel .nameSettingsRow {
   display: flex;
   justify-content: flex-start;
   align-items: center;
+  gap: 7px;
 }
 
-#nameSettingsRowTop:empty {
-  display: none;
-}
-
-/* Main row: left group (stepper or ether radios, when present) spread from
-   the right-side name buttons — no empty half-rows in any molecule case. */
+/* Main row: buttons only, left-aligned like the rows below
+   (single nsLeft cell; the old right-aligned nsRight cell is gone). */
 #nameSettingsRowMain {
   display: flex;
   justify-content: space-between;
@@ -652,6 +651,7 @@ header {
 #nameSettingsRowMain .nsLeft {
   display: flex;
   align-items: center;
+  gap: 7px;
 }
 
 #nameSettingsRowMain .nsRight {
@@ -1862,12 +1862,12 @@ header {
   border-top: 1px solid var(--veryLightBlue);
 }
 
-.nameCompContainer>.nameCompWrap:first-child>.nameCompBox.unboxed {
+.nameCompContainer>.nameCompWrap:first-child>.nameCompBox.unboxed,.nameCompContainer .nameCompSpace + .nameCompWrap > .nameCompBox.unboxed {
   padding-left: 7px;
   border-left: 1px solid var(--veryLightBlue);
 }
 
-.nameCompContainer>.nameCompWrap:last-child>.nameCompBox.unboxed {
+.nameCompContainer>.nameCompWrap:last-child>.nameCompBox.unboxed, .nameCompWrap:has(+ .nameCompSpace) > .nameCompBox.unboxed  {
   padding-right: 7px;
   border-right: 1px solid var(--veryLightBlue);
 }
@@ -2056,6 +2056,13 @@ header {
 .nameCompContainer.verdict-oc-mismatch {
   box-shadow: 0 0 0 2px #d98c8c;
 }
+/* Systematic-substituent diff mark (EN only): boxes whose text is new vs the
+   school form (native title carries the school wording). Distinct from the
+   oracle tints above. Selected boxes keep their green highlight. */
+.nameCompBox.sysDiff:not(.selected) {
+  background-color: #e8f5f1;
+  border-color: #7fb3a4;
+}
 
 /* Eye tooltip above the button (skin: shared rule at the top of this file) */
 .compEye[data-tooltip]::after {
@@ -2106,11 +2113,11 @@ header {
 
 .explainText {
   padding: 10px 10px;
-  font-weight: bold;
+  /* font-weight: bold; */
   font-size: 1rem;
   color: #000;
   background-color: #fff;
-  border: 3px solid var(--vibrantGreen);
+  border: 1px solid var(--vibrantGreen);
   z-index: 100;
   position: relative;
   border-radius: 5px;

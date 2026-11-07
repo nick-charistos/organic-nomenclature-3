@@ -3,7 +3,7 @@
 // Mirrors js/mulermoc-nom-core-54.js Greek tables; no Greek mutation.
 // Validated against systematicEN oracle (PubChem/CIR + retained->systematic map).
 
-var EN_STEMS = ["meth", "eth", "prop", "but", "pent", "hex", "hept", "oct", "non", "dec", "undec", "dodec", "tridec", "tetradec", "pentadec", "hexadec", "heptadec", "octadec", "nonadec", "eicos"];
+var EN_STEMS = ["meth", "eth", "prop", "but", "pent", "hex", "hept", "oct", "non", "dec", "undec", "dodec", "tridec", "tetradec", "pentadec", "hexadec", "heptadec", "octadec", "nonadec", "icos"];
 var EN_SUFFIX = {
   hydrocarbon: "ane",
   halogen: "ane",
@@ -17,8 +17,8 @@ var EN_SUFFIX = {
   ether: "ane",
   ester: "oate"
 };
-var EN_MULTIPREFIX = ["", "di", "tri", "tetra", "penta", "hexa", "hepta", "octa", "nona", "deca", "undeca", "dodeca", "trideca", "tetradeca", "pentadeca", "hexadeca", "heptadeca", "octadeca", "nonadeca", "eicosa"];
-var EN_ALKYL = { 1: "methyl", 2: "ethyl", 3: "propyl", 4: "butyl", 5: "pentyl", 6: "hexyl", 7: "heptyl", 8: "octyl", 9: "nonyl", 10: "decyl", 11: "undecyl", 12: "dodecyl", 13: "tridecyl", 14: "tetradecyl", 15: "pentadecyl", 16: "hexadecyl", 17: "heptadecyl", 18: "octadecyl", 19: "nonadecyl", 20: "eicosyl" };
+var EN_MULTIPREFIX = ["", "di", "tri", "tetra", "penta", "hexa", "hepta", "octa", "nona", "deca", "undeca", "dodeca", "trideca", "tetradeca", "pentadeca", "hexadeca", "heptadeca", "octadeca", "nonadeca", "icosa"];
+var EN_ALKYL = { 1: "methyl", 2: "ethyl", 3: "propyl", 4: "butyl", 5: "pentyl", 6: "hexyl", 7: "heptyl", 8: "octyl", 9: "nonyl", 10: "decyl", 11: "undecyl", 12: "dodecyl", 13: "tridecyl", 14: "tetradecyl", 15: "pentadecyl", 16: "hexadecyl", 17: "heptadecyl", 18: "octadecyl", 19: "nonadecyl", 20: "icosyl" };
 
 // Straight-chain systematic name: stem(n) + unsaturation infix + FG suffix.
 // fg: hydrocarbon|alcohol|aldehyde|ketone|carboxylicAcid|cyanide|amine|nitro|halogen
@@ -138,7 +138,7 @@ var EN_STEM_GR = [
   ["μεθ", "meth"], ["αιθ", "eth"], ["προπ", "prop"], ["βουτ", "but"], ["πεντ", "pent"],
   ["εξ", "hex"], ["επτ", "hept"], ["οκτ", "oct"], ["εν", "non"], ["δεκ", "dec"],
   ["ενδεκ", "undec"], ["δωδεκ", "dodec"], ["δεκατρι", "tridec"], ["δεκατεσσερ", "tetradec"], ["δεκαπεντ", "pentadec"],
-  ["δεκαεξ", "hexadec"], ["δεκαεπτ", "heptadec"], ["δεκαοκτ", "octadec"], ["δεκαεννι", "nonadec"], ["εικοσ", "eicos"]
+  ["δεκαεξ", "hexadec"], ["δεκαεπτ", "heptadec"], ["δεκαοκτ", "octadec"], ["δεκαεννι", "nonadec"], ["εικοσ", "icos"]
 ];
 var EN_INFIX_GR = [
   ["τετρα", "tetra"], ["τρι", "tri"], ["δι", "di"], ["πεντα", "penta"], ["εξα", "hexa"],
@@ -155,10 +155,10 @@ var EN_SUB_GR = [
   ["τετρα", "tetra"], ["τρι", "tri"], ["δι", "di"],
   ["μεθυλο", "methyl"], ["αιθυλο", "ethyl"], ["προπυλο", "propyl"], ["βουτυλο", "butyl"], ["πεντυλο", "pentyl"],
   ["ενδεκυλο", "undecyl"], ["δωδεκυλο", "dodecyl"], ["δεκατριυλο", "tridecyl"], ["δεκατεσσερυλο", "tetradecyl"], ["δεκαπεντυλο", "pentadecyl"],
-  ["δεκαεξυλο", "hexadecyl"], ["δεκαεπτυλο", "heptadecyl"], ["δεκαοκτυλο", "octadecyl"], ["δεκαεννυλο", "nonadecyl"], ["εικοσυλο", "eicosyl"],
+  ["δεκαεξυλο", "hexadecyl"], ["δεκαεπτυλο", "heptadecyl"], ["δεκαοκτυλο", "octadecyl"], ["δεκαεννυλο", "nonadecyl"], ["εικοσυλο", "icosyl"],
   ["μεθυλ", "methyl"], ["αιθυλ", "ethyl"], ["προπυλ", "propyl"], ["βουτυλ", "butyl"],
   ["ενδεκυλ", "undecyl"], ["δωδεκυλ", "dodecyl"], ["δεκατριυλ", "tridecyl"], ["δεκατεσσερυλ", "tetradecyl"], ["δεκαπεντυλ", "pentadecyl"],
-  ["δεκαεξυλ", "hexadecyl"], ["δεκαεπτυλ", "heptadecyl"], ["δεκαοκτυλ", "octadecyl"], ["δεκαεννυλ", "nonadecyl"], ["εικοσυλ", "eicosyl"],
+  ["δεκαεξυλ", "hexadecyl"], ["δεκαεπτυλ", "heptadecyl"], ["δεκαοκτυλ", "octadecyl"], ["δεκαεννυλ", "nonadecyl"], ["εικοσυλ", "icosyl"],
   ["μεθ", "meth"], ["αιθ", "eth"], ["προπ", "prop"], ["βουτ", "but"], ["πεντ", "pent"],
   ["βρωμο", "bromo"], ["χλωρο", "chloro"], ["φθορο", "fluoro"], ["ιωδο", "iodo"],
   ["νιτρο", "nitro"], ["αμινο", "amino"], ["υδροξυ", "hydroxy"], ["καρβοξυ", "carboxy"], ["κυανο", "cyano"],
@@ -212,21 +212,45 @@ function fGreekFragToEN(frag, slot) {
 // comp2b(8)=2nd unsat, comp4(9)=suffix. Substituent slots 0-3 prepend verbatim.
 // Greek-common esters/complex ethers do not transliterate 1:1 -> fall back to
 // the audited PubChem systematicEN oracle (flagged). Stores engineEN; returns it.
-function fPopulateEngineENFromGreek(key) {
+// variant "sys": systematic substituent forms (retained -> systematic map +
+// P-16.3.4(a) parens); stored separately as engineEN_sys, no delegation.
+function fPopulateEngineENFromGreek(key, variant) {
   try {
     if (typeof nameComponentsList === "undefined" || !nameComponentsList) return null;
     var k = key || (typeof selectedMol !== "undefined" ? selectedMol : null);
     if (!k) return null;
+    var sys = (variant === "sys");
     var isEster = false;
     try {
       isEster = typeof functionalGroupsList !== "undefined" && functionalGroupsList.length === 1 && functionalGroupsList[0] === "ester";
     } catch (e) {}
-    var S = function (i) { return fGreekFragToEN(nameComponentsList[i] == null ? "" : nameComponentsList[i], i); };
+    var S = function (i) {
+      var t = fGreekFragToEN(nameComponentsList[i] == null ? "" : nameComponentsList[i], i);
+      if (sys) t = fSystematicSubstSlot(i, t);
+      return t;
+    };
     var hasSub = !!S(1) || !!S(3);
     var stripLoc = function (s) { return String(s == null ? "" : s).replace(/^[-\s]+/, "").replace(/[-\s]+$/, ""); };
     // substituent locants live in comp0 when substituents exist, else comp0 holds the first parent locant
     var preLoc = hasSub ? stripLoc(S(0)) : "";
-    var pre = (hasSub ? (preLoc ? preLoc + "-" : "") : "") + [S(1), S(2), S(3)].join("");
+    var preLoc2 = hasSub ? stripLoc(S(2)) : "";
+    // EN-alphabetical substituent order (P-14.5.1): school data may arrive in
+    // Greek-alphabetical order, which differs for e.g. chloro/fluoro or
+    // hydroxy/alkyl pairs. Swap the two substituent groups (locants travel
+    // with their group) when the transliterated names are out of order.
+    // Bounded to the clean case (both groups carry locants); otherwise keep
+    // Greek order. No-op on all current data (verified against slots141).
+    var _swapSub = false;
+    try {
+      var _sk1 = fENSubstSortKey(S(1)), _sk3 = fENSubstSortKey(S(3));
+      _swapSub = !!(_sk1 && _sk3 && preLoc && preLoc2 && _sk3 < _sk1);
+    } catch (eSw) { _swapSub = false; }
+    var pre;
+    if (!_swapSub) {
+      pre = (hasSub ? (preLoc ? preLoc + "-" : "") : "") + [S(1), S(2), S(3)].join("");
+    } else {
+      pre = preLoc2 + "-" + S(3) + "-" + preLoc + "-" + S(1);
+    }
     var comp1No = stripLoc(hasSub ? S(4) : (S(4) || S(0))), stem = S(5), infix = S(6), mid = stripLoc(S(7)), infix2 = stripLoc(S(8)), suffix = stripLoc(S(9));
     // nitrile/amine parent keeps full 'ane' (butanenitrile, ethanamine), not 'an'
     if ((suffix === "nitrile" || suffix === "amine") && infix === "an") infix = "ane";
@@ -282,6 +306,10 @@ function fPopulateEngineENFromGreek(key) {
     if (!out || /^[0-9,\-]*$/.test(out)) return null;
     var delegated = false;
     if (/[\u0370-\u03ff\u1f00-\u1fff]/.test(out)) {
+      if (sys) {
+        try { if (typeof nameExamples !== "undefined" && nameExamples[k]) nameExamples[k].engineEN_sys = null; } catch (eSN) {}
+        return null; // systematic variant must be fully transliterated; caller falls back to school
+      }
       // not 1:1 transliterable (Greek-common esters/complex ethers): use oracle
       try {
         if (typeof nameExamples !== "undefined" && nameExamples[k] && nameExamples[k].systematicEN) {
@@ -292,11 +320,14 @@ function fPopulateEngineENFromGreek(key) {
     }
     try {
       if (typeof nameExamples !== "undefined" && nameExamples[k]) {
-        nameExamples[k].engineEN = out;
-        if (delegated) nameExamples[k].engineDelegated = true;
+        if (sys) nameExamples[k].engineEN_sys = out;
+        else {
+          nameExamples[k].engineEN = out;
+          if (delegated) nameExamples[k].engineDelegated = true;
+        }
       }
     } catch (e) {}
-    console.log("[ENGINE-EN] " + k + " -> " + out + (delegated ? " [oracle-delegated]" : ""));
+    console.log("[ENGINE-EN" + (sys ? "-SYS" : "") + "] " + k + " -> " + out + (delegated ? " [oracle-delegated]" : ""));
     return out;
   } catch (e) {
     console.warn("[ENGINE-EN] failed", e);
@@ -309,7 +340,9 @@ function fPopulateEngineENFromGreek(key) {
 // systematic order and transliterated text. Returns
 // { boxes: [[boxId, text]...], spaceAfter: boxId|null, isEster } or null
 // (caller falls back to Greek render). Greek is never mutated here.
-// P-14.4 terminal-e fusion for EN box boundaries: an "en"/"yn" infix box
+// variant "sys": systematic substituent forms (same slot transform as
+// fPopulateEngineENFromGreek, so joined boxes match engineEN_sys).
+// P-16.7.1(a) terminal-e elision for EN box boundaries: an "en"/"yn" infix box
 // directly followed by a consonant-initial suffix box (no locant box
 // between) takes back its terminal "e" (ynedioic, enedial, ynedione);
 // vowel-initial suffixes (oic acid, al, ol, one, e, amine, oate) fuse bare,
@@ -321,12 +354,17 @@ function fFuseEnInfixSuffix(infix, nextText) {
   return infix;
 }
 
-function fNameENBoxes() {
+function fNameENBoxes(variant) {
   try {
     if (typeof nameComponentsList === "undefined" || !nameComponentsList) return null;
     if (typeof selectedMol === "undefined" || !selectedMol) return null;
     if (typeof nameExamples === "undefined" || !nameExamples[selectedMol]) return null;
-    var S = function (i) { return fGreekFragToEN(nameComponentsList[i] == null ? "" : nameComponentsList[i], i); };
+    var sys = (variant === "sys");
+    var S = function (i) {
+      var t = fGreekFragToEN(nameComponentsList[i] == null ? "" : nameComponentsList[i], i);
+      if (sys) t = fSystematicSubstSlot(i, t);
+      return t;
+    };
     var isEster = false;
     try { isEster = typeof functionalGroupsList !== "undefined" && functionalGroupsList.length === 1 && functionalGroupsList[0] === "ester"; } catch (e) {}
     var hasSub = !!S(1) || !!S(3);
@@ -347,22 +385,44 @@ function fNameENBoxes() {
     var spaceAfter = null;
     // Esters lead with the alcohol word (alkyl alkanoate: "isobutyl ...").
     if (isEster) { push("comp10", S(10)); spaceAfter = "comp10"; }
-    // Pre (substituent) boxes keep Greek slot order — identical in EN.
+    // Pre (substituent) boxes: EN-alphabetical group order (P-14.5.1; same
+    // swap rule as fPopulateEngineENFromGreek). Box ids stay attached to
+    // their content — only display order changes — so the highlight/explain
+    // mapping is unaffected. In swap mode the locant boxes carry explicit
+    // separators (comp2 keeps trailing '-', comp0 gains leading '-') so the
+    // joined row reads e.g. "2,5-dimethyl-3-ethyl" with no stray hyphens.
     if (hasSub) {
-      push("comp0", S(0));
-      push("comp1", S(1));
-      push("comp2", S(2));
-      var br = fSplitENBranch(S(3));
-      if (br) {
-        for (var bi = 0; bi < br.length; bi += 2) {
-          var gi = bi / 2;
-          push(gi === 0 ? "comp3" : "comp3b" + (gi === 1 ? "" : String(gi - 1)), br[bi]);
-          if (bi + 1 < br.length) {
-            var li = gi + 1;
-            push("comp3loc" + (li === 1 ? "" : String(li - 1)), "-" + br[bi + 1] + "-");
+      var _sw = false;
+      try {
+        var _k1 = fENSubstSortKey(S(1)), _k3 = fENSubstSortKey(S(3));
+        _sw = !!(_k1 && _k3 && stripLoc(S(0)) && stripLoc(S(2)) && _k3 < _k1);
+      } catch (eSwB) { _sw = false; }
+      var _pushG1 = function (loc0) {
+        push("comp0", loc0);
+        push("comp1", S(1));
+      };
+      var _pushG2 = function (loc2) {
+        push("comp2", loc2);
+        var br = fSplitENBranch(S(3));
+        if (br) {
+          for (var bi = 0; bi < br.length; bi += 2) {
+            var gi = bi / 2;
+            push(gi === 0 ? "comp3" : "comp3b" + (gi === 1 ? "" : String(gi - 1)), br[bi]);
+            if (bi + 1 < br.length) {
+              var li = gi + 1;
+              push("comp3loc" + (li === 1 ? "" : String(li - 1)), "-" + br[bi + 1] + "-");
+            }
           }
-        }
-      } else { push("comp3", S(3)); }
+        } else { push("comp3", S(3)); }
+      };
+      if (_sw) {
+        var _l2 = stripLoc(S(2)), _l0 = stripLoc(S(0));
+        _pushG2(_l2 ? _l2 + "-" : "");
+        _pushG1("-" + _l0 + "-");
+      } else {
+        _pushG1(S(0));
+        _pushG2(S(2));
+      }
     }
     // Parent boxes in EN systematic order (stem first).
     if (diene) {
@@ -400,7 +460,7 @@ function fNameENBoxes() {
       if (_qm && _qm[2]) { boxes[_cp] = ["comp9", _qm[2]]; boxes.splice(_cp, 0, ["comp9loc", _qm[1]]); }
     }
     if (!isEster) { push("comp10", S(10)); push("comp11", S(11)); }
-    // P-14.4 fusion at box seams: "yn"/"en" directly before a
+    // P-16.7.1(a) elision at box seams: "yn"/"en" directly before a
     // consonant-initial suffix box regains its terminal "e"
     // (ynedioic, enedial); vowel-initial suffixes fuse bare.
     for (var _fi = 0; _fi + 1 < boxes.length; _fi++) {
@@ -453,6 +513,57 @@ function fSplitENBranch(text) {
   if (protected_) parts[0] = protected_ + parts[0];
   return parts;
 }
+// Systematic substituent names (school retained -> systematic, P-29.6/P-57.1).
+// Only unambiguously systematic forms; tert-butyl intentionally absent
+// (preferred prefix, P-57.1.2). tert-butoxy/isobutoxy omitted: unattested,
+// verify against P-63.2/P-57.1 before adding. Single locant-bearing groups
+// stay bare (cf. 1-(butan-2-yl)-3-tert-butylbenzene); parentheses are added
+// by fSystematicSubstSlot only when multiplied (P-16.3.4(a)).
+var EN_SYST_SUBST = {
+  "isopropyl": "propan-2-yl",
+  "isobutyl": "2-methylpropyl",
+  "sec-butyl": "butan-2-yl",
+  "isopropoxy": "propan-2-yloxy",
+  "sec-butoxy": "butan-2-yloxy"
+};
+
+// Systematic slot transform: segment-wise substitution (hyphen-separated
+// locants pass through; S(0)/S(2) locant slots unaffected). Greek input
+// expected; returns the input unchanged when nothing maps.
+function fSystematicSubstSlot(slot, text) {
+  try {
+    if (slot !== 1 && slot !== 3 && slot !== 10) return text;
+    var t = String(text == null ? "" : text);
+    if (!t) return t;
+    var parts = t.split("-");
+    var out = [];
+    for (var k = 0; k < parts.length; k++) {
+      var w = parts[k];
+      if (!w || /^\d[\d,]*$/.test(w)) { out.push(w); continue; }
+      var m2 = /^(di|tri|tetra)([a-z].*)$/.exec(w);
+      if (m2 && Object.prototype.hasOwnProperty.call(EN_SYST_SUBST, m2[2])) {
+        var s2 = EN_SYST_SUBST[m2[2]];
+        out.push(/\d/.test(s2) ? m2[1] + "(" + s2 + ")" : m2[1] + s2);
+      } else if (Object.prototype.hasOwnProperty.call(EN_SYST_SUBST, w)) {
+        out.push(EN_SYST_SUBST[w]);
+      } else out.push(w);
+    }
+    return out.join("-");
+  } catch (eS) { return text; }
+}
+// EN substituent sort key (P-14.5.1): alphabetical by transliterated name,
+// ignoring simple multiplicative prefixes (same strip as fAssembleBranchedEN).
+// Compound substituent names sort by complete name (P-14.5.2 limitation noted:
+// a leading di/tri/tetra inside a compound name is stripped like a simple
+// multiplicative prefix — correct for all current data; revisit with
+// Greek-side group-structure info if compound substituents need exact order).
+function fENSubstSortKey(nm) {
+  try {
+    var s = String(nm == null ? "" : nm).toLowerCase();
+    s = s.replace(/[()]/g, "");
+    return s.replace(/^(di|tri|tetra)(?=[a-z])/, "");
+  } catch (e) { return ""; }
+}
 function fNormNoStereo(s) {
   var t = String(s || "").trim();
   var m = /^\s*(\(E\)|\(Z\)|\(R\)|\(S\)|\(\+-\)|rac|DL)-/i.exec(t);
@@ -463,17 +574,18 @@ function fNormNoStereo(s) {
 // Shared by the batch validator and the live in-page marker, so the two can
 // never disagree. Returns { status, via, engine, oracle } where status is
 // "systematic" | "retained" | "title" | "mismatch" | "missing".
-function fMatchEngineEN(key) {
+function fMatchEngineEN(key, engineOverride) {
   var out = { status: "missing", via: null, engine: null, oracle: null };
   try {
     if (typeof nameExamples === "undefined" || !nameExamples[key]) return out;
     var e = nameExamples[key];
-    if (!e || !e.engineEN) return out;
-    var a = fNormNoStereo(String(e.engineEN).toLowerCase().trim());
+    var _eng = (typeof engineOverride !== "undefined" && engineOverride != null) ? engineOverride : (e && e.engineEN);
+    if (!e || !_eng) return out;
+    var a = fNormNoStereo(String(_eng).toLowerCase().trim());
     var sys = fNormNoStereo(String(e.systematicEN || "").toLowerCase().trim());
     var ret = fNormNoStereo(String(e.iupacPubchem || e.iupacEN || "").toLowerCase().trim());
     var tit = fNormNoStereo(String(e.titlePubchem || "").toLowerCase().trim());
-    out.engine = e.engineEN;
+    out.engine = _eng;
     out.oracle = e.systematicEN || e.iupacEN || null;
     if (!sys && !ret) return out;
     if (a && a === sys) { out.status = "systematic"; out.via = "systematic"; }
@@ -515,13 +627,14 @@ function fMatchENvsOC(engineEN, ocName) {
     return (a === o) ? "match" : "mismatch";
   } catch (e) { return "missing"; }
 }
-function fMatchEngineEN_OC(key) {
+function fMatchEngineEN_OC(key, engineOverride) {
   var out = { status: "missing", via: "openclatura", engine: null, oracle: null };
   try {
     if (typeof nameExamples === "undefined" || !key || !nameExamples[key]) return out;
     var e = nameExamples[key];
-    if (!e || !e.engineEN) return out;
-    out.engine = e.engineEN;
+    var _eng = (typeof engineOverride !== "undefined" && engineOverride != null) ? engineOverride : (e && e.engineEN);
+    if (!e || !_eng) return out;
+    out.engine = _eng;
     out.oracle = e.openclaturaEN || null;
     if (!out.oracle) return out;
     out.status = fMatchENvsOC(out.engine, out.oracle);

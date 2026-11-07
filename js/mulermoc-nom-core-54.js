@@ -79,7 +79,9 @@ let alkoxyNames = {}
 let nameMainCompList1 = []
 let nameMainCompObj3 = {}
 let nameMultiPrefix = []
-let functionalGroupsOrder = []
+// Single source of truth for P-41 functional-group seniority
+// (carboxylicAcid > ester > cyanide > aldehyde > ketone > alcohol > amine;
+// nitro/ether/halogen unranked, lose to everything ranked).
 const gFunctionalGroupsOrder = ["carboxylicAcid", "ester", "cyanide", "aldehyde", "ketone", "alcohol", "amine", "nitro"]
 let molTaxonomy = ""
 
@@ -154,7 +156,7 @@ function fGetMoleculeClassification() {
 // ── fInitNamingProps ──────────────────────────────────────────────────────
 
 function fInitNamingProps() {
-    nameMainCompList1 = ["μεθ", "αιθ", "προπ", "βουτ", "πεντ", "εξ", "επτ", "οκτ", "εν", "δεκ", "ενδεκ", "δωδεκ", "δεκατρι", "δεκατεσσερ", "δεκαπεντ", "δεκαεξ", "δεκαεπτ", "δεκαοκτ", "δεκαεννι", "εικοσ"]
+    nameMainCompList1 = ["μεθ", "αιθ", "προπ", "βουτ", "πεντ", "εξ", "επτ", "οκτ", "εννεα", "δεκ", "ενδεκ", "δωδεκ", "δεκατρι", "δεκατεσσερ", "δεκαπεντ", "δεκαεξ", "δεκαεπτ", "δεκαοκτ", "δεκαεννι", "εικοσ"]
 
     nameMainCompObj3 = {
         hydrocarbon: { suffix: "ιο", substitute: "" },
@@ -187,8 +189,6 @@ function fInitNamingProps() {
     }
 
     nameMultiPrefix = ["", "δι", "τρι", "τετρα", "πεντα", "εξα", "επτα", "οκτα"]
-
-    functionalGroupsOrder = ["carboxylicAcid", "ester", "cyanide", "aldehyde", "ketone", "alcohol", "amine", "nitro"]
 }
 
 // ── fAnalyseStructure ─────────────────────────────────────────────────────
@@ -2502,7 +2502,15 @@ function fTranslateChain2D3D(chain) {
         var K = null
         try { K = molAtomMapKey } catch (eK) { K = null; }
         if (!M || !M.arr || K !== selectedMol || M.n2 !== n2 || M.n3 !== n3) {
-            M = fBuildHeavyMap2D3D(false) || fBuildHeavyMap2D3D(true)
+            M = fBuildHeavyMap2D3D(false);
+            if (!M) {
+                // Order-ignorant fallback: still bijective (symmetric chains
+                // keep stepping), but single/double identity is unchecked
+                // (keto/enol-class mismatch possible). Logged so REVIEW can
+                // tell strict maps from fallback ones.
+                try { console.warn("[map2D3D] strict build failed for " + selectedMol + ", trying order-ignorant fallback"); } catch (eW) {}
+                M = fBuildHeavyMap2D3D(true);
+            }
             try { molAtomMap2D3D = M; molAtomMapKey = selectedMol } catch (eS) {}
         }
         if (!M || !M.arr) return null
@@ -2572,6 +2580,12 @@ function fParseMolV2000(text) {
     for (var j = 0; j < nB; j++) {
       var parts = (lines[ci + 1 + nA + j] || "").trim().split(/\s+/);
       var a = parseInt(parts[0], 10), b = parseInt(parts[1], 10), o = parseInt(parts[2], 10);
+      // Aromatic bonds (V2000 type 4) map to single for connectivity: dropping
+      // them would disconnect (and de-ring) cyclic input, defeating the
+      // draft ring-reject. Valence H-counts treat them as single — acceptable:
+      // drafts are acyclic-only, so a type-4 bond never reaches H generation
+      // on the accepted path. Other non-1..3 types (query bonds) stay dropped.
+      if (o === 4) o = 1;
       if (!(o >= 1 && o <= 3)) continue;
       if (!(a >= 1 && a <= nA && b >= 1 && b <= nA)) continue;
       bonds.push([a, b, o]);

@@ -200,6 +200,7 @@ function fScenarioG(name, fallback) {
       case "mode2D": return typeof mode2D !== "undefined" ? mode2D : fallback;
       case "mainChainMode": return typeof mainChainMode !== "undefined" ? mainChainMode : fallback;
       case "etherNamingMode": return typeof etherNamingMode !== "undefined" ? etherNamingMode : fallback;
+      case "substNamingMode": return typeof substNamingMode !== "undefined" ? substNamingMode : fallback;
       case "nameAnalysisMode": return typeof nameAnalysisMode !== "undefined" ? nameAnalysisMode : fallback;
       case "svgAtomColors2DFlag": return typeof svgAtomColors2DFlag !== "undefined" ? svgAtomColors2DFlag : fallback;
       case "atomColorMode2D": return typeof atomColorMode2D !== "undefined" ? atomColorMode2D : fallback;
@@ -576,6 +577,7 @@ function fScenarioCapture() {
     mainChainMode: fScenarioG("mainChainMode", "algorithmic"),
     chainIdx: menuOnly ? 0 : fScenarioValidChainIdx(fScenarioG("mainChainPoolIdx", 0)),
     etherNamingMode: fScenarioG("etherNamingMode", "iupac"),
+    substNamingMode: fScenarioG("substNamingMode", "school"),
     nameAnalysisMode: (menuOnly || adopted) ? "none" : fScenarioG("nameAnalysisMode", "none"),
     selectedRule: typeof selectedRule === "number" ? selectedRule : null,
     style2D: {
@@ -1031,6 +1033,7 @@ function fScenarioDefaults(step, i) {
     mainChainMode: "algorithmic",
     chainIdx: 0,
     etherNamingMode: "iupac",
+    substNamingMode: "school",
     nameAnalysisMode: "none",
     selectedRule: null,
     style2D: { atomColors: false, colorMode: "atom", zigzag: false, zoom: 2.0 },
@@ -1893,6 +1896,7 @@ function fScenarioApply(step) {
   if (step.style2D.zigzag) mode2D = "condensedZigZag";
   mainChainMode = step.mainChainMode;
   etherNamingMode = step.etherNamingMode;
+  try { substNamingMode = (step.substNamingMode === "sys") ? "sys" : "school"; } catch (eSN) { try { substNamingMode = "school"; } catch (eSN2) {} }
   atomSymbols3DFlag = !!step.view3D.atomSymbols;
   hydrogens3DFlag = !!step.view3D.showH;
   vis3D = step.view3D.style;

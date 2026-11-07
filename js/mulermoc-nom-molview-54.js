@@ -209,6 +209,7 @@ if (typeof window.nameHiddenComps === "undefined") window.nameHiddenComps = [];
 if (typeof window.nameEyeEdit === "undefined") window.nameEyeEdit = false;
 let mainChainMode = "algorithmic"; // 'data' | 'algorithmic'
 let etherNamingMode = "iupac"; // 'iupac' | 'common' — ether naming variant toggle
+let substNamingMode = "school"; // 'school' | 'sys' — traditional (school retained) vs systematic substituent names (EN). Mode ids stay 'school'/'sys' for saved-scenario compatibility; only the labels changed to Traditional/Systematic.
 let compactNumberingLabelMap = {};
 const compactReverseOffsetScale = {
   HOOC: 0.8,
@@ -315,15 +316,17 @@ function fNameEyeVisible() {
 // a dash on a lightBlue fill (CSS .comp-hidden); the full text lives only in
 // memory (never persisted). Euphony connectors stay as computed for the full
 // name — neighbors of a dash box keep their connector letter.
-function fNameCompBox(boxId, boxClass, displayComp) {
+function fNameCompBox(boxId, boxClass, displayComp, tipHtml) {
   var hidden = fNameCompHidden(boxId);
   var cls = boxClass + (hidden ? " comp-hidden" : "");
+  var tip = (typeof tipHtml === "string" && tipHtml) ? tipHtml : null;
+  if (tip) cls += " sysDiff";
   var body = hidden ? "–" : displayComp;
   var eye = "";
   if (fNameEyeVisible()) {
     eye = "<button class='compEye" + (hidden ? " off-state" : "") + "' data-comp='" + boxId + "' data-tooltip='" + (hidden ? ((typeof fMulerT === "function") ? fMulerT("showComp") : "Εμφάνιση συνθετικού") : ((typeof fMulerT === "function") ? fMulerT("hideComp") : "Απόκρυψη συνθετικού")) + "'>" + (hidden ? svgEyeOff : svgEye) + "</button>";
   }
-  return "<div class='nameCompWrap'><div class='nameCompEyeRow'>" + eye + "</div><div class='" + cls + "' id='" + boxId + "'>" + body + "</div></div>";
+  return "<div class='nameCompWrap'><div class='nameCompEyeRow'>" + eye + "</div><div class='" + cls + "' id='" + boxId + "'" + (tip ? " title='" + tip + "'" : "") + ">" + body + "</div></div>";
 }
 
 fInitViewerSettingsBtn();
@@ -1017,7 +1020,7 @@ function fMolDraftClearNaming(statusText) {
   try { if (typeof fClearHighlights === "function") fClearHighlights(); } catch (eH) {}
   try {
     var na = document.getElementById("nameAnalysis");
-    if (na) na.innerHTML = "<div class='draftHint'>" + String(statusText || "") + "</div>";
+    if (na) na.innerHTML = "<div class='draftHint'>" + fMolDraftEsc(String(statusText || "")) + "</div>";
   } catch (eN) {}
   try {
     var rt = document.getElementById("ruleTheory");
@@ -1673,6 +1676,8 @@ function fMolDraftRenderPreview() {
           html += "<div class='draftOracleRow'><span class='draftOCMark' title='" + fMolDraftEsc(_ocT) + "'>" + _ocG + "</span> " + fMolDraftEsc(fMolDraftT("draftOpenclatura", "IUPAC (OpenClatura)")) + ": " + fMolDraftEsc(_ocD.name) + ((_ocD.opsin && _ocD.opsin !== "matched") ? fMolDraftEsc(" (OPSIN: " + _ocD.opsin + ")") : "") + "</div>";
         } else if (_ocD === undefined && d.submitted) {
           html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("draftOCFetching", "Looking up OpenClatura…")) + "</div>";
+        } else if (d.openclaturaErr) {
+          html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("draftOCError", "OpenClatura lookup failed (network) — not validated")) + "</div>";
         }
       } catch (eOCD) {}
       if (!iupac && !title) html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitNoRecord", "No PubChem record — engine only.")) + "</div>";
@@ -1899,6 +1904,8 @@ async function fMolDraftSubmit() {
   window.MulerDraft.pubchem = undefined;
   window.MulerDraft.sdf3D = null;
   window.MulerDraft.sdfDone = false;
+  window.MulerDraft.openclatura = undefined;
+  window.MulerDraft.openclaturaErr = false;
   fMolDraftRenderPreview();
   try {
     var st2 = document.getElementById("molDraftStatus");
@@ -1960,6 +1967,7 @@ async function fMolDraftSubmit() {
         try {
           if (!window.MulerDraft || window.MulerDraft._submitId !== _mySid || window.MulerDraft._epoch !== _myEpoch || window.MulerDraft.smiles !== submittingSmiles) return;
           window.MulerDraft.openclatura = oc && oc.name ? { name: oc.name, opsin: oc.opsin || null } : null;
+          try { window.MulerDraft.openclaturaErr = false; } catch (eOCe) {}
           // Second-oracle auto-check (OR with PubChem; untouched-only; human
           // always wins): an OC match also marks the EN prediction correct,
           // source-recorded for the eval-data header. Never un-marks.
@@ -1984,6 +1992,7 @@ async function fMolDraftSubmit() {
         try {
           if (!window.MulerDraft || window.MulerDraft._submitId !== _mySid || window.MulerDraft._epoch !== _myEpoch || window.MulerDraft.smiles !== submittingSmiles) return;
           window.MulerDraft.openclatura = null;
+          try { window.MulerDraft.openclaturaErr = true; } catch (eOCe2) {}
           try { console.warn("[OC] draft fetch failed", eOC); } catch (eL) {}
           fMolDraftRenderPreview();
         } catch (eOCr2) {}
@@ -2261,7 +2270,7 @@ async function fMolDraftAccept() {
     try { _fm = fMolDraftT("draftForkConfirm", "This drawing is a different molecule — fork as new?"); } catch (eFm) { _fm = "Fork as new?"; }
     try { _fy = fMolDraftT("draftForkYes", "Fork as new"); } catch (eFy) { _fy = "Fork as new"; }
     if (typeof fScenarioConfirm === "function") {
-      try { fScenarioConfirm(_fm, function () { try { if (window.MulerDraft !== d) return; d._forkConfirmed = true; } catch (eFc) {} try { fMolDraftAccept(); } catch (eFa) {} }, _fy); } catch (eSc) {}
+      try { fScenarioConfirm(_fm, function () { try { if (window.MulerDraft !== d || d._epoch !== _myEpochA || d._submitId !== _mySidA) return; d._forkConfirmed = true; } catch (eFc) {} try { fMolDraftAccept(); } catch (eFa) {} }, _fy); } catch (eSc) {}
       return;
     }
   }
@@ -2352,8 +2361,10 @@ async function fMolDraftAccept() {
       // so JSME rung outputs may echo "[C]" symbols. Normalize to bare "C"
       // (same 3-char field width, geometry untouched) before validation and
       // storage — the skeletal slot's display path never annotates, and core
-      // element-identity checks expect "C".
-      try { cand = String(cand).replace(/\[C\]/g, "C  "); } catch (eBr) {}
+      // element-identity checks expect "C". Fail closed: if any "[C]"
+      // survives the replace, reject the rung (never store contaminated MOL).
+      try { cand = String(cand).replace(/\[C\]/g, "C  "); } catch (eBr) { return null; }
+      try { if (/\[C\]/.test(cand)) { try { console.warn("[draft] skeletal: " + src + " rejected ([C] echo survived strip)"); } catch (eBr2) {} return null; } } catch (eBr3) { return null; }
       if (typeof fParseMolV2000 !== "function") { try { console.warn("[draft] skeletal: " + src + " skipped (no parser)"); } catch (eP0) {} return null; }
       var _pa = fParseMolV2000(drawnMol), _pb = fParseMolV2000(cand);
       var _ha = 0, _hb = 0, _qi, _zero = true;
@@ -2527,7 +2538,7 @@ async function fMolDraftAccept() {
       try { _sy = fMolDraftT("draftStrayKeep", "Keep anyway"); } catch (eSy2) { _sy = "Keep anyway"; }
       try { console.warn("[draft] stray H: " + _strays.length + " over 1.5x H scale (" + _strays.slice(0, 4).map(function (s) { return "H" + s.h + "/C" + s.parent + "x" + s.ratio; }).join(", ") + ")"); } catch (eLw) {}
       if (typeof fScenarioConfirm === "function") {
-        try { fScenarioConfirm(_sm + " (" + _strays.length + ")", function () { try { if (window.MulerDraft !== d) return; d._strayConfirmed = true; d.accepting = false; } catch (eFc) {} try { fMolDraftAccept(); } catch (eFa) {} }, _sy); } catch (eSc2) { try { d.accepting = false; } catch (eAb3) {} }
+        try { fScenarioConfirm(_sm + " (" + _strays.length + ")", function () { try { if (window.MulerDraft !== d || d._epoch !== _myEpochA || d._submitId !== _mySidA) return; d._strayConfirmed = true; d.accepting = false; } catch (eFc) {} try { fMolDraftAccept(); } catch (eFa) {} }, _sy); } catch (eSc2) { try { d.accepting = false; } catch (eAb3) {} }
         return;
       }
     }
@@ -3252,11 +3263,12 @@ function fRenderMolInfo() {
   // validation or naming (Phase 2 decides that). Pending/failed states mirror
   // the PubChem row above; fetch fires from the select path (fLogMolSelectWithOC).
   try {
-    var _oc = null, _ocOpsin = null, _ocDone = false, _ocSmi = null;
+    var _oc = null, _ocOpsin = null, _ocDone = false, _ocErr = false, _ocSmi = null;
     try {
       _oc = entry.openclaturaEN || null;
       _ocOpsin = entry.openclaturaOpsin || null;
       _ocDone = !!entry.openclaturaDone;
+      _ocErr = !!entry.openclaturaErr;
       _ocSmi = entry.canonicalSmiles || entry.smiles || null;
     } catch (eO) { /* best-effort */ }
     if (_oc || _ocDone || _ocSmi) {
@@ -3272,9 +3284,11 @@ function fRenderMolInfo() {
       // mismatched/unparseable/error/skipped_* each mean something for review).
       vOC.textContent = _oc + ((_ocOpsin && _ocOpsin !== "matched") ? " (OPSIN: " + _ocOpsin + ")" : "");
     } else {
-      vOC.textContent = _ocDone
-        ? T("molInfoOCMissing", "No OpenClatura answer")
-        : T("molInfoFetching", "Αναζήτηση…");
+      vOC.textContent = (_ocDone && _ocErr)
+        ? T("molInfoOCError", "OpenClatura lookup failed (network)")
+        : (_ocDone
+          ? T("molInfoOCMissing", "No OpenClatura answer")
+          : T("molInfoFetching", "Αναζήτηση…"));
       try { vOC.classList.add("molInfoPending"); } catch (eP3) { /* best-effort */ }
     }
     rOC.appendChild(lOC);
@@ -3548,6 +3562,17 @@ function fSelectMol() {
   showHydrogens3D();
   rotate3D();
 
+  // Systematic EN variant for the Traditional/Systematic toggle: compute BEFORE
+  // the name panel builds (the toggle's visibility reads engineEN_sys).
+  // Same-slot transliteration, mapped substituents; null when identical to
+  // school or untranslatable. School engineEN keeps its own (later) call.
+  try {
+    if (typeof fPopulateEngineENFromGreek === "function")
+      fPopulateEngineENFromGreek(selectedMol, "sys");
+  } catch (eEnSys) {
+    /* systematic best-effort */
+  }
+
   // fShowMolName()
   // Cold-boot hardening: a throw here must never silently kill the naming
   // panel (2D already painted above). Log loudly with a tag and continue;
@@ -3804,17 +3829,19 @@ function fMol2DModeScale() {
 }
 // Expanded-only label compensation, split out so fLoadMol2D can set the font
 // BEFORE readMolFile (first paint already correct) while fApplyMol2DScale
-// re-asserts it after every scale write. Idempotent; other modes reset to 9.
+// re-asserts it after every scale write. Idempotent; other modes reset to base.
+// Owner-tuned 2D label sizes (MOL px at boot scale): base default, hard clamp.
+var MOL2D_FONT_BASE = 9, MOL2D_FONT_MIN = 7, MOL2D_FONT_MAX = 20;
 function fApplyMol2DFont() {
   try {
     if (typeof jsmeNomeclatureApplet === "undefined" || !jsmeNomeclatureApplet) return;
     var _f = 1, _m = "condensed";
     try { _f = fMol2DModeScaleFactor(); } catch (eF2) { _f = 1; }
     try { _m = (typeof mode2D !== "undefined") ? mode2D : "condensed"; } catch (eM2) { _m = "condensed"; }
-    var _fs = (_m === "expanded" && _f !== 1) ? (9 / _f) : 9;
-    if (!(_fs > 0) || !isFinite(_fs)) _fs = 9;
-    if (_fs < 7) _fs = 7;
-    if (_fs > 20) _fs = 20;
+    var _fs = (_m === "expanded" && _f !== 1) ? (MOL2D_FONT_BASE / _f) : MOL2D_FONT_BASE;
+    if (!(_fs > 0) || !isFinite(_fs)) _fs = MOL2D_FONT_BASE;
+    if (_fs < MOL2D_FONT_MIN) _fs = MOL2D_FONT_MIN;
+    if (_fs > MOL2D_FONT_MAX) _fs = MOL2D_FONT_MAX;
     if (typeof jsmeNomeclatureApplet.setAtomMolecularAreaFontSize === "function") {
       jsmeNomeclatureApplet.setAtomMolecularAreaFontSize(_fs);
     }
@@ -6558,13 +6585,26 @@ function fNameExpandPaintBtn() {
 
 // ── fShowNameAnalysis ─────────────────────────────────────────────────────
 
+// Displayed EN name for verdicts: systematic variant when the
+// Traditional/Systematic toggle selects it and it differs, else school engineEN.
+function fDisplayedEngineEN(key) {
+  try {
+    if (typeof nameExamples === "undefined" || !key || !nameExamples[key]) return null;
+    var _e = nameExamples[key];
+    if (typeof substNamingMode !== "undefined" && substNamingMode === "sys" && _e.engineEN_sys) return _e.engineEN_sys;
+    return _e.engineEN || null;
+  } catch (eD) { return null; }
+}
+
 // EN verdict for the name marker ("oracle"|"fallback"|"mismatch"|"nooracle"|"noerror"|null).
 // fetched=true skips the pending-fetch grace (used by the fetch-completion hook).
-function fMulerVerdictState(key, fetched) {
+function fMulerVerdictState(key, fetched, engOverride) {
   try {
     if (typeof fMulerLang === "function" && fMulerLang() !== "en") return null;
     if (typeof nameExamples === "undefined" || !key || !nameExamples[key]) return null;
     var ex = nameExamples[key];
+    var _eng = (typeof engOverride !== "undefined" && engOverride !== null) ? engOverride : null;
+    if (_eng == null && typeof fDisplayedEngineEN === "function") { try { _eng = fDisplayedEngineEN(key); } catch (eD2) {} }
     var boxesEN = false;
     try {
       var r = (typeof fNameENBoxes === "function") ? fNameENBoxes() : null;
@@ -6573,12 +6613,12 @@ function fMulerVerdictState(key, fetched) {
     if (!boxesEN) return "fallback";
     if (ex.engineDelegated) return "oracle";
     if (typeof fMatchEngineEN !== "function") return null;
-    var v = fMatchEngineEN(key);
+    var v = fMatchEngineEN(key, _eng);
     // Merged plain rule (owner choice): either oracle agreeing with the
     // predicted name silences red. OC data comes from fMatchEngineEN_OC.
     var ocS = "missing";
     try {
-      if (typeof fMatchEngineEN_OC === "function") ocS = fMatchEngineEN_OC(key).status || "missing";
+      if (typeof fMatchEngineEN_OC === "function") ocS = fMatchEngineEN_OC(key, _eng).status || "missing";
     } catch (eOCs) { ocS = "missing"; }
     if (ocS === "match") return null;
     if (v.status === "mismatch") return "mismatch";
@@ -6594,12 +6634,12 @@ function fMulerVerdictState(key, fetched) {
 }
 
 // In-place verdict repaint (no rebuild: preserves focus, scroll, selection).
-function fMulerApplyVerdict(key, fetched) {
+function fMulerApplyVerdict(key, fetched, engOverride) {
   try {
     if (typeof selectedMol === "undefined" || selectedMol !== key) return null;
     var cont = document.querySelector("#nameAnalysis .nameCompContainer");
     if (!cont) return null;
-    var st = (typeof fMulerVerdictState === "function") ? fMulerVerdictState(key, fetched) : null;
+    var st = (typeof fMulerVerdictState === "function") ? fMulerVerdictState(key, fetched, engOverride) : null;
     cont.classList.remove("oracle-name", "verdict-oracle", "verdict-fallback", "verdict-mismatch", "verdict-nooracle", "verdict-noerror");
     cont.removeAttribute("title");
     if (!st) return null;
@@ -6648,13 +6688,15 @@ function fMulerENFetchDone(key) {
     var isEN = false;
     try { isEN = (typeof fMulerLang === "function" && fMulerLang() === "en"); } catch (eL) {}
     if (!isEN) return;
-    var st = (typeof fMulerApplyVerdict === "function") ? fMulerApplyVerdict(key, true) : null;
+    var _dsp = null;
+    try { if (typeof fDisplayedEngineEN === "function") _dsp = fDisplayedEngineEN(key); } catch (eDsp) {}
+    var st = (typeof fMulerApplyVerdict === "function") ? fMulerApplyVerdict(key, true, _dsp) : null;
     // Re-assert the OC marker: the PubChem repaint above resets the container
     // title, which would otherwise drop the OC sentence (classes survive).
-    try { if (typeof fMulerApplyOCVerdict === "function") fMulerApplyOCVerdict(key); } catch (eOC) {}
+    try { if (typeof fMulerApplyOCVerdict === "function") fMulerApplyOCVerdict(key, _dsp); } catch (eOC) {}
     var predicted = "", displayed = "";
     try {
-      if (typeof nameExamples !== "undefined" && nameExamples[key]) predicted = nameExamples[key].engineEN || "";
+      if (typeof nameExamples !== "undefined" && nameExamples[key]) predicted = _dsp || nameExamples[key].engineEN || "";
     } catch (eP) {}
     try {
       var parts = [];
@@ -6664,7 +6706,7 @@ function fMulerENFetchDone(key) {
     var via = "";
     try {
       if (typeof nameExamples !== "undefined" && nameExamples[key] && nameExamples[key].engineMatchVia) via = " via " + nameExamples[key].engineMatchVia;
-      else if (typeof fMatchEngineEN === "function") { var _r = fMatchEngineEN(key); if (_r && _r.via) via = " via " + _r.via; }
+      else if (typeof fMatchEngineEN === "function") { var _r = fMatchEngineEN(key, _dsp); if (_r && _r.via) via = " via " + _r.via; }
     } catch (eV) {}
     console.log("[EN-CHECK] " + key + ": predicted=\"" + predicted + "\" displayed=\"" + displayed + "\" verdict=" + (st || "plain") + via);
   } catch (e) { /* best-effort */ }
@@ -6672,17 +6714,27 @@ function fMulerENFetchDone(key) {
 
 // Second-oracle (OpenClatura) verdict data: EN-only; null outside EN or
 // without a molecule. States match|mismatch|missing (no OC data yet — pending
-// and failed share the state, the tip tells them apart via openclaturaDone).
-function fMulerOCVerdict(key) {
+// and unnameable share the state, the tip tells them apart via openclaturaDone;
+// transport errors are a separate "error" state via openclaturaErr).
+function fMulerOCVerdict(key, engOverride) {
   try {
     if (typeof fMulerLang === "function" && fMulerLang() !== "en") return null;
     if (typeof nameExamples === "undefined" || !key || !nameExamples[key]) return null;
     var ex = nameExamples[key];
-    if (!ex.engineEN) return null;
-    var r = (typeof fMatchEngineEN_OC === "function") ? fMatchEngineEN_OC(key) : null;
+    var _eng = (typeof engOverride !== "undefined" && engOverride != null) ? engOverride : null;
+    if (_eng == null && typeof fDisplayedEngineEN === "function") { try { _eng = fDisplayedEngineEN(key); } catch (eDsp) {} }
+    if (_eng == null) _eng = ex.engineEN;
+    if (!_eng) return null;
+    var r = (typeof fMatchEngineEN_OC === "function") ? fMatchEngineEN_OC(key, _eng) : null;
     if (!r || r.status === "missing") {
-      var done = false;
+      var done = false, failed = false;
       try { done = !!ex.openclaturaDone; } catch (eD) {}
+      try { failed = !!ex.openclaturaErr; } catch (eE) {}
+      if (done && failed) {
+        var tipE = "OpenClatura lookup failed (network) — not validated";
+        try { if (typeof fMulerT === "function") tipE = fMulerT("ocErrorTip"); } catch (eT0) {}
+        return { state: "error", tip: tipE };
+      }
       var tipM = "Looking up OpenClatura…", tkM = "ocPendingTip";
       if (done) { tipM = "No OpenClatura answer"; tkM = "ocMissingTip"; }
       try { if (typeof fMulerT === "function") tipM = fMulerT(tkM); } catch (eT) {}
@@ -6700,24 +6752,24 @@ function fMulerOCVerdict(key) {
 // In-place OC repaint (no rebuild): container outline classes + combined
 // tooltip. Runs after fMulerApplyVerdict (which owns the PubChem classes and
 // resets the title), so the two markers compose instead of clobbering.
-function fMulerApplyOCVerdict(key) {
+function fMulerApplyOCVerdict(key, engOverride) {
   try {
     if (typeof selectedMol === "undefined" || selectedMol !== key) return null;
     var cont = document.querySelector("#nameAnalysis .nameCompContainer");
     if (!cont) return null;
-    try { cont.classList.remove("verdict-oc-match", "verdict-oc-mismatch", "verdict-oc-missing"); } catch (eR) {}
-    var v = (typeof fMulerOCVerdict === "function") ? fMulerOCVerdict(key) : null;
+    try { cont.classList.remove("verdict-oc-match", "verdict-oc-mismatch", "verdict-oc-missing", "verdict-oc-error"); } catch (eR) {}
+    var v = (typeof fMulerOCVerdict === "function") ? fMulerOCVerdict(key, engOverride) : null;
     if (!v || !v.state) return null;
     // OR rule (owner choice): either oracle agreeing silences the tint. The
     // PubChem pass already goes quiet on OC-match (fMulerVerdictState); mirror
-    // it here — a plain PubChem side suppresses the OC mismatch/missing
+    // it here — a plain PubChem side suppresses the OC mismatch/missing/error
     // outline so e.g. propanedioic acid renders white/correct. fMulerVerdictState
     // is the single source of truth (null = plain for systematic/retained/title
     // agreement); the OC disagreement stays on record (console log,
     // info-panel row, REVIEW tables), just untinted.
-    if (v.state === "mismatch" || v.state === "missing") {
+    if (v.state === "mismatch" || v.state === "missing" || v.state === "error") {
       try {
-        if (typeof fMulerVerdictState === "function" && fMulerVerdictState(key, true) == null) return null;
+        if (typeof fMulerVerdictState === "function" && fMulerVerdictState(key, true, engOverride) == null) return null;
       } catch (ePC) { /* fall through to the OC marker */ }
     }
     try { cont.classList.add("verdict-oc-" + v.state); } catch (eC) {}
@@ -6741,11 +6793,13 @@ function fMulerOCFetchDone(key) {
     var isEN = false;
     try { isEN = (typeof fMulerLang === "function" && fMulerLang() === "en"); } catch (eL) {}
     if (!isEN) return;
-    try { if (typeof fMulerApplyVerdict === "function") fMulerApplyVerdict(key, true); } catch (eV) {}
-    var ost = (typeof fMulerApplyOCVerdict === "function") ? fMulerApplyOCVerdict(key) : null;
+    var _dsp = null;
+    try { if (typeof fDisplayedEngineEN === "function") _dsp = fDisplayedEngineEN(key); } catch (eDsp) {}
+    try { if (typeof fMulerApplyVerdict === "function") fMulerApplyVerdict(key, true, _dsp); } catch (eV) {}
+    var ost = (typeof fMulerApplyOCVerdict === "function") ? fMulerApplyOCVerdict(key, _dsp) : null;
     var predicted = "", oc = "";
     try {
-      if (typeof nameExamples !== "undefined" && nameExamples[key]) predicted = nameExamples[key].engineEN || "";
+      if (typeof nameExamples !== "undefined" && nameExamples[key]) predicted = _dsp || nameExamples[key].engineEN || "";
     } catch (eP) {}
     try {
       if (typeof nameExamples !== "undefined" && nameExamples[key]) oc = nameExamples[key].openclaturaEN || "";
@@ -6818,28 +6872,39 @@ function fShowNameAnalysis() {
   const _commonCls = etherNamingMode === "common" ? "selectedRadio" : "unselectedRadio";
   const _commonWord = (() => { try { return (typeof fMulerT === "function") ? fMulerT("commonName") : "Κοινή"; } catch (e) { return "Κοινή"; } })();
   const etherNamingToggle = _isEtherNaming
-    ? `<div id='radioEtherNaming' class='HFlex' style='align-items:center;gap:0;margin-right:8px'><div class='radioCheckContainer etherNamingRadio ${_iupacCls}' data-naming-mode='iupac'>IUPAC<span class='radioCheck'></span></div><div class='radioCheckContainer etherNamingRadio ${_commonCls}' data-naming-mode='common'>${_commonWord}<span class='radioCheck'></span></div></div>`
+    ? `<div id='radioEtherNaming' class='HFlex' style='align-items:center;gap:0;margin-right:8px'><span class='settingLabel'>${(() => { try { return (typeof fMulerT === "function") ? fMulerT("etherNamingLabel") : "Αιθέρες:"; } catch (eL) { return "Αιθέρες:"; } })()}</span><div class='radioCheckContainer etherNamingRadio ${_iupacCls}' data-naming-mode='iupac'>IUPAC<span class='radioCheck'></span></div><div class='radioCheckContainer etherNamingRadio ${_commonCls}' data-naming-mode='common'>${_commonWord}<span class='radioCheck'></span></div></div>`
     : "";
-  // Panel layout per molecule case (no empty half-rows):
-  // - ether + stepper: stepper on its own top row; radios left / buttons right below.
-  // - stepper only (non-ether): single row, stepper left / buttons right.
-  // - radios only (ether, no stepper): single row, radios left / buttons right.
-  // - neither: single row, buttons right (as in frozen versions).
+  // Traditional/Systematic substituent toggle (EN only, when a systematic variant
+  // exists that differs from school; hidden for common-ether rendering).
+  var _substEntry = null;
+  try { _substEntry = (typeof selectedMol !== "undefined" && selectedMol && typeof nameExamples !== "undefined") ? nameExamples[selectedMol] : null; } catch (eSE) { _substEntry = null; }
+  var _isENLang = false;
+  try { _isENLang = (typeof fMulerLang === "function" && fMulerLang() === "en"); } catch (eL0) { _isENLang = false; }
+  var _showSubst = !!(_isENLang && _substEntry && _substEntry.engineEN_sys && _substEntry.engineEN_sys !== _substEntry.engineEN);
+  if (_showSubst && _isEtherNaming) { try { if (typeof etherNamingMode !== "undefined" && etherNamingMode === "common") _showSubst = false; } catch (eC0) {} }
+  var _substToggle = "";
+  if (_showSubst) {
+    var _scCls = (typeof substNamingMode !== "undefined" && substNamingMode === "sys") ? "unselectedRadio" : "selectedRadio";
+    var _syCls = (typeof substNamingMode !== "undefined" && substNamingMode === "sys") ? "selectedRadio" : "unselectedRadio";
+    var _scW = "Traditional", _syW = "Systematic";
+    try { if (typeof fMulerT === "function") { _scW = fMulerT("substTraditional"); _syW = fMulerT("substSystematic"); } } catch (eTW) {}
+    _substToggle = `<div id='radioSubstNaming' class='HFlex' style='align-items:center;gap:0;margin-right:8px'><span class='settingLabel'>${(() => { try { return (typeof fMulerT === "function") ? fMulerT("substNamingLabel") : "Υποκαταστάτες:"; } catch (eL2) { return "Υποκαταστάτες:"; } })()}</span><div class='radioCheckContainer substNamingRadio ${_scCls}' data-subst-mode='school'>${_scW}<span class='radioCheck'></span></div><div class='radioCheckContainer substNamingRadio ${_syCls}' data-subst-mode='sys'>${_syW}<span class='radioCheck'></span></div></div>`;
+  }
+  // Panel layout: one row per control set, buttons first — each set renders
+  // only when present, so there are never empty rows or half-rows.
   const _stepperHTML = (typeof fChainStepperHTML === "function") ? fChainStepperHTML() : "";
   const _buttonsHTML = (() => {
     const _tt = (k, gr) => { try { return (typeof fMulerT === "function") ? fMulerT(k) : gr; } catch (e) { return gr; } };
     return `<button id='narrateAnalysisToggle' class='narrateBtn${narrateActiveClass}' data-tooltip='${toggleTitle}'>${toggleIcon}</button><button id='readNameBtn' class='readNameBtn' data-tooltip='${_tt("readName", "Εκφώνηση ονόματος")}' >${svgAudioDesc}</button><button id='nameStyleBoxToggle' class='nameStyleBox ${boxActiveClass}' data-tooltip='${boxTooltip}'>${toggleNameStyleBox}</button><button id='nameStyleCrossToggle' class='nameStyleCross ${crossActiveClass}' data-tooltip='${crossTooltip}'>${toggleNameStyleCross}</button><button id='nameStyleEyeToggle' class='nameStyleEye${eyeActiveClass}' data-tooltip='${_tt("compVisibility", "Ορατότητα συνθετικών")}'>${toggleNameStyleEye}</button><button id='nameExpandBtn' class='nameStyleExpand' data-tooltip='${_tt("fullName", "Πλήρες όνομα")}' aria-label='${_tt("fullName", "Πλήρες όνομα")}' hidden>${svgNameExpand}</button>`;
   })();
   var _panelInner = "";
-  if (_stepperHTML && etherNamingToggle) {
-    _panelInner = `<div id='nameSettingsRowTop'>${_stepperHTML}</div><div id='nameSettingsRowMain'><div class='nsLeft'>${etherNamingToggle}</div><div class='nsRight'>${_buttonsHTML}</div></div>`;
-  } else if (_stepperHTML) {
-    _panelInner = `<div id='nameSettingsRowMain'><div class='nsLeft'>${_stepperHTML}</div><div class='nsRight'>${_buttonsHTML}</div></div>`;
-  } else if (etherNamingToggle) {
-    _panelInner = `<div id='nameSettingsRowMain'><div class='nsLeft'>${etherNamingToggle}</div><div class='nsRight'>${_buttonsHTML}</div></div>`;
-  } else {
-    _panelInner = `<div id='nameSettingsRowMain'><div class='nsRight'>${_buttonsHTML}</div></div>`;
-  }
+  // One row per control set: buttons first, then naming radios, then stepper.
+  // Rows render only when they have content (no empty rows by construction).
+  var _rowsAll = [`<div id='nameSettingsRowMain'><div class='nsLeft'>${_buttonsHTML}</div></div>`];
+  if (etherNamingToggle) _rowsAll.push(`<div class='nameSettingsRow'>${etherNamingToggle}</div>`);
+  if (_substToggle) _rowsAll.push(`<div class='nameSettingsRow'>${_substToggle}</div>`);
+  if (_stepperHTML) _rowsAll.push(`<div class='nameSettingsRow'>${_stepperHTML}</div>`);
+  _panelInner = _rowsAll.join("");
 
   const _namingWord = (() => { try { return (typeof fMulerT === "function") ? fMulerT("naming") : "Ονομασία"; } catch (e) { return "Ονομασία"; } })();
   const _namingSettingsWord = (() => { try { return (typeof fMulerT === "function") ? fMulerT("namingSettings") : "Ρυθμίσεις Ονομασίας"; } catch (e) { return "Ρυθμίσεις Ονομασίας"; } })();
@@ -6915,8 +6980,37 @@ function fShowNameAnalysis() {
   // EN systematic name boxes: pre-transliterated text in EN order, stable Greek box ids.
   _renderedENBoxes = true;
   var _elist = _enBoxes.boxes;
+  // Systematic variant: same ids, systematic substituent text, diff-marked
+  // boxes whose text is new vs school (locants match by construction).
+  if (_showSubst && typeof substNamingMode !== "undefined" && substNamingMode === "sys") {
+    try {
+      var _sbx = (typeof fNameENBoxes === "function") ? fNameENBoxes("sys") : null;
+      if (_sbx && _sbx.boxes && _sbx.boxes.length) {
+        var _preIds = /^(comp0|comp1|comp2|comp3|comp3b\d*|comp3loc\d*|comp10)$/;
+        var _schoolSeen = {};
+        for (var _sbi = 0; _sbi < _elist.length; _sbi++) {
+          if (_preIds.test(_elist[_sbi][0])) _schoolSeen[_elist[_sbi][1]] = true;
+        }
+        var _tipPre = "Traditional form: ";
+        try { if (typeof fMulerT === "function") _tipPre = fMulerT("sysDiffTip"); } catch (eTtip) {}
+        var _schoolEN = "";
+        try {
+          if (typeof nameExamples !== "undefined" && selectedMol && nameExamples[selectedMol]) _schoolEN = nameExamples[selectedMol].engineEN || "";
+        } catch (eSEN) {}
+        try { if (typeof fMolDraftEsc === "function") { _tipPre = fMolDraftEsc(_tipPre); _schoolEN = fMolDraftEsc(_schoolEN); } } catch (eEsc) {}
+        var _slist = [];
+        for (var _dbi = 0; _dbi < _sbx.boxes.length; _dbi++) {
+          var _bid = _sbx.boxes[_dbi][0], _btx = _sbx.boxes[_dbi][1];
+          var _tip = null;
+          if (_preIds.test(_bid) && !_schoolSeen.hasOwnProperty(_btx)) _tip = _tipPre + _schoolEN;
+          _slist.push([_bid, _btx, _tip]);
+        }
+        _elist = _slist;
+      }
+    } catch (eSys) { /* school render stands */ }
+  }
   for (var _ei = 0; _ei < _elist.length; _ei++) {
-    compBox = fNameCompBox(_elist[_ei][0], boxClass, _elist[_ei][1]);
+    compBox = fNameCompBox(_elist[_ei][0], boxClass, _elist[_ei][1], _elist[_ei].length > 2 ? _elist[_ei][2] : null);
     nameCompContainer += compBox;
     if (_ei < _elist.length - 1) {
       if (_enBoxes.spaceAfter && _elist[_ei][0] === _enBoxes.spaceAfter) nameCompContainer += `<div class='nameCompSpace'>&nbsp;</div>`;
@@ -8808,15 +8902,13 @@ function fRenderChainStepper() {
       typeof nameExamples !== "undefined" && !!nameExamples[selectedMol]);
   } catch (eM) { /* no molecule */ }
   // Visible only with 2+ chains; otherwise the whole box hides.
-  // The dedicated top row follows the box (ether+stepper case) so no empty
-  // row reserves space; inline in the main row (stepper-only case) only the
-  // box hides — the button row must stay.
+  // The stepper owns its row, so the row follows the box (no empty row
+  // reserves space); radio/button rows are unaffected.
   var active = okMol && algo && pool.length > 1;
   try {
     box.style.display = active ? "" : "none";
     var _row = box.parentNode;
-    if (_row && _row.id === "nameSettingsRowTop") _row.style.display = active ? "" : "none";
-    else if (_row && _row.className && ((" " + _row.className + " ").indexOf(" nsLeft ") !== -1)) _row.style.display = active ? "" : "none";
+    if (_row && _row.className && ((" " + _row.className + " ").indexOf(" nameSettingsRow ") !== -1)) _row.style.display = active ? "" : "none";
   } catch (eS) { /* styling unavailable */ }
   if (!active || !label) return;
   if (idx < 0) idx = 0;
@@ -9494,6 +9586,17 @@ function fUpdateEtherNamingButton() {
   $btns.removeClass("selectedRadio").addClass("unselectedRadio");
   $btns
     .filter(`[data-naming-mode='${etherNamingMode}']`)
+    .removeClass("unselectedRadio")
+    .addClass("selectedRadio");
+}
+
+// Sync SCHOOL/SYSTEMATIC substituent toggle visuals (same rebuild pattern).
+function fUpdateSubstNamingButton() {
+  const $btns = $("#radioSubstNaming .substNamingRadio");
+  if ($btns.length === 0) return;
+  $btns.removeClass("selectedRadio").addClass("unselectedRadio");
+  $btns
+    .filter(`[data-subst-mode='${substNamingMode}']`)
     .removeClass("unselectedRadio")
     .addClass("selectedRadio");
 }
