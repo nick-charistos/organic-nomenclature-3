@@ -1,18 +1,17 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `289a230` (2026-11-07) — v54
-> footer excluded from viewer budget (`?v=54.28`): the content-driven
-> footer cost each viewer half its growth (265→165px at 800px viewport);
-> page now scrolls for the excess instead. Remaining from before: full
-> 141 EN sweep + P3 blessing of new Greek word forms. Tree clean (session
-> temp file ignored by design:
-> `js/MULERMOC_methyl_4_ethoxybutanoate_data.js`). Full record:
-> `docs/CHANGELOG.md` v54.28.
+> **Resume pointer (cross-machine):** HEAD `535737a` (2026-11-07) — v54
+> continuity record (`?v=54.29`): owner-adopted **Namelecule by Molwave**
+> naming + WIP banner + credits (`926768f`) recorded in CHANGELOG with the
+> missing cache-buster. Remaining from before: full 141 EN sweep + P3
+> blessing of new Greek word forms. Tree clean (session temp file ignored
+> by design: `js/MULERMOC_methyl_4_ethoxybutanoate_data.js`). Full record:
+> `docs/CHANGELOG.md` v54.29.
 > Routine on the other machine: pull first, then resume from
 > `git log --oneline -5` + `git status`. OpenCode sessions stay machine-local.
 >
-> Previous pointer (2026-11-07, now superseded): HEAD `5858e4f` — v54
-> bilingual footer credits (`?v=54.27`).
+> Previous pointer (2026-11-07, now superseded): HEAD `289a230` — v54
+> footer excluded from viewer budget (`?v=54.28`).
 >
 > Previous pointer (2026-11-07, now superseded): HEAD `0886181` — v54
 > decorated-branch naming + fail-closed locants (`?v=54.23`).
