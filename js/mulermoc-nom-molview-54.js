@@ -1636,7 +1636,20 @@ function fMolDraftRenderPreview() {
     var clsEN = vEN === "correct" ? " draftV-correct" : (vEN === "wrong" ? " draftV-wrong" : "");
     var html = "<div class='draftPreview'><div class='draftPreviewTitle'>" + fMolDraftEsc(fMolDraftT("draftPreviewTitle", "Πρόβλεψη Ονομασίας")) + "</div>" +
       "<div class='draftVRow'>" + fMolDraftVerdictCtrl("gr", vGR, false) + "<div class='draftEngine" + clsGR + "'>" + fMolDraftEsc(d.engineName) + "</div></div>";
-    if (d.engineEN) html += "<div class='draftVRow'>" + fMolDraftVerdictCtrl("en", vEN, !!d.enAutoValidated) + "<div class='draftEngineEN" + clsEN + "'>" + fMolDraftEsc(d.engineEN) + "</div></div>";
+    // EN prediction rows: school (Traditional) always; Systematic variant row
+    // (v54.24) when it differs — e.g. 4,4-bis(chloromethyl)heptane vs school
+    // 4,4-dichloromethylheptane. One shared EN verdict state per draft
+    // (both copies repaint on set); Traditional stays first.
+    if (d.engineEN) {
+      var _scW = "Traditional", _syW = "Systematic";
+      try {
+        _scW = fMolDraftT("substTraditional", "Traditional");
+        _syW = fMolDraftT("substSystematic", "Systematic");
+      } catch (eSW) {}
+      var _enLbl = d.engineEN_sys ? _scW + ": " : "";
+      html += "<div class='draftVRow'>" + fMolDraftVerdictCtrl("en", vEN, !!d.enAutoValidated) + "<div class='draftEngineEN" + clsEN + "'>" + fMolDraftEsc(_enLbl + d.engineEN) + "</div></div>";
+      if (d.engineEN_sys) html += "<div class='draftVRow'>" + fMolDraftVerdictCtrl("en", vEN, !!d.enAutoValidated) + "<div class='draftEngineEN" + clsEN + "'>" + fMolDraftEsc(_syW + ": " + d.engineEN_sys) + "</div></div>";
+    }
     if (typeof d.pubchem === "undefined") {
       html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitFetching", "Looking up PubChem…")) + "</div>";
     } else if (d.pubchem) {
@@ -1650,7 +1663,7 @@ function fMolDraftRenderPreview() {
         // non-interactive, unlike the Correct/Wrong verdict controls).
         var _pcG = "?", _pcT = "";
         try {
-          var _pcM = (typeof fMolDraftPCMatch === "function") ? fMolDraftPCMatch(d.engineEN, hit) : false;
+          var _pcM = (typeof fMolDraftPCMatch === "function") ? (fMolDraftPCMatch(d.engineEN, hit) || (d.engineEN_sys && fMolDraftPCMatch(d.engineEN_sys, hit))) : false;
           if (_pcM) { _pcG = "✓"; _pcT = fMolDraftT("draftPCMatchTip", "PubChem agrees with the predicted name"); }
           else { _pcG = "✕"; _pcT = fMolDraftT("draftPCMismatchTip", "Predicted name differs from PubChem — pending human review"); }
         } catch (ePCM) {}
@@ -1669,6 +1682,11 @@ function fMolDraftRenderPreview() {
           var _ocG = "?", _ocT = "";
           try {
             var _ocV = (typeof fMatchENvsOC === "function") ? fMatchENvsOC(d.engineEN, _ocD.name) : "missing";
+            // Systematic variant may match where school does not (v54.24).
+            try {
+              if (_ocV !== "match" && d.engineEN_sys && typeof fMatchENvsOC === "function" &&
+                fMatchENvsOC(d.engineEN_sys, _ocD.name) === "match") _ocV = "match";
+            } catch (eOCV2) {}
             if (_ocV === "match") { _ocG = "✓"; _ocT = fMolDraftT("ocMatchTip", "OpenClatura agrees with the engine name"); }
             else if (_ocV === "mismatch") { _ocG = "✕"; _ocT = fMolDraftT("ocMismatchTip", "Engine name differs from OpenClatura — pending human review"); }
             else { _ocG = "?"; _ocT = fMolDraftT("ocMissingTip", "No OpenClatura answer"); }
@@ -1889,6 +1907,13 @@ async function fMolDraftSubmit() {
   try { if (typeof fPopulateEngineENFromGreek === "function") _en = fPopulateEngineENFromGreek("__draft__"); } catch (eEN) { _en = null; }
   window.MulerDraft.engineEN = (typeof _en === "string" && _en) ? _en : null;
   window.MulerDraft.engineDelegated = false;
+  // Systematic variant (v54.24): same-slot transform with the "sys" maps
+  // (bis/tris upgrade for decorated branches). Shown as a second EN row and
+  // included in oracle matching when it differs from school. Same "__draft__"
+  // store-back guard applies (return value only, nothing persisted).
+  var _enSys = null;
+  try { if (typeof fPopulateEngineENFromGreek === "function") _enSys = fPopulateEngineENFromGreek("__draft__", "sys"); } catch (eENS) { _enSys = null; }
+  window.MulerDraft.engineEN_sys = (typeof _enSys === "string" && _enSys && _enSys !== window.MulerDraft.engineEN) ? _enSys : null;
   // Name verdicts (tri-state per language): every Submit resets — new
   // drawing, new prediction, old verdict void. EN auto-check re-applies
   // below once the oracle lands (untouched only); GR is manual-only.
@@ -1945,12 +1970,19 @@ async function fMolDraftSubmit() {
     }
     // EN auto-validation (untouched only — a human verdict always wins):
     // PubChem 3-way oracle match (shared helper, also feeds the row glyph).
-    // A match auto-checks the EN box as correct.
+    // School OR systematic variant may match (v54.24 — e.g. PubChem
+    // 4,4-bis(chloromethyl)heptane vs school 4,4-dichloromethylheptane);
+    // source recorded for the eval-data header. A match auto-checks the EN
+    // box as correct.
     if (_dd && _dd.engineEN && !_dd.touchedEN && typeof fMolDraftPCMatch === "function") {
       if (fMolDraftPCMatch(_dd.engineEN, hit)) {
         _dd.verdictEN = "correct";
         _dd.enAutoValidated = true;
         _dd.enAutoSource = "pubchem";
+      } else if (_dd.engineEN_sys && fMolDraftPCMatch(_dd.engineEN_sys, hit)) {
+        _dd.verdictEN = "correct";
+        _dd.enAutoValidated = true;
+        _dd.enAutoSource = "pubchem-sys";
       }
     }
   } catch (eED) {}
@@ -1973,12 +2005,17 @@ async function fMolDraftSubmit() {
           // source-recorded for the eval-data header. Never un-marks.
           try {
             var _dd2 = window.MulerDraft;
-            if (_dd2 && _dd2.engineEN && !_dd2.touchedEN && _dd2.verdictEN !== "correct" &&
-                oc && oc.name && typeof fMatchENvsOC === "function" &&
-                fMatchENvsOC(_dd2.engineEN, oc.name) === "match") {
+            var _ocM1 = false, _ocM2 = false;
+            try {
+              if (typeof fMatchENvsOC === "function" && oc && oc.name) {
+                _ocM1 = (fMatchENvsOC(_dd2.engineEN, oc.name) === "match");
+                _ocM2 = !!(_dd2.engineEN_sys && fMatchENvsOC(_dd2.engineEN_sys, oc.name) === "match");
+              }
+            } catch (eOCm) { _ocM1 = false; _ocM2 = false; }
+            if (_dd2 && _dd2.engineEN && !_dd2.touchedEN && _dd2.verdictEN !== "correct" && (_ocM1 || _ocM2)) {
               _dd2.verdictEN = "correct";
               _dd2.enAutoValidated = true;
-              _dd2.enAutoSource = "openclatura";
+              _dd2.enAutoSource = (!_ocM1 && _ocM2) ? "openclatura-sys" : "openclatura";
             }
           } catch (eOCa) {}
           try {
@@ -2131,7 +2168,7 @@ function fMolDraftDownloadSingle(rec) {
     var header = "/* MuLER custom draft molecule (v54 Stage 2, manual save from Ρυθμίσεις).\n" +
       "   Molecule: " + rec.key + (rec.grName ? " (" + rec.grName + ")" : "") + "\n" +
       "   Status: " + (rec.status || "draft") + " | " + new Date().toISOString().slice(0, 10) + "\n" +
-      "   Names: GR " + _nc.gr + ", EN " + _nc.en + (_nc.enAutoValidated ? " (EN auto: " + (_nc.enAutoSource === "openclatura" ? "OpenClatura" : "PubChem") + ")" : "") + "\n" +
+      "   Names: GR " + _nc.gr + ", EN " + _nc.en + (_nc.enAutoValidated ? " (EN auto: " + (_nc.enAutoSource === "openclatura" ? "OpenClatura" : (_nc.enAutoSource === "openclatura-sys" ? "OpenClatura-sys" : (_nc.enAutoSource === "pubchem-sys" ? "PubChem-sys" : "PubChem"))) + ")" : "") + "\n" +
       "   Place next to the data file (js/) and register it:\n" +
       "   <script src=\"js/" + fMolDraftFileSlug(rec) + "\"><\/script> */\n" +
       "window.nameExamplesCustom = Object.assign(window.nameExamplesCustom || {}, " +
@@ -2620,7 +2657,7 @@ async function fMolDraftAccept() {
     if (d.verdictGR === "correct" || d.verdictGR === "wrong") _vc.gr = d.verdictGR;
     if (d.verdictEN === "correct" || d.verdictEN === "wrong") _vc.en = d.verdictEN;
     _vc.enAutoValidated = !!d.enAutoValidated;
-    try { _vc.enAutoSource = (d.enAutoSource === "openclatura" || d.enAutoSource === "pubchem") ? d.enAutoSource : (_vc.enAutoValidated ? "pubchem" : null); } catch (eAS2) {}
+    try { _vc.enAutoSource = (d.enAutoSource === "openclatura" || d.enAutoSource === "pubchem" || d.enAutoSource === "openclatura-sys" || d.enAutoSource === "pubchem-sys") ? d.enAutoSource : (_vc.enAutoValidated ? "pubchem" : null); } catch (eAS2) {}
   } catch (eVc) {}
   var rec = {
     key: key,
