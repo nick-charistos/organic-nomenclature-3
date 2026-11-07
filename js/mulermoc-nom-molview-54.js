@@ -11239,8 +11239,12 @@ function fViewerHeights2D3D(raw) {
     var total = window.innerHeight - 30; // header
     var h1 = document.getElementById("pageTitle");
     if (h1 && h1.offsetParent !== null) total -= h1.offsetHeight;
-    var cred = document.getElementById("creditsUs");
-    if (cred && cred.offsetParent !== null) total -= cred.offsetHeight;
+    // WIP notice banner (normal flow above the title while not dismissed).
+    var devN = document.getElementById("devNotice");
+    if (devN && devN.offsetParent !== null) total -= devN.offsetHeight;
+    // Footer excluded from the budget (v54.28): the content-driven credits
+    // footer must never shrink the viewers — the page scrolls for the
+    // excess instead. (Previously subtracted its live offsetHeight.)
     // Per-step note card (presentation only): when it stays in flow above the
     // app columns (top position), its full vertical footprint (incl. net
     // margins) must leave the viewer budget — otherwise a two-viewer present
