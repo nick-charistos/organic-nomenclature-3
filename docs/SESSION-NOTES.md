@@ -1,19 +1,18 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `90f8986` (2026-11-08) — v54
-> sys-aware slot-3 pieces (`?v=54.34`): common text split for boundaries,
-> name pieces transformed — fused sys slots render as proper components
-> with standard ids, so highlight/numbering/explain work with zero
-> dispatch changes. Remaining from before: full 141 EN sweep + P3 blessing
+> **Resume pointer (cross-machine):** HEAD `f7a13fe` (2026-11-08) — v54
+> locants-box explain scoped to selected alkyl (`?v=54.35`): compNumber2
+> text now narrows like the highlight (first-of-rest only; single-group
+> sentence fires). Remaining from before: full 141 EN sweep + P3 blessing
 > of new Greek word forms. Co-editor WIP in tree (untouched):
 > `css/jsme-nick-54.css`. Otherwise clean (session temp file ignored by
 > design: `js/MULERMOC_methyl_4_ethoxybutanoate_data.js`). Full record:
-> `docs/CHANGELOG.md` v54.34.
+> `docs/CHANGELOG.md` v54.35.
 > Routine on the other machine: pull first, then resume from
 > `git log --oneline -5` + `git status`. OpenCode sessions stay machine-local.
 >
-> Previous pointer (2026-11-08, now superseded): HEAD `e44fd00` — v54
-> systematic GR atomic in slot 3 (`?v=54.33`, same-day superseded).
+> Previous pointer (2026-11-08, now superseded): HEAD `90f8986` — v54
+> sys-aware slot-3 pieces (`?v=54.34`).
 >
 > Previous pointer (2026-11-07, now superseded): HEAD `0886181` — v54
 > decorated-branch naming + fail-closed locants (`?v=54.23`).
