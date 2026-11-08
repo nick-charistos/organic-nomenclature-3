@@ -1,25 +1,16 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `147f44f` + pointer (2026-11-08) — EN+GR
-> alphabetical branch order (`?v=54.41`): full group sort by displayed name
-> (slot-1 + slot-3 pieces, locants + box ids travel; P-14.5.1/2/4 verified
-> against the QMul Blue Book). Fixes `2-ethyl-3-(propan-2-yl)-6,6-dimethyl…`
-> → `2-ethyl-6,6-dimethyl-3-(propan-2-yl)…`. EN boxes + joined engineEN,
-> GR sys panel + joined preview; GR common + EN school byte-identical;
-> swap kept as fail-closed legacy fallback. 4 EN-sys + 8 GR-sys rows
-> reorder, zero oracle flips. Remaining: browser 141 sweep (both languages,
-> both variants, piece clicks on the 4 fused rows) + P3 blessing of new
-> Greek word forms. Uncommitted co-editor WIP (untouched): `css/jsme-nick-54.css`,
-> `js/mulermoc-nom-{iupac,lang,molview,teaching}-54.js`, `js/ui-icons.js`
-> (molview shares the file — selective staging required).
-> Otherwise clean (session temp file ignored by design:
-> `js/MULERMOC_methyl_4_ethoxybutanoate_data.js`). Full record:
-> `docs/CHANGELOG.md` + `docs/REVIEW-EN-53.md` §Q, v54.41.
+> **Resume pointer (cross-machine):** HEAD `v54.42` + pointer (2026-11-08) — co-editor
+> batch reviewed + committed: title-bar Save-all entry (`#saveMolBtn`),
+> footer credits polish, OC fetch `verify=0`, OC-mismatch outline disabled
+> (`?v=54.42`). Esprima clean, cross-refs verified, no naming-engine changes.
+> Tree clean. Remaining: browser 141 sweep (both languages, both variants,
+> piece clicks on the 4 fused rows) + P3 blessing of new Greek word forms.
 > Routine on the other machine: pull first, then resume from
 > `git log --oneline -5` + `git status`. OpenCode sessions stay machine-local.
 >
-> Previous pointer (2026-11-08, now superseded): HEAD `2fb2874` — v54
-> EN systematic slot-3 shredding + locant-preceded parens (`?v=54.40`).
+> Previous pointer (2026-11-08, now superseded): HEAD `147f44f` — docs:
+> ordering applies to traditional/common names too (§Q).
 >
 > Previous pointer (2026-11-07, now superseded): HEAD `0886181` — v54
 > decorated-branch naming + fail-closed locants (`?v=54.23`).
