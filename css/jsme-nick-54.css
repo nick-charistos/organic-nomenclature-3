@@ -177,12 +177,12 @@ header {
   outline-offset: 2px;
 }
 
-#editMolBtn svg, #newMolBtn svg {
+#editMolBtn svg, #newMolBtn svg, #saveMolBtn svg {
   width: 20px;
   height: 20px;
 }
 
-/* Viewer title-bar button rows: left [2D][3D], right [edit][new][gear].
+/* Viewer title-bar button rows: left [2D][3D], right [edit][new][save][gear].
    Buttons lay out in a row; .settingsBtn absolute positioning is
    neutralized inside both containers. */
 #viewerVisBtns {
@@ -202,9 +202,9 @@ header {
   transform: none;
 }
 
-/* Viewer title-bar right cluster: [edit][new][gear]. The container takes the
-   single absolute slot once (v54 Stage 2: two draft entries + gear); buttons
-   lay out in a row inside it, mirroring #viewerVisBtns on the left. */
+/* Viewer title-bar right cluster: [edit][new][save][gear]. The container takes
+   the single absolute slot once (v54 Stage 2: two draft entries + save + gear);
+   buttons lay out in a row inside it, mirroring #viewerVisBtns on the left. */
 #viewerSettingsBtnDiv {
   position: absolute;
   right: 8px;
@@ -348,7 +348,8 @@ header {
 
 /* Draft entries are authoring-only: never in presentation. */
 #pageContainer.presenting #editMolBtn,
-#pageContainer.presenting #newMolBtn {
+#pageContainer.presenting #newMolBtn,
+#pageContainer.presenting #saveMolBtn {
   display: none;
 }
 
@@ -2054,7 +2055,7 @@ header {
 /* Second-oracle (OpenClatura) marker (EN only): outline only, no badge.
    Verdict computed by fMulerOCVerdict; painted at build and in place. */
 .nameCompContainer.verdict-oc-mismatch {
-  box-shadow: 0 0 0 2px #d98c8c;
+  /* box-shadow: 0 0 0 2px #d98c8c; */
 }
 /* Systematic-substituent diff mark (EN only): boxes whose text is new vs the
    school form (native title carries the school wording). Distinct from the
@@ -2474,6 +2475,13 @@ header {
   border-bottom-right-radius: 4px;
 }
 
+#ruleContainer .ruleText {
+  margin-bottom: 0;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-top: 1px solid var(--darkBlue);
+}
+
 /* ── ruleTheory accordion ──────────────────────────────────────────────── */
 #ruleTheory .ruleTheoryTitle {
   padding-left: 28px;
@@ -2538,15 +2546,23 @@ header {
   font-family: "Roboto Condensed", sans-serif;
   font-weight: 600;
   font-size: 0.875rem;
-  /* color: var(--darkBlue); */
+  color: var(--veryLightEarth);
   /* margin-bottom: 5px; */
+}
+
+.creditsTitle2 {
+   font-family: "Roboto Condensed", sans-serif;
+  font-weight: normal;
+  font-size: 0.875rem;
+   color: var(--veryLightEarth);
+  /* color: var(--darkBlue); */
 }
 
 .creditsAbout {
   font-family: "Roboto Condensed", sans-serif;
   font-weight: 600;
   font-size: 1rem;
-
+color: var(--veryLightEarth);
 }
 
 /* ── Dev/WIP notice banner (top of #pageContainer, dismissible) ────────── */

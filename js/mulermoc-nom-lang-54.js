@@ -73,6 +73,7 @@ var MULER_STRINGS = {
   acceptKept: { gr: "Αποδεκτή στη συνεδρία — αποθήκευσέ τη από Ρυθμίσεις.", en: "Accepted into this session — save it from Settings." },
   customMols: { gr: "Προσαρμοσμένα μόρια:", en: "Custom molecules:" },
   customMolSave: { gr: "Λήψη .js", en: "Download .js" },
+  saveNewMols: { gr: "Αποθήκευση νέων μορίων", en: "Save new molecules" },
   customMolSession: { gr: "στη συνεδρία", en: "this session" },
   pickCustomToSave: { gr: "Επίλεξε ένα προσαρμοσμένο μόριο.", en: "Pick a custom molecule." },
   customSaveAllNone: { gr: "Τίποτα νέο για αποθήκευση — σχεδίασε και Αποδέξου ένα μόριο.", en: "Nothing new to save — draw and Accept a molecule first." },
@@ -307,12 +308,12 @@ var MULER_STRINGS = {
   creditOwner: { gr: "Νικόλας Χαριστός", en: "Nickolas Charistos" },
   creditProgram: { gr: "Μοριακός Σχεδιασμός και Μοντελοποίηση &bullet; Χημική Εκπαίδευση", en: "Molecular Design and Modelling &bullet; Chemistry Education" },
   creditDept: { gr: "Τμήμα Χημείας", en: "Department of Chemistry" },
-  creditUni: { gr: "ΑΠΘ 2025-26", en: "Aristotle University of Thessaloniki 2025-26" },
+  creditUni: { gr: "ΑΠΘ &bullet; 2025-26", en: "Aristotle University of Thessaloniki &bullet; 2025-26" },
   creditAbout: { gr: "Μάθηση ονοματολογίας οργανικών ενώσεων μέσα από τη δομή, την ονομασία και διασυνδεόμενες αναπαραστάσεις των μορίων", en: "Learning organic nomenclature through molecular structure, naming, and linked representations" },
   creditChemInfoLibs: { gr: "Βιβλιοθήκες Χημειοπληροφορικής", en: "Chemoinformatics Libraries" },
   creditTeamLabel: { gr: "Ομάδα", en: "Team" },
   creditSupervisorLabel: { gr: "Project Leader", en: "Project Leader" },
-  creditChemInfoLibsType1: { gr: "Viewers and Editors", en: "Viewers and Editors" },
+  creditChemInfoLibsType1: { gr: "2D/3D Viewers and Editors", en: "2D/3D Viewers and Editors" },
   creditChemInfoLibsType2: { gr: "Info, Data and Validation", en: "Info, Data and Validation" },
   devNotice: { gr: "Υπό ανάπτυξη — πιθανά λάθη στην ονοματολογία.", en: "Under development — naming errors possible." }
 };
@@ -443,6 +444,7 @@ function fMulerPaintStaticChrome() {
   setTip("#view3DBtn", fMulerT("show3D"));
   setTip("#editMolBtn", fMulerT("editMol"));
   setTip("#newMolBtn", fMulerT("newMol"));
+  setTip("#saveMolBtn", fMulerT("saveNewMols"));
   setTip("#viewerSettingsBtn", fMulerT("settings"));
   setTip("#nameSettingsBtn", fMulerT("namingSettings"));
   setTip("#readNameBtn", fMulerT("readName"));

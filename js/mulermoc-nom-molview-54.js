@@ -268,6 +268,7 @@ const svgNameExpand = (window.MuLERIcons && window.MuLERIcons.nameExpand) || "";
 const svgMolInfo = (window.MuLERIcons && window.MuLERIcons.info) || "";
 const svgEditMol = (window.MuLERIcons && window.MuLERIcons.editMolecule) || "";
 const svgNewMol = (window.MuLERIcons && window.MuLERIcons.newMolecule) || "";
+const svgSaveMol = (window.MuLERIcons && window.MuLERIcons.saveMolecule) || "";
 
 // Per-component name visibility helpers (eye toggles). Masking is applied at
 // box-construction time in fShowNameAnalysis so every rebuild (mode switch,
@@ -532,10 +533,11 @@ function fClassifyAllMolecules() {
 // ── fToggleViewerSettings ────────────────────────────────────────────────
 
 // Title-bar buttons: 2D / 3D visibility toggles into #viewerVisBtns (far left,
-// bold text, same .active contract as the gear) + gear into #viewerSettingsBtnDiv.
+// bold text, same .active contract as the gear) + draft entries + save-all +
+// gear into #viewerSettingsBtnDiv.
 // Uses existing `svgSettings` constant and the fToggleViewerSettings() handler.
 function fInitViewerSettingsBtn() {
-  const markup = `<button id='editMolBtn' class='settingsBtn hide' onclick='fEditMolDraft()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("editMol") : "Επεξεργασία μορίου") + `'>${svgEditMol}</button><button id='newMolBtn' class='settingsBtn hide' onclick='fNewMolDraft()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("newMol") : "Νέο μόριο") + `'>${svgNewMol}</button><button id='viewerSettingsBtn' class='settingsBtn' onclick='fToggleViewerSettings()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("settings") : "Ρυθμίσεις") + `'>${svgSettings}</button>`;
+  const markup = `<button id='editMolBtn' class='settingsBtn hide' onclick='fEditMolDraft()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("editMol") : "Επεξεργασία μορίου") + `'>${svgEditMol}</button><button id='newMolBtn' class='settingsBtn hide' onclick='fNewMolDraft()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("newMol") : "Νέο μόριο") + `'>${svgNewMol}</button><button id='saveMolBtn' class='settingsBtn hide btnInactive' onclick='fMolDraftSaveAllCustom()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("saveNewMols") : "Save new molecules") + `'>${svgSaveMol}</button><button id='viewerSettingsBtn' class='settingsBtn' onclick='fToggleViewerSettings()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("settings") : "Ρυθμίσεις") + `'>${svgSettings}</button>`;
   const visMarkup = `<button id='view2DBtn' class='settingsBtn visBtn active' onclick='fToggleViewer2D()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("show2D") : "Εμφάνιση 2D") + `'>2D</button><button id='view3DBtn' class='settingsBtn visBtn active' onclick='fToggleViewer3D()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("show3D") : "Εμφάνιση 3D") + `'>3D</button>`;
   function insert() {
     try {
@@ -1033,7 +1035,7 @@ function fMolDraftClearNaming(statusText) {
 }
 
 // Drawing master switch (repurposed Ρυθμίσεις checkbox, default ON):
-// the Edit/New title-bar entries exist only while drawing is enabled.
+// the Edit/New/Save title-bar entries exist only while drawing is enabled.
 // Called at button build, on toggle, and from fMolDraftSyncButtons.
 function fMolDraftSyncEntryButtons() {
   try {
@@ -1041,8 +1043,10 @@ function fMolDraftSyncEntryButtons() {
     try { on = !!document.getElementById("originalJSMECheck").classList.contains("selectedCheck"); } catch (eC) {}
     var eb = document.getElementById("editMolBtn");
     var nb = document.getElementById("newMolBtn");
+    var sb = document.getElementById("saveMolBtn");
     if (eb) { if (on) eb.classList.remove("hide"); else eb.classList.add("hide"); }
     if (nb) { if (on) nb.classList.remove("hide"); else nb.classList.add("hide"); }
+    if (sb) { if (on) sb.classList.remove("hide"); else sb.classList.add("hide"); }
   } catch (eS) {}
 }
 
@@ -2303,6 +2307,17 @@ function fMolDraftSyncSaveBtn() {
       if (hasNew) btn.classList.remove("btnInactive");
       else btn.classList.add("btnInactive");
     }
+    // Title-bar mirror (v54.27): same hasNew state on #saveMolBtn, which uses
+    // btnInactive only (title-bar buttons have no disabled contract).
+    try {
+      var hasNewT = false;
+      try { hasNewT = fMolDraftNewCustomKeys().length > 0; } catch (eCT) { hasNewT = false; }
+      var tbtn = document.getElementById("saveMolBtn");
+      if (tbtn) {
+        if (hasNewT) tbtn.classList.remove("btnInactive");
+        else tbtn.classList.add("btnInactive");
+      }
+    } catch (eT) {}
   } catch (eS) {}
 }
 

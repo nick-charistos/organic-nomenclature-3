@@ -747,10 +747,10 @@ function fShowCreditLibs() {
     ownerName = en ? "Nickolas Charistos" : "Νικόλας Χαριστός";
     programName = en ? "Molecular Design and Modelling &bullet; Chemistry Education" : "Μοριακός Σχεδιασμός και Μοντελοποίηση - Χημική Εκπαίδευση";
     deptName = en ? "Department of Chemistry" : "Τμήμα Χημείας";
-    uniTag = en ? "Aristotle University of Thessaloniki | 2025-26" : "ΑΠΘ | 2025-26";
+    uniTag = en ? "Aristotle University of Thessaloniki &bullet; 2025-26" : "ΑΠΘ &bullet; 2025-26";
     aboutText = en ? "Learning organic nomenclature through molecular structure, naming, and linked representations." : "Μάθηση ονοματολογίας οργανικών ενώσεων μέσα από τη δομή, την ονομασία και διασυνδεόμενες αναπαραστάσεις των μορίων";
     chemInfoLibs = en ? "Chemoinformatics Libraries" : "Βιβλιοθήκες Χημειοπληροφορικής";
-    chemInfoLibsType1 = en ? "Viewers and Editors" : "Viewers and Editors";
+    chemInfoLibsType1 = en ? "2D/3D Viewers and Editors" : "2D/3D Viewers and Editors";
     chemInfoLibsType2 = en ? "Info, Data and Validation" : "Info, Data and Validation";
     teamLabel = en ? "Team" : "Ομάδα";
     supervisorLabel = en ? "Project Leader" : "Project Leader";
@@ -761,15 +761,15 @@ function fShowCreditLibs() {
   </div>
   <div class='creditsContainer creditsLib'>
   <div class='creditsTitle' >${chemInfoLibs}</div>
-  <div class='creditsTitle' >${chemInfoLibsType1}</div>
-    <div class=''>  <span><a href='https://jsme-editor.org/' target='_blank' rel='noopener'><strong>JSME</strong> A free molecule editor in JavaScript</a></span>
+  <div class='creditsTitle2' >${chemInfoLibsType1}</div>
+    <div class=''>  <span><a href='https://jsme-editor.org/' target='_blank' rel='noopener'><strong>JSME:</strong> A free molecule editor in JavaScript</a></span>
     </div>
-        <div class=''> <span><a href='https://jmol.sourceforge.net/' target='_blank' rel='noopener'><strong>JSmol</strong> an open-source HTML5 viewer for chemical structures in 3D</a> </span>
+        <div class=''> <span><a href='https://jmol.sourceforge.net/' target='_blank' rel='noopener'><strong>JSmol:</strong> An open-source HTML5 viewer for chemical structures in 3D</a> </span>
     </div>
-    <div class='creditsTitle' >${chemInfoLibsType2}</div>
-    <div class=''>  <span><a href='https://openclatura.org/' target='_blank' rel='noopener'><strong>openclatura</strong>  An open nomenclature framework</a></span>
+    <div class='creditsTitle2' >${chemInfoLibsType2}</div>
+    <div class=''>  <span><a href='https://openclatura.org/' target='_blank' rel='noopener'><strong>Openclatura:</strong>  An open nomenclature framework</a></span>
     </div>
-     <div class=''>  <span><a href='https://pubchem.ncbi.nlm.nih.gov/' target='_blank' rel='noopener'><strong>PubChem</strong> the world's largest collection of freely accessible chemical information</a></span>
+     <div class=''>  <span><a href='https://pubchem.ncbi.nlm.nih.gov/' target='_blank' rel='noopener'><strong>PubChem:</strong> The world's largest collection of freely accessible chemical information</a></span>
     </div>
   </div>
   <div class='creditsContainer'>

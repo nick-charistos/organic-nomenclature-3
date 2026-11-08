@@ -190,7 +190,7 @@ async function fFetchIUPAC_OC(smiles, opts) {
   try { await fOCGateWait(); } catch (eG) {}
   try { __mulerOCGate.last = Date.now(); } catch (eL) {}
   const url =
-    "https://openclatura.org/name?smiles=" + encodeURIComponent(raw) + "&format=json";
+    "https://openclatura.org/name?smiles=" + encodeURIComponent(raw) + "&verify=0&format=json";
   var ctrl = null, timer = null;
   try {
     if (typeof AbortController !== "undefined") {

@@ -156,6 +156,9 @@ PubChem is mute there). Record the per-key table here when run.
 Display-verdict policy (owner choice, live only — batch tables above stay per-oracle):
 either oracle agreeing keeps the name panel untinted; red only on disagreement. Draft
 auto-check is OR (PubChem 3-way or OC), source-recorded in `nameCheck.enAutoSource`.
+Co-editor pass, v54.42: OC fetch now passes `verify=0` (`fFetchIUPAC_OC`); the red
+OC-mismatch panel outline is disabled (CSS rule commented out — mismatch stays on
+record in console/info panel/REVIEW tables, no outline paint).
 
 ## Q. Blue Book audit corrections (v54.20, QMul HTML source)
 
