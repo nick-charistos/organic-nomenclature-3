@@ -64,10 +64,10 @@ function fBuildAlkylRuleTable() {
     ["μεθυλο", "–CH<sub>3</sub>", "Μεθύλιο", "μεθυλο-", "methyl"],
     ["αιθυλο", "–CH<sub>2</sub>–CH<sub>3</sub>", "Αιθύλιο", "αιθυλο-", "ethyl"],
     ["προπυλο", "–CH<sub>2</sub>–CH<sub>2</sub>–CH<sub>3</sub>", "Προπύλιο (n-)", "προπυλο-", "propyl"],
-    ["ισοπροπυλο", "–CH(CH<sub>3</sub>)<sub>2</sub>", "Ισοπροπύλιο", "ισοπροπυλο-", "propan-2-yl"],
+    ["ισοπροπυλο", "–CH(CH<sub>3</sub>)<sub>2</sub>", "Ισοπροπύλιο", "ισοπροπυλο-", "propan-2-yl", "2-προπανυλο"],
     ["βουτυλο", "–CH<sub>2</sub>–CH<sub>2</sub>–CH<sub>2</sub>–CH<sub>3</sub>", "Βουτύλιο (n-)", "βουτυλο-", "butyl"],
-    ["ισοβουτυλο", "–CH<sub>2</sub>–CH(CH<sub>3</sub>)<sub>2</sub>", "Ισοβουτύλιο", "ισοβουτυλο-", "2-methylpropyl"],
-    ["sec-βουτυλο", "–CH(CH<sub>3</sub>)–CH<sub>2</sub>–CH<sub>3</sub>", "sec-Βουτύλιο", "sec-βουτυλο-", "butan-2-yl"],
+    ["ισοβουτυλο", "–CH<sub>2</sub>–CH(CH<sub>3</sub>)<sub>2</sub>", "Ισοβουτύλιο", "ισοβουτυλο-", "2-methylpropyl", "2-μεθυλοπροπυλο"],
+    ["sec-βουτυλο", "–CH(CH<sub>3</sub>)–CH<sub>2</sub>–CH<sub>3</sub>", "sec-Βουτύλιο", "sec-βουτυλο-", "butan-2-yl", "2-βουτανυλο"],
     ["tert-βουτυλο", "–C(CH<sub>3</sub>)<sub>3</sub>", "tert-Βουτύλιο", "tert-βουτυλο-", "2-methylpropan-2-yl (tert-butyl)"],
   ];
   var _enAlk = false;
@@ -82,7 +82,7 @@ function fBuildAlkylRuleTable() {
     groups.map(function (g) {
       var _nm = _enAlk ? _cap(g[4]) : g[2];
       var _pf = _enAlk ? g[4] + "-" : g[3];
-      var _small = _enAlk ? "" : "<small>IUPAC: " + g[4] + "</small>";
+      var _small = _enAlk ? "" : "<small>IUPAC: " + g[4] + ((g.length > 5 && g[5]) ? " · Συστ.: " + g[5] : "") + "</small>";
       return "<div class='HFlex ruleRow' data-row='alkyl-" + g[0] + "'>" +
         "<div class='ruleCase alkylFormula'>" + g[1] + "</div>" +
         "<div class='ruleName'><strong>" + _nm + "</strong><span class='alkylPrefix'>" + _pf +
@@ -99,7 +99,7 @@ function fBuildAlkoxyRuleTable() {
     ["μεθοξυ", "–O–CH<sub>3</sub>", "Μεθοξυομάδα", "μεθοξυ-"],
     ["αιθοξυ", "–O–CH<sub>2</sub>–CH<sub>3</sub>", "Αιθοξυομάδα", "αιθοξυ-"],
     ["προποξυ", "–O–CH<sub>2</sub>–CH<sub>2</sub>–CH<sub>3</sub>", "Προποξυομάδα", "προποξυ-"],
-    ["ισοπροποξυ", "–O–CH(CH<sub>3</sub>)<sub>2</sub>", "Ισοπροποξυομάδα", "ισοπροποξυ-"],
+    ["ισοπροποξυ", "–O–CH(CH<sub>3</sub>)<sub>2</sub>", "Ισοπροποξυομάδα", "ισοπροποξυ-", "2-προπανοξυ"],
     ["βουτοξυ", "–O–CH<sub>2</sub>–CH<sub>2</sub>–CH<sub>2</sub>–CH<sub>3</sub>", "Βουτοξυομάδα", "βουτοξυ-"],
   ];
   // EN systematic names parallel to the Greek school names (same row order).
@@ -113,9 +113,10 @@ function fBuildAlkoxyRuleTable() {
     groups.map(function (g, i) {
       var _nm = _enAlx ? (groupsEN[i] + " group") : g[2];
       var _pf = _enAlx ? prefixEN[i] : g[3];
+      var _smx = (!_enAlx && g.length > 4 && g[4]) ? "<small>Συστ.: " + g[4] + "</small>" : "";
       return "<div class='HFlex ruleRow' data-row='alkoxy-" + g[0] + "'>" +
         "<div class='ruleCase alkylFormula'>" + g[1] + "</div>" +
-        "<div class='ruleName'><strong>" + _nm + "</strong><span class='alkylPrefix'>" + _pf + "</span></div></div>";
+        "<div class='ruleName'><strong>" + _nm + "</strong><span class='alkylPrefix'>" + _pf + "</span>" + _smx + "</div></div>";
     }).join("") + "</div>";
 }
 
@@ -558,7 +559,7 @@ function fInitNomeclatureMenu() {
     });
   }
 
-  let myHTML = `<div class='panelTitle'>${(typeof fMulerT === "function") ? fMulerT("examples") : "Παραδείγματα"}</div>
+  let myHTML = `<div class='panelTitle'>${(typeof fMulerT === "function") ? fMulerT("examples") : "Μενού"}</div>
     <div class='groupingMode' role='group' aria-label='${(typeof fMulerT === "function") ? fMulerT("molGrouping") : "Ομαδοποίηση μορίων"}'>
     <div class='radioCheckContainer ${moleculeGroupingMode === "all" ? "selectedRadio" : "unselectedRadio"}' data-grouping-mode='all'>${(typeof fMulerT === "function") ? fMulerT("allMolecules") : "Όλα τα μόρια"}<span class='radioCheck'></span></div>
     <div class='radioCheckContainer ${moleculeGroupingMode === "chemclass" ? "selectedRadio" : "unselectedRadio"}' data-grouping-mode='chemclass'>${(typeof fMulerT === "function") ? fMulerT("chemClasses") : "Χημικές Τάξεις"}<span class='radioCheck'></span></div>

@@ -1635,7 +1635,10 @@ function fMolDraftRenderPreview() {
     var clsGR = vGR === "correct" ? " draftV-correct" : (vGR === "wrong" ? " draftV-wrong" : "");
     var clsEN = vEN === "correct" ? " draftV-correct" : (vEN === "wrong" ? " draftV-wrong" : "");
     var html = "<div class='draftPreview'><div class='draftPreviewTitle'>" + fMolDraftEsc(fMolDraftT("draftPreviewTitle", "Πρόβλεψη Ονομασίας")) + "</div>" +
-      "<div class='draftVRow'>" + fMolDraftVerdictCtrl("gr", vGR, false) + "<div class='draftEngine" + clsGR + "'>" + fMolDraftEsc(d.engineName) + "</div></div>";
+      "<div class='draftVRow'>" + fMolDraftVerdictCtrl("gr", vGR, false) + "<div class='draftEngine" + clsGR + "'>" + fMolDraftEsc((d.engineName_sys ? fMolDraftT("commonName", "Κοινή") + ": " : "") + d.engineName) + "</div></div>";
+    // Systematic Greek row (v54.31) when it differs — shares the GR verdict
+    // state (manual-only, like EN). Common stays first.
+    if (d.engineName_sys) html += "<div class='draftVRow'>" + fMolDraftVerdictCtrl("gr", vGR, false) + "<div class='draftEngine" + clsGR + "'>" + fMolDraftEsc(fMolDraftT("systematicName", "Συστηματική") + ": " + d.engineName_sys) + "</div></div>";
     // EN prediction rows: school (Traditional) always; Systematic variant row
     // (v54.24) when it differs — e.g. 4,4-bis(chloromethyl)heptane vs school
     // 4,4-dichloromethylheptane. One shared EN verdict state per draft
@@ -1914,6 +1917,20 @@ async function fMolDraftSubmit() {
   var _enSys = null;
   try { if (typeof fPopulateEngineENFromGreek === "function") _enSys = fPopulateEngineENFromGreek("__draft__", "sys"); } catch (eENS) { _enSys = null; }
   window.MulerDraft.engineEN_sys = (typeof _enSys === "string" && _enSys && _enSys !== window.MulerDraft.engineEN) ? _enSys : null;
+  // Systematic Greek variant (v54.31): same render-time slot transform as the
+  // panel toggle, joined with the euphony mirror. No oracle role (GR is
+  // manual-only); shown as a second GR row when it differs from common.
+  var _grSys = null;
+  try {
+    if (typeof fGreekSysSlots === "function" && typeof fJoinGreekSysName === "function") {
+      var _gs = fGreekSysSlots();
+      if (_gs) {
+        var _gj = fJoinGreekSysName(_gs);
+        if (typeof _gj === "string" && _gj && _gj !== engineName) _grSys = _gj;
+      }
+    }
+  } catch (eGRS) { _grSys = null; }
+  window.MulerDraft.engineName_sys = _grSys;
   // Name verdicts (tri-state per language): every Submit resets — new
   // drawing, new prediction, old verdict void. EN auto-check re-applies
   // below once the oracle lands (untouched only); GR is manual-only.
@@ -6912,6 +6929,124 @@ function fMulerOCFetchDone(key) {
   } catch (e) { /* best-effort */ }
 }
 
+// ── Greek systematic substituent variant (v54.31) ─────────────────────────
+// Common -> systematic Greek (school retained -> substitutive): renders behind
+// the Κοινή|Συστηματική toggle (GR only), sharing substNamingMode with the EN
+// Traditional/Systematic toggle. Render-time transform of the common slots —
+// fGuessName slots stay common, so the v54.30 staleness class cannot recur
+// (no stored variant; always computed from the current chain).
+// Word forms: 2-προπανυλο- pattern user-confirmed; rule-derived siblings
+// flagged for P3 (same gate as v54.23). tert-βουτυλο intentionally stays
+// (preferred prefix, P-57.1.2 — same call as EN).
+var GR_SYST_SUBST = {
+  "ισοπροπυλο": "2-προπανυλο",
+  "ισοβουτυλο": "2-μεθυλοπροπυλο",
+  "sec-βουτυλο": "2-βουτανυλο",
+  "ισοπροποξυ": "2-προπανοξυ",
+  "sec-βουτοξυ": "2-βουτανοξυ",
+  "ισοπροπυλ": "2-προπανυλ",
+  "ισοβουτυλ": "2-μεθυλοπροπυλ",
+  "sec-βουτυλ": "2-βουτανυλ"
+};
+// One common stem -> systematic (with P-16.3.4(a)-analogue parens when the
+// mapped name carries a locant digit and the group is multiplied). Bare
+// groups stay bare; unknown stems pass through unchanged. Idempotent:
+// re-transforming systematic text is the identity.
+function fGRSystOneStem(w) {
+  try {
+    if (Object.prototype.hasOwnProperty.call(GR_SYST_SUBST, w)) return GR_SYST_SUBST[w];
+    var m = /^(δι|τρι|τετρα|πεντα|εξα|επτα|οκτα)(.+)$/.exec(String(w));
+    if (m && Object.prototype.hasOwnProperty.call(GR_SYST_SUBST, m[2])) {
+      var s2 = GR_SYST_SUBST[m[2]];
+      return /\d/.test(s2) ? (m[1] + "(" + s2 + ")") : (m[1] + s2);
+    }
+  } catch (eS) {}
+  return null;
+}
+// Slot transform (slots 1/3/10, like the EN fSystematicSubstSlot): whole-string
+// first (covers single groups incl. multiplied hyphenated stems), then fused
+// multi-group slots with hyphen-carrying stems (sec-/tert-) shielded so the
+// segment split cannot tear them apart (cf. EN sec-/tert- protection).
+function fSystematicGRSubstSlot(slot, text) {
+  try {
+    if (slot !== 1 && slot !== 3 && slot !== 10) return text;
+    var t = String(text == null ? "" : text);
+    if (!t) return t;
+    var one = fGRSystOneStem(t);
+    if (one !== null) return one;
+    var stems = ["sec-βουτυλο", "sec-βουτυλ", "tert-βουτυλο", "tert-βουτυλ"];
+    var rx = new RegExp("(?:δι|τρι|τετρα|πεντα|εξα|επτα|οκτα)?(?:" + stems.join("|") + ")", "g");
+    var held = [];
+    var sh = t.replace(rx, function (m) { held.push(m); return "" + (held.length - 1) + ""; });
+    var parts = sh.split("-");
+    var out = [];
+    for (var k = 0; k < parts.length; k++) {
+      var w = parts[k];
+      var hm = /^(\d+)$/.exec(w);
+      if (hm) {
+        var orig = held[parseInt(hm[1], 10)];
+        var om = fGRSystOneStem(orig);
+        out.push(om !== null ? om : orig);
+        continue;
+      }
+      if (!w || /^\d[\d,]*$/.test(w)) { out.push(w); continue; }
+      var pm = fGRSystOneStem(w);
+      out.push(pm !== null ? pm : w);
+    }
+    return out.join("-");
+  } catch (eS) { return text; }
+}
+// Transformed copy of the live common slots (1/3/10), or null when the
+// systematic variant is identical (toggle hides; common renders).
+function fGreekSysSlots() {
+  try {
+    if (typeof nameComponentsList === "undefined" || !nameComponentsList) return null;
+    var slots = nameComponentsList.slice();
+    var changed = false;
+    for (var i = 0; i < slots.length; i++) {
+      if (i === 1 || i === 3 || i === 10) {
+        var nt = fSystematicGRSubstSlot(i, slots[i]);
+        if (nt !== slots[i]) { slots[i] = nt; changed = true; }
+      }
+    }
+    return changed ? slots : null;
+  } catch (eG) { return null; }
+}
+// Euphony join mirror of the fGuessName tail (common + ester two-word rule),
+// for the joined systematic preview name from transformed slots.
+function fJoinGreekSysName(slots) {
+  try {
+    if (!Array.isArray(slots) || !slots.length) return null;
+    var _parts = slots.filter(function (c) { return c != null && c !== ''; });
+    var _isEster = false;
+    try {
+      _isEster = (typeof functionalGroupsList !== "undefined" && functionalGroupsList &&
+        functionalGroupsList.length === 1 && functionalGroupsList[0] === "ester");
+    } catch (eE) {}
+    var _gkV = ['α', 'ε', 'η', 'ι', 'ο', 'υ', 'ω', 'ά', 'έ', 'ή', 'ί', 'ό', 'ύ', 'ώ'];
+    var _isC = function (ch) {
+      try { return /[\u0370-\u03ff\u1f00-\u1fff]/u.test(ch) && _gkV.indexOf(ch) < 0; } catch (eC) { return false; }
+    };
+    var _join = function (list) {
+      return list.reduce(function (acc, part) {
+        if (acc === '') return part;
+        var lastCh = acc[acc.length - 1], firstCh = part[0];
+        if (_isC(lastCh) && _isC(firstCh)) {
+          var connector = ((lastCh === 'π' || lastCh === 'τ' || lastCh === 'ξ') && firstCh === 'δ') ? 'α' : 'ο';
+          return acc + connector + part;
+        }
+        return acc + part;
+      }, '');
+    };
+    if (_isEster) {
+      var _acid = slots.slice(0, 10).filter(function (c) { return c != null && c !== ''; });
+      var _tail = slots.slice(10).filter(function (c) { return c != null && c !== ''; });
+      return _join(_acid) + (_tail.length ? ' ' + _join(_tail) : '');
+    }
+    return _join(_parts);
+  } catch (eJ) { return null; }
+}
+
 function fShowNameAnalysis() {
   let compCount, currComp, displayComp, compBox, nameCompContainer;
   compCount = selectedMol ? nameComponentsList.length : 0;
@@ -6994,6 +7129,26 @@ function fShowNameAnalysis() {
     try { if (typeof fMulerT === "function") { _scW = fMulerT("substTraditional"); _syW = fMulerT("substSystematic"); } } catch (eTW) {}
     _substToggle = `<div id='radioSubstNaming' class='HFlex' style='align-items:center;gap:0;margin-right:8px'><span class='settingLabel'>${(() => { try { return (typeof fMulerT === "function") ? fMulerT("substNamingLabel") : "Υποκαταστάτες:"; } catch (eL2) { return "Υποκαταστάτες:"; } })()}</span><div class='radioCheckContainer substNamingRadio ${_scCls}' data-subst-mode='school'>${_scW}<span class='radioCheck'></span></div><div class='radioCheckContainer substNamingRadio ${_syCls}' data-subst-mode='sys'>${_syW}<span class='radioCheck'></span></div></div>`;
   }
+  // Κοινή|Συστηματική substituent toggle (GR only, v54.31): same shared
+  // substNamingMode as the EN toggle (one preference, language-exclusive
+  // rendering). Render-time slots — visibility reads the live transform,
+  // so no stored variant and no staleness class.
+  var _grSysSlots = null, _showSubstGR = false;
+  try {
+    if (!_isENLang && selectedMol && typeof fGreekSysSlots === "function") {
+      _grSysSlots = fGreekSysSlots();
+      _showSubstGR = !!_grSysSlots;
+    }
+  } catch (eGS) { _grSysSlots = null; _showSubstGR = false; }
+  if (_showSubstGR && _isEtherNaming) { try { if (typeof etherNamingMode !== "undefined" && etherNamingMode === "common") _showSubstGR = false; } catch (eC1) {} }
+  var _grSubstToggle = "";
+  if (_showSubstGR) {
+    var _gscCls = (typeof substNamingMode !== "undefined" && substNamingMode === "sys") ? "unselectedRadio" : "selectedRadio";
+    var _gsyCls = (typeof substNamingMode !== "undefined" && substNamingMode === "sys") ? "selectedRadio" : "unselectedRadio";
+    var _gcW = "Κοινή", _gyW = "Συστηματική";
+    try { if (typeof fMulerT === "function") { _gcW = fMulerT("commonName"); _gyW = fMulerT("systematicName"); } } catch (eTW2) {}
+    _grSubstToggle = `<div id='radioSubstNaming' class='HFlex' style='align-items:center;gap:0;margin-right:8px'><span class='settingLabel'>${(() => { try { return (typeof fMulerT === "function") ? fMulerT("substNamingLabel") : "Υποκαταστάτες:"; } catch (eL3) { return "Υποκαταστάτες:"; } })()}</span><div class='radioCheckContainer substNamingRadio ${_gscCls}' data-subst-mode='school'>${_gcW}<span class='radioCheck'></span></div><div class='radioCheckContainer substNamingRadio ${_gsyCls}' data-subst-mode='sys'>${_gyW}<span class='radioCheck'></span></div></div>`;
+  }
   // Panel layout: one row per control set, buttons first — each set renders
   // only when present, so there are never empty rows or half-rows.
   const _stepperHTML = (typeof fChainStepperHTML === "function") ? fChainStepperHTML() : "";
@@ -7007,6 +7162,7 @@ function fShowNameAnalysis() {
   var _rowsAll = [`<div id='nameSettingsRowMain'><div class='nsLeft'>${_buttonsHTML}</div></div>`];
   if (etherNamingToggle) _rowsAll.push(`<div class='nameSettingsRow'>${etherNamingToggle}</div>`);
   if (_substToggle) _rowsAll.push(`<div class='nameSettingsRow'>${_substToggle}</div>`);
+  else if (_grSubstToggle) _rowsAll.push(`<div class='nameSettingsRow'>${_grSubstToggle}</div>`);
   if (_stepperHTML) _rowsAll.push(`<div class='nameSettingsRow'>${_stepperHTML}</div>`);
   _panelInner = _rowsAll.join("");
 
@@ -7123,9 +7279,28 @@ function fShowNameAnalysis() {
   }
   } else {
   // Build the name component boxes with Greek euphony applied, and + signs in between
+  // Systematic GR variant (v54.31): when the Κοινή|Συστηματική toggle selects
+  // sys and a variant exists, render from the transformed slots (same box ids,
+  // so highlight/explain mapping is untouched). Changed substituent boxes get
+  // a "Κοινή μορφή: …" title (mirror of the EN sys diff-mark).
+  var _grSysMode = false;
+  try {
+    _grSysMode = !_isENLang && _showSubstGR && !!_grSysSlots &&
+      typeof substNamingMode !== "undefined" && substNamingMode === "sys";
+  } catch (eGM) { _grSysMode = false; }
+  var _slots = _grSysMode ? _grSysSlots : nameComponentsList;
+  var _grTipPre = null, _grSchoolFull = "";
+  if (_grSysMode) {
+    try {
+      _grTipPre = (typeof fMulerT === "function") ? fMulerT("sysDiffTipCommon", "sysDiffTipCommon") : "Κοινή μορφή: ";
+      if (!_grTipPre || _grTipPre === "sysDiffTipCommon") _grTipPre = "Κοινή μορφή: ";
+      _grSchoolFull = (typeof currentMolName !== "undefined") ? String(currentMolName) : "";
+      try { if (typeof fMolDraftEsc === "function") { _grTipPre = fMolDraftEsc(_grTipPre); _grSchoolFull = fMolDraftEsc(_grSchoolFull); } } catch (eEscG) {}
+    } catch (eGTp) { _grTipPre = null; }
+  }
 
   for (let i = 0; i < compCount; i++) {
-    currComp = nameComponentsList[i];
+    currComp = _slots[i];
     if (currComp == "" || currComp == undefined) {
       continue;
     }
@@ -7140,11 +7315,11 @@ function fShowNameAnalysis() {
     // so no "+" (or space) ever renders after the last box.
     let _nextIdx = -1;
     for (let _m = i + 1; _m < compCount; _m++) {
-      if (nameComponentsList[_m]) { _nextIdx = _m; break; }
+      if (_slots[_m]) { _nextIdx = _m; break; }
     }
     let displayComp = currComp;
     for (let n = i + 1; n < compCount; n++) {
-      const nextComp = nameComponentsList[n];
+      const nextComp = _slots[n];
       if (!nextComp) continue;
       const lastCh = currComp[currComp.length - 1];
       const firstCh = nextComp[0];
@@ -7175,7 +7350,8 @@ function fShowNameAnalysis() {
       break;
     }
 
-    compBox = fNameCompBox("comp" + i, boxClass, displayComp);
+    compBox = fNameCompBox("comp" + i, boxClass, displayComp,
+      (_grSysMode && (i === 1 || i === 3 || i === 10) && _slots[i] !== nameComponentsList[i] && _grTipPre) ? (_grTipPre + _grSchoolFull) : null);
     // Locants are always their own component: the suffix slot (index 9)
     // fuses them only on the db+tb ketone/polyol paths ("-2,7-διόνη"), so
     // split that shape here at render time — locants first, suffix keeping
@@ -7218,7 +7394,7 @@ function fShowNameAnalysis() {
         var _brp = fSplitBranchPieces(currComp);
         if (_brp) {
           var _brLast = _brp[_brp.length - 1];
-          var _brNext = _nextIdx >= 0 ? String(nameComponentsList[_nextIdx]) : "";
+          var _brNext = _nextIdx >= 0 ? String(_slots[_nextIdx]) : "";
           // Local copy of the Greek-consonant test: _isGkConsonant is scoped
           // to the euphony for-loop above and is not visible here.
           var _brIsGk = function (ch) {
@@ -7248,7 +7424,7 @@ function fShowNameAnalysis() {
             // piece leads the whole panel — then trailing dash only, like the
             // comp0 "3-" convention. (Unreachable while slot 3 is fused, since
             // fusion implies slots 0-2 exist; kept as the general rule.)
-            var _brFirst = !(nameComponentsList[0] || nameComponentsList[1] || nameComponentsList[2]);
+            var _brFirst = !(_slots[0] || _slots[1] || _slots[2]);
             for (var _bri = 0; _bri < _brp.length; _bri++) {
               var _brId, _brText;
               if (_bri % 2 === 0) {
