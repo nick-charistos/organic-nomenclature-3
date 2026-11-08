@@ -1,6 +1,6 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `v54.41` + pointer (2026-11-08) — EN+GR
+> **Resume pointer (cross-machine):** HEAD `9acdd82` + pointer (2026-11-08) — EN+GR
 > alphabetical branch order (`?v=54.41`): full group sort by displayed name
 > (slot-1 + slot-3 pieces, locants + box ids travel; P-14.5.1/2/4 verified
 > against the QMul Blue Book). Fixes `2-ethyl-3-(propan-2-yl)-6,6-dimethyl…`
