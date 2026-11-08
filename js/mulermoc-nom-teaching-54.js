@@ -725,7 +725,7 @@ function fCreateDropMenu(myItems) {
 function fShowCreditLibs() {
   var lang = "gr";
   try { if (typeof fMulerLang === "function") lang = fMulerLang(); } catch (e) { }
-  var teamNames, ownerName, programName, deptName, uniTag, aboutText, chemInfoLibs, teamLabel, supervisorLabel;
+  var teamNames, ownerName, programName, deptName, uniTag, aboutText, chemInfoLibs, teamLabel, supervisorLabel, chemInfoLibsType1, chemInfoLibsType2;
   try {
     if (typeof fMulerT === "function" && typeof MULER_STRINGS !== "undefined" && MULER_STRINGS.creditTeam) {
       teamNames = fMulerT("creditTeam");
@@ -737,18 +737,22 @@ function fShowCreditLibs() {
       chemInfoLibs = fMulerT("creditChemInfoLibs");
       teamLabel = fMulerT("creditTeamLabel");
       supervisorLabel = fMulerT("creditSupervisorLabel");
+      chemInfoLibsType1 = fMulerT("creditChemInfoLibsType1");
+      chemInfoLibsType2 = fMulerT("creditChemInfoLibsType2");
     } else { throw 0; }
   } catch (e) {
     var en = (lang === "en");
     teamNames = en ? "Yannis Skendros, Anastasia Theofanidou, Vasilis Koutalas," : "Γιάννης Σκένδρος, Αναστασία Θεοφανίδου, Βασίλης Κουταλάς,";
     ownerName = en ? "Nickolas Charistos" : "Νικόλας Χαριστός";
-    programName = en ? "Molecular Design and Modelling - Chemistry Education" : "Μοριακός Σχεδιασμός και Μοντελοποίηση - Χημική Εκπαίδευση";
+    programName = en ? "Molecular Design and Modelling &bullet; Chemistry Education" : "Μοριακός Σχεδιασμός και Μοντελοποίηση - Χημική Εκπαίδευση";
     deptName = en ? "Department of Chemistry" : "Τμήμα Χημείας";
     uniTag = en ? "Aristotle University of Thessaloniki | 2025-26" : "ΑΠΘ | 2025-26";
     aboutText = en ? "Learning organic nomenclature through molecular structure, naming, and linked representations." : "Μάθηση ονοματολογίας οργανικών ενώσεων μέσα από τη δομή, την ονομασία και διασυνδεόμενες αναπαραστάσεις των μορίων";
     chemInfoLibs = en ? "Chemoinformatics Libraries" : "Βιβλιοθήκες Χημειοπληροφορικής";
-    teamLabel = en ? "Design and Development Team" : "Ομάδα Σχεδιασμού και Ανάπτυξης";
-    supervisorLabel = en ? "Supervisor" : "Επιβλέπων";
+    chemInfoLibsType1 = en ? "Viewers and Editors" : "Viewers and Editors";
+    chemInfoLibsType2 = en ? "Info, Data and Validation" : "Info, Data and Validation";
+    teamLabel = en ? "Team" : "Ομάδα";
+    supervisorLabel = en ? "Project Leader" : "Project Leader";
   }
   let myCredits = `
   <div class='creditsContainer creditsAbout'>
@@ -756,10 +760,15 @@ function fShowCreditLibs() {
   </div>
   <div class='creditsContainer creditsLib'>
   <div class='creditsTitle' >${chemInfoLibs}</div>
+  <div class='creditsTitle' >${chemInfoLibsType1}</div>
     <div class=''>  <span><a href='https://jsme-editor.org/' target='_blank' rel='noopener'><strong>JSME</strong> A free molecule editor in JavaScript</a></span>
     </div>
-    
-    <div class=''> <span><a href='https://jmol.sourceforge.net/' target='_blank' rel='noopener'><strong>JSmol</strong> an open-source HTML5 viewer for chemical structures in 3D</a> </span>
+        <div class=''> <span><a href='https://jmol.sourceforge.net/' target='_blank' rel='noopener'><strong>JSmol</strong> an open-source HTML5 viewer for chemical structures in 3D</a> </span>
+    </div>
+    <div class='creditsTitle' >${chemInfoLibsType2}</div>
+    <div class=''>  <span><a href='https://openclatura.org/' target='_blank' rel='noopener'><strong>openclatura</strong>  An open nomenclature framework</a></span>
+    </div>
+     <div class=''>  <span><a href='https://pubchem.ncbi.nlm.nih.gov/' target='_blank' rel='noopener'><strong>PubChem</strong> the world's largest collection of freely accessible chemical information</a></span>
     </div>
   </div>
   <div class='creditsContainer'>
@@ -769,7 +778,7 @@ function fShowCreditLibs() {
     <div class=''><a href='https://nicharis.webpages.auth.gr/' target='_blank' rel='noopener'> ${ownerName} </a></div>
   </div>
   <div class='creditsContainer'>
-    <div class='creditsTitle'>${(lang === "en") ? "MSc" : "ΠΜΣ"} <a href='https://molmod-edu.chem.auth.gr/' target='_blank' rel='noopener'>${programName}</a></div>
+    <div class='creditsTitle'>${(lang === "en") ? "MSc Programme:" : "ΠΜΣ:"} <a href='https://molmod-edu.chem.auth.gr/' target='_blank' rel='noopener'>${programName}</a></div>
     
     <div class=''>${deptName} &bull; ${uniTag}</div>
    

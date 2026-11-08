@@ -303,13 +303,15 @@ var MULER_STRINGS = {
   imgUnavailable: { gr: "Εικόνα μη διαθέσιμη", en: "Image unavailable" },
   creditTeam: { gr: "Γιάννης Σκένδρος &bullet; Αναστασία Θεοφανίδου &bullet; Βασίλης Κουταλάς &bullet;", en: "Yannis Skendros &bullet; Anastasia Theofanidou &bullet; Vasilis Koutalas &bullet;" },
   creditOwner: { gr: "Νικόλας Χαριστός", en: "Nickolas Charistos" },
-  creditProgram: { gr: "Μοριακός Σχεδιασμός και Μοντελοποίηση - Χημική Εκπαίδευση", en: "Molecular Design and Modelling - Chemistry Education" },
+  creditProgram: { gr: "Μοριακός Σχεδιασμός και Μοντελοποίηση &bullet; Χημική Εκπαίδευση", en: "Molecular Design and Modelling &bullet; Chemistry Education" },
   creditDept: { gr: "Τμήμα Χημείας", en: "Department of Chemistry" },
   creditUni: { gr: "ΑΠΘ 2025-26", en: "Aristotle University of Thessaloniki 2025-26" },
   creditAbout: { gr: "Μάθηση ονοματολογίας οργανικών ενώσεων μέσα από τη δομή, την ονομασία και διασυνδεόμενες αναπαραστάσεις των μορίων", en: "Learning organic nomenclature through molecular structure, naming, and linked representations" },
   creditChemInfoLibs: { gr: "Βιβλιοθήκες Χημειοπληροφορικής", en: "Chemoinformatics Libraries" },
-  creditTeamLabel: { gr: "Ομάδα Σχεδιασμού και Ανάπτυξης", en: "Design and Development Team" },
-  creditSupervisorLabel: { gr: "Επιβλέπων", en: "Supervisor" },
+  creditTeamLabel: { gr: "Ομάδα", en: "Team" },
+  creditSupervisorLabel: { gr: "Project Leader", en: "Project Leader" },
+  creditChemInfoLibsType1: { gr: "Viewers and Editors", en: "Viewers and Editors" },
+  creditChemInfoLibsType2: { gr: "Info, Data and Validation", en: "Info, Data and Validation" },
   devNotice: { gr: "Υπό ανάπτυξη — πιθανά λάθη στην ονοματολογία.", en: "Under development — naming errors possible." }
 };
 // Dynamic labels keep a Greek prefix + variable tail; translate the prefix AND the tail.
