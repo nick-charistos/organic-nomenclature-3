@@ -1,22 +1,19 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `e06d098` (2026-11-08) — v54
-> Greek Κοινή|Συστηματική toggle (`?v=54.31`): render-time slot transform
-> (full map by rule, tert stays, parens iff multiplied+digit, hyphenated
-> stems shielded), shared mode, language-exclusive radio, same box ids +
-> diff-mark, draft preview sys row, theory table sys notes. Sim vectors
-> green (incl. mixed-script sec forms, idempotence, join); common render
-> byte-identical by construction. Owner commits alongside (naming
-> correction, footer info — not mine). Remaining from before: full 141 EN
+> **Resume pointer (cross-machine):** HEAD `550063f` (2026-11-08) — v54
+> GR sys null-fix + EN-aligned numbers (`?v=54.32`): empty slots preserved
+> (phantom toggle on all 141 fixed; 13 genuine candidates); systematic
+> forms revised per option (a) — internal locants, single bare, multiplied
+> keeps parens; theory notes follow. Remaining from before: full 141 EN
 > sweep + P3 blessing of new Greek word forms. Co-editor WIP in tree
 > (untouched): `css/jsme-nick-54.css`. Otherwise clean (session temp
 > file ignored by design: `js/MULERMOC_methyl_4_ethoxybutanoate_data.js`).
-> Full record: `docs/CHANGELOG.md` + `docs/REVIEW-EN-53.md` §Q, v54.31.
+> Full record: `docs/CHANGELOG.md` + `docs/REVIEW-EN-53.md` §Q, v54.32.
 > Routine on the other machine: pull first, then resume from
 > `git log --oneline -5` + `git status`. OpenCode sessions stay machine-local.
 >
-> Previous pointer (2026-11-08, now superseded): HEAD `c20c4c6` — v54
-> spurious subst-toggle fix (`?v=54.30`).
+> Previous pointer (2026-11-08, now superseded): HEAD `e06d098` — v54
+> Greek Κοινή|Συστηματική toggle (`?v=54.31`).
 >
 > Previous pointer (2026-11-07, now superseded): HEAD `0886181` — v54
 > decorated-branch naming + fail-closed locants (`?v=54.23`).
