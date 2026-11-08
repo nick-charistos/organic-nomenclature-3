@@ -68,7 +68,7 @@ function fBuildAlkylRuleTable() {
     ["βουτυλο", "–CH<sub>2</sub>–CH<sub>2</sub>–CH<sub>2</sub>–CH<sub>3</sub>", "Βουτύλιο (n-)", "βουτυλο-", "butyl"],
     ["ισοβουτυλο", "–CH<sub>2</sub>–CH(CH<sub>3</sub>)<sub>2</sub>", "Ισοβουτύλιο", "ισοβουτυλο-", "2-methylpropyl", "2-μεθυλοπροπυλο"],
     ["sec-βουτυλο", "–CH(CH<sub>3</sub>)–CH<sub>2</sub>–CH<sub>3</sub>", "sec-Βουτύλιο", "sec-βουτυλο-", "butan-2-yl", "βουταν-2-υλο"],
-    ["tert-βουτυλο", "–C(CH<sub>3</sub>)<sub>3</sub>", "tert-Βουτύλιο", "tert-βουτυλο-", "2-methylpropan-2-yl (tert-butyl)"],
+    ["tert-βουτυλο", "–C(CH<sub>3</sub>)<sub>3</sub>", "tert-Βουτύλιο", "tert-βουτυλο-", "2-methylpropan-2-yl (tert-butyl)", "2-μεθυλοπροπαν-2-υλο"],
   ];
   var _enAlk = false;
   try { _enAlk = typeof fMulerLang === "function" && fMulerLang() === "en"; } catch (e) { }

@@ -514,15 +514,18 @@ function fSplitENBranch(text) {
   return parts;
 }
 // Systematic substituent names (school retained -> systematic, P-29.6/P-57.1).
-// Only unambiguously systematic forms; tert-butyl intentionally absent
-// (preferred prefix, P-57.1.2). tert-butoxy/isobutoxy omitted: unattested,
-// verify against P-63.2/P-57.1 before adding. Single locant-bearing groups
-// stay bare (cf. 1-(butan-2-yl)-3-tert-butylbenzene); parentheses are added
+// tert-butyl mapped since v54.38 (didactic override for teaching: the toggle
+// shows the fully substitutive construction even though tert-butyl is the
+// preferred prefix, P-57.1.2 — EN sys then differs from PubChem systematic
+// on tert-butyl molecules, recorded like the OC bis case). tert-butoxy/
+// isobutoxy omitted: unattested, verify against P-63.2/P-57.1 before adding.
+// Single locant-bearing groups stay bare; parentheses are added
 // by fSystematicSubstSlot only when multiplied (P-16.3.4(a)).
 var EN_SYST_SUBST = {
   "isopropyl": "propan-2-yl",
   "isobutyl": "2-methylpropyl",
   "sec-butyl": "butan-2-yl",
+  "tert-butyl": "2-methylpropan-2-yl",
   "isopropoxy": "propan-2-yloxy",
   "sec-butoxy": "butan-2-yloxy"
 };

@@ -6936,17 +6936,20 @@ function fMulerOCFetchDone(key) {
 // fGuessName slots stay common, so the v54.30 staleness class cannot recur
 // (no stored variant; always computed from the current chain).
 // Word forms: 2-προπανυλο- pattern user-confirmed; rule-derived siblings
-// flagged for P3 (same gate as v54.23). tert-βουτυλο intentionally stays
-// (preferred prefix, P-57.1.2 — same call as EN).
+// flagged for P3 (same gate as v54.23). tert-βουτυλο mapped since v54.38
+// (didactic override like EN: fully substitutive construction for teaching,
+// even though tert-butyl is the preferred prefix).
 var GR_SYST_SUBST = {
   "ισοπροπυλο": "προπαν-2-υλο",
   "ισοβουτυλο": "2-μεθυλοπροπυλο",
   "sec-βουτυλο": "βουταν-2-υλο",
+  "tert-βουτυλο": "2-μεθυλοπροπαν-2-υλο",
   "ισοπροποξυ": "προπαν-2-υλοξυ",
   "sec-βουτοξυ": "βουταν-2-υλοξυ",
   "ισοπροπυλ": "προπαν-2-υλ",
   "ισοβουτυλ": "2-μεθυλοπροπυλ",
-  "sec-βουτυλ": "βουταν-2-υλ"
+  "sec-βουτυλ": "βουταν-2-υλ",
+  "tert-βουτυλ": "2-μεθυλοπροπαν-2-υλ"
 };
 // One common stem -> systematic (with P-16.3.4(a)-analogue parens when the
 // mapped name carries a locant digit and the group is multiplied). Bare
