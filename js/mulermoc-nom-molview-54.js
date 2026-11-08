@@ -8291,7 +8291,18 @@ function fExplainNameComp() {
     case "compNumber2":
       nStyle = "";
       myClass = "";
-      const branchGroup_compNumber2 = fGetHydrocarbonBranchGroup(2);
+      let branchGroup_compNumber2 = fGetHydrocarbonBranchGroup(2);
+      // Locants-box scope (v54.35): explain only the first of the remaining
+      // groups — the box shows that group's locants. Mirrors the 2D/3D
+      // highlight narrowing; the existing single-group sentence then fires,
+      // making multi-group behave exactly like the single-group case.
+      if (branchGroup_compNumber2 && Array.isArray(branchGroup_compNumber2.names) &&
+          branchGroup_compNumber2.names.length > 1) {
+        try {
+          const _fmN = (branchGroup_compNumber2.members || []).filter(function (b) { return b && b.name === branchGroup_compNumber2.names[0]; });
+          if (_fmN.length) branchGroup_compNumber2 = { names: [branchGroup_compNumber2.names[0]], members: _fmN };
+        } catch (eN2) {}
+      }
       if (branchGroup_compNumber2) {
         myText = fHydrocarbonBranchExplanation(branchGroup_compNumber2, true);
         numberingFlag = true;
