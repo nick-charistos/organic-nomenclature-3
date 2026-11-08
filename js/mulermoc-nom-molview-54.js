@@ -7392,7 +7392,16 @@ function fShowNameAnalysis() {
     // later names comp3b (then comp3loc2/comp3b2, ...). Core list, euphony
     // and the joined name are unchanged: piece ends ("-", digit, vowel-end
     // name) never take a connector, and a fired euphony aborts the split.
-    if (i === 3 && displayComp === currComp) {
+    // Systematic slot-3 text never splits (v54.33): a sys name always carries
+    // an internal digit/parens (προπαν-2-υλο, δι(προπαν-2-υλο)), so the
+    // splitter would either shred it ("προπαν"|"2"|"υλο") or mis-pair it
+    // inside a fused string — and piece lookup by shredded name matches no
+    // branch group (no highlight/numbering). The general-path whole box
+    // (id comp3) then stands: one component, standard click mode, and the
+    // global-based explain/highlight/numbering paths work unchanged.
+    // Unchanged slot 3 in sys mode still splits exactly as common.
+    if (i === 3 && displayComp === currComp &&
+        !(_grSysMode && _slots[3] !== nameComponentsList[3])) {
       try {
         var _brp = fSplitBranchPieces(currComp);
         if (_brp) {
