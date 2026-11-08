@@ -1,20 +1,24 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `2e671f3` (2026-11-08) — v54
-> tert-butyl systematized in both variants (`?v=54.38`): fully
-> substitutive construction for teaching (EN `2-methylpropan-2-yl`, GR
-> `2-μεθυλοπροπαν-2-υλο`); deliberate recorded divergence from the
-> preferred-prefix policy. Teaching case `CC(C)(C)OC=O`. Remaining:
-> full 141 EN sweep + P3 blessing of new Greek word forms. Co-editor
-> WIP in tree (untouched): `css/jsme-nick-54.css`. Otherwise clean
-> (session temp file ignored by design:
+> **Resume pointer (cross-machine):** HEAD `4e950c7` + pointer (2026-11-08) — v54
+> systematic internal numbering for O-linked alkyls (`?v=54.39`): on-canvas
+> numbers follow the substituent's own numbering (attach carries free-valence
+> locant — 2 for propan-2-yl; chain sequential; branch takes next free number,
+> e.g. isobutyl 1,2,3,4). Ester alcohol/acid + ether alkoxy, 2D+3D.
+> Straight chains byte-identical; branched/unsat/cyclic fall back.
+> NOTE: co-editor's parallel save-button work shares molview-54.js — this
+> commit contains ONLY the numbering hunks (selective staging verified).
+> Remaining from before: full 141 EN sweep + P3 blessing of new Greek word
+> forms. Also uncommitted co-editor WIP (untouched): `css/jsme-nick-54.css`,
+> `js/mulermoc-nom-{lang,teaching}-54.js`, `js/ui-icons.js` (+ molview remainder).
+> Otherwise clean (session temp file ignored by design:
 > `js/MULERMOC_methyl_4_ethoxybutanoate_data.js`). Full record:
-> `docs/CHANGELOG.md` + `docs/REVIEW-EN-53.md` §Q, v54.38.
+> `docs/CHANGELOG.md` + `docs/REVIEW-EN-53.md` §Q, v54.39.
 > Routine on the other machine: pull first, then resume from
 > `git log --oneline -5` + `git status`. OpenCode sessions stay machine-local.
 >
-> Previous pointer (2026-11-08, now superseded): HEAD `0368ee9` — v54
-> EN sys sec-/tert- shielding (`?v=54.37`).
+> Previous pointer (2026-11-08, now superseded): HEAD `2e671f3` — v54
+> tert-butyl systematized in both variants (`?v=54.38`).
 >
 > Previous pointer (2026-11-07, now superseded): HEAD `0886181` — v54
 > decorated-branch naming + fail-closed locants (`?v=54.23`).
