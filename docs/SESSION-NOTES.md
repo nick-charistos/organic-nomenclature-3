@@ -1,21 +1,20 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `0368ee9` (2026-11-08) — v54
-> EN sys sec-/tert- shielding (`?v=54.37`): hyphen split tore `sec-butyl`
-> before map lookup (entry existed since v54.22, never fired); shield +
-> restore per segment. All-classes EN audit: 13/14 retained rows green,
-> only `sec_butyl_ethanoate` changed output; cyanide/amine/multi-FG drop
-> plain alkyl branches (pre-existing engine limit, no retained names arise).
-> Remaining from before: full 141 EN sweep + P3 blessing of new Greek word
-> forms. Co-editor WIP in tree (untouched): `css/jsme-nick-54.css`.
-> Otherwise clean (session temp file ignored by design:
+> **Resume pointer (cross-machine):** HEAD `2e671f3` (2026-11-08) — v54
+> tert-butyl systematized in both variants (`?v=54.38`): fully
+> substitutive construction for teaching (EN `2-methylpropan-2-yl`, GR
+> `2-μεθυλοπροπαν-2-υλο`); deliberate recorded divergence from the
+> preferred-prefix policy. Teaching case `CC(C)(C)OC=O`. Remaining:
+> full 141 EN sweep + P3 blessing of new Greek word forms. Co-editor
+> WIP in tree (untouched): `css/jsme-nick-54.css`. Otherwise clean
+> (session temp file ignored by design:
 > `js/MULERMOC_methyl_4_ethoxybutanoate_data.js`). Full record:
-> `docs/CHANGELOG.md` + `docs/REVIEW-EN-53.md` §Q, v54.37.
+> `docs/CHANGELOG.md` + `docs/REVIEW-EN-53.md` §Q, v54.38.
 > Routine on the other machine: pull first, then resume from
 > `git log --oneline -5` + `git status`. OpenCode sessions stay machine-local.
 >
-> Previous pointer (2026-11-08, now superseded): HEAD `bdd22e1` — v54
-> parens for sys names after locants (`?v=54.36`).
+> Previous pointer (2026-11-08, now superseded): HEAD `0368ee9` — v54
+> EN sys sec-/tert- shielding (`?v=54.37`).
 >
 > Previous pointer (2026-11-07, now superseded): HEAD `0886181` — v54
 > decorated-branch naming + fail-closed locants (`?v=54.23`).
