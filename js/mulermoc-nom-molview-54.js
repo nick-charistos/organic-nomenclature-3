@@ -6963,6 +6963,24 @@ function fGRSystOneStem(w) {
   } catch (eS) {}
   return null;
 }
+// Parenthesize-when-preceded-by-locants (v54.35): a bare systematic name
+// carrying an internal digit (προπαν-2-υλο) is ambiguous right after a parent
+// locant run ("2-προπαν-2-υλο"), so the alkyl box nests it in parens when the
+// preceding component is a number locant: -2-(προπαν-2-υλο)-. Already
+// parenthesized (multiplied), unchanged, or digitless names pass through;
+// empty locants (tiny chains, locant-free slots like the ester tail) mean no
+// parens. Render/join-layer only — slots keep bare forms, so toggle
+// visibility, splitting and idempotence are unaffected.
+function fGRSysNeedsParens(sysText, commonText, prevLocText) {
+  try {
+    if (!sysText || sysText === commonText) return false;
+    if (/[()]/.test(sysText)) return false;
+    if (!/\d/.test(sysText)) return false;
+    var loc = String(prevLocText == null ? "" : prevLocText).replace(/-/g, "");
+    return /\d/.test(loc);
+  } catch (eP) { return false; }
+}
+
 // Slot transform (slots 1/3/10, like the EN fSystematicSubstSlot): whole-string
 // first (covers single groups incl. multiplied hyphenated stems), then fused
 // multi-group slots with hyphen-carrying stems (sec-/tert-) shielded so the
@@ -7049,6 +7067,28 @@ function fJoinGreekSysName(slots) {
       _isEster = (typeof functionalGroupsList !== "undefined" && functionalGroupsList &&
         functionalGroupsList.length === 1 && functionalGroupsList[0] === "ester");
     } catch (eE) {}
+    // Parenthesize-when-preceded-by-locants (v54.35, mirrors the panel):
+    // bare sys names after a locant run nest in parens so the joined preview
+    // matches the panel boxes. Slots here are a fresh copy (safe to rewrite).
+    try {
+      slots = slots.slice();
+      var _jc = (typeof nameComponentsList !== "undefined") ? nameComponentsList : null;
+      if (_jc && typeof fGRSysNeedsParens === "function") {
+        if (fGRSysNeedsParens(slots[1], _jc[1], _jc[0])) slots[1] = "(" + slots[1] + ")";
+        var _jsfp = (typeof fSysFusedPieces === "function") ? fSysFusedPieces() : null;
+        if (_jsfp) {
+          var _jp = _jsfp.sys.slice();
+          for (var _jk = 0; _jk < _jp.length; _jk += 2) {
+            var _jprev = (_jk === 0) ? _jc[2] : _jp[_jk - 1];
+            if (fGRSysNeedsParens(_jp[_jk], _jsfp.com[_jk], _jprev)) _jp[_jk] = "(" + _jp[_jk] + ")";
+          }
+          slots[3] = _jp.join("-");
+        } else if (fGRSysNeedsParens(slots[3], _jc[3], _jc[2])) {
+          slots[3] = "(" + slots[3] + ")";
+        }
+        if (fGRSysNeedsParens(slots[10], _jc[10], _jc[9])) slots[10] = "(" + slots[10] + ")";
+      }
+    } catch (eJP2) {}
     var _gkV = ['α', 'ε', 'η', 'ι', 'ο', 'υ', 'ω', 'ά', 'έ', 'ή', 'ί', 'ό', 'ύ', 'ώ'];
     var _isC = function (ch) {
       try { return /[\u0370-\u03ff\u1f00-\u1fff]/u.test(ch) && _gkV.indexOf(ch) < 0; } catch (eC) { return false; }
@@ -7376,8 +7416,13 @@ function fShowNameAnalysis() {
       break;
     }
 
-    compBox = fNameCompBox("comp" + i, boxClass, displayComp,
-      (_grSysMode && (i === 1 || i === 3 || i === 10) && _slots[i] !== nameComponentsList[i] && _grTipPre) ? (_grTipPre + _grSchoolFull) : null);
+    var _grBoxText = displayComp;
+    var _grBoxTip = (_grSysMode && (i === 1 || i === 3 || i === 10) && _slots[i] !== nameComponentsList[i] && _grTipPre) ? (_grTipPre + _grSchoolFull) : null;
+    if (_grSysMode && (i === 1 || i === 3) && _slots[i] !== nameComponentsList[i] && typeof fGRSysNeedsParens === "function") {
+      var _grPrevLoc = (i === 1) ? _slots[0] : _slots[2];
+      if (fGRSysNeedsParens(displayComp, nameComponentsList[i], _grPrevLoc)) _grBoxText = "(" + displayComp + ")";
+    }
+    compBox = fNameCompBox("comp" + i, boxClass, _grBoxText, _grBoxTip);
     // Locants are always their own component: the suffix slot (index 9)
     // fuses them only on the db+tb ketone/polyol paths ("-2,7-διόνη"), so
     // split that shape here at render time — locants first, suffix keeping
@@ -7477,6 +7522,10 @@ function fShowNameAnalysis() {
                 _brText = (_brFirst ? "" : "-") + _brp[_bri] + "-";
               }
               if (_bri > 0) _brx += `<div class='${crossClass}' > + </div>`;
+              if (_brpCom && _bri % 2 === 0 && typeof fGRSysNeedsParens === "function") {
+                var _brPrevLoc = (_bri === 0) ? nameComponentsList[2] : _brp[_bri - 1];
+                if (fGRSysNeedsParens(_brText, _brpCom[_bri], _brPrevLoc)) _brText = "(" + _brText + ")";
+              }
               var _brTip = null;
               try {
                 if (_brpCom && _bri % 2 === 0 && _brp[_bri] !== _brpCom[_bri] && _grTipPre) {
