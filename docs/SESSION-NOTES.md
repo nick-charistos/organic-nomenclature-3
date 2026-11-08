@@ -1,20 +1,22 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `c20c4c6` (2026-11-08) — v54
-> spurious subst-toggle fix (`?v=54.30`): school + sys engineEN both
-> computed before the panel build (school call moved up, later duplicate
-> removed); stepper refreshes both after `fGuessName(true)`. Remaining
-> from before: full 141 EN sweep + P3 blessing of new Greek word forms.
-> Tree has co-editor WIP (untouched): `css/jsme-nick-54.css`,
-> `js/mulermoc-nom-lang-54.js`, `js/mulermoc-nom-teaching-54.js`.
-> Otherwise clean (session temp file ignored by design:
-> `js/MULERMOC_methyl_4_ethoxybutanoate_data.js`). Full record:
-> `docs/CHANGELOG.md` v54.30.
+> **Resume pointer (cross-machine):** HEAD `e06d098` (2026-11-08) — v54
+> Greek Κοινή|Συστηματική toggle (`?v=54.31`): render-time slot transform
+> (full map by rule, tert stays, parens iff multiplied+digit, hyphenated
+> stems shielded), shared mode, language-exclusive radio, same box ids +
+> diff-mark, draft preview sys row, theory table sys notes. Sim vectors
+> green (incl. mixed-script sec forms, idempotence, join); common render
+> byte-identical by construction. Owner commits alongside (naming
+> correction, footer info — not mine). Remaining from before: full 141 EN
+> sweep + P3 blessing of new Greek word forms. Co-editor WIP in tree
+> (untouched): `css/jsme-nick-54.css`. Otherwise clean (session temp
+> file ignored by design: `js/MULERMOC_methyl_4_ethoxybutanoate_data.js`).
+> Full record: `docs/CHANGELOG.md` + `docs/REVIEW-EN-53.md` §Q, v54.31.
 > Routine on the other machine: pull first, then resume from
 > `git log --oneline -5` + `git status`. OpenCode sessions stay machine-local.
 >
-> Previous pointer (2026-11-07, now superseded): HEAD `535737a` — v54
-> continuity record (`?v=54.29`).
+> Previous pointer (2026-11-08, now superseded): HEAD `c20c4c6` — v54
+> spurious subst-toggle fix (`?v=54.30`).
 >
 > Previous pointer (2026-11-07, now superseded): HEAD `0886181` — v54
 > decorated-branch naming + fail-closed locants (`?v=54.23`).
