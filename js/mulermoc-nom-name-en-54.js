@@ -553,24 +553,45 @@ function fSystematicSubstSlot(slot, text) {
     if (slot !== 1 && slot !== 3 && slot !== 10) return text;
     var t = String(text == null ? "" : text);
     if (!t) return t;
+    // Shield hyphenated retained forms (sec-/tert-, v54.37): the split below
+    // would otherwise tear "sec-butyl" into ["sec","butyl"] before the
+    // whole-word EN_SYST_SUBST lookup ever sees it (the map entry existed
+    // since v54.22 but could never fire). Same protected-prefix idea as
+    // fSplitENBranch. tert-* restores unchanged by design (preferred prefix).
+    var _shHeld = [];
+    var _shT = t;
+    try {
+      _shT = String(t).replace(/(sec|tert)-(?=[a-z])/gi, function (m) {
+        _shHeld.push(m.toLowerCase() === m ? m : m.toLowerCase());
+        return "" + (_shHeld.length - 1) + "";
+      });
+    } catch (eSh) { _shT = t; _shHeld = []; }
     // Paren-aware split: hyphens inside parentheses (decorated multiplied
     // forms, e.g. di(2-chloroethyl)) stay inside one segment. Inputs without
     // parens split exactly as before (no legacy impact).
     var parts = [];
     try {
       var _depth = 0, _cur = "";
-      for (var _ci = 0; _ci < t.length; _ci++) {
-        var _ch = t.charAt(_ci);
+      for (var _ci = 0; _ci < _shT.length; _ci++) {
+        var _ch = _shT.charAt(_ci);
         if (_ch === "(") _depth++;
         else if (_ch === ")") _depth = Math.max(0, _depth - 1);
         if (_ch === "-" && _depth === 0) { parts.push(_cur); _cur = ""; }
         else _cur += _ch;
       }
       parts.push(_cur);
-    } catch (eSp) { parts = t.split("-"); }
+    } catch (eSp) { parts = _shT.split("-"); }
+    var _restore = function (w) {
+      try {
+        return String(w).replace(/(\d+)/g, function (m, n) {
+          var _h = _shHeld[parseInt(n, 10)];
+          return (typeof _h === "string") ? _h : m;
+        });
+      } catch (eR) { return w; }
+    };
     var out = [];
     for (var k = 0; k < parts.length; k++) {
-      var w = parts[k];
+      var w = _restore(parts[k]);
       if (!w || /^\d[\d,]*$/.test(w)) { out.push(w); continue; }
       // Parenthesized multiplied form from the Greek parens rule, e.g.
       // "di(2-chloroethyl)" (transliterated δι(2-χλωροαιθυλο)).
