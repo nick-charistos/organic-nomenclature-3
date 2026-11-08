@@ -8300,12 +8300,22 @@ function fExplainNameComp() {
         functionalGroupsList[0] === "ether"
       ) {
         // IUPAC alkoxy prefix (e.g. μεθοξυ): highlight O + alkoxy fragment,
-        // number the alkoxy chain only.
+        // number the alkoxy chain only (systematic internal order, v54.39).
         myText = fTX(` Δηλώνει το όνομα της αλκοξυομάδας${fGetSecondaryGroupNounSuffix(1)}.`, ` Indicates the name of the alkoxy group${fGetSecondaryGroupNounSuffix(1)}.`);
         fHighlightFG(1);
         fHighlightFG3D(1);
         numberingFlag = true;
-        fShowAnalysisNumbering(0, fGetEtherAlkoxyChain(), fGetEtherAlkoxyChain3D());
+        var _alcC = null, _alcC3 = null;
+        try { _alcC = fGetEtherAlkoxyChain(); } catch (eC1) { _alcC = null; }
+        try { _alcC3 = fGetEtherAlkoxyChain3D(); } catch (eC3) { _alcC3 = null; }
+        try {
+          var _alcNm = (typeof nameComponentsList !== "undefined" && nameComponentsList) ? nameComponentsList[1] : null;
+          var _alcOrd = (typeof fEtherAlkoxyNumbering === "function") ? fEtherAlkoxyNumbering(_alcC, _alcNm) : null;
+          var _alcOrd3 = (typeof fEtherAlkoxyNumbering3D === "function") ? fEtherAlkoxyNumbering3D(_alcC3, _alcNm) : null;
+          if (_alcOrd && _alcOrd.length) _alcC = _alcOrd;
+          if (_alcOrd3 && _alcOrd3.length) _alcC3 = _alcOrd3;
+        } catch (eAN) {}
+        fShowAnalysisNumbering(0, _alcC, _alcC3);
         $("#ruleTheoryContainer").show();
         break;
       }
@@ -8460,7 +8470,16 @@ function fExplainNameComp() {
           if (_acidChain && _acidChain.length > 0) fHighlightAtomChain(_acidChain, true, !_showB, !_showA);
           if (_acidChain3D && _acidChain3D.length > 0) fHighlightAtomChain3D(_acidChain3D, true, !_showB, !_showA);
         }
-        fShowAnalysisNumbering(0, _acidChain, _acidChain3D);
+        // Numbering follows the acid parent numbering (carbonyl C = 1),
+        // sequential along the longest saturated chain from it (v54.39).
+        var _acidNum = _acidChain, _acidNum3 = _acidChain3D;
+        try {
+          var _aOrd = (typeof fEsterAcidNumbering === "function") ? fEsterAcidNumbering(_acidChain) : null;
+          var _aOrd3 = (typeof fEsterAcidNumbering3D === "function") ? fEsterAcidNumbering3D(_acidChain3D) : null;
+          if (_aOrd && _aOrd.length) _acidNum = _aOrd;
+          if (_aOrd3 && _aOrd3.length) _acidNum3 = _aOrd3;
+        } catch (eANa) {}
+        fShowAnalysisNumbering(0, _acidNum, _acidNum3);
         $("#ruleTheoryContainer").show();
         break;
       }
@@ -8775,6 +8794,8 @@ function fExplainNameComp() {
     }
     case "esterAlkyl": {
       // Ester alcohol-part click (e.g. μεθυλ): highlight O + alcohol chain, number it.
+      // Numbering follows the alkyl's systematic internal numbering (v54.39):
+      // attach atom first with its free-valence locant, then outward.
       nStyle = "";
       myClass = "";
       myText = fTX('Δηλώνει το αλκυλο-τμήμα του εστέρα (από την αλκοόλη).', 'It indicates the alkyl part of the ester (from the alcohol).');
@@ -8787,7 +8808,14 @@ function fExplainNameComp() {
         fColorFragmentBonds3D(_alcChain3D, true);
       }
       numberingFlag = true;
-      fShowAnalysisNumbering(0, _alcChain, _alcChain3D);
+      var _alcNum = _alcChain, _alcNum3 = _alcChain3D;
+      try {
+        var _alcOrd = (typeof fEsterAlcoholNumbering === "function") ? fEsterAlcoholNumbering(_alcChain) : null;
+        var _alcOrd3 = (typeof fEsterAlcoholNumbering3D === "function") ? fEsterAlcoholNumbering3D(_alcChain3D) : null;
+        if (_alcOrd && _alcOrd.length) _alcNum = _alcOrd;
+        if (_alcOrd3 && _alcOrd3.length) _alcNum3 = _alcOrd3;
+      } catch (eANm) {}
+      fShowAnalysisNumbering(0, _alcNum, _alcNum3);
       break;
     }
     case "esterEster":
@@ -9774,13 +9802,30 @@ function fGetEtherCommonParts() {
   }
   const sP = stemFor(parentLen, _eI && _eI.parentAttachC, _eI && _eI.parentFrag), sA = stemFor(alkLen, _eI && _eI.alkoxyAttachC, _eI && _eI.alkoxyFrag);
   const mk = function (label, isParent) {
+    // Alkoxy numbering (v54.39): systematic internal order instead of the
+    // raw fragment order; the parent chain keeps main-chain numbering.
+    var _numA = alkoxyChain, _numA3 = alkoxyChain3D;
+    if (!isParent) {
+      try {
+        var _anm = null;
+        if (typeof fAlkylGroupName === "function" && _eI) {
+          _anm = fAlkylGroupName(alkLen, _eI.alkoxyAttachC, "alkoxy", _eI.alkoxyFrag) || null;
+        }
+        if (!_anm && typeof alkoxyNames !== "undefined" && _eI) { try { _anm = alkoxyNames[alkLen] || null; } catch (eAN2) {} }
+        var _ord = null, _ord3 = null;
+        try { _ord = fEtherAlkoxyNumbering(alkoxyChain, _anm); } catch (eON) { _ord = null; }
+        try { _ord3 = fEtherAlkoxyNumbering3D(alkoxyChain3D, _anm); } catch (eON3) { _ord3 = null; }
+        if (_ord && _ord.length) _numA = _ord;
+        if (_ord3 && _ord3.length) _numA3 = _ord3;
+      } catch (eAN3) {}
+    }
     return {
       label: label,
       chain: isParent ? parentChain : alkoxyChain,
       chain3D: isParent ? parentChain3D : alkoxyChain3D,
       kind: "alkyl",
-      numberChain: isParent ? mainChainAtomsList.slice() : alkoxyChain,
-      numberChain3D: isParent ? mainChainAtoms3D.slice() : alkoxyChain3D,
+      numberChain: isParent ? mainChainAtomsList.slice() : _numA,
+      numberChain3D: isParent ? mainChainAtoms3D.slice() : _numA3,
     };
   };
   const pair = [mk(sP, true), mk(sA, false)].sort(function (a, b) {
@@ -9795,6 +9840,222 @@ function fGetEtherCommonParts() {
 // Scope v41: saturated acyclic mono-esters R-C(=O)-O-R'.
 // esterInfo (2D, from fCalcMainChain): {oDouble, oSingle, carbonylC,
 // alcoholAttachC, acidFrag, alcoholFrag, acidLen, alcoholLen} — 0-based.
+
+
+// ── Systematic internal numbering for O-linked alkyl fragments ─────────
+// v54.39: on-canvas numbers must follow the substituent's own numbering —
+// the attachment atom carries the free-valence locant (2 for propan-2-yl),
+// the parent chain runs sequentially outward, and a sub-branch (e.g. the
+// isobutyl 2-methyl) takes the next free number so every shown atom is
+// traceable. Positional numbering can only render i+1, so the fragment is
+// reordered instead of relabeled (no numbering-engine changes).
+// Table: common Greek alkyl name -> {attachLoc, parentLen}. Straight chains
+// (incl. decorated methyl/ethyl, any n-alkyl) need no entry — attachLoc 1,
+// parent = longest path. Unknown branched shapes, C-C multi-bonds and rings
+// fall back to today's fragment order (never worse). Applies in every
+// language and toggle state: numbering follows the rules, not the display.
+var ALKYL_SYS_NUMBERING = {
+  "ισοπροπυλο": { attach: 2, parent: 3 },
+  "sec-βουτυλο": { attach: 2, parent: 4 },
+  "tert-βουτυλο": { attach: 2, parent: 3 },
+  "ισοβουτυλο": { attach: 1, parent: 3 }
+};
+// Returns the fragment atoms (0-based) in display order, or null (keep
+// today's order). connList/typeList are 0-based; bondList is 1-based
+// [a, b, order] or null (skips the saturation check when absent).
+// specOverride: { attach } (parent defaults to longest path) or null.
+function fAlkylNumberingOrder(frag0, attach0, connList, typeList, bondListOrNull, commonAlkylName, specOverride) {
+  try {
+    if (!Array.isArray(frag0) || !frag0.length) return null;
+    if (attach0 === undefined || attach0 === null) return null;
+    var side = [];
+    for (var si = 0; si < frag0.length; si++) {
+      var _sa = frag0[si];
+      if (typeList[_sa] === "C") side.push(_sa);
+    }
+    if (!side.length || side.indexOf(attach0) < 0) return null;
+    // acyclic saturated side only (connected tree, all single bonds)
+    var inSide = {};
+    for (var sj = 0; sj < side.length; sj++) inSide[side[sj]] = true;
+    var seen = {}, stack = [attach0], edgeCount = 0, _ok = true;
+    seen[attach0] = true;
+    while (stack.length && _ok) {
+      var node = stack.pop();
+      var nbs = (connList && connList[node]) || [];
+      for (var ni = 0; ni < nbs.length; ni++) {
+        var nb = nbs[ni];
+        if (!inSide[nb]) continue;
+        var o = 1;
+        try {
+          var bl = bondListOrNull;
+          if (bl && typeof bl.length === "number") {
+            for (var bi = 0; bi < bl.length; bi++) {
+              var bb = bl[bi];
+              if (bb && ((bb[0] - 1 === node && bb[1] - 1 === nb) || (bb[0] - 1 === nb && bb[1] - 1 === node))) { o = bb[2]; break; }
+            }
+          }
+        } catch (eBO) { o = 1; }
+        if (o !== 1) { _ok = false; break; }
+        edgeCount++;
+        if (!seen[nb]) { seen[nb] = true; stack.push(nb); }
+      }
+    }
+    var seenCount = 0;
+    for (var sk in seen) { if (Object.prototype.hasOwnProperty.call(seen, sk)) seenCount++; }
+    if (!_ok || seenCount !== side.length || edgeCount / 2 !== side.length - 1) return null;
+    // longest simple path from attach (DFS, ascending neighbours: deterministic)
+    var best = [];
+    (function () {
+      var path = [attach0], vis = {};
+      vis[attach0] = true;
+      function dfs(node) {
+        if (path.length > best.length) best = path.slice();
+        var nbs2 = ((connList && connList[node]) || []).slice().sort(function (a, b) { return a - b; });
+        for (var i = 0; i < nbs2.length; i++) {
+          var nb2 = nbs2[i];
+          if (!inSide[nb2] || vis[nb2]) continue;
+          vis[nb2] = true; path.push(nb2);
+          dfs(nb2);
+          path.pop(); delete vis[nb2];
+        }
+      }
+      dfs(attach0);
+    })();
+    if (!best.length) return null;
+    // resolve attach locant + parent length: explicit spec (acid), table
+    // entry, or straight-chain rule (longest path must cover every atom)
+    var attachLoc = 1, parentLen = best.length;
+    if (specOverride && typeof specOverride.attach === "number") {
+      attachLoc = specOverride.attach;
+      if (typeof specOverride.parent === "number" && specOverride.parent > 0) parentLen = specOverride.parent;
+    } else {
+      var nm = String(commonAlkylName == null ? "" : commonAlkylName);
+      if (/οξυ$/.test(nm)) nm = nm.replace(/οξυ$/, "υλο");
+      else if (/υλ$/.test(nm)) nm = nm + "ο";
+      if (Object.prototype.hasOwnProperty.call(ALKYL_SYS_NUMBERING, nm)) {
+        attachLoc = ALKYL_SYS_NUMBERING[nm].attach;
+        parentLen = ALKYL_SYS_NUMBERING[nm].parent;
+      } else if (best.length !== side.length) {
+        return null;
+      } else {
+        attachLoc = 1; parentLen = side.length;
+      }
+    }
+    if (best.length > parentLen) return null;
+    var P = best.slice(0, parentLen);
+    var inP = {};
+    for (var pi = 0; pi < P.length; pi++) inP[P[pi]] = true;
+    var leftovers = [];
+    for (var li = 0; li < side.length; li++) {
+      if (!inP[side[li]]) leftovers.push(side[li]);
+    }
+    leftovers.sort(function (a, b) { return a - b; });
+    // chain-completing atom(s) before the attachment (at most attachLoc - 1
+    // for the v1 set; symmetric ties broken by ascending index — any choice
+    // is a valid numbering), then the path, then sub-branches in order
+    var need = attachLoc - 1, chainTaken = [], branchRest = [];
+    for (var qi = 0; qi < leftovers.length; qi++) {
+      var q = leftovers[qi];
+      if (((connList && connList[attach0]) || []).indexOf(q) >= 0 && chainTaken.length < need) chainTaken.push(q);
+      else branchRest.push(q);
+    }
+    if (chainTaken.length < need) return null;
+    return chainTaken.concat(P).concat(branchRest);
+  } catch (eN) { return null; }
+}
+
+// Numbering-order wrappers (1-based in/out, attach-first or null on any
+// gap — callers fall back to today's fragment order). Highlight arrays are
+// never reordered: numbering and highlight stay on the same molecule but
+// follow their own contracts.
+function fEsterAlcoholNumbering(chain1) {
+  try {
+    if (!Array.isArray(chain1) || !chain1.length) return null;
+    var _e = (typeof esterInfo !== "undefined") ? esterInfo : null;
+    var att = (_e && _e.alcoholAttachC != null) ? _e.alcoholAttachC : chain1[0] - 1;
+    var nm = (typeof nameComponentsList !== "undefined" && nameComponentsList) ? nameComponentsList[10] : null;
+    var ord = fAlkylNumberingOrder(chain1.map(function (n) { return n - 1; }), att,
+      (typeof atomConnectivityList !== "undefined" ? atomConnectivityList : null),
+      (typeof allAtomsTypeList !== "undefined" ? allAtomsTypeList : null),
+      (typeof bondList !== "undefined" ? bondList : null), nm, null);
+    if (!ord || !ord.length) return null;
+    return ord.map(function (n) { return n + 1; });
+  } catch (e) { return null; }
+}
+function fEsterAlcoholNumbering3D(chain1) {
+  try {
+    if (!Array.isArray(chain1) || !chain1.length) return null;
+    var att = null;
+    try { att = (typeof fGetEsterAlcoholC3D === "function") ? fGetEsterAlcoholC3D() : null; } catch (eA) { att = null; }
+    if (att === null || att === undefined) att = chain1[0] - 1;
+    var nm = (typeof nameComponentsList !== "undefined" && nameComponentsList) ? nameComponentsList[10] : null;
+    var ord = fAlkylNumberingOrder(chain1.map(function (n) { return n - 1; }), att,
+      (typeof atomConnectivityList3D !== "undefined" ? atomConnectivityList3D : null),
+      (typeof allAtomsTypeList3D !== "undefined" ? allAtomsTypeList3D : null),
+      (typeof bondList3D !== "undefined" ? bondList3D : null), nm, null);
+    if (!ord || !ord.length) return null;
+    return ord.map(function (n) { return n + 1; });
+  } catch (e) { return null; }
+}
+function fEsterAcidNumbering3D(chain1) {
+  try {
+    if (!Array.isArray(chain1) || !chain1.length) return null;
+    var att = null;
+    try { att = (typeof fGetEsterAcidC3D === "function") ? fGetEsterAcidC3D() : null; } catch (eA) { att = null; }
+    if (att === null || att === undefined) att = chain1[0] - 1;
+    var ord = fAlkylNumberingOrder(chain1.map(function (n) { return n - 1; }), att,
+      (typeof atomConnectivityList3D !== "undefined" ? atomConnectivityList3D : null),
+      (typeof allAtomsTypeList3D !== "undefined" ? allAtomsTypeList3D : null),
+      (typeof bondList3D !== "undefined" ? bondList3D : null), null, { attach: 1 });
+    if (!ord || !ord.length) return null;
+    return ord.map(function (n) { return n + 1; });
+  } catch (e) { return null; }
+}
+function fEsterAcidNumbering(chain1) {
+  // Acid parent numbering (v54.39): carbonyl C is always C1; longest
+  // saturated chain from it numbers sequentially, extra branches last.
+  try {
+    if (!Array.isArray(chain1) || !chain1.length) return null;
+    var _e = (typeof esterInfo !== "undefined") ? esterInfo : null;
+    var att = (_e && _e.carbonylC != null) ? _e.carbonylC : chain1[0] - 1;
+    var ord = fAlkylNumberingOrder(chain1.map(function (n) { return n - 1; }), att,
+      (typeof atomConnectivityList !== "undefined" ? atomConnectivityList : null),
+      (typeof allAtomsTypeList !== "undefined" ? allAtomsTypeList : null),
+      (typeof bondList !== "undefined" ? bondList : null), null, { attach: 1 });
+    if (!ord || !ord.length) return null;
+    return ord.map(function (n) { return n + 1; });
+  } catch (e) { return null; }
+}
+function fEtherAlkoxyNumbering(chain1, alkoxyName) {
+  try {
+    if (!Array.isArray(chain1) || !chain1.length) return null;
+    var att = chain1[0] - 1;
+    try {
+      var _e = (typeof etherInfo !== "undefined") ? etherInfo : null;
+      if (_e && _e.alkoxyAttachC != null && chain1.indexOf(_e.alkoxyAttachC + 1) >= 0) att = _e.alkoxyAttachC;
+    } catch (eA) {}
+    var ord = fAlkylNumberingOrder(chain1.map(function (n) { return n - 1; }), att,
+      (typeof atomConnectivityList !== "undefined" ? atomConnectivityList : null),
+      (typeof allAtomsTypeList !== "undefined" ? allAtomsTypeList : null),
+      (typeof bondList !== "undefined" ? bondList : null), alkoxyName, null);
+    if (!ord || !ord.length) return null;
+    return ord.map(function (n) { return n + 1; });
+  } catch (e) { return null; }
+}
+function fEtherAlkoxyNumbering3D(chain1, alkoxyName) {
+  try {
+    if (!Array.isArray(chain1) || !chain1.length) return null;
+    var att = null;
+    try { att = (typeof fGetEtherAlkoxyC3D === "function") ? fGetEtherAlkoxyC3D() : null; } catch (eA) { att = null; }
+    if (att === null || att === undefined) att = chain1[0] - 1;
+    var ord = fAlkylNumberingOrder(chain1.map(function (n) { return n - 1; }), att,
+      (typeof atomConnectivityList3D !== "undefined" ? atomConnectivityList3D : null),
+      (typeof allAtomsTypeList3D !== "undefined" ? allAtomsTypeList3D : null),
+      (typeof bondList3D !== "undefined" ? bondList3D : null), alkoxyName, null);
+    if (!ord || !ord.length) return null;
+    return ord.map(function (n) { return n + 1; });
+  } catch (e) { return null; }
+}
 
 // Ordered alcohol chain (1-based JSME numbers), attachment C first.
 function fGetEsterAlcoholChain() {
