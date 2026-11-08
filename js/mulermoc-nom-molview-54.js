@@ -7015,6 +7015,29 @@ function fGreekSysSlots() {
     return changed ? slots : null;
   } catch (eG) { return null; }
 }
+// Sys-aware slot-3 pieces (v54.34): split the COMMON fused text for group
+// boundaries, transform each name piece, keep locants. Returns {sys, com}
+// or null (common itself unfused/unsplittable → whole-box fallback).
+// The sys pieces feed the standard piece loop verbatim (same ids, same
+// separators), so click modes, positional lookup, highlight, numbering and
+// restore all work unchanged — no new modes.
+function fSysFusedPieces() {
+  try {
+    if (typeof nameComponentsList === "undefined" || !nameComponentsList) return null;
+    var common = nameComponentsList[3];
+    if (typeof common !== "string" || !common) return null;
+    var parts = (typeof fSplitBranchPieces === "function") ? fSplitBranchPieces(common) : null;
+    if (!parts) return null;
+    var sys = parts.map(function (p, k) {
+      if (k % 2 === 1) return p;
+      var m = (typeof fGRSystOneStem === "function") ? fGRSystOneStem(p) : null;
+      return m !== null ? m : p;
+    });
+    if (sys.join("-") === parts.join("-")) return null;
+    return { sys: sys, com: parts };
+  } catch (eF) { return null; }
+}
+
 // Euphony join mirror of the fGuessName tail (common + ester two-word rule),
 // for the joined systematic preview name from transformed slots.
 function fJoinGreekSysName(slots) {
@@ -7392,18 +7415,21 @@ function fShowNameAnalysis() {
     // later names comp3b (then comp3loc2/comp3b2, ...). Core list, euphony
     // and the joined name are unchanged: piece ends ("-", digit, vowel-end
     // name) never take a connector, and a fired euphony aborts the split.
-    // Systematic slot-3 text never splits (v54.33): a sys name always carries
-    // an internal digit/parens (προπαν-2-υλο, δι(προπαν-2-υλο)), so the
-    // splitter would either shred it ("προπαν"|"2"|"υλο") or mis-pair it
-    // inside a fused string — and piece lookup by shredded name matches no
-    // branch group (no highlight/numbering). The general-path whole box
-    // (id comp3) then stands: one component, standard click mode, and the
-    // global-based explain/highlight/numbering paths work unchanged.
-    // Unchanged slot 3 in sys mode still splits exactly as common.
-    if (i === 3 && displayComp === currComp &&
-        !(_grSysMode && _slots[3] !== nameComponentsList[3])) {
+    // Systematic fused slot (v54.34): the naive splitter would shred
+    // internal-locant names ("προπαν-2-υλο" → 3 pieces) or mis-pair them, so
+    // split the COMMON text for group boundaries and transform name pieces
+    // instead — [sysName, locants, sysName...] through the same loop, ids
+    // and lookup unchanged. Null (common itself unsplittable) falls back to
+    // the whole box, as does an unchanged slot.
+    if (i === 3 && displayComp === currComp) {
       try {
-        var _brp = fSplitBranchPieces(currComp);
+        var _brp = null, _brpCom = null;
+        if (_grSysMode && _slots[3] !== nameComponentsList[3]) {
+          var _sfp = (typeof fSysFusedPieces === "function") ? fSysFusedPieces() : null;
+          if (_sfp) { _brp = _sfp.sys; _brpCom = _sfp.com; }
+        } else {
+          _brp = fSplitBranchPieces(currComp);
+        }
         if (_brp) {
           var _brLast = _brp[_brp.length - 1];
           var _brNext = _nextIdx >= 0 ? String(_slots[_nextIdx]) : "";
@@ -7451,7 +7477,13 @@ function fShowNameAnalysis() {
                 _brText = (_brFirst ? "" : "-") + _brp[_bri] + "-";
               }
               if (_bri > 0) _brx += `<div class='${crossClass}' > + </div>`;
-              _brx += fNameCompBox(_brId, boxClass, _brText);
+              var _brTip = null;
+              try {
+                if (_brpCom && _bri % 2 === 0 && _brp[_bri] !== _brpCom[_bri] && _grTipPre) {
+                  _brTip = _grTipPre + _grSchoolFull;
+                }
+              } catch (eBT) { _brTip = null; }
+              _brx += fNameCompBox(_brId, boxClass, _brText, _brTip);
             }
             compBox = _brx;
           }
