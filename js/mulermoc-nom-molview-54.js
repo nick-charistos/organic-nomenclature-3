@@ -3663,12 +3663,23 @@ function fSelectMol() {
   // Systematic EN variant for the Traditional/Systematic toggle: compute BEFORE
   // the name panel builds (the toggle's visibility reads engineEN_sys).
   // Same-slot transliteration, mapped substituents; null when identical to
-  // school or untranslatable. School engineEN keeps its own (later) call.
+  // school or untranslatable. School engineEN is computed here too (v54.30):
+  // it used to run AFTER the panel build, so on a cold first select the
+  // toggle compared the fresh sys string against the previous molecule's
+  // (or undefined) school name and showed spuriously on nearly every
+  // molecule. Order between the two calls is irrelevant; both must precede
+  // fShowNameAnalysis.
   try {
     if (typeof fPopulateEngineENFromGreek === "function")
       fPopulateEngineENFromGreek(selectedMol, "sys");
   } catch (eEnSys) {
     /* systematic best-effort */
+  }
+  try {
+    if (typeof fPopulateEngineENFromGreek === "function")
+      fPopulateEngineENFromGreek(selectedMol);
+  } catch (eEnPopSel) {
+    /* engine best-effort */
   }
 
   // fShowMolName()
@@ -3698,13 +3709,8 @@ function fSelectMol() {
     /* second oracle best-effort */
   }
 
-  // v53 EN engine: transliterate Greek slots -> engineEN for validation.
-  try {
-    if (typeof fPopulateEngineENFromGreek === "function")
-      fPopulateEngineENFromGreek(selectedMol);
-  } catch (eEnPop) {
-    /* engine best-effort */
-  }
+  // (School + systematic engineEN are both computed before the panel build
+  // above since v54.30; no later call needed.)
   // Draft entries: Edit needs a selected molecule (visual state only; the
   // click-time guard in fMolDraftEnter is the backstop).
   try { if (typeof fMolDraftSyncButtons === "function") fMolDraftSyncButtons(); } catch (eDs) {}
@@ -8955,6 +8961,12 @@ function fApplyChainStep() {
   // and rename the winner — the trap that froze the stepper). Validation is
   // skipped with it, as intended while stepping.
   try { if (typeof fGuessName === "function") fGuessName(true); } catch (eN) { /* naming unavailable */ }
+  // Stepper refresh (v54.30): Greek slots just changed chain, so refresh both
+  // EN variants too — otherwise the Traditional/Systematic toggle visibility
+  // (and verdict-source EN) keeps reflecting the select-time chain while the
+  // boxes already show the stepped one. Pure string ops, no oracle traffic.
+  try { if (typeof fPopulateEngineENFromGreek === "function") fPopulateEngineENFromGreek(selectedMol); } catch (eEnSt) { /* engine best-effort */ }
+  try { if (typeof fPopulateEngineENFromGreek === "function") fPopulateEngineENFromGreek(selectedMol, "sys"); } catch (eEnSySt) { /* systematic best-effort */ }
   // Refresh ONLY the selected component's highlight (or clear to deselect
   // visuals when nothing is selected): same clear + rebuild + explain sequence
   // as a name-box click, minus the selection toggle and narration. The
