@@ -229,17 +229,19 @@ function fPopulateEngineENFromGreek(key, variant) {
       if (sys) t = fSystematicSubstSlot(i, t);
       return t;
     };
+    var SchJ = function (i) {
+      return fGreekFragToEN(nameComponentsList[i] == null ? "" : nameComponentsList[i], i);
+    };
     var hasSub = !!S(1) || !!S(3);
     var stripLoc = function (s) { return String(s == null ? "" : s).replace(/^[-\s]+/, "").replace(/[-\s]+$/, ""); };
     // substituent locants live in comp0 when substituents exist, else comp0 holds the first parent locant
     var preLoc = hasSub ? stripLoc(S(0)) : "";
     var preLoc2 = hasSub ? stripLoc(S(2)) : "";
-    // EN-alphabetical substituent order (P-14.5.1): school data may arrive in
-    // Greek-alphabetical order, which differs for e.g. chloro/fluoro or
-    // hydroxy/alkyl pairs. Swap the two substituent groups (locants travel
-    // with their group) when the transliterated names are out of order.
-    // Bounded to the clean case (both groups carry locants); otherwise keep
-    // Greek order. No-op on all current data (verified against slots141).
+    // EN-alphabetical substituent order (P-14.5.1/2): v54.21 two-group swap
+    // (kept as the legacy fallback below) + v54.41 full group order. The
+    // swap compares whole-slot keys; the sorter below orders every group
+    // (slot-1 + slot-3 pieces) by displayed name. Bounded to the clean case
+    // (both groups carry locants); otherwise keep Greek order.
     var _swapSub = false;
     try {
       var _sk1 = fENSubstSortKey(S(1)), _sk3 = fENSubstSortKey(S(3));
@@ -271,8 +273,33 @@ function fPopulateEngineENFromGreek(key, variant) {
         if (fENSysNeedsParens(W10, C10, isEster ? "" : C9)) W10 = "(" + W10 + ")";
       } catch (eW) { W1 = S(1); W3 = S(3); W10 = S(10); }
     }
+    // v54.41 full group order (mirrors the boxes): G1 + slot-3 pieces sorted
+    // by displayed name. Null = legacy pre assembly below (single group,
+    // original order, or a non-first group without digit locants).
+    var _jgroups = (typeof fENSubstGroups === "function") ? fENSubstGroups(S, SchJ, sys) : [];
+    var _jord = (typeof fENSortSubstGroups === "function") ? fENSortSubstGroups(_jgroups) : null;
+    if (_jord) {
+      try {
+        var _jg1 = -1;
+        for (var _jq = 0; _jq < _jord.length; _jq++) { if (_jgroups[_jord[_jq]].kind === "g1") { _jg1 = _jq; break; } }
+        if (_jg1 > 0 && _jg1 < _jord.length - 1) _jord = null;
+      } catch (eJQ) { _jord = null; }
+    }
     var pre;
-    if (!_swapSub) {
+    if (_jord) {
+      pre = "";
+      var _je = false;
+      for (var _ji = 0; _ji < _jord.length; _ji++) {
+        var _jg = _jgroups[_jord[_ji]];
+        var _jl = stripLoc(_jg.loc);
+        var _jt = _jl ? ((_je ? "-" : "") + _jl + "-") : "";
+        var _jn = _jg.name;
+        if (sys && typeof fENSysNeedsParens === "function") {
+          try { if (fENSysNeedsParens(_jn, _jg.com, _jg.loc)) _jn = "(" + _jn + ")"; } catch (ePPj) {}
+        }
+        pre += _jt + _jn; _je = true;
+      }
+    } else if (!_swapSub) {
       pre = (hasSub ? (preLoc ? preLoc + "-" : "") : "") + [W1, S(2), W3].join("");
     } else {
       pre = preLoc2 + "-" + W3 + "-" + preLoc + "-" + W1;
@@ -416,12 +443,15 @@ function fNameENBoxes(variant) {
     var spaceAfter = null;
     // Esters lead with the alcohol word (alkyl alkanoate: "isobutyl ...").
     if (isEster) { push("comp10", S(10)); spaceAfter = "comp10"; }
-    // Pre (substituent) boxes: EN-alphabetical group order (P-14.5.1; same
-    // swap rule as fPopulateEngineENFromGreek). Box ids stay attached to
-    // their content — only display order changes — so the highlight/explain
-    // mapping is unaffected. In swap mode the locant boxes carry explicit
-    // separators (comp2 keeps trailing '-', comp0 gains leading '-') so the
-    // joined row reads e.g. "2,5-dimethyl-3-ethyl" with no stray hyphens.
+    // Pre (substituent) boxes: EN-alphabetical group order (P-14.5.1/2, v54.41;
+    // same swap rule as fPopulateEngineENFromGreek for the legacy path).
+    // Sorted path: slot-1 group + every slot-3 piece sort together by
+    // DISPLAYED name, locants traveling with their group. Box ids stay
+    // attached to content — only display order changes — so the
+    // highlight/explain mapping is unaffected. Separators are positional
+    // (first-emitted loc box loses its leading dash). The legacy path below
+    // is byte-identical to before (verified: sorter-null implies the swap
+    // cannot fire, single groups bypass sorting).
     if (hasSub) {
       var _sw = false;
       try {
@@ -480,7 +510,34 @@ function fNameENBoxes(variant) {
           }
         } else { push("comp3", S(3)); }
       };
-      if (_sw) {
+      // v54.41: full group order (G1 + slot-3 pieces). Null = legacy path
+      // below (single group, original order, or a non-first group without
+      // digit locants — fail-closed, today's exact output there).
+      var _groups = (typeof fENSubstGroups === "function") ? fENSubstGroups(S, Sch, sys) : [];
+      var _ord = (typeof fENSortSubstGroups === "function") ? fENSortSubstGroups(_groups) : null;
+      if (_ord) {
+        // G1 (if present) must sort first or last — anything else keeps the
+        // legacy path (unattested; middle order has no box mapping).
+        try {
+          var _gqi = -1;
+          for (var _gqj = 0; _gqj < _ord.length; _gqj++) { if (_groups[_ord[_gqj]].kind === "g1") { _gqi = _gqj; break; } }
+          if (_gqi > 0 && _gqi < _ord.length - 1) _ord = null;
+        } catch (eQ) { _ord = null; }
+      }
+      if (_ord) {
+        var _emitted = false;
+        for (var _e = 0; _e < _ord.length; _e++) {
+          var _g = _groups[_ord[_e]];
+          var _gl = stripLoc(_g.loc);
+          var _lt = _gl ? ((_emitted ? "-" : "") + _gl + "-") : "";
+          if (_lt) { push(_g.locId, _lt); _emitted = true; }
+          var _nt = _g.name;
+          if (sys && typeof fENSysNeedsParens === "function") {
+            try { if (fENSysNeedsParens(_nt, _g.com, _g.loc)) _nt = "(" + _nt + ")"; } catch (ePPs) {}
+          }
+          push(_g.nameId, _nt); _emitted = true;
+        }
+      } else if (_sw) {
         var _l2 = stripLoc(S(2)), _l0 = stripLoc(S(0));
         _pushG2(_l2 ? _l2 + "-" : "");
         _pushG1("-" + _l0 + "-");
@@ -732,18 +789,113 @@ function fSystematicSubstSlot(slot, text) {
     return out.join("-");
   } catch (eS) { return text; }
 }
-// EN substituent sort key (P-14.5.1): alphabetical by transliterated name,
-// ignoring simple multiplicative prefixes (same strip as fAssembleBranchedEN).
-// Compound substituent names sort by complete name (P-14.5.2 limitation noted:
-// a leading di/tri/tetra inside a compound name is stripped like a simple
-// multiplicative prefix — correct for all current data; revisit with
-// Greek-side group-structure info if compound substituents need exact order).
+// EN substituent sort key (P-14.5.1 simple + P-14.5.2 compound, v54.41):
+// alphabetical by transliterated DISPLAYED name. Simple substituents ignore
+// di/tri/tetra (dimethyl under m); compound (substituted) substituents sort
+// by the first letter of the complete name (difluorobutyl under d,
+// bis(chloromethyl) under b), leading locants skipped. (Resolves the v54.22
+// limitation note: leading di/tri/tetra inside compound names no longer
+// strips. sec-/tert- sort as plain Roman (P-14.5.3 tie-break only).)
 function fENSubstSortKey(nm) {
   try {
     var s = String(nm == null ? "" : nm).toLowerCase();
     s = s.replace(/[()]/g, "");
+    s = s.replace(/^[\d,\s\-]+/, "");
+    if ((typeof fIsSubstitutedStemEN === "function") && fIsSubstitutedStemEN(s)) return s;
     return s.replace(/^(di|tri|tetra)(?=[a-z])/, "");
   } catch (e) { return ""; }
+}
+// Numeric locants list for the P-14.5.4 tie-break (identical Roman letters ->
+// lowest locants first). Unparseable -> [] (stable fallback).
+function fENLocKey(locText) {
+  try {
+    var out = [];
+    var parts = String(locText == null ? "" : locText).replace(/^[-\s]+/, "").replace(/[-\s]+$/, "").split(/[, \-]+/);
+    for (var i = 0; i < parts.length; i++) {
+      var n = parseInt(parts[i], 10);
+      if (isFinite(n)) out.push(n);
+    }
+    return out;
+  } catch (eL) { return []; }
+}
+// Substituent groups for ordering (v54.41): slot-1 group + every slot-3
+// piece, locants traveling with their group. Returns raw-order (G1 first)
+// [{loc, name, com, kind, locId, nameId}] or [] when degenerate. Name/com
+// are DISPLAYED strings (sys-aware when sys); parens are applied at emission
+// (own-locant gate, as before), so sorting uses bare names.
+function fENSubstGroups(S, Sch, sys) {
+  try {
+    if (typeof S !== "function") return [];
+    var gs = [];
+    var s1 = "", c1 = "";
+    try { s1 = S(1); } catch (e1) { s1 = ""; }
+    try { c1 = (typeof Sch === "function") ? Sch(1) : s1; } catch (eC1) { c1 = s1; }
+    if (s1) gs.push({ loc: S(0), name: s1, com: c1, kind: "g1", locId: "comp0", nameId: "comp1" });
+    var s3 = "", c3 = "";
+    try { s3 = S(3); } catch (e3) { s3 = ""; }
+    try { c3 = (typeof Sch === "function") ? Sch(3) : s3; } catch (eC3) { c3 = s3; }
+    if (s3) {
+      var pcs = null, ccs = null;
+      if (sys && s3 !== c3 && typeof fSplitENBranchSys === "function") {
+        var sfp = null;
+        try { sfp = fSplitENBranchSys(c3, s3, 3); } catch (eSF) { sfp = null; }
+        if (sfp) { pcs = sfp.sys; ccs = sfp.com; }
+      }
+      if (!pcs) {
+        var br = null;
+        try { if (typeof fSplitENBranch === "function") br = fSplitENBranch(s3); } catch (eB) { br = null; }
+        if (br) { pcs = br; ccs = br.slice(); }
+      }
+      if (pcs) {
+        for (var k = 0; k < pcs.length; k += 2) {
+          var j = k / 2;
+          gs.push({
+            loc: (k === 0) ? S(2) : pcs[k - 1], name: pcs[k], com: ccs[k], kind: "g3",
+            locId: (j === 0) ? "comp2" : ("comp3loc" + (j === 1 ? "" : String(j - 1))),
+            nameId: (j === 0) ? "comp3" : ("comp3b" + (j === 1 ? "" : String(j - 1)))
+          });
+        }
+      } else {
+        gs.push({ loc: S(2), name: s3, com: c3, kind: "g3", locId: "comp2", nameId: "comp3" });
+      }
+    }
+    return gs;
+  } catch (eG) { return []; }
+}
+// Full alphabetical group order (v54.41, P-14.5.1/2/4): sort key of the
+// DISPLAYED name, P-14.5.4 locant tie-break, stable. Returns the emission
+// permutation, or null to keep the legacy path: single/degenerate groups,
+// original order, or a non-first group without digit locants (fail-closed —
+// junction dashes need locants; legacy straight output is today's exact
+// behavior there since the swap precondition needs non-empty locants too).
+function fENSortSubstGroups(gs) {
+  try {
+    if (!Array.isArray(gs) || gs.length < 2) return null;
+    var idx = [];
+    for (var i = 0; i < gs.length; i++) idx.push(i);
+    idx.sort(function (a, b) {
+      var ka = "", kb = "";
+      try { ka = fENSubstSortKey(gs[a].name); } catch (e1) {}
+      try { kb = fENSubstSortKey(gs[b].name); } catch (e2) {}
+      if (ka < kb) return -1;
+      if (ka > kb) return 1;
+      var la = [], lb = [];
+      try { la = fENLocKey(gs[a].loc); } catch (e3) {}
+      try { lb = fENLocKey(gs[b].loc); } catch (e4) {}
+      for (var k = 0; k < Math.max(la.length, lb.length); k++) {
+        var va = (k < la.length) ? la[k] : 1e9, vb = (k < lb.length) ? lb[k] : 1e9;
+        if (va !== vb) return va - vb;
+      }
+      return a - b;
+    });
+    var ident = true;
+    for (var j = 0; j < idx.length; j++) { if (idx[j] !== j) { ident = false; break; } }
+    if (ident) return null;
+    for (var m = 1; m < idx.length; m++) {
+      if (!/\d/.test(String(gs[idx[m]].loc))) return null;
+    }
+    return idx;
+  } catch (eS) { return null; }
 }
 function fNormNoStereo(s) {
   var t = String(s || "").trim();

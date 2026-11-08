@@ -7073,23 +7073,53 @@ function fJoinGreekSysName(slots) {
     // Parenthesize-when-preceded-by-locants (v54.35, mirrors the panel):
     // bare sys names after a locant run nest in parens so the joined preview
     // matches the panel boxes. Slots here are a fresh copy (safe to rewrite).
+    // v54.41: full alphabetical group order (slot-1 + slot-3 pieces, locants
+    // traveling) before wrapping — mirrors the panel pre-section.
     try {
       slots = slots.slice();
       var _jc = (typeof nameComponentsList !== "undefined") ? nameComponentsList : null;
       if (_jc && typeof fGRSysNeedsParens === "function") {
-        if (fGRSysNeedsParens(slots[1], _jc[1], _jc[0])) slots[1] = "(" + slots[1] + ")";
-        var _jsfp = (typeof fSysFusedPieces === "function") ? fSysFusedPieces() : null;
-        if (_jsfp) {
-          var _jp = _jsfp.sys.slice();
-          for (var _jk = 0; _jk < _jp.length; _jk += 2) {
-            var _jprev = (_jk === 0) ? _jc[2] : _jp[_jk - 1];
-            if (fGRSysNeedsParens(_jp[_jk], _jsfp.com[_jk], _jprev)) _jp[_jk] = "(" + _jp[_jk] + ")";
-          }
-          slots[3] = _jp.join("-");
-        } else if (fGRSysNeedsParens(slots[3], _jc[3], _jc[2])) {
-          slots[3] = "(" + slots[3] + ")";
+        var _jg = (typeof fGRSubstGroups === "function") ? fGRSubstGroups(slots, _jc) : [];
+        var _jo = (typeof fGRSortSubstGroups === "function") ? fGRSortSubstGroups(_jg) : null;
+        if (_jo) {
+          try {
+            var _jgp = -1;
+            for (var _jgq = 0; _jgq < _jo.length; _jgq++) { if (_jg[_jo[_jgq]].kind === "g1") { _jgp = _jgq; break; } }
+            if (_jgp > 0 && _jgp < _jo.length - 1) _jo = null;
+          } catch (eJQJ) { _jo = null; }
         }
-        if (fGRSysNeedsParens(slots[10], _jc[10], _jc[9])) slots[10] = "(" + slots[10] + ")";
+        if (_jo) {
+          var _jpre = [];
+          var _jje = false;
+          for (var _jqi = 0; _jqi < _jo.length; _jqi++) {
+            var _jgg = _jg[_jo[_jqi]];
+            var _jgl = String(_jgg.loc == null ? "" : _jgg.loc).replace(/^[-\s]+/, "").replace(/[-\s]+$/, "");
+            var _jlt = _jgl ? ((_jje ? "-" : "") + _jgl + "-") : "";
+            var _jnt = _jgg.name;
+            try { if (fGRSysNeedsParens(_jnt, _jgg.com, _jgg.loc)) _jnt = "(" + _jnt + ")"; } catch (ePPJ) {}
+            if (_jlt) { _jpre.push(_jlt); _jje = true; }
+            _jpre.push(_jnt); _jje = true;
+          }
+          slots[0] = _jpre.length > 0 ? _jpre[0] : "";
+          slots[1] = _jpre.length > 1 ? _jpre[1] : "";
+          slots[2] = _jpre.length > 2 ? _jpre[2] : "";
+          slots[3] = _jpre.length > 3 ? _jpre.slice(3).join("-") : "";
+          if (fGRSysNeedsParens(slots[10], _jc[10], _jc[9])) slots[10] = "(" + slots[10] + ")";
+        } else {
+          if (fGRSysNeedsParens(slots[1], _jc[1], _jc[0])) slots[1] = "(" + slots[1] + ")";
+          var _jsfp = (typeof fSysFusedPieces === "function") ? fSysFusedPieces() : null;
+          if (_jsfp) {
+            var _jp = _jsfp.sys.slice();
+            for (var _jk = 0; _jk < _jp.length; _jk += 2) {
+              var _jprev = (_jk === 0) ? _jc[2] : _jp[_jk - 1];
+              if (fGRSysNeedsParens(_jp[_jk], _jsfp.com[_jk], _jprev)) _jp[_jk] = "(" + _jp[_jk] + ")";
+            }
+            slots[3] = _jp.join("-");
+          } else if (fGRSysNeedsParens(slots[3], _jc[3], _jc[2])) {
+            slots[3] = "(" + slots[3] + ")";
+          }
+          if (fGRSysNeedsParens(slots[10], _jc[10], _jc[9])) slots[10] = "(" + slots[10] + ")";
+        }
       }
     } catch (eJP2) {}
     var _gkV = ['α', 'ε', 'η', 'ι', 'ο', 'υ', 'ω', 'ά', 'έ', 'ή', 'ί', 'ό', 'ύ', 'ώ'];
@@ -7367,8 +7397,58 @@ function fShowNameAnalysis() {
       try { if (typeof fMolDraftEsc === "function") { _grTipPre = fMolDraftEsc(_grTipPre); _grSchoolFull = fMolDraftEsc(_grSchoolFull); } } catch (eEscG) {}
     } catch (eGTp) { _grTipPre = null; }
   }
+  // Systematic alphabetical pre-section (v54.41, P-14.5.1/2 analogue): the
+  // slot-1 group + every slot-3 piece sort together by DISPLAYED sys name,
+  // locants traveling with their group. Rendered here directly (bypassing
+  // the slot loop below for i<4); box ids stay attached to content so the
+  // highlight/explain mapping is untouched. Null = legacy loop below
+  // (single group, original order, middle order, or a non-first group
+  // without digit locants — fail-closed, today's exact output).
+  var _preHTML = "";
+  if (_grSysMode && typeof fGRSubstGroups === "function" && typeof fGRSortSubstGroups === "function") {
+    try {
+      var _pg = fGRSubstGroups(_slots, (typeof nameComponentsList !== "undefined") ? nameComponentsList : null);
+      var _po = fGRSortSubstGroups(_pg);
+      if (_po) {
+        var _pgp = -1;
+        for (var _pgq = 0; _pgq < _po.length; _pgq++) { if (_pg[_po[_pgq]].kind === "g1") { _pgp = _pgq; break; } }
+        if (_pgp > 0 && _pgp < _po.length - 1) _po = null;
+      }
+      if (_po) {
+        var _pem = false;
+        for (var _pge = 0; _pge < _po.length; _pge++) {
+          var _gg = _pg[_po[_pge]];
+          var _gl = String(_gg.loc == null ? "" : _gg.loc).replace(/^[-\s]+/, "").replace(/[-\s]+$/, "");
+          var _lt = _gl ? ((_pem ? "-" : "") + _gl + "-") : "";
+          if (_lt) { _preHTML += fNameCompBox(_gg.locId, boxClass, _lt); _pem = true; }
+          var _nt2 = _gg.name, _ntTip = null;
+          try { if (_nt2 !== _gg.com && _grTipPre) _ntTip = _grTipPre + _grSchoolFull; } catch (eTGp) { _ntTip = null; }
+          try { if (typeof fGRSysNeedsParens === "function" && fGRSysNeedsParens(_nt2, _gg.com, _gg.loc)) _nt2 = "(" + _nt2 + ")"; } catch (ePGp) {}
+          _preHTML += fNameCompBox(_gg.nameId, boxClass, _nt2, _ntTip);
+          _pem = true;
+          if (_pge < _po.length - 1) _preHTML += `<div class='${crossClass}' > + </div>`;
+        }
+        var _pnx = -1;
+        for (var _pnxM = 4; _pnxM < compCount; _pnxM++) { if (_slots[_pnxM]) { _pnx = _pnxM; break; } }
+        if (_pnx >= 0) {
+          var _preEster = false;
+          try {
+            _preEster = (typeof nameExamples !== "undefined" && selectedMol &&
+              nameExamples[selectedMol] && nameExamples[selectedMol].classification &&
+              nameExamples[selectedMol].classification.chemicalClass === "esters");
+          } catch (ePEst) { _preEster = false; }
+          if (_preEster && _pnx >= 10) _preHTML += `<div class='nameCompSpace'>&nbsp;</div>`;
+          else _preHTML += `<div class='${crossClass}' > + </div>`;
+        }
+      }
+    } catch (ePre) { _preHTML = ""; }
+  }
 
   for (let i = 0; i < compCount; i++) {
+    if (_preHTML && i < 4) {
+      if (i === 0) nameCompContainer += _preHTML;
+      continue;
+    }
     currComp = _slots[i];
     if (currComp == "" || currComp == undefined) {
       continue;
@@ -8087,6 +8167,105 @@ function fSplitBranchPieces(text) {
   }
   if (parts.join("-") !== String(text)) return null;
   return parts;
+}
+// Greek substituent sort key (v54.41, P-14.5.1/2 analogue — no official Greek
+// guidelines exist, so this mirrors the EN rule): simple substituents ignore
+// δι/τρι/τετρα… (διμεθυλο under μ); compound (substituted) substituents sort
+// by the first letter of the complete name (διχλωρομεθυλο under δ), leading
+// locants skipped.
+function fGRSubstSortKey(nm) {
+  try {
+    var s = String(nm == null ? "" : nm);
+    s = s.replace(/[()]/g, "");
+    s = s.replace(/^[^\u0370-\u03ff\u1f00-\u1fff]+/, "");
+    var low = s.toLowerCase();
+    if (/υλ$/.test(low) && /(χλωρο|βρωμο|φθορο|ιωδο|νιτρο)/.test(low)) return s;
+    var m = /^(δι|τρι|τετρα|πεντα|εξα|επτα|οκτα)(.+)$/.exec(s);
+    if (m && m[2]) return m[2];
+    return s;
+  } catch (e) { return ""; }
+}
+// Numeric locants list for the P-14.5.4 tie-break (identical first letters ->
+// lowest locants first). Unparseable -> [] (stable fallback).
+function fGRLocKey(locText) {
+  try {
+    var out = [];
+    var parts = String(locText == null ? "" : locText).replace(/^[-\s]+/, "").replace(/[-\s]+$/, "").split(/[, \-]+/);
+    for (var i = 0; i < parts.length; i++) {
+      var n = parseInt(parts[i], 10);
+      if (isFinite(n)) out.push(n);
+    }
+    return out;
+  } catch (eL) { return []; }
+}
+// Substituent groups from sys slots + common slots (v54.41): slot-1 group +
+// every slot-3 piece, locants traveling with their group. Mirrors
+// fENSubstGroups (P-14.5.1/2). Returns raw-order groups or [].
+function fGRSubstGroups(sysSl, comSl) {
+  try {
+    if (!Array.isArray(sysSl) || !sysSl) return [];
+    var gs = [];
+    var s1 = sysSl[1], c1 = (comSl && comSl[1] != null) ? comSl[1] : s1;
+    if (s1) gs.push({ loc: sysSl[0], name: s1, com: c1, kind: "g1", locId: "comp0", nameId: "comp1" });
+    var s3 = sysSl[3], c3 = (comSl && comSl[3] != null) ? comSl[3] : s3;
+    if (s3) {
+      var pcs = null, ccs = null;
+      if (s3 !== c3 && typeof fSysFusedPieces === "function") {
+        var sfp = null;
+        try { sfp = fSysFusedPieces(); } catch (eSF) { sfp = null; }
+        if (sfp && sfp.sys.join("-") === s3) { pcs = sfp.sys; ccs = sfp.com; }
+      }
+      if (!pcs) {
+        var br = null;
+        try { if (typeof fSplitBranchPieces === "function") br = fSplitBranchPieces(s3); } catch (eB) { br = null; }
+        if (br) { pcs = br; ccs = br.slice(); }
+      }
+      if (pcs) {
+        for (var k = 0; k < pcs.length; k += 2) {
+          var j = k / 2;
+          gs.push({
+            loc: (k === 0) ? sysSl[2] : pcs[k - 1], name: pcs[k], com: ccs[k], kind: "g3",
+            locId: (j === 0) ? "comp2" : ("comp3loc" + (j === 1 ? "" : String(j))),
+            nameId: (j === 0) ? "comp3" : ("comp3b" + (j === 1 ? "" : String(j - 1)))
+          });
+        }
+      } else {
+        gs.push({ loc: sysSl[2], name: s3, com: c3, kind: "g3", locId: "comp2", nameId: "comp3" });
+      }
+    }
+    return gs;
+  } catch (eG) { return []; }
+}
+// Full alphabetical group order (v54.41). Null = legacy path (single group,
+// original order, or a non-first group without digit locants — fail-closed).
+function fGRSortSubstGroups(gs) {
+  try {
+    if (!Array.isArray(gs) || gs.length < 2) return null;
+    var idx = [];
+    for (var i = 0; i < gs.length; i++) idx.push(i);
+    idx.sort(function (a, b) {
+      var ka = "", kb = "";
+      try { ka = fGRSubstSortKey(gs[a].name); } catch (e1) {}
+      try { kb = fGRSubstSortKey(gs[b].name); } catch (e2) {}
+      if (ka < kb) return -1;
+      if (ka > kb) return 1;
+      var la = [], lb = [];
+      try { la = fGRLocKey(gs[a].loc); } catch (e3) {}
+      try { lb = fGRLocKey(gs[b].loc); } catch (e4) {}
+      for (var k = 0; k < Math.max(la.length, lb.length); k++) {
+        var va = (k < la.length) ? la[k] : 1e9, vb = (k < lb.length) ? lb[k] : 1e9;
+        if (va !== vb) return va - vb;
+      }
+      return a - b;
+    });
+    var ident = true;
+    for (var j = 0; j < idx.length; j++) { if (idx[j] !== j) { ident = false; break; } }
+    if (ident) return null;
+    for (var m = 1; m < idx.length; m++) {
+      if (!/\d/.test(String(gs[idx[m]].loc))) return null;
+    }
+    return idx;
+  } catch (eS) { return null; }
 }
 // k-th name group (1-based) inside slot 3, for per-piece explanation and
 // highlight. Positional: slot-3 names follow the same alphabetical order in
