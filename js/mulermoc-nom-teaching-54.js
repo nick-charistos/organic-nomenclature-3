@@ -64,10 +64,10 @@ function fBuildAlkylRuleTable() {
     ["μεθυλο", "–CH<sub>3</sub>", "Μεθύλιο", "μεθυλο-", "methyl"],
     ["αιθυλο", "–CH<sub>2</sub>–CH<sub>3</sub>", "Αιθύλιο", "αιθυλο-", "ethyl"],
     ["προπυλο", "–CH<sub>2</sub>–CH<sub>2</sub>–CH<sub>3</sub>", "Προπύλιο (n-)", "προπυλο-", "propyl"],
-    ["ισοπροπυλο", "–CH(CH<sub>3</sub>)<sub>2</sub>", "Ισοπροπύλιο", "ισοπροπυλο-", "propan-2-yl", "2-προπανυλο"],
+    ["ισοπροπυλο", "–CH(CH<sub>3</sub>)<sub>2</sub>", "Ισοπροπύλιο", "ισοπροπυλο-", "propan-2-yl", "προπαν-2-υλο"],
     ["βουτυλο", "–CH<sub>2</sub>–CH<sub>2</sub>–CH<sub>2</sub>–CH<sub>3</sub>", "Βουτύλιο (n-)", "βουτυλο-", "butyl"],
     ["ισοβουτυλο", "–CH<sub>2</sub>–CH(CH<sub>3</sub>)<sub>2</sub>", "Ισοβουτύλιο", "ισοβουτυλο-", "2-methylpropyl", "2-μεθυλοπροπυλο"],
-    ["sec-βουτυλο", "–CH(CH<sub>3</sub>)–CH<sub>2</sub>–CH<sub>3</sub>", "sec-Βουτύλιο", "sec-βουτυλο-", "butan-2-yl", "2-βουτανυλο"],
+    ["sec-βουτυλο", "–CH(CH<sub>3</sub>)–CH<sub>2</sub>–CH<sub>3</sub>", "sec-Βουτύλιο", "sec-βουτυλο-", "butan-2-yl", "βουταν-2-υλο"],
     ["tert-βουτυλο", "–C(CH<sub>3</sub>)<sub>3</sub>", "tert-Βουτύλιο", "tert-βουτυλο-", "2-methylpropan-2-yl (tert-butyl)"],
   ];
   var _enAlk = false;
@@ -99,7 +99,7 @@ function fBuildAlkoxyRuleTable() {
     ["μεθοξυ", "–O–CH<sub>3</sub>", "Μεθοξυομάδα", "μεθοξυ-"],
     ["αιθοξυ", "–O–CH<sub>2</sub>–CH<sub>3</sub>", "Αιθοξυομάδα", "αιθοξυ-"],
     ["προποξυ", "–O–CH<sub>2</sub>–CH<sub>2</sub>–CH<sub>3</sub>", "Προποξυομάδα", "προποξυ-"],
-    ["ισοπροποξυ", "–O–CH(CH<sub>3</sub>)<sub>2</sub>", "Ισοπροποξυομάδα", "ισοπροποξυ-", "2-προπανοξυ"],
+    ["ισοπροποξυ", "–O–CH(CH<sub>3</sub>)<sub>2</sub>", "Ισοπροποξυομάδα", "ισοπροποξυ-", "προπαν-2-υλοξυ"],
     ["βουτοξυ", "–O–CH<sub>2</sub>–CH<sub>2</sub>–CH<sub>2</sub>–CH<sub>3</sub>", "Βουτοξυομάδα", "βουτοξυ-"],
   ];
   // EN systematic names parallel to the Greek school names (same row order).

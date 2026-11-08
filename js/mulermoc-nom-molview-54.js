@@ -6939,14 +6939,14 @@ function fMulerOCFetchDone(key) {
 // flagged for P3 (same gate as v54.23). tert-βουτυλο intentionally stays
 // (preferred prefix, P-57.1.2 — same call as EN).
 var GR_SYST_SUBST = {
-  "ισοπροπυλο": "2-προπανυλο",
+  "ισοπροπυλο": "προπαν-2-υλο",
   "ισοβουτυλο": "2-μεθυλοπροπυλο",
-  "sec-βουτυλο": "2-βουτανυλο",
-  "ισοπροποξυ": "2-προπανοξυ",
-  "sec-βουτοξυ": "2-βουτανοξυ",
-  "ισοπροπυλ": "2-προπανυλ",
+  "sec-βουτυλο": "βουταν-2-υλο",
+  "ισοπροποξυ": "προπαν-2-υλοξυ",
+  "sec-βουτοξυ": "βουταν-2-υλοξυ",
+  "ισοπροπυλ": "προπαν-2-υλ",
   "ισοβουτυλ": "2-μεθυλοπροπυλ",
-  "sec-βουτυλ": "2-βουτανυλ"
+  "sec-βουτυλ": "βουταν-2-υλ"
 };
 // One common stem -> systematic (with P-16.3.4(a)-analogue parens when the
 // mapped name carries a locant digit and the group is multiplied). Bare
@@ -6970,8 +6970,11 @@ function fGRSystOneStem(w) {
 function fSystematicGRSubstSlot(slot, text) {
   try {
     if (slot !== 1 && slot !== 3 && slot !== 10) return text;
-    var t = String(text == null ? "" : text);
-    if (!t) return t;
+    // Preserve empty slots as-is (v54.32): null comp0bText/compAlcoholEster
+    // must stay null, otherwise the changed-slot check flags a phantom
+    // difference and the toggle shows on molecules with no variant.
+    if (text == null || text === "") return text;
+    var t = String(text);
     var one = fGRSystOneStem(t);
     if (one !== null) return one;
     var stems = ["sec-βουτυλο", "sec-βουτυλ", "tert-βουτυλο", "tert-βουτυλ"];
