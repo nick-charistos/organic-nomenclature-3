@@ -245,11 +245,37 @@ function fPopulateEngineENFromGreek(key, variant) {
       var _sk1 = fENSubstSortKey(S(1)), _sk3 = fENSubstSortKey(S(3));
       _swapSub = !!(_sk1 && _sk3 && preLoc && preLoc2 && _sk3 < _sk1);
     } catch (eSw) { _swapSub = false; }
+    // Systematic display forms with locant-preceded parens (v54.40): W1/W3/W10
+    // mirror the sys box texts so joined engineEN_sys matches the panel boxes.
+    // Unwrapped S(1)/S(3) stay the sort-key/swap inputs above (parens strip out
+    // of fENSubstSortKey anyway); slots keep bare forms.
+    var W1 = S(1), W3 = S(3), W10 = S(10);
+    if (sys && typeof fENSysNeedsParens === "function") {
+      try {
+        var C0 = fGreekFragToEN(nameComponentsList[0] == null ? "" : nameComponentsList[0], 0);
+        var C1 = fGreekFragToEN(nameComponentsList[1] == null ? "" : nameComponentsList[1], 1);
+        var C2 = fGreekFragToEN(nameComponentsList[2] == null ? "" : nameComponentsList[2], 2);
+        var C3 = fGreekFragToEN(nameComponentsList[3] == null ? "" : nameComponentsList[3], 3);
+        var C9 = fGreekFragToEN(nameComponentsList[9] == null ? "" : nameComponentsList[9], 9);
+        var C10 = fGreekFragToEN(nameComponentsList[10] == null ? "" : nameComponentsList[10], 10);
+        if (fENSysNeedsParens(W1, C1, C0)) W1 = "(" + W1 + ")";
+        var _jfp = (typeof fSplitENBranchSys === "function") ? fSplitENBranchSys(C3, S(3), 3) : null;
+        if (_jfp) {
+          var _jp = _jfp.sys.slice();
+          for (var _jk = 0; _jk < _jp.length; _jk += 2) {
+            var _jprev = (_jk === 0) ? C2 : _jp[_jk - 1];
+            if (fENSysNeedsParens(_jp[_jk], _jfp.com[_jk], _jprev)) _jp[_jk] = "(" + _jp[_jk] + ")";
+          }
+          W3 = _jp.join("-");
+        } else if (fENSysNeedsParens(W3, C3, C2)) W3 = "(" + W3 + ")";
+        if (fENSysNeedsParens(W10, C10, isEster ? "" : C9)) W10 = "(" + W10 + ")";
+      } catch (eW) { W1 = S(1); W3 = S(3); W10 = S(10); }
+    }
     var pre;
     if (!_swapSub) {
-      pre = (hasSub ? (preLoc ? preLoc + "-" : "") : "") + [S(1), S(2), S(3)].join("");
+      pre = (hasSub ? (preLoc ? preLoc + "-" : "") : "") + [W1, S(2), W3].join("");
     } else {
-      pre = preLoc2 + "-" + S(3) + "-" + preLoc + "-" + S(1);
+      pre = preLoc2 + "-" + W3 + "-" + preLoc + "-" + W1;
     }
     var comp1No = stripLoc(hasSub ? S(4) : (S(4) || S(0))), stem = S(5), infix = S(6), mid = stripLoc(S(7)), infix2 = stripLoc(S(8)), suffix = stripLoc(S(9));
     // nitrile/amine parent keeps full 'ane' (butanenitrile, ethanamine), not 'an'
@@ -297,10 +323,10 @@ function fPopulateEngineENFromGreek(key, variant) {
     parent = parent.replace(/--+/g, "-").replace(/-en oic acid$/, "-enoic acid").replace(/-yn oic acid$/, "-ynoic acid").replace(/endial$/, "enedial").replace(/yndial$/, "ynedial").replace(/-en-dial$/, "-enedial").replace(/-yn-dial$/, "-ynedial").replace(/yndioic/, "ynedioic").replace(/endioic/, "enedioic");
     parent = parent.replace(/-yn$/, "-yne").replace(/-en$/, "-ene");
     parent = parent.replace(/-en-(\d[\d,]*-)(dione|diol|dial|dioic)/, "-ene-$1$2").replace(/-yn-(\d[\d,]*-)(dione|diol|dial|dioic)/, "-yne-$1$2");
-    var tail = [S(10), S(11)].join("");
+    var tail = [W10, S(11)].join("");
     // Esters: alcohol word first, then the substituted acid parent; the
     // εστέρας noun (S(11)) is implied by -oate and dropped.
-    var out = isEster ? (S(10) + " " + pre + parent) : (pre + parent + tail);
+    var out = isEster ? (W10 + " " + pre + parent) : (pre + parent + tail);
     // normalize artifacts
     out = out.replace(/\s+/g, " ").trim().replace(/ananoic/g, "anoic").replace(/\banane\b/g, "ane");
     if (!out || /^[0-9,\-]*$/.test(out)) return null;
@@ -368,6 +394,11 @@ function fNameENBoxes(variant) {
     var isEster = false;
     try { isEster = typeof functionalGroupsList !== "undefined" && functionalGroupsList.length === 1 && functionalGroupsList[0] === "ester"; } catch (e) {}
     var hasSub = !!S(1) || !!S(3);
+    // School transliteration (no systematic transform): group-boundary source
+    // for the sys-aware slot splitter + differs-from-school parens gate.
+    var Sch = function (i) {
+      return fGreekFragToEN(nameComponentsList[i] == null ? "" : nameComponentsList[i], i);
+    };
     var stripLoc = function (s) { return String(s == null ? "" : s).replace(/^[-\s]+/, "").replace(/[-\s]+$/, ""); };
     var comp1No = stripLoc(hasSub ? S(4) : (S(4) || S(0)));
     var stem = S(5), infix = S(6), mid = stripLoc(S(7)), infix2 = stripLoc(S(8)), suffix = stripLoc(S(9));
@@ -399,18 +430,52 @@ function fNameENBoxes(variant) {
       } catch (eSwB) { _sw = false; }
       var _pushG1 = function (loc0) {
         push("comp0", loc0);
-        push("comp1", S(1));
+        var _t1 = S(1);
+        if (sys && typeof fENSysNeedsParens === "function") {
+          try { if (fENSysNeedsParens(_t1, Sch(1), loc0)) _t1 = "(" + _t1 + ")"; } catch (eP1) {}
+        }
+        push("comp1", _t1);
       };
       var _pushG2 = function (loc2) {
         push("comp2", loc2);
+        // Sys mode with a changed slot-3: split the SCHOOL text for group
+        // boundaries (v54.40, mirrors GR v54.34) — splitting the sys text
+        // shreds internal-locant names ("propan-2-yl" -> 3 boxes).
+        if (sys && S(3) !== Sch(3)) {
+          var _sfp = null;
+          try { if (typeof fSplitENBranchSys === "function") _sfp = fSplitENBranchSys(Sch(3), S(3), 3); } catch (eSF) { _sfp = null; }
+          if (_sfp) {
+            for (var bi = 0; bi < _sfp.sys.length; bi += 2) {
+              var gi = bi / 2;
+              var _pt = _sfp.sys[bi];
+              try {
+                var _pv = (bi === 0) ? loc2 : _sfp.sys[bi - 1];
+                if (typeof fENSysNeedsParens === "function" && fENSysNeedsParens(_pt, _sfp.com[bi], _pv)) _pt = "(" + _pt + ")";
+              } catch (ePP) {}
+              push(gi === 0 ? "comp3" : "comp3b" + (gi === 1 ? "" : String(gi - 1)), _pt);
+              if (bi + 1 < _sfp.sys.length) {
+                var li = gi + 1;
+                push("comp3loc" + (li === 1 ? "" : String(li - 1)), "-" + _sfp.sys[bi + 1] + "-");
+              }
+            }
+            return;
+          }
+          // School-unsplittable (or otherwise unpieceable) fused text keeps
+          // the whole-box fallback — one component, never a wrong split —
+          // with the same locant-preceded parens gate as the pieces.
+          var _w3 = S(3);
+          try { if (typeof fENSysNeedsParens === "function" && fENSysNeedsParens(_w3, Sch(3), loc2)) _w3 = "(" + _w3 + ")"; } catch (eW3) {}
+          push("comp3", _w3);
+          return;
+        }
         var br = fSplitENBranch(S(3));
         if (br) {
-          for (var bi = 0; bi < br.length; bi += 2) {
-            var gi = bi / 2;
-            push(gi === 0 ? "comp3" : "comp3b" + (gi === 1 ? "" : String(gi - 1)), br[bi]);
-            if (bi + 1 < br.length) {
-              var li = gi + 1;
-              push("comp3loc" + (li === 1 ? "" : String(li - 1)), "-" + br[bi + 1] + "-");
+          for (var bi2 = 0; bi2 < br.length; bi2 += 2) {
+            var gi2 = bi2 / 2;
+            push(gi2 === 0 ? "comp3" : "comp3b" + (gi2 === 1 ? "" : String(gi2 - 1)), br[bi2]);
+            if (bi2 + 1 < br.length) {
+              var li2 = gi2 + 1;
+              push("comp3loc" + (li2 === 1 ? "" : String(li2 - 1)), "-" + br[bi2 + 1] + "-");
             }
           }
         } else { push("comp3", S(3)); }
@@ -459,7 +524,13 @@ function fNameENBoxes(variant) {
       var _qm = String(boxes[_cp][1]).match(/^(-\d[\d,]*-)(.+)$/);
       if (_qm && _qm[2]) { boxes[_cp] = ["comp9", _qm[2]]; boxes.splice(_cp, 0, ["comp9loc", _qm[1]]); }
     }
-    if (!isEster) { push("comp10", S(10)); push("comp11", S(11)); }
+    if (!isEster) {
+      var _t10 = S(10);
+      if (sys && typeof fENSysNeedsParens === "function") {
+        try { if (fENSysNeedsParens(_t10, Sch(10), Sch(9))) _t10 = "(" + _t10 + ")"; } catch (eP10) {}
+      }
+      push("comp10", _t10); push("comp11", S(11));
+    }
     // P-16.7.1(a) elision at box seams: "yn"/"en" directly before a
     // consonant-initial suffix box regains its terminal "e"
     // (ynedioic, enedial); vowel-initial suffixes fuse bare.
@@ -512,6 +583,51 @@ function fSplitENBranch(text) {
   if (parts.join("-") !== rest) return null;
   if (protected_) parts[0] = protected_ + parts[0];
   return parts;
+}
+// Sys-aware fused branch splitter (v54.40, mirrors GR fSysFusedPieces v54.34):
+// split the SCHOOL text for group boundaries, transform each name piece
+// individually, keep locants. Returns {sys, com} or null (school itself
+// unsplittable, or systematic identical to school -> caller falls back to
+// the school split / whole box; never a wrong-but-plausible split).
+// Shredding root cause it fixes: fSplitENBranch on sys text tears
+// "propan-2-yl" into [propan, 2, yl] because the internal locant validates
+// as a boundary; school names carry no internal digits so their split is
+// clean (sec-/tert- hyphenation stays shielded as before).
+function fSplitENBranchSys(schoolText, sysText, slot) {
+  try {
+    var sch = String(schoolText == null ? "" : schoolText);
+    var parts = (typeof fSplitENBranch === "function") ? fSplitENBranch(sch) : null;
+    if (!parts) return null;
+    var sys = parts.map(function (p, k) {
+      if (k % 2 === 1) return p;
+      var m = (typeof fSystematicSubstSlot === "function") ? fSystematicSubstSlot(slot, p) : p;
+      return (typeof m === "string" && m) ? m : p;
+    });
+    if (sys.join("-") === parts.join("-")) return null;
+    // Fail-closed consistency: the per-piece transform must reproduce the
+    // whole-slot transform exactly; otherwise fall back to the whole box.
+    if (String(sysText == null ? "" : sysText) !== sys.join("-")) return null;
+    return { sys: sys, com: parts };
+  } catch (eF) { return null; }
+}
+// Parens-when-preceded-by-locants (v54.40, mirrors GR fGRSysNeedsParens
+// v54.36): a bare systematic name carrying an internal digit is ambiguous
+// right after a parent locant run ("4-propan-2-yl"), so it nests in parens
+// when the preceding component is a number locant: 4-(propan-2-yl)-.
+// Differs-from-school required (toggle visibility, sort keys and verdicts
+// keyed off unwrapped text stay byte-identical where sys equals school);
+// already-parenthesized, unchanged, or digitless names pass through;
+// empty locants (tiny chains, locant-free slots like the ester tail) mean
+// no parens. Render/join-layer only — slots keep bare forms, so toggle
+// visibility, splitting and idempotence are unaffected.
+function fENSysNeedsParens(sysText, commonText, prevLocText) {
+  try {
+    if (!sysText || sysText === commonText) return false;
+    if (/[()]/.test(sysText)) return false;
+    if (!/\d/.test(sysText)) return false;
+    var loc = String(prevLocText == null ? "" : prevLocText).replace(/-/g, "");
+    return /\d/.test(loc);
+  } catch (eP) { return false; }
 }
 // Systematic substituent names (school retained -> systematic, P-29.6/P-57.1).
 // tert-butyl mapped since v54.38 (didactic override for teaching: the toggle
