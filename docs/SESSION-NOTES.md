@@ -1,17 +1,20 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `535737a` (2026-11-07) — v54
-> continuity record (`?v=54.29`): owner-adopted **Namelecule by Molwave**
-> naming + WIP banner + credits (`926768f`) recorded in CHANGELOG with the
-> missing cache-buster. Remaining from before: full 141 EN sweep + P3
-> blessing of new Greek word forms. Tree clean (session temp file ignored
-> by design: `js/MULERMOC_methyl_4_ethoxybutanoate_data.js`). Full record:
-> `docs/CHANGELOG.md` v54.29.
+> **Resume pointer (cross-machine):** HEAD `c20c4c6` (2026-11-08) — v54
+> spurious subst-toggle fix (`?v=54.30`): school + sys engineEN both
+> computed before the panel build (school call moved up, later duplicate
+> removed); stepper refreshes both after `fGuessName(true)`. Remaining
+> from before: full 141 EN sweep + P3 blessing of new Greek word forms.
+> Tree has co-editor WIP (untouched): `css/jsme-nick-54.css`,
+> `js/mulermoc-nom-lang-54.js`, `js/mulermoc-nom-teaching-54.js`.
+> Otherwise clean (session temp file ignored by design:
+> `js/MULERMOC_methyl_4_ethoxybutanoate_data.js`). Full record:
+> `docs/CHANGELOG.md` v54.30.
 > Routine on the other machine: pull first, then resume from
 > `git log --oneline -5` + `git status`. OpenCode sessions stay machine-local.
 >
-> Previous pointer (2026-11-07, now superseded): HEAD `289a230` — v54
-> footer excluded from viewer budget (`?v=54.28`).
+> Previous pointer (2026-11-07, now superseded): HEAD `535737a` — v54
+> continuity record (`?v=54.29`).
 >
 > Previous pointer (2026-11-07, now superseded): HEAD `0886181` — v54
 > decorated-branch naming + fail-closed locants (`?v=54.23`).
