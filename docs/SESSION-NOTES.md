@@ -1,6 +1,6 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `5fa6897` + pointer (2026-11-08) — EN
+> **Resume pointer (cross-machine):** HEAD `2fb2874` + pointer (2026-11-08) — EN
 > systematic slot-3 shredding fixed + locant-preceded parens (`?v=54.40`):
 > `fSplitENBranchSys` splits school text for boundaries (single
 > `propan-2-yl` = ONE box), `fENSysNeedsParens` nests bare locant-bearing
