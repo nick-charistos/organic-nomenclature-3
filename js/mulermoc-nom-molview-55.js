@@ -1916,7 +1916,14 @@ async function fMolDraftFetchSDF3DTiered(smiles, molText, expectHeavy, isCurrent
   if (!offline) {
     try {
       var rem = null;
-      if (typeof fMolDraftRemote3DFromJSmol === "function") {
+      // Console test hook (v55.2): `window.MULER_SKIP_REMOTE3D = true` skips
+      // tier 2 so tier 3 (local minimize) can be checked online. Vanishes on
+      // reload — nothing to revert.
+      var _skipR = false;
+      try { _skipR = !!(typeof window !== "undefined" && window.MULER_SKIP_REMOTE3D); } catch (eSk) {}
+      if (_skipR) {
+        try { console.log("[SDF-3D] tier remote: skipped (MULER_SKIP_REMOTE3D test hook)"); } catch (eLgS) {}
+      } else if (typeof fMolDraftRemote3DFromJSmol === "function") {
         try { rem = fMolDraftRemote3DFromJSmol(smiles, expectHeavy, isCurrent) || null; } catch (eC) { rem = null; }
       }
       if (rem && (!isCurrent || isCurrent())) return { sdf: rem, source: "remote" };
