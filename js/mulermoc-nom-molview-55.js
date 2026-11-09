@@ -1783,10 +1783,14 @@ function fMolDraftValidSDF3D(sdf, expectHeavy) {
     if (typeof fParseMolV2000 !== "function") return true;
     var p = fParseMolV2000(sdf);
     if (!p || !p.atoms || !p.atoms.length) return false;
+    // z-spread over HEAVY atoms only (v55.7): light-H numerical noise can fake
+    // spread on an otherwise flat scaffold; a "3D" model with a flat heavy
+    // skeleton is not 3D.
     var h = 0, zMin = Infinity, zMax = -Infinity, i;
     for (i = 0; i < p.atoms.length; i++) {
       var e = String(p.atoms[i].el || "");
-      if (e && e !== "H" && e !== "h") h++;
+      if (!e || e === "H" || e === "h") continue;
+      h++;
       var z = p.atoms[i].z;
       if (typeof z === "number" && isFinite(z)) { if (z < zMin) zMin = z; if (z > zMax) zMax = z; }
     }
@@ -1798,20 +1802,14 @@ function fMolDraftValidSDF3D(sdf, expectHeavy) {
   } catch (eV) { return false; }
 }
 
-// Shared SDF read-back battery (v55.6): tries every known extraction in turn
-// and returns the first that parses as V2000 with the expected heavy count
-// and non-flat z. Logs method + length + heavy count + z-spread + verdict so
-// disagreements (molFile vs write MOL on one model) diagnose themselves.
-// `fileContents` returns the as-loaded text, so it only helps when the loaded
-// file already carried 3D (tier 2), never tier 3 (flat 2D fails validation).
-// `write MOL` rides last.
+// Shared SDF read-back battery (v55.7): `molFile` (unparseable column layout
+// in this build: 1960 chars, zero heavies) and `show MOL` (not a command)
+// are retired. `fileContents` (as-loaded text: helps tier 2's already-3D
+// remote file, never tier 3) then `write MOL` (live model). First V2000-valid
+// (heavy count + heavy-only z-spread) wins; method + length + heavy count +
+// heavy z-spread + verdict are logged.
 function fMolDraftReadBackSDF(expectHeavy) {
   var cands = [];
-  try {
-    var m1 = null;
-    try { if (typeof fJSmolGetPropertyAsString === "function") m1 = fJSmolGetPropertyAsString(jmolAppletNomeclature, "molFile") || null; } catch (eM1) { m1 = null; }
-    cands.push({ via: "molFile", text: m1 });
-  } catch (eB1) {}
   try {
     var m3 = null;
     try { if (typeof fJSmolGetPropertyAsString === "function") m3 = fJSmolGetPropertyAsString(jmolAppletNomeclature, "fileContents") || null; } catch (eM3) { m3 = null; }
@@ -1832,7 +1830,8 @@ function fMolDraftReadBackSDF(expectHeavy) {
           var zMin = Infinity, zMax = -Infinity;
           for (var k = 0; k < p.atoms.length; k++) {
             var e = String(p.atoms[k].el || "");
-            if (e && e !== "H" && e !== "h") h++;
+            if (!e || e === "H" || e === "h") continue;
+            h++;
             var z = p.atoms[k].z;
             if (typeof z === "number" && isFinite(z)) { if (z < zMin) zMin = z; if (z > zMax) zMax = z; }
           }
@@ -1850,11 +1849,11 @@ function fMolDraftReadBackSDF(expectHeavy) {
   return null;
 }
 
-// Tier-3 movement proof (v55.6): the input is always flat 2D, so a real
-// minimization must displace heavy atoms (tetrahedral carbons cannot stay
-// planar). Compares heavy-atom coords in order (add-H appends Hs, heavy order
-// is preserved); mean displacement under 0.05 A means the minimizer never
-// acted, and the candidate is rejected even if it parses.
+// Tier-3 movement proof (v55.6+): a real minimization must displace heavy
+// atoms (the v55.7 jiggle already perturbs every atom, so anything at or
+// below jiggle noise means the minimizer never acted). Compares heavy-atom
+// coords in order (add-H appends Hs, heavy order is preserved); mean
+// displacement under 0.05 A rejects, even if the candidate parses.
 function fMolDraftMovedEnough(beforeMol, afterSDF) {
   try {
     if (typeof fParseMolV2000 !== "function" || !beforeMol || !afterSDF) return false;
@@ -1875,6 +1874,34 @@ function fMolDraftMovedEnough(beforeMol, afterSDF) {
   } catch (e) { return false; }
 }
 
+// Pure-JS z-jiggle (v55.7): breaks the planar-saddle trap before MMFF runs.
+// From exactly-flat z=0 every z-force is zero by symmetry, so steepest
+// descent can never leave the plane (observed: heavies frozen at 0.000 A
+// while H-noise faked spread). ±0.3 A uniform noise per atom gives real 3D
+// gradients; small enough to keep topology. Byte-identical except the z
+// field (cols 20-30); falls back to the input on any gap.
+function fMolDraftJiggleZ(molText, amp) {
+  try {
+    if (!molText || typeof fParseMolV2000 !== "function") return molText;
+    if (typeof fMolCountsLine !== "function") return molText;
+    var lines = String(molText).split(/\r?\n/);
+    var ci = fMolCountsLine(lines);
+    if (ci < 0) return molText;
+    var nA = parseInt((lines[ci] || "").substring(0, 3), 10);
+    if (!(nA > 0)) return molText;
+    var A = (typeof amp === "number" && isFinite(amp) && amp > 0) ? amp : 0.3;
+    for (var i = 0; i < nA; i++) {
+      var idx = ci + 1 + i, L = lines[idx] || "";
+      if (L.length < 30) continue;
+      var jz = (Math.random() - 0.5) * 2 * A;
+      var zs = ("          " + jz.toFixed(4)).slice(-10);
+      lines[idx] = L.substring(0, 20) + zs + L.substring(30);
+    }
+    try { console.log("[SDF-3D] tier local-min: z-jiggle ±" + A + " A on " + nA + " atoms"); } catch (eL) {}
+    return lines.join("\n");
+  } catch (e) { return molText; }
+}
+
 function fMolDraftLocal3DFromMol(molText, expectHeavy) {
   try {
     if (!molText || typeof jmolAppletNomeclature === "undefined" || !jmolAppletNomeclature) return null;
@@ -1886,7 +1913,10 @@ function fMolDraftLocal3DFromMol(molText, expectHeavy) {
     // display and corrupt `write MOL` read-back); isolated blocking steps with
     // reply logging (`add hydrogens` is not a Jmol command — the silent
     // whole-line killer found in testing; correct form is `calculate
-    // hydrogens`). Capped minimize first, plain retry on battery failure.
+    // hydrogens`). v55.7: pure-JS z-jiggle before load breaks the planar
+    // saddle (zero z-forces freeze MMFF on exactly-flat input); movement is
+    // measured against the JIGGLED input so jiggle noise alone cannot pass.
+    // Capped minimize first, plain retry on battery failure.
     var _step = function (cmd, label) {
       var r = null;
       try {
@@ -1899,15 +1929,21 @@ function fMolDraftLocal3DFromMol(molText, expectHeavy) {
       return r;
     };
     if (_step("zap;", "zap") === null) return null;
-    var ok = !!fJSmolLoadInlineSDF(jmolAppletNomeclature, molText, "");
+    var _jig = molText;
+    try { if (typeof fMolDraftJiggleZ === "function") _jig = fMolDraftJiggleZ(molText, 0.3) || molText; } catch (eJ) { _jig = molText; }
+    var ok = !!fJSmolLoadInlineSDF(jmolAppletNomeclature, _jig, "");
     if (!ok) return null;
+    // Queue drain: `load data` issues async, so a blocking no-op runs after
+    // it — subsequent steps are guaranteed a loaded model.
+    if (_step("select all;", "load-sync") === null) return null;
     if (_step("select all; calculate hydrogens;", "add-H") === null) return null;
-    // Acceptance needs a candidate that is BOTH valid AND moved (v55.6):
-    // a flat-but-parseable blob must never pass on shape alone.
+    // Acceptance needs a candidate that is BOTH valid AND moved (v55.6+):
+    // a flat-but-parseable blob must never pass on shape alone; movement is
+    // measured vs the jiggled input so jiggle noise alone cannot pass either.
     var _take = function (cand, from) {
       if (!cand) return null;
       var moved = false;
-      try { if (typeof fMolDraftMovedEnough === "function") moved = !!fMolDraftMovedEnough(molText, cand); } catch (eMv) { moved = false; }
+      try { if (typeof fMolDraftMovedEnough === "function") moved = !!fMolDraftMovedEnough(_jig, cand); } catch (eMv) { moved = false; }
       if (!moved) {
         try { console.log("[SDF-3D] tier local-min: " + from + " candidate unmoved — rejected"); } catch (eLgM) {}
         return null;
