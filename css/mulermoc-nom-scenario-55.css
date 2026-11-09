@@ -875,9 +875,9 @@
    outline-offset: 1px;
 }
 
-/* v55.11 OK-only minimize-save dialog: same overlay/panel pattern, single
-   affirmative button (no destructive choice on offer). */
-#molDraftMinOK {
+/* v55.x blocking minimize-wait window: same overlay/panel pattern as the
+   OK dialog, single Cancel button (aborts the in-flight run). */
+#molDraftMinWait {
    position: fixed;
    inset: 0;
    z-index: 700;
@@ -888,11 +888,11 @@
    font-family: "Roboto Condensed", sans-serif;
 }
 
-#molDraftMinOK.show {
+#molDraftMinWait.show {
    display: flex;
 }
 
-#molDraftMinOK .scConfirmPanel {
+#molDraftMinWait .scConfirmPanel {
    background: #fff;
    color: var(--darkBlue);
    border: 2px solid var(--darkBlue);
@@ -902,7 +902,7 @@
    box-shadow: 0 8px 28px rgba(0, 0, 0, .35);
 }
 
-#molDraftMinOK .scConfirmMsg {
+#molDraftMinWait .scConfirmMsg {
    font-size: 1rem;
    font-weight: bold;
    line-height: 1.35;
@@ -910,13 +910,13 @@
    word-break: break-word;
 }
 
-#molDraftMinOK .scConfirmBtns {
+#molDraftMinWait .scConfirmBtns {
    display: flex;
    gap: 10px;
    justify-content: flex-end;
 }
 
-#molDraftMinOK .scConfirmBtns button {
+#molDraftMinWait .scConfirmBtns button {
    font-family: inherit;
    font-weight: bold;
    font-size: .95rem;
@@ -929,15 +929,14 @@
    transition: all 0.2s;
 }
 
-#molDraftMinOK .scConfirmBtns button:hover {
+#molDraftMinWait .scConfirmBtns button:hover {
    filter: brightness(1.15);
 }
 
-#molDraftMinOK .scConfirmBtns button:focus-visible {
+#molDraftMinWait .scConfirmBtns button:focus-visible {
    outline: 2px solid var(--darkBlue);
    outline-offset: 1px;
 }
-
 .scenarioDrawer .scSteps {
    background: var(--veryLightBlue);
 }

@@ -1,3 +1,6 @@
+ 
+ set minimizationCriterion 0.005;
+ 
  set antialiasDisplay on;
 
  set antialiasImages ON;

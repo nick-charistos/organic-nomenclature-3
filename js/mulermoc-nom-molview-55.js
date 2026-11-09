@@ -868,6 +868,8 @@ function fMolDraftBackToEdit() {
   // the old drawing's oracle over the new canvas. Accept-time re-check stays
   // authoritative, but the UX no longer desyncs until then.
   try { if (window.MulerDraft.submitting) window.MulerDraft._submitId = (window.MulerDraft._submitId || 0) + 1; } catch (eSi) {}
+  try { if (typeof fMolDraftMinStopEngine === "function") fMolDraftMinStopEngine(); } catch (eSe) {}
+  try { if (typeof fMolDraftMinWaitClose === "function") fMolDraftMinWaitClose(); } catch (eWc) {}
   // Like Edit entry: 3D away (hide, not zap — viewport fragility), then the
   // editor view, so the refit below measures the settled layout.
   try {
@@ -1716,10 +1718,11 @@ function fMolDraftRenderPreview() {
           var _s3f = d.sdf3DSource === "pubchem" ? "3D: PubChem" : (d.sdf3DSource === "remote" ? "3D: remote (JSmol)" : (d.sdf3DSource === "jsmol-unminimized" ? "3D: unminimized (local — needs review)" : "3D: local minimize (provisional — needs review)"));
           html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT(_s3k, _s3f)) + "</div>";
           if (d.sdf3DSource === "jsmol-unminimized") html += "<div class='draftOracleRow'><button type='button' class='viewerFullBtn draftMinBtn' onclick='fMolDraftManualMinimize()'>" + fMolDraftEsc(fMolDraftT("draftMinBtn", "Minimize 3D (local)")) + "</button></div>";
+          if (d.sdf3DSource === "jsmol-min") html += "<div class='draftOracleRow'><button type='button' class='viewerFullBtn draftMinBtn' onclick='fMolDraftManualMinimize()'>" + fMolDraftEsc(fMolDraftT("draftMinMore", "Minimize +100 (local)")) + "</button></div>";
         } else if (!d.sdfDone) {
           html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("draft3DFetching", "Fetching 3D… (PubChem → remote → local)")) + "</div>";
         } else {
-          html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitNo3DAll", "No 3D model (PubChem/remote/local minimize) — 2D only.")) + " <button type='button' class='viewerFullBtn draftMinBtn' onclick='fMolDraftManualMinimize()'>" + fMolDraftEsc(fMolDraftT("draftMinBtn", "Minimize 3D (local)")) + "</button></div>";
+          html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitNo3DAll", "No 3D model (PubChem/remote/local minimize) — 2D only.</div>")) + " <div class='draftOracleRow'><button type='button' class='viewerFullBtn draftMinBtn' onclick='fMolDraftManualMinimize()'>" + fMolDraftEsc(fMolDraftT("draftMinBtn", "Minimize 3D (local)")) + "</button></div>";
         }
       } catch (eS3) {}
     } else {
@@ -1730,10 +1733,11 @@ function fMolDraftRenderPreview() {
           var _s3f2 = d.sdf3DSource === "pubchem" ? "3D: PubChem" : (d.sdf3DSource === "remote" ? "3D: remote (JSmol)" : (d.sdf3DSource === "jsmol-unminimized" ? "3D: unminimized (local — needs review)" : "3D: local minimize (provisional — needs review)"));
           html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT(_s3k2, _s3f2)) + "</div>";
           if (d.sdf3DSource === "jsmol-unminimized") html += "<div class='draftOracleRow'><button type='button' class='viewerFullBtn draftMinBtn' onclick='fMolDraftManualMinimize()'>" + fMolDraftEsc(fMolDraftT("draftMinBtn", "Minimize 3D (local)")) + "</button></div>";
+          if (d.sdf3DSource === "jsmol-min") html += "<div class='draftOracleRow'><button type='button' class='viewerFullBtn draftMinBtn' onclick='fMolDraftManualMinimize()'>" + fMolDraftEsc(fMolDraftT("draftMinMore", "Minimize +100 (local)")) + "</button></div>";
         } else if (!d.sdfDone) {
           html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("draft3DFetching", "Fetching 3D… (PubChem → remote → local)")) + "</div>";
         } else {
-          html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitNo3DAll", "No 3D model (PubChem/remote/local minimize) — 2D only.")) + " <button type='button' class='viewerFullBtn draftMinBtn' onclick='fMolDraftManualMinimize()'>" + fMolDraftEsc(fMolDraftT("draftMinBtn", "Minimize 3D (local)")) + "</button></div>";
+          html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitNo3DAll", "No 3D model (PubChem/remote/local minimize) — 2D only.</div>")) + " <div class='draftOracleRow'><button type='button' class='viewerFullBtn draftMinBtn' onclick='fMolDraftManualMinimize()'>" + fMolDraftEsc(fMolDraftT("draftMinBtn", "Minimize 3D (local)")) + "</button></div>";
         }
       } catch (eS32) {}
     }
@@ -1992,33 +1996,68 @@ function fMolDraftJiggleZ(molText, amp) {
   } catch (e) { return molText; }
 }
 
+// Step budget + blind wait per minimize round (v55.x): the wait is
+// wall-clock (any mid-run applet poll would interrupt the in-flight run),
+// so the step count bounds the runtime. Repeat presses re-fire from the
+// live model, walking further downhill each round (fresh rounds use
+// MOLMIN_STEPS with the movement gate; further rounds use
+// MOLMIN_FURTHER_STEPS with no gate — any valid result banks).
+var MOLMIN_STEPS = 500;
+var MOLMIN_FURTHER_STEPS = 200;
+var MOLMIN_WAIT_S = 10;
+// Blind-wait budget per minimize round (v55.x): the base 10 s covers small
+// systems; large systems need longer since the step budget scales worse
+// than linear with size. Capped so a pathological run can't pin the UI
+// forever; the wait-window countdown shows the budget. Same helper feeds
+// the relax sleep and both window call sites, so the countdown and the
+// read-back always agree.
+function fMolDraftMinWaitSecs(expectHeavy) {
+  try {
+    var n = (typeof expectHeavy === "number" && expectHeavy > 0) ? expectHeavy : 0;
+    var s = MOLMIN_WAIT_S + Math.max(0, n - 30);
+    if (s > 120) s = 120;
+    return s;
+  } catch (eS) { return 10; }
+}
 // One fire-and-forget minimize round (v55.13): snapshot the live model, fire
 // minimize async WITHOUT any follow-up script (follow-ups interrupt the
 // in-flight run — console-proven: interactive `minimize steps 500`
-// converges while scriptWait+immediate-read got exactly 0.000), wait 25 s
-// undisturbed, single read-back. Acceptance = valid AND moved vs the
-// pre-fire snapshot (no convergence requirement: partial descent counts).
-function fMolDraftLocal3DRelaxFF(expectHeavy, ffName) {
+// converges while scriptWait+immediate-read got exactly 0.000), wait
+// MOLMIN_WAIT_S undisturbed, single read-back. Acceptance = valid AND moved
+// vs the pre-fire snapshot (no convergence requirement: partial descent counts).
+function fMolDraftLocal3DRelaxFF(expectHeavy, ffName, steps, skipGate) {
   return (async function () {
   try {
+    var _st = MOLMIN_STEPS;
+    try { if (typeof steps === "number" && steps > 0) _st = Math.floor(steps); } catch (eSn) {}
+    var _noGate = false;
+    try { _noGate = !!skipGate; } catch (eNg) {}
     var _pre = null;
     try { if (typeof fJSmolScriptEcho === "function") _pre = fJSmolScriptEcho(jmolAppletNomeclature, "write MOL") || null; } catch (eP0) { _pre = null; }
     try {
       if (typeof fJSmolScript === "function") {
         try { fJSmolScript(jmolAppletNomeclature, "set forceField " + ffName + ";"); } catch (eF) {}
-        fJSmolScript(jmolAppletNomeclature, "select all; minimize steps 500;");
+        fJSmolScript(jmolAppletNomeclature, "select all; minimize steps " + _st + ";");
       }
-      else if (typeof fJSmolScriptWait === "function") fJSmolScriptWait(jmolAppletNomeclature, "select all; minimize steps 500;");
+      else if (typeof fJSmolScriptWait === "function") fJSmolScriptWait(jmolAppletNomeclature, " select all; minimize steps " + _st + ";");
       else return null;
     } catch (eM) { return null; }
-    try { console.log("[SDF-3D] tier local-min: " + ffName + " minimize fired — single read-back in 25 s, no scripts meanwhile"); } catch (eLgF) {}
-    try { await new Promise(function (res) { try { setTimeout(res, 25000); } catch (eT) { try { res(); } catch (eR) {} } }); } catch (eW) {}
+    var _waitS = MOLMIN_WAIT_S;
+    try { if (typeof fMolDraftMinWaitSecs === "function") _waitS = fMolDraftMinWaitSecs(expectHeavy) || MOLMIN_WAIT_S; } catch (eWs) {}
+    try { console.log("[SDF-3D] tier local-min: " + ffName + " minimize fired — single read-back in " + _waitS + " s, no scripts meanwhile"); } catch (eLgF) {}
+    try { await new Promise(function (res) { try { setTimeout(res, _waitS * 1000); } catch (eT) { try { res(); } catch (eR) {} } }); } catch (eW) {}
     var cand = null;
     try { if (typeof fMolDraftReadBackSDF === "function") cand = fMolDraftReadBackSDF(expectHeavy) || null; } catch (eRb) { cand = null; }
-    var moved = false;
-    try { if (typeof fMolDraftMeanDisplacement === "function") moved = (fMolDraftMeanDisplacement(_pre, cand) >= 0.05); } catch (eMv) { moved = false; }
-    try { console.log("[SDF-3D] tier local-min: " + ffName + " candidate " + (moved ? "moved — accepted" : "unmoved — rejected")); } catch (eLgC) {}
-    if (cand && moved) {
+    var _disp = -1, moved = false;
+    try { if (typeof fMolDraftMeanDisplacement === "function") _disp = fMolDraftMeanDisplacement(_pre, cand); } catch (eMv) { _disp = -1; }
+    try { moved = (typeof _disp === "number" && isFinite(_disp) && _disp >= 0.05); } catch (eMc) { moved = false; }
+    var _ok = false;
+    try { _ok = !!(cand && (_noGate || moved)); } catch (eOk) { _ok = false; }
+    try {
+      var _dl = (typeof _disp === "number" && isFinite(_disp) && _disp >= 0) ? (" disp=" + _disp.toFixed(3) + " A") : "";
+      console.log("[SDF-3D] tier local-min: " + ffName + " (" + _st + " steps) candidate" + _dl + (_ok ? ((_noGate && !moved) ? " — accepted (further, no gate)" : " — moved, accepted") : " — unmoved, rejected"));
+    } catch (eLgC) {}
+    if (_ok) {
       try { if (typeof fJSmolScript === "function") fJSmolScript(jmolAppletNomeclature, "select all; center selected;"); } catch (eC) {}
       return cand;
     }
@@ -2028,15 +2067,15 @@ function fMolDraftLocal3DRelaxFF(expectHeavy, ffName) {
 }
 
 // MMFF round first (console-proven on this chemistry), UFF fallback.
-function fMolDraftLocal3DRelaxBoth(expectHeavy) {
+function fMolDraftLocal3DRelaxBoth(expectHeavy, steps, skipGate) {
   return (async function () {
   try {
     var _m = null;
-    try { if (typeof fMolDraftLocal3DRelaxFF === "function") _m = await fMolDraftLocal3DRelaxFF(expectHeavy, "MMFF") || null; } catch (eM) { _m = null; }
+    try { if (typeof fMolDraftLocal3DRelaxFF === "function") _m = await fMolDraftLocal3DRelaxFF(expectHeavy, "MMFF", steps, skipGate) || null; } catch (eM) { _m = null; }
     if (_m) return _m;
     try { console.log("[SDF-3D] tier local-min: MMFF round yielded nothing — retrying UFF"); } catch (eLgR) {}
     var _u = null;
-    try { if (typeof fMolDraftLocal3DRelaxFF === "function") _u = await fMolDraftLocal3DRelaxFF(expectHeavy, "UFF") || null; } catch (eU) { _u = null; }
+    try { if (typeof fMolDraftLocal3DRelaxFF === "function") _u = await fMolDraftLocal3DRelaxFF(expectHeavy, "UFF", steps, skipGate) || null; } catch (eU) { _u = null; }
     return _u;
   } catch (e) { return null; }
   })();
@@ -2096,7 +2135,38 @@ function fMolDraftLocal3DPrepare(molText, expectHeavy) {
 // Tier-3 local 3D, v55.13: prepare once per draft (skipPrepare on repeat
 // presses continues from the live model), relax MMFF then UFF. Returns
 // {sdf, prepared} — the handler tracks preparedness for iterative presses.
-function fMolDraftLocal3DFromMol(molText, expectHeavy, skipPrepare) {
+// Deterministic further-round load (v55.x): the caller has already sent
+// minimize STOP, so no ghost run is iterating. Zap and inline-load the last
+// accepted minimized SDF, then verify by echo (lengths logged, so an empty
+// applet vs a parse failure stay distinguishable). No untangle/jiggle/H —
+// the model is already 3D. True only when the live model matches
+// expectHeavy: further rounds then minimize from exactly this geometry
+// instead of trusting whatever the applet happens to hold.
+function fMolDraftLocal3DReloadMinimized(sdfText, expectHeavy) {
+  try {
+    if (!sdfText || typeof jmolAppletNomeclature === "undefined" || !jmolAppletNomeclature) return false;
+    if (typeof fJSmolLive === "function" && !fJSmolLive()) return false;
+    if (typeof fJSmolScriptWait !== "function" || typeof fJSmolLoadInlineSDF !== "function") return false;
+    try { if (fJSmolScriptWait(jmolAppletNomeclature, "zap;") === null) return false; } catch (eZ) { return false; }
+    var ok = false;
+    try { ok = !!fJSmolLoadInlineSDF(jmolAppletNomeclature, sdfText, "script spt/init-3.spt;"); } catch (eL) { ok = false; }
+    if (!ok) return false;
+    var lv = null;
+    try { if (typeof fJSmolScriptEcho === "function") lv = fJSmolScriptEcho(jmolAppletNomeclature, "write MOL") || null; } catch (eR) { lv = null; }
+    var ll = 0;
+    try { ll = String(lv == null ? "" : lv).length; } catch (eLl) { ll = 0; }
+    var lc = 0;
+    try {
+      if (lv && lv.indexOf("V2000") >= 0 && typeof fParseMolV2000 === "function") {
+        var pp = fParseMolV2000(lv);
+        if (pp && pp.atoms) for (var i = 0; i < pp.atoms.length; i++) { var el = String(pp.atoms[i].el || ""); if (el && el !== "H" && el !== "h") lc++; }
+      }
+    } catch (eP) { lc = 0; }
+    try { console.log("[SDF-3D] tier local-min: further reload echo " + ll + " chars, live-model heavy=" + lc + " (expect " + expectHeavy + ")"); } catch (eLg) {}
+    return lc === expectHeavy && expectHeavy > 0;
+  } catch (e) { return false; }
+}
+function fMolDraftLocal3DFromMol(molText, expectHeavy, skipPrepare, steps, skipGate) {
   return (async function () {
   try {
     var _prepped = false;
@@ -2111,128 +2181,242 @@ function fMolDraftLocal3DFromMol(molText, expectHeavy, skipPrepare) {
         var _lv = null;
         try { if (typeof fJSmolScriptEcho === "function") _lv = fJSmolScriptEcho(jmolAppletNomeclature, "write MOL") || null; } catch (eL2) { _lv = null; }
         var _lc2 = 0;
+        var _ll2 = 0;
+        try { _ll2 = String(_lv == null ? "" : _lv).length; } catch (eLl2) { _ll2 = 0; }
         if (_lv && _lv.indexOf("V2000") >= 0 && typeof fParseMolV2000 === "function") {
           var _lpp2 = fParseMolV2000(_lv);
           if (_lpp2 && _lpp2.atoms) for (var _li2 = 0; _li2 < _lpp2.atoms.length; _li2++) { var _le2 = String(_lpp2.atoms[_li2].el || ""); if (_le2 && _le2 !== "H" && _le2 !== "h") _lc2++; }
         }
-        try { console.log("[SDF-3D] tier local-min: repeat press, live-model heavy=" + _lc2 + " (expect " + expectHeavy + ")"); } catch (eLgL2) {}
+        try { console.log("[SDF-3D] tier local-min: repeat press, live echo " + _ll2 + " chars, live-model heavy=" + _lc2 + " (expect " + expectHeavy + ")"); } catch (eLgL2) {}
         if (_lc2 !== expectHeavy) return { sdf: null, prepared: false };
       } catch (eLv2) { return { sdf: null, prepared: false }; }
     }
     var _both = null;
-    try { if (typeof fMolDraftLocal3DRelaxBoth === "function") _both = await fMolDraftLocal3DRelaxBoth(expectHeavy) || null; } catch (eB) { _both = null; }
+    try { if (typeof fMolDraftLocal3DRelaxBoth === "function") _both = await fMolDraftLocal3DRelaxBoth(expectHeavy, steps, skipGate) || null; } catch (eB) { _both = null; }
     if (_both) return { sdf: _both, prepared: _prepped };
     return { sdf: null, prepared: _prepped };
   } catch (eL) { return { sdf: null, prepared: false }; }
   })();
 }
 
-// OK-only save dialog (v55.11): single OK button (no cancel choice — the
-// author judges the geometry and takes responsibility). ESC/backdrop
-// dismisses WITHOUT storing; OK stores best-effort and unlocks Accept.
-var fMolDraftMinOKEl = null;
-var fMolDraftMinOKFn = null;
-var fMolDraftMinOKKey = null;
-var fMolDraftMinOKPrevFocus = null;
-function fMolDraftMinOKClose(store) {
-  var fn = null;
-  try { if (store && typeof fMolDraftMinOKFn === "function") fn = fMolDraftMinOKFn; } catch (eG) { fn = null; }
+// Blocking wait window for the local-minimize run (v55.x): same overlay /
+// panel skin as the scenario confirm, single Cancel button. Cancel aborts the
+// in-flight run via the established _submitId invalidation (Draw's
+// mechanism) plus local cleanup — the stale async continuation guard-fails
+// and returns without touching anything. ESC/backdrop = Cancel. Close is
+// idempotent; safe to call on every exit path (resolve, miss, Draw,
+// teardown, Present).
+var fMolDraftMinWaitEl = null;
+var fMolDraftMinWaitKey = null;
+var fMolDraftMinWaitPrevFocus = null;
+var fMolDraftMinWaitTimer = null;
+function fMolDraftMinWaitClose() {
+  try { if (fMolDraftMinWaitTimer) { clearInterval(fMolDraftMinWaitTimer); fMolDraftMinWaitTimer = null; } } catch (eT) {}
   var ov = null;
-  try { ov = fMolDraftMinOKEl; } catch (eO) { ov = null; }
+  try { ov = fMolDraftMinWaitEl; } catch (eO) { ov = null; }
   try {
     if (ov) {
       ov.classList.remove("show");
       if (ov.parentNode) { try { ov.parentNode.removeChild(ov); } catch (eR) {} }
     }
   } catch (eRm) {}
-  try { fMolDraftMinOKEl = null; } catch (eN) {}
-  try { fMolDraftMinOKFn = null; } catch (eF) {}
-  if (fMolDraftMinOKKey) {
-    try { document.removeEventListener("keydown", fMolDraftMinOKKey, true); } catch (eK) {}
-    try { fMolDraftMinOKKey = null; } catch (eK2) {}
+  try { fMolDraftMinWaitEl = null; } catch (eN) {}
+  if (fMolDraftMinWaitKey) {
+    try { document.removeEventListener("keydown", fMolDraftMinWaitKey, true); } catch (eK) {}
+    try { fMolDraftMinWaitKey = null; } catch (eK2) {}
   }
   try {
-    if (fMolDraftMinOKPrevFocus && document.contains(fMolDraftMinOKPrevFocus) && fMolDraftMinOKPrevFocus.focus) fMolDraftMinOKPrevFocus.focus();
+    if (fMolDraftMinWaitPrevFocus && document.contains(fMolDraftMinWaitPrevFocus) && fMolDraftMinWaitPrevFocus.focus) fMolDraftMinWaitPrevFocus.focus();
   } catch (eF2) {}
-  try { fMolDraftMinOKPrevFocus = null; } catch (eP) {}
-  if (fn) { try { fn(); } catch (eFn) {} }
+  try { fMolDraftMinWaitPrevFocus = null; } catch (eP) {}
 }
-function fMolDraftMinimizeDialog(msg, onOk) {
-  try { fMolDraftMinOKClose(false); } catch (eC) {}
+function fMolDraftMinWaitShow(onCancel, totalS) {
+  try { fMolDraftMinWaitClose(); } catch (eC) {}
   var ov = document.createElement("div");
-  ov.id = "molDraftMinOK";
+  ov.id = "molDraftMinWait";
   ov.setAttribute("role", "dialog");
   ov.setAttribute("aria-modal", "true");
+  var _msg = "";
+  try { _msg = fMolDraftT("draftMinimizing", "Minimizing 3D… please wait."); } catch (eMm) { _msg = "Minimizing 3D… please wait."; }
+  var _cancelLbl = "Cancel";
+  try { var _cl = fMolDraftT("draftCancel", "Cancel"); if (_cl) _cancelLbl = _cl; } catch (eCl) {}
   ov.innerHTML = "<div class='scConfirmPanel'><div class='scConfirmMsg'></div>" +
-    "<div class='scConfirmBtns'><button type='button' class='scConfirmOk'>OK</button></div></div>";
+    "<div class='scConfirmBtns'><button type='button' class='scConfirmCancel'></button></div></div>";
   try {
     var m = ov.querySelector(".scConfirmMsg");
-    if (m) m.textContent = msg || "";
+    if (m) m.textContent = _msg;
+    var cb = ov.querySelector(".scConfirmCancel");
+    if (cb) cb.textContent = _cancelLbl;
   } catch (eM) {}
   try { document.body.appendChild(ov); } catch (eA) { return; }
-  try { fMolDraftMinOKEl = ov; } catch (eE) {}
-  try { fMolDraftMinOKFn = (typeof onOk === "function") ? onOk : null; } catch (eF) {}
-  try { fMolDraftMinOKPrevFocus = document.activeElement; } catch (eAf) { fMolDraftMinOKPrevFocus = null; }
-  var okB = null;
-  try { okB = ov.querySelector(".scConfirmOk"); } catch (eQ) {}
-  if (okB) okB.onclick = function (e) { if (e && e.stopPropagation) e.stopPropagation(); fMolDraftMinOKClose(true); };
-  ov.onclick = function (e) { if (e.target === ov) fMolDraftMinOKClose(false); };
-  fMolDraftMinOKKey = function (e) {
+  try { fMolDraftMinWaitEl = ov; } catch (eE) {}
+  try { fMolDraftMinWaitPrevFocus = document.activeElement; } catch (eAf) { fMolDraftMinWaitPrevFocus = null; }
+  var _fireCancel = function () {
+    var fn = null;
+    try { fn = (typeof onCancel === "function") ? onCancel : null; } catch (eG) { fn = null; }
+    try { fMolDraftMinWaitClose(); } catch (eCc) {}
+    if (fn) { try { fn(); } catch (eFn) {} }
+  };
+  var cancelB = null;
+  try { cancelB = ov.querySelector(".scConfirmCancel"); } catch (eQ) {}
+  if (cancelB) cancelB.onclick = function (e) { if (e && e.stopPropagation) e.stopPropagation(); _fireCancel(); };
+  // No backdrop-cancel: a stray click anywhere must never abort a run.
+  // Dismissal is Cancel button or ESC only; the window otherwise stays
+  // until the budgeted wait elapses.
+  ov.onclick = function (e) { if (e && e.stopPropagation) e.stopPropagation(); };
+  fMolDraftMinWaitKey = function (e) {
     if (e.key === "Escape" || e.key === "Esc") {
       if (e.preventDefault) e.preventDefault();
       if (e.stopPropagation) e.stopPropagation();
-      fMolDraftMinOKClose(false);
+      _fireCancel();
       return;
     }
     // Single-button trap: Tab never leaves the dialog.
     if (e.key === "Tab") {
       if (e.preventDefault) e.preventDefault();
-      try { var b = ov.querySelector(".scConfirmOk"); if (b && b.focus) b.focus(); } catch (eT) {}
+      try { var b = ov.querySelector(".scConfirmCancel"); if (b && b.focus) b.focus(); } catch (eT) {}
     }
   };
-  try { document.addEventListener("keydown", fMolDraftMinOKKey, true); } catch (eK3) {}
+  try { document.addEventListener("keydown", fMolDraftMinWaitKey, true); } catch (eK3) {}
   ov.classList.add("show");
-  try { if (okB && okB.focus) okB.focus(); } catch (eFo) {}
+  try { if (cancelB && cancelB.focus) cancelB.focus(); } catch (eFo) {}
+  // Live countdown (page-side timer only — zero applet traffic, so the
+  // undisturbed-run rule holds). Clamps at 0; the window closes when the
+  // read-back lands.
+  try {
+    var _secs = (typeof totalS === "number" && totalS > 0) ? totalS : 0;
+    if (_secs > 0) {
+      var _mEl = null;
+      try { _mEl = ov.querySelector(".scConfirmMsg"); } catch (eMq) { _mEl = null; }
+      var _deadline = new Date().getTime() + _secs * 1000;
+      var _tick = function () {
+        try {
+          var _left = Math.ceil((_deadline - new Date().getTime()) / 1000);
+          if (_left <= 0) {
+            try { if (_mEl) _mEl.textContent = _msg; } catch (eZ) {}
+            try { if (fMolDraftMinWaitTimer) { clearInterval(fMolDraftMinWaitTimer); fMolDraftMinWaitTimer = null; } } catch (eZi) {}
+            return;
+          }
+          try { if (_mEl) _mEl.textContent = _msg + " (" + _left + "s)"; } catch (eTs) {}
+        } catch (eTk) {}
+      };
+      try { if (fMolDraftMinWaitTimer) { clearInterval(fMolDraftMinWaitTimer); fMolDraftMinWaitTimer = null; } } catch (eTc) {}
+      try { fMolDraftMinWaitTimer = setInterval(_tick, 250); } catch (eTi) {}
+      try { _tick(); } catch (eT0) {}
+    }
+  } catch (eCt) {}
+}
+// Halt a possibly in-flight minimize (v55.x): the one legitimate applet
+// script during/after a run — STOP is the halt command, not a query, so it
+// does not disturb anything. No-op when the applet is dead, idle, or no
+// draft is running, so it is safe on every exit path (Cancel abort, Draw,
+// teardown). Normal completion never sends it.
+function fMolDraftMinStopEngine() {
+  try {
+    var d = null;
+    try { d = window.MulerDraft; } catch (eD) { d = null; }
+    if (!d || (!d.submitting && !d._minimizing)) return;
+    if (typeof fJSmolLive === "function" && fJSmolLive() &&
+        typeof fJSmolScript === "function" &&
+        typeof jmolAppletNomeclature !== "undefined" && jmolAppletNomeclature) {
+      fJSmolScript(jmolAppletNomeclature, "minimize STOP;");
+    }
+  } catch (eS) {}
+}
+// Wait-window Cancel: halt the engine, invalidate the in-flight Submit/manual run and
+// restore the draft bar to the pre-run Preview state (submit flags off,
+// bar re-synced). The stale continuation guard-fails on the bumped
+// _submitId and returns silently.
+function fMolDraftMinWaitAbort() {
+  try {
+    var d = window.MulerDraft;
+    if (!d) return;
+    try { if (typeof fMolDraftMinStopEngine === "function") fMolDraftMinStopEngine(); } catch (eSe) {}
+    try { if (d.submitting || d._minimizing) d._submitId = (d._submitId || 0) + 1; } catch (eSi) {}
+    try { d.submitting = false; } catch (eSm) {}
+    try { d._minimizing = false; } catch (eMf) {}
+    try {
+      var _st = document.getElementById("molDraftStatus");
+      if (_st) {
+        var _h = "";
+        try {
+          if (d.mode === "edit" && typeof fMolDraftIsSameMolecule === "function") {
+            _h = fMolDraftIsSameMolecule()
+              ? fMolDraftT("draftSameHint", "same molecule, will update this view")
+              : fMolDraftT("draftForkHint", "different molecule, will fork as new");
+          }
+        } catch (eH) { _h = ""; }
+        _st.textContent = fMolDraftT("draftPreview", "Preview") + ": " + (d.engineName || "") + (_h ? " — " + _h : "");
+      }
+    } catch (eSt) {}
+    try { fMolDraftRenderPreview(); } catch (eR) {}
+    try { if (typeof fMolDraftSyncBar === "function") fMolDraftSyncBar(); } catch (eSy) {}
+  } catch (eO) {}
 }
 
 // Manual 3D minimize fallback (v55.5): same pipeline as auto tier 3, but
 // user-triggered from the preview when every auto tier missed (odd valence,
 // slow convergence, JSmol build quirks). Reuses fMolDraftLocal3DFromMol, so
-// provenance stays `jsmol-min`/provisional. Visible only when submitted,
-// fetch done, and still 3D-less; guards re-entrancy + draft identity.
+// provenance stays `jsmol-min`/provisional. Enterable with no 3D yet (fresh
+// run) or on a `jsmol-min` model (further +100 round from the last accepted
+// minimized geometry, reloaded explicitly); external PubChem/remote 3D is
+// never touched. Guards re-entrancy + draft identity.
 function fMolDraftManualMinimize() {
   return (async function () {
   try {
     var d = null;
     try { d = window.MulerDraft; } catch (eD) { return; }
     if (!d || (typeof fMolDraftPresenting === "function" && fMolDraftPresenting())) return;
-  if (!d.submitted || !d.sdfDone || d.sdf3D || d.submitting || d._minimizing) return;
+  var _further = !!(d.sdf3D && d.sdf3DSource === "jsmol-min");
+  if (!d.submitted || !d.sdfDone || d.submitting || d._minimizing) return;
+  if (d.sdf3D && d.sdf3DSource !== "jsmol-min" && d.sdf3DSource !== "jsmol-unminimized") return;
   var _e = d._epoch, _s = d._submitId, _sm = d.smiles;
+  var _eh = 0;
+  try { _eh = (typeof d.expectHeavy === "number" && d.expectHeavy > 0) ? d.expectHeavy : 0; } catch (eEH) {}
+  var _wsM = MOLMIN_WAIT_S;
+  try { if (typeof fMolDraftMinWaitSecs === "function") _wsM = fMolDraftMinWaitSecs(_eh) || MOLMIN_WAIT_S; } catch (eWsm) {}
   d._minimizing = true;
+  // NOTE: no minimize-STOP here — proven poison (v55.x): sending STOP to the
+  // idle applet breaks the following inline load (verify reads heavy=0).
+  // Cancellation halts the engine via the abort path instead.
   try { if (typeof fMolDraftSyncBar === "function") fMolDraftSyncBar(); } catch (eSy) {}
   try {
     var _stM = document.getElementById("molDraftStatus");
     if (_stM) _stM.textContent = fMolDraftT("draftMinimizing", "Minimizing 3D… please wait.");
+    try { if (typeof fMolDraftMinWaitShow === "function") fMolDraftMinWaitShow(fMolDraftMinWaitAbort, _wsM); } catch (eWm) {}
   } catch (eStM) {}
   var out = null;
   try {
-    var _eh = 0;
-    try { _eh = (typeof d.expectHeavy === "number" && d.expectHeavy > 0) ? d.expectHeavy : 0; } catch (eEH) {}
     var _lrM = null;
-    try { if (typeof fMolDraftLocal3DFromMol === "function") _lrM = await fMolDraftLocal3DFromMol(d.molText, _eh, !!d._minPrepared) || null; } catch (eM2) { _lrM = null; }
-    out = (_lrM && _lrM.sdf) || null;
-    try { d._minPrepared = !!(_lrM && _lrM.prepared); } catch (eMp) {}
+    // Further rounds skip preparation: the live model IS the last minimized
+    // geometry (Show3D loaded it), so re-preparing from flat 2D would throw
+    // away the descent. Skip path verifies live heavy count, fail-safe.
+    var _skipM = false;
+    try { _skipM = !!d._minPrepared || !!_further; } catch (eSkM) { _skipM = !!_further; }
+    // Further rounds reload the last accepted geometry explicitly (STOP was
+    // already sent at entry, so no ghost run interferes) instead of trusting
+    // the live applet state — a transient empty echo used to veto the round.
+    var _runRelax = true;
+    if (_further) {
+      try { _runRelax = (typeof fMolDraftLocal3DReloadMinimized === "function") ? !!fMolDraftLocal3DReloadMinimized(d.sdf3D, _eh) : true; } catch (eRl) { _runRelax = false; }
+      try { if (_runRelax) d._minPrepared = true; } catch (eMp2) {}
+    }
+    if (_runRelax) {
+      try { if (typeof fMolDraftLocal3DFromMol === "function") _lrM = await fMolDraftLocal3DFromMol(d.molText, _eh, _skipM, _further ? MOLMIN_FURTHER_STEPS : MOLMIN_STEPS, !!_further) || null; } catch (eM2) { _lrM = null; }
+      out = (_lrM && _lrM.sdf) || null;
+      try { d._minPrepared = !!(_lrM && _lrM.prepared); } catch (eMp) {}
+    } else { out = null; }
   } catch (eM) { out = null; }
   try { d._minimizing = false; } catch (eMf) {}
+  try { if (typeof fMolDraftMinWaitClose === "function") fMolDraftMinWaitClose(); } catch (eWc) {}
   if (!window.MulerDraft || window.MulerDraft !== d || d._epoch !== _e || d._submitId !== _s || d.smiles !== _sm) return;
   try {
     var _stM2 = document.getElementById("molDraftStatus");
     if (_stM2) _stM2.textContent = fMolDraftT("draftPreview", "Preview") + ": " + (d.engineName || "");
   } catch (eStR) {}
-  // v55.11: the author judges the geometry, not the heuristics. Always show
-  // the OK-only save dialog after the pipeline; OK stores best-effort
-  // (validated minimized preferred, live model as explicitly-unminimized
-  // fallback) and unlocks Accept. ESC/backdrop = back out, stay locked.
+  // Best-effort store, no save dialog (removed v55.x): Accept itself is the
+  // author's explicit confirmation. Validated minimized preferred; live
+  // model as explicitly-unminimized fallback. Unlocks Accept.
   var _best = null, _bestSrc = null, _bestLive = false;
   if (out) { _best = out; _bestSrc = "jsmol-min"; }
   else {
@@ -2254,7 +2438,10 @@ function fMolDraftManualMinimize() {
     try {
       if (!window.MulerDraft || window.MulerDraft !== d || d._epoch !== _e || d._submitId !== _s || d.smiles !== _sm) return;
       if (!_best) {
-        try { fMolDraftToast(fMolDraftT("submitNo3DAll", "No 3D model (PubChem/remote/local minimize) — 2D only.")); } catch (eT) {}
+        // Further-round miss = no valid result this round (with no gate,
+        // stillness banks — only an invalid read misses): keep the previous
+        // minimized geometry, never null it. Fresh-run miss keeps 2D-only.
+        try { fMolDraftToast(fMolDraftT(_further ? "draftMinFurtherMiss" : "submitNo3DAll", _further ? "Further round produced no valid result — kept the previous 3D structure." : "No 3D model (PubChem/remote/local minimize) — 2D only.")); } catch (eT) {}
         try { fMolDraftRenderPreview(); } catch (eR0) {}
         try { if (typeof fMolDraftSyncBar === "function") fMolDraftSyncBar(); } catch (eSy0) {}
         return;
@@ -2271,12 +2458,9 @@ function fMolDraftManualMinimize() {
       try { if (typeof fMolDraftSyncBar === "function") fMolDraftSyncBar(); } catch (eSy3) {}
     } catch (eCb) {}
   };
-  var _msg = "";
-  try { _msg = fMolDraftT("draftMinSave3D", "Save the 3D conformation of the molecule once geometry optimization completes."); } catch (eMm) { _msg = "Save the 3D conformation of the molecule once geometry optimization completes."; }
-  try {
-    if (typeof fMolDraftMinimizeDialog === "function") fMolDraftMinimizeDialog(_msg, _storeBest);
-    else _storeBest();
-  } catch (eDg) { try { _storeBest(); } catch (eFb) {} }
+  // No save dialog (removed v55.x): Accept itself is the author's explicit
+  // confirmation, and the preview row labels the provenance. Store directly.
+  try { _storeBest(); } catch (eDg) {}
   } catch (eOuter) {}
   })();
 }
@@ -2366,9 +2550,27 @@ async function fMolDraftFetchSDF3DTiered(smiles, molText, expectHeavy, isCurrent
     } catch (eT2) { sdf = null; }
   }
   try {
+    try {
+      if ((!isCurrent || isCurrent())) {
+        var _stMin = document.getElementById("molDraftStatus");
+        if (_stMin) _stMin.textContent = fMolDraftT("draftMinimizing", "Minimizing 3D… please wait.");
+        // NOTE: no minimize-STOP here — proven poison (v55.x): sending STOP
+        // to the idle applet breaks the following inline load. Cancellation
+        // halts the engine via the abort path instead.
+        // Flat 3D first: the viewer shows the honest starting point from
+        // second zero instead of sitting on the old state for ~10 s.
+        try { if (typeof fMolDraftShowFlat3D === "function") fMolDraftShowFlat3D(); } catch (eF3min) {}
+        // Blocking wait window, budgeted by system size (Cancel aborts via
+        // _submitId invalidation).
+        var _wsT = MOLMIN_WAIT_S;
+        try { if (typeof fMolDraftMinWaitSecs === "function") _wsT = fMolDraftMinWaitSecs(expectHeavy) || MOLMIN_WAIT_S; } catch (eWst) {}
+        try { if (typeof fMolDraftMinWaitShow === "function") fMolDraftMinWaitShow(fMolDraftMinWaitAbort, _wsT); } catch (eWmin) {}
+      }
+    } catch (eStMin) {}
     if ((!isCurrent || isCurrent()) && typeof fMolDraftLocal3DFromMol === "function") {
       var _lr = null;
       try { _lr = await fMolDraftLocal3DFromMol(molText, expectHeavy) || null; } catch (eT3b) { _lr = null; }
+      try { if (typeof fMolDraftMinWaitClose === "function") fMolDraftMinWaitClose(); } catch (eWc) {}
       var loc = (_lr && _lr.sdf) || null;
       if (loc && (!isCurrent || isCurrent())) return { sdf: loc, source: "jsmol-min" };
       try { console.log("[SDF-3D] tier local-min: " + (loc ? loc.length + " chars" : "miss")); } catch (eLgL) {}
@@ -2721,6 +2923,22 @@ async function fMolDraftSubmit() {
     }
   } catch (eS) { _tier = { sdf: null, source: null }; }
   if (!window.MulerDraft || window.MulerDraft._submitId !== _mySid || window.MulerDraft._epoch !== _myEpoch || window.MulerDraft.smiles !== submittingSmiles) return;
+  try { if (typeof fMolDraftMinWaitClose === "function") fMolDraftMinWaitClose(); } catch (eWc2) {}
+  try {
+    var _stR = document.getElementById("molDraftStatus");
+    if (_stR) {
+      var _idHintR = "";
+      try {
+        var _dhR = window.MulerDraft;
+        if (_dhR && _dhR.mode === "edit" && typeof fMolDraftIsSameMolecule === "function") {
+          _idHintR = fMolDraftIsSameMolecule()
+            ? fMolDraftT("draftSameHint", "same molecule, will update this view")
+            : fMolDraftT("draftForkHint", "different molecule, will fork as new");
+        }
+      } catch (eIhR) { _idHintR = ""; }
+      _stR.textContent = fMolDraftT("draftPreview", "Preview") + ": " + engineName + (_idHintR ? " — " + _idHintR : "");
+    }
+  } catch (eStR) {}
   window.MulerDraft.submitting = false;
   window.MulerDraft.sdfDone = true;
   if (_tier && _tier.sdf) {
@@ -2783,7 +3001,9 @@ function fMolDraftTeardownDisplay() {
       try { snap.savedMode = window.MulerDraft.savedChainMode; } catch (eSm) {}
     }
   } catch (eG) {}
+  try { if (typeof fMolDraftMinStopEngine === "function") fMolDraftMinStopEngine(); } catch (eSe) {}
   window.MulerDraft = null;
+  try { if (typeof fMolDraftMinWaitClose === "function") fMolDraftMinWaitClose(); } catch (eWc) {}
   fMolDraftHideBar();
   try {
     var _pc = document.getElementById("pageContainer");
