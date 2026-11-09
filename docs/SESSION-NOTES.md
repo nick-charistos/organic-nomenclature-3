@@ -1,6 +1,17 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `v54.42` + pointer (2026-11-08) — co-editor
+> **Resume pointer (cross-machine):** HEAD `1cc02aa` (2026-11-09) — v55
+> tiered draft 3D (`?v=55.0`, `index.html` → v55): 15 commits on top of
+> `bfa9ce0` (tiered PubChem → JSmol-remote → local-minimize Accept flow,
+> OK-only save dialog, fire-and-forget minimize). Tree clean after this
+> commit. Remaining: "Minimizing…" wait-status message (planned, not built),
+> browser 141 sweep + P3 blessing of Greek word forms. Full record:
+> `docs/SESSION-HANDOFF-2026-11-09-TIERED-3D.md`. Routine on the other
+> machine: pull first, hard-reload (Ctrl+Shift+R — `?v=55.0` unchanged),
+> then resume from `git log --oneline -5` + `git status`. OpenCode sessions
+> stay machine-local.
+>
+> Previous pointer (2026-11-08): HEAD `v54.42` + pointer — co-editor
 > batch reviewed + committed: title-bar Save-all entry (`#saveMolBtn`),
 > footer credits polish, OC fetch `verify=0`, OC-mismatch outline disabled
 > (`?v=54.42`). Esprima clean, cross-refs verified, no naming-engine changes.
