@@ -1804,76 +1804,146 @@ function fMolDraftValidSDF3D(sdf, expectHeavy) {
   } catch (eV) { return false; }
 }
 
-// Shared SDF read-back battery (v55.7): `molFile` (unparseable column layout
-// in this build: 1960 chars, zero heavies) and `show MOL` (not a command)
-// are retired. `fileContents` (as-loaded text: helps tier 2's already-3D
-// remote file, never tier 3) then `write MOL` (live model). First V2000-valid
+// Shared SDF read-back (v55.8): `write MOL` only. Translate-test proved it
+// the sole live-model serializer in this build (`molFile` returns an
+// unparseable column layout; `show MOL` is not a command; `fileContents` is
+// a stale dump that never reflects the live model). First V2000-valid
 // (heavy count + heavy-only z-spread) wins; method + length + heavy count +
 // heavy z-spread + verdict are logged.
 function fMolDraftReadBackSDF(expectHeavy) {
-  var cands = [];
+  var t = null;
+  try { if (typeof fJSmolScriptEcho === "function") t = fJSmolScriptEcho(jmolAppletNomeclature, "write MOL") || null; } catch (eM) { t = null; }
+  var ok = false, len = 0, h = 0, zs = -1;
+  try { len = t ? t.length : 0; } catch (eL0) { len = 0; }
   try {
-    var m3 = null;
-    try { if (typeof fJSmolGetPropertyAsString === "function") m3 = fJSmolGetPropertyAsString(jmolAppletNomeclature, "fileContents") || null; } catch (eM3) { m3 = null; }
-    cands.push({ via: "fileContents", text: m3 });
-  } catch (eB3) {}
-  try {
-    var m4 = null;
-    try { if (typeof fJSmolScriptEcho === "function") m4 = fJSmolScriptEcho(jmolAppletNomeclature, "write MOL") || null; } catch (eM4) { m4 = null; }
-    cands.push({ via: "writeMOL", text: m4 });
-  } catch (eB4) {}
-  for (var i = 0; i < cands.length; i++) {
-    var t = cands[i].text, ok = false, len = 0, h = 0, zs = -1;
-    try { len = t ? t.length : 0; } catch (eL0) { len = 0; }
-    try {
-      if (t && t.indexOf("V2000") >= 0 && typeof fParseMolV2000 === "function") {
-        var p = fParseMolV2000(t);
-        if (p && p.atoms && p.atoms.length) {
-          var zMin = Infinity, zMax = -Infinity;
-          for (var k = 0; k < p.atoms.length; k++) {
-            var e = String(p.atoms[k].el || "");
-            if (!e || e === "H" || e === "h") continue;
-            h++;
-            var z = p.atoms[k].z;
-            if (typeof z === "number" && isFinite(z)) { if (z < zMin) zMin = z; if (z > zMax) zMax = z; }
-          }
-          if (zMin !== Infinity) { try { zs = zMax - zMin; } catch (eZs) { zs = -1; } }
-          ok = !!(typeof fMolDraftValidSDF3D === "function" && fMolDraftValidSDF3D(t, expectHeavy));
+    if (t && t.indexOf("V2000") >= 0 && typeof fParseMolV2000 === "function") {
+      var p = fParseMolV2000(t);
+      if (p && p.atoms && p.atoms.length) {
+        var zMin = Infinity, zMax = -Infinity;
+        for (var k = 0; k < p.atoms.length; k++) {
+          var e = String(p.atoms[k].el || "");
+          if (!e || e === "H" || e === "h") continue;
+          h++;
+          var z = p.atoms[k].z;
+          if (typeof z === "number" && isFinite(z)) { if (z < zMin) zMin = z; if (z > zMax) zMax = z; }
         }
+        if (zMin !== Infinity) { try { zs = zMax - zMin; } catch (eZs) { zs = -1; } }
+        ok = !!(typeof fMolDraftValidSDF3D === "function" && fMolDraftValidSDF3D(t, expectHeavy));
       }
-    } catch (eV) { ok = false; }
-    try {
-      var _zs = (zs < 0) ? "n/a" : (zs.toFixed ? zs.toFixed(3) : String(zs));
-      console.log("[SDF-3D] read-back " + cands[i].via + ": " + len + " chars, heavy=" + h + ", zspread=" + _zs + ", valid=" + ok);
-    } catch (eLg) {}
-    if (ok) return t;
-  }
-  return null;
+    }
+  } catch (eV) { ok = false; }
+  try {
+    var _zs = (zs < 0) ? "n/a" : (zs.toFixed ? zs.toFixed(3) : String(zs));
+    console.log("[SDF-3D] read-back writeMOL: " + len + " chars, heavy=" + h + ", zspread=" + _zs + ", valid=" + ok);
+  } catch (eLg) {}
+  return ok ? t : null;
 }
 
-// Tier-3 movement proof (v55.6+): a real minimization must displace heavy
-// atoms (the v55.7 jiggle already perturbs every atom, so anything at or
-// below jiggle noise means the minimizer never acted). Compares heavy-atom
-// coords in order (add-H appends Hs, heavy order is preserved); mean
-// displacement under 0.05 A rejects, even if the candidate parses.
-function fMolDraftMovedEnough(beforeMol, afterSDF) {
+// Mean heavy-atom displacement between two MOL texts (v55.8); -1 on any gap.
+// Heavy order is preserved by add-H (Hs append), so index-wise compare holds.
+function fMolDraftMeanDisplacement(beforeMol, afterSDF) {
   try {
-    if (typeof fParseMolV2000 !== "function" || !beforeMol || !afterSDF) return false;
+    if (typeof fParseMolV2000 !== "function" || !beforeMol || !afterSDF) return -1;
     var a = fParseMolV2000(beforeMol), b = fParseMolV2000(afterSDF);
-    if (!a || !b || !a.atoms || !b.atoms) return false;
+    if (!a || !b || !a.atoms || !b.atoms) return -1;
     var ha = [], hb = [], i;
     for (i = 0; i < a.atoms.length; i++) { var ea = String(a.atoms[i].el || ""); if (ea && ea !== "H" && ea !== "h") ha.push(a.atoms[i]); }
     for (i = 0; i < b.atoms.length; i++) { var eb = String(b.atoms[i].el || ""); if (eb && eb !== "H" && eb !== "h") hb.push(b.atoms[i]); }
-    if (!ha.length || ha.length !== hb.length) return false;
+    if (!ha.length || ha.length !== hb.length) return -1;
     var sum = 0;
     for (i = 0; i < ha.length; i++) {
       var dx = (hb[i].x || 0) - (ha[i].x || 0), dy = (hb[i].y || 0) - (ha[i].y || 0), dz = (hb[i].z || 0) - (ha[i].z || 0);
       sum += Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
-    var mean = sum / ha.length;
-    try { console.log("[SDF-3D] tier local-min: mean heavy displacement = " + mean.toFixed(3) + " A"); } catch (eL) {}
+    return sum / ha.length;
+  } catch (e) { return -1; }
+}
+
+// Tier-3 movement proof (v55.6+): a real minimization must displace heavy
+// atoms (the v55.7 jiggle already perturbs every atom, so anything at or
+// below jiggle noise means the minimizer never acted). Mean displacement
+// under 0.05 A rejects, even if the candidate parses.
+function fMolDraftMovedEnough(beforeMol, afterSDF) {
+  try {
+    if (typeof fMolDraftMeanDisplacement !== "function") return false;
+    var mean = fMolDraftMeanDisplacement(beforeMol, afterSDF);
+    try { console.log("[SDF-3D] tier local-min: mean heavy displacement = " + (mean >= 0 ? mean.toFixed(3) : "?") + " A"); } catch (eL) {}
     return mean >= 0.05;
   } catch (e) { return false; }
+}
+
+// Pure-JS 2D untangle (v55.9): spreads non-bonded heavy overlaps that send
+// MMFF energy to the astronomical (E=46000+ → line-search collapse, zero
+// movement). Symmetric push-apart along the pair axis, bonded pairs exempt,
+// capped sweeps. Same fixed-column surgery + self-verify discipline as the
+// jiggle below; falls back to the input on any gap.
+function fMolDraftUntangle2D(molText, minSep) {
+  try {
+    if (!molText || typeof fParseMolV2000 !== "function") return molText;
+    if (typeof fMolCountsLine !== "function") return molText;
+    var ref = fParseMolV2000(molText) || null;
+    if (!ref || !ref.atoms || !ref.atoms.length) return molText;
+    var refH = 0, i0;
+    for (i0 = 0; i0 < ref.atoms.length; i0++) { var re0 = String(ref.atoms[i0].el || ""); if (re0 && re0 !== "H" && re0 !== "h") refH++; }
+    if (!refH) return molText;
+    var MS = (typeof minSep === "number" && isFinite(minSep) && minSep > 0) ? minSep : 0.9;
+    var n = ref.atoms.length, xs = [], ys = [], heavy = [], i;
+    for (i = 0; i < n; i++) {
+      xs.push(ref.atoms[i].x || 0); ys.push(ref.atoms[i].y || 0);
+      var e0 = String(ref.atoms[i].el || "");
+      heavy.push(!!(e0 && e0 !== "H" && e0 !== "h"));
+    }
+    var bonded = {};
+    try {
+      if (ref.bonds) for (var b = 0; b < ref.bonds.length; b++) {
+        var a1 = ref.bonds[b][0] - 1, a2 = ref.bonds[b][1] - 1;
+        if (a1 >= 0 && a2 >= 0 && a1 < n && a2 < n) { bonded[a1 + "_" + a2] = 1; bonded[a2 + "_" + a1] = 1; }
+      }
+    } catch (eB) {}
+    var fixed = 0;
+    for (var sw = 0; sw < 50; sw++) {
+      var moved = false;
+      for (var p = 0; p < n; p++) {
+        if (!heavy[p]) continue;
+        for (var q = p + 1; q < n; q++) {
+          if (!heavy[q] || bonded[p + "_" + q]) continue;
+          var dx = xs[q] - xs[p], dy = ys[q] - ys[p];
+          var d = Math.sqrt(dx * dx + dy * dy);
+          if (!(d < MS)) continue;
+          var ux = 0.5, uy = 0;
+          if (d > 1e-6) { ux = dx / d; uy = dy / d; }
+          else { var ang = Math.random() * 2 * Math.PI; ux = Math.cos(ang); uy = Math.sin(ang); }
+          var push = (MS - d) / 2 + 0.01;
+          xs[p] -= ux * push; ys[p] -= uy * push;
+          xs[q] += ux * push; ys[q] += uy * push;
+          moved = true; fixed++;
+        }
+      }
+      if (!moved) break;
+    }
+    if (!fixed) return molText;
+    var lines = String(molText).split(/\r?\n/);
+    var ci = fMolCountsLine(lines);
+    if (ci < 0) return molText;
+    for (var w = 0; w < n; w++) {
+      var idx = ci + 1 + w, L = lines[idx] || "";
+      while (L.length < 34) L += " ";
+      var xstr = ("          " + xs[w].toFixed(4)).slice(-10);
+      var ystr = ("          " + ys[w].toFixed(4)).slice(-10);
+      lines[idx] = xstr + ystr + L.substring(20);
+    }
+    var out = lines.join("\n");
+    try {
+      var chk = fParseMolV2000(out) || null, chkH = 0;
+      if (chk && chk.atoms) for (var k = 0; k < chk.atoms.length; k++) { var ce = String(chk.atoms[k].el || ""); if (ce && ce !== "H" && ce !== "h") chkH++; }
+      if (!chk || chkH !== refH) {
+        try { console.log("[SDF-3D] tier local-min: untangle failed self-verify — using input"); } catch (eLgV) {}
+        return molText;
+      }
+    } catch (eV) { return molText; }
+    try { console.log("[SDF-3D] tier local-min: 2D untangle fixed " + fixed + " overlaps (minSep " + MS + ")"); } catch (eL) {}
+    return out;
+  } catch (e) { return molText; }
 }
 
 // Pure-JS z-jiggle (v55.7+): breaks the planar-saddle trap before MMFF runs.
@@ -1925,16 +1995,15 @@ function fMolDraftLocal3DFromMol(molText, expectHeavy) {
     if (!molText || typeof jmolAppletNomeclature === "undefined" || !jmolAppletNomeclature) return null;
     if (typeof fJSmolLive === "function" && !fJSmolLive()) return null;
     if (typeof fJSmolLoadInlineSDF !== "function") return null;
-    // Load flat 2D geometry, add explicit H where missing, minimize locally.
+    // Load 2D geometry, untangle + jiggle it, add explicit H, minimize locally.
     // Bounded + best-effort: UFF can fail on odd valence — null then.
-    // v55.5: `zap` first (`load data` appends frames — stale frames ghost the
-    // display and corrupt `write MOL` read-back); isolated blocking steps with
-    // reply logging (`add hydrogens` is not a Jmol command — the silent
-    // whole-line killer found in testing; correct form is `calculate
-    // hydrogens`). v55.7: pure-JS z-jiggle before load breaks the planar
-    // saddle (zero z-forces freeze MMFF on exactly-flat input); movement is
-    // measured against the JIGGLED input so jiggle noise alone cannot pass.
-    // Capped minimize first, plain retry on battery failure.
+    // v55.5: `zap` first (`load data` appends frames); isolated blocking steps
+    // with reply logging (`add hydrogens` is not a Jmol command — the silent
+    // whole-line killer; correct form is `calculate hydrogens`). v55.7/9:
+    // pure-JS 2D untangle (tames E=46000+ overlap divergence) + z-jiggle
+    // (breaks the planar saddle: zero z-forces freeze MMFF on flat input).
+    // Movement is measured against the PREPARED input so prep noise alone
+    // cannot pass. Capped minimize first, plain retry on battery failure.
     var _step = function (cmd, label) {
       var r = null;
       try {
@@ -1947,30 +2016,36 @@ function fMolDraftLocal3DFromMol(molText, expectHeavy) {
       return r;
     };
     if (_step("zap;", "zap") === null) return null;
-    var _jig = molText;
-    try { if (typeof fMolDraftJiggleZ === "function") _jig = fMolDraftJiggleZ(molText, 0.3) || molText; } catch (eJ) { _jig = molText; }
+    // v55.9 start: 2D untangle (non-bonded heavy overlaps → sane MMFF energy)
+    // then z-jiggle (breaks the planar saddle). Both pure-JS, self-verifying.
+    var _base = molText;
+    try { if (typeof fMolDraftUntangle2D === "function") _base = fMolDraftUntangle2D(molText, 0.9) || molText; } catch (eU) { _base = molText; }
+    var _jig = _base;
+    try { if (typeof fMolDraftJiggleZ === "function") _jig = fMolDraftJiggleZ(_base, 0.3) || _base; } catch (eJ) { _jig = _base; }
     var ok = !!fJSmolLoadInlineSDF(jmolAppletNomeclature, _jig, "");
     if (!ok) return null;
     // Queue drain: `load data` issues async, so a blocking no-op runs after
     // it — subsequent steps are guaranteed a loaded model. Then verify the
-    // load itself (v55.8): the as-loaded text must carry the expected heavies
-    // before any minimize runs on it — never minimize emptiness.
+    // LIVE model (v55.9, via `write MOL` — the stale `fileContents` dump
+    // proved untrustworthy): expected heavy count AND matches what was just
+    // loaded (displacement ≈ 0). Never minimize a stale/empty model.
     if (_step("select all;", "load-sync") === null) return null;
     if (expectHeavy) {
       try {
-        var _lf = null;
-        try { if (typeof fJSmolGetPropertyAsString === "function") _lf = fJSmolGetPropertyAsString(jmolAppletNomeclature, "fileContents") || null; } catch (eLf) { _lf = null; }
-        var _lh = 0, _lok = false;
+        var _lw = null;
+        try { if (typeof fJSmolScriptEcho === "function") _lw = fJSmolScriptEcho(jmolAppletNomeclature, "write MOL") || null; } catch (eLw) { _lw = null; }
+        var _lh = 0, _lok = false, _lm = -1;
         try {
-          if (_lf && _lf.indexOf("V2000") >= 0 && typeof fParseMolV2000 === "function") {
-            var _lp = fParseMolV2000(_lf);
+          if (_lw && _lw.indexOf("V2000") >= 0 && typeof fParseMolV2000 === "function" && typeof fMolDraftMeanDisplacement === "function") {
+            var _lp = fParseMolV2000(_lw);
             if (_lp && _lp.atoms) {
               for (var _li = 0; _li < _lp.atoms.length; _li++) { var _le = String(_lp.atoms[_li].el || ""); if (_le && _le !== "H" && _le !== "h") _lh++; }
-              _lok = (_lh === expectHeavy);
+              if (_lh === expectHeavy) _lm = fMolDraftMeanDisplacement(_jig, _lw);
+              _lok = (_lh === expectHeavy) && (_lm >= 0) && (_lm < 0.05);
             }
           }
         } catch (eLp) { _lok = false; }
-        try { console.log("[SDF-3D] tier local-min: load-verify heavy=" + _lh + " (expect " + expectHeavy + ")"); } catch (eLgV) {}
+        try { console.log("[SDF-3D] tier local-min: load-verify heavy=" + _lh + " (expect " + expectHeavy + "), matches-loaded=" + (_lm >= 0 ? _lm.toFixed(3) : "?")); } catch (eLgV) {}
         if (!_lok) return null;
       } catch (eLv) { return null; }
     }
