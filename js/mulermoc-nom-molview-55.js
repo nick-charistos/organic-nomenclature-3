@@ -664,6 +664,50 @@ function fViewerHeightControlsSync() {
   try { fViewerBothHeightSync(); } catch (eS2) { /* slider sync best-effort */ }
 }
 
+// Viewer-settings registry (v55.x): one entry per panel row that mirrors a
+// JS global (checkboxes whose truth lives only in DOM classes — originalJSME,
+// autoLinearize, bondAtoms, numberingAtoms/Bonds — are captured/applied
+// directly at their call sites and are intentionally NOT here; scenario
+// stash/restore + capture read them from the DOM). Translation is data-lang
+// on each label. Add a row: HTML label with data-lang + one entry here;
+// order is display-independent.
+function fSetSettingChecked(id, on) {
+  try {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle("selectedCheck", !!on);
+    el.classList.toggle("unselectedCheck", !on);
+  } catch (e) {}
+}
+function fSyncAtomColorModeRadios() {
+  try {
+    if (typeof atomColorMode2D === "undefined") return;
+    var _cmBtns = document.querySelectorAll("#atomColorMode .atomColorModeRadio");
+    for (var _ci = 0; _ci < _cmBtns.length; _ci++) {
+      var _on = _cmBtns[_ci].getAttribute("data-color-mode") === atomColorMode2D;
+      _cmBtns[_ci].classList.remove(_on ? "unselectedRadio" : "selectedRadio");
+      _cmBtns[_ci].classList.add(_on ? "selectedRadio" : "unselectedRadio");
+    }
+  } catch (e) {}
+}
+var MULER_VIEWER_SETTINGS = [
+  { row: "radioChainMode", sync: function () { try { if (typeof fUpdateChainModeButton === "function") fUpdateChainModeButton(); } catch (e) {} } },
+  { row: "atomColorModeRow", sync: function () {
+      try { if (typeof svgAtomColors2DFlag !== "undefined") fSetSettingChecked("svgAtomColorCheck", !!svgAtomColors2DFlag); } catch (eA) {}
+      try { if (typeof fSyncAtomColorModeRadios === "function") fSyncAtomColorModeRadios(); } catch (eB) {}
+      try { if (typeof fSyncAtomColorModeDisabled === "function") fSyncAtomColorModeDisabled(); } catch (eC) {}
+  } },
+  { row: "viewerMaxHeightSetting", sync: function () { try { fViewerMaxHeightSync(); } catch (e) {} } },
+  { row: "viewerBothHeightSetting", sync: function () { try { fViewerBothHeightSync(); } catch (e) {} } }
+];
+function fSyncViewerSettingsUI() {
+  try {
+    for (var i = 0; i < MULER_VIEWER_SETTINGS.length; i++) {
+      try { var _se = MULER_VIEWER_SETTINGS[i]; if (_se && typeof _se.sync === "function") _se.sync(); } catch (eI) {}
+    }
+  } catch (eO) {}
+}
+
 function fToggleViewerSettings() {
   var panel = document.getElementById("viewerSettingsPanel");
   var btn = document.getElementById("viewerSettingsBtn");
@@ -674,8 +718,7 @@ function fToggleViewerSettings() {
   } else {
     panel.classList.add("open");
     btn.classList.add("active");
-    try { fViewerMaxHeightSync(); } catch (eS) { /* slider sync best-effort */ }
-    try { fViewerBothHeightSync(); } catch (eS2) { /* slider sync best-effort */ }
+    try { fSyncViewerSettingsUI(); } catch (eS) { /* settings sync best-effort */ }
   }
 }
 
@@ -3207,35 +3250,16 @@ function fMolDraftSaveAllCustom() {
 
 function fMolDraftSyncSaveBtn() {
   try {
-    var n = 0;
-    try {
-      if (typeof window.nameExamplesCustom !== "undefined" && window.nameExamplesCustom) {
-        n = Object.keys(window.nameExamplesCustom).length;
-      }
-    } catch (eN) {}
-    var cc = document.getElementById("customMolCount");
-    if (cc) cc.textContent = n + " " + fMolDraftT("customMolSession", "this session");
-    var btn = document.getElementById("customMolSaveBtn");
-    if (btn) {
-      // Save-all scope (v54.25): enabled when this session drew anything,
-      // independent of the current selection.
-      var hasNew = false;
-      try { hasNew = fMolDraftNewCustomKeys().length > 0; } catch (eC) { hasNew = false; }
-      btn.disabled = !hasNew;
-      if (hasNew) btn.classList.remove("btnInactive");
-      else btn.classList.add("btnInactive");
+    // Single entry is the title-bar #saveMolBtn (settings row removed v55.x):
+    // same hasNew state, btnInactive only (title-bar buttons have no
+    // disabled contract).
+    var hasNewT = false;
+    try { hasNewT = fMolDraftNewCustomKeys().length > 0; } catch (eCT) { hasNewT = false; }
+    var tbtn = document.getElementById("saveMolBtn");
+    if (tbtn) {
+      if (hasNewT) tbtn.classList.remove("btnInactive");
+      else tbtn.classList.add("btnInactive");
     }
-    // Title-bar mirror (v54.27): same hasNew state on #saveMolBtn, which uses
-    // btnInactive only (title-bar buttons have no disabled contract).
-    try {
-      var hasNewT = false;
-      try { hasNewT = fMolDraftNewCustomKeys().length > 0; } catch (eCT) { hasNewT = false; }
-      var tbtn = document.getElementById("saveMolBtn");
-      if (tbtn) {
-        if (hasNewT) tbtn.classList.remove("btnInactive");
-        else tbtn.classList.add("btnInactive");
-      }
-    } catch (eT) {}
   } catch (eS) {}
 }
 

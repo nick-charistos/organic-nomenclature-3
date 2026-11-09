@@ -2673,3 +2673,11 @@ All `*55*`-only (`molview-55.js` + `lang-55.js` + `scenario-55.css`); naming eng
 * Re-optimize entry: `draftMinMore` (+100) button on `jsmol-min` previews; guard admits fresh + unminimized-retry + further, still blocks PubChem/remote.
 * Root-caused from console mid-session: the minimize command had been blanked to `" "` by an uncommitted worktree edit (bit-identical 2557-char read-backs, `unmoved — rejected` both FFs, small molecule included) — restored to `select all; minimize steps N`. Owner in-tree tuning kept as-is (steps 300, global `minimizationCriterion 0.01` in `spt/init-3.spt`, green `.viewerFullBtn`).
 * Standing rule re-confirmed the hard way: any mid-run applet poll risks interrupting the in-flight minimize; the only legal mid-run applet script is the halt command — and even that only when a run is actually in flight.
+
+## 2026-11-09 (cont.) — settings cleanup + i18n rebuild (v55 working copy)
+
+* `#customMolSetting` row deleted (title-bar `#saveMolBtn` is the single save-all entry); `acceptKept` toast reworded to point at it. No dedicated CSS existed.
+* `#atomSymbolsCheck` moved back to `#controls3D` (after hydrogens); id-based handlers/sync untouched. Bar label translates via the value-matched bar list.
+* Settings labels are `data-lang`-keyed with one generic loop; positional map + autoLinearize id-block deleted. This also fixes the pre-existing EN rotation (map shifted from the autoLinearize row onward — confirmed live when `#atomColorModeRow` showed "3D atom symbols:").
+* `MULER_VIEWER_SETTINGS` + `fSyncViewerSettingsUI()` (molview): panel-open and scenario-apply sync through one loop; DOM-truth checkboxes keep direct paths. No DOM rebuild — all bindings survive. Tabs hook: group by row id later.
+* EN fixes found live: data-lang loop used `(root || document)` in a rootless function (ReferenceError swallowed → loop dead) and wrote `firstChild` (indentation whitespace) — now `document` + first non-empty text node (span-safe). `atomSymbolsBar` key (`Σύμβολα ατόμων` / `Atom Symbols`); orphan `atomSymbols3D` retired. The bar-text/colon mismatch that started this thread (`'Σύμβολα ατόμων:'` key vs `'Σύμβολα ατόμων'` text) is now impossible by construction.

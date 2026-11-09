@@ -1272,10 +1272,12 @@ function fScenarioSyncControlUi() {
   } catch (e) {
     /* controls unavailable */
   }
+  // Panel checkboxes/radios/sliders mirror the restored globals through the
+  // viewer-settings registry (single loop; per-row sync lives in molview).
+  // Chain-mode radio needs mode2D resolved (done by fUpdateDiagr2DButton
+  // above); the loop runs after the 2D-radio paint for the same reason.
   try {
-    // Dims "Από δεδομένα" for empty/missing stored chains and re-syncs the
-    // radio to the restored mainChainMode. Depends on mode2D (resolved above).
-    if (typeof fUpdateChainModeButton === "function") fUpdateChainModeButton();
+    if (typeof fSyncViewerSettingsUI === "function") fSyncViewerSettingsUI();
   } catch (e) {
     /* controls unavailable */
   }
@@ -1298,22 +1300,7 @@ function fScenarioSyncControlUi() {
   } catch (e) {
     /* controls unavailable */
   }
-  // 2D color controls mirror the restored globals (the SVG class itself
-  // re-syncs from the flag in fUpdateSVG).
-  try {
-    if (typeof svgAtomColors2DFlag !== "undefined") fScenarioSetCheck("svgAtomColorCheck", !!svgAtomColors2DFlag, "selectedCheck", "unselectedCheck");
-    if (typeof fSyncAtomColorModeDisabled === "function") fSyncAtomColorModeDisabled();
-    if (typeof atomColorMode2D !== "undefined") {
-      var _cmBtns = document.querySelectorAll("#atomColorMode .atomColorModeRadio");
-      for (var _ci = 0; _ci < _cmBtns.length; _ci++) {
-        var _on = _cmBtns[_ci].getAttribute("data-color-mode") === atomColorMode2D;
-        _cmBtns[_ci].classList.remove(_on ? "unselectedRadio" : "selectedRadio");
-        _cmBtns[_ci].classList.add(_on ? "selectedRadio" : "unselectedRadio");
-      }
-    }
-  } catch (e) {
-    /* controls unavailable */
-  }
+  // (2D color panel rows sync via the registry loop above.)
   try {
     // Same labels as fCreateDropMenu (teaching layer).
     var visLabels = (typeof fVisStyleLabels === "function") ? fVisStyleLabels() : { ballnstick: "Σφαίρες και Ράβδοι", spacefill: "Χωροπληρωτικό", sticks: "Ράβδοι" };

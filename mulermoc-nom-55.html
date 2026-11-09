@@ -102,7 +102,7 @@
               <div id="viewerSettingsPanel">
                 <div class="settingTitle">Ρυθμίσεις</div>
                 <div id="radioChainMode" class="settingRow">
-                  <div class="settingLabel">Υπολογισμός κύριας αλυσίδας:</div>
+                  <div class="settingLabel" data-lang="chainCalc">Υπολογισμός κύριας αλυσίδας:</div>
                   <div class="radioGroupContainer HFlex" style="align-items: center; gap: 0">
                     <div class="radioCheckContainer unselectedRadio">
                       Από δεδομένα<span class="radioCheck"></span>
@@ -113,7 +113,7 @@
                   </div>
                 </div>
                 <div id="originalJSME" class="settingRow">
-                  <div class="settingLabel">
+                  <div class="settingLabel" data-lang="showOrig2D">
                     Σχεδίαση και προσθήκη μορίων:
                   </div>
                   <div id="originalJSMECheck" class="checkBoxContainer selectedCheck">
@@ -122,7 +122,7 @@
                 </div>
 
                 <div id="autoLinearize" class="settingRow">
-                  <div class="settingLabel" id="autoLinearizeLabel">
+                  <div class="settingLabel" id="autoLinearizeLabel" data-lang="autoLinearize">
                     Αυτόματη γραμμικοποίηση:
                   </div>
                   <div id="autoLinearizeCheck" class="checkBoxContainer selectedCheck">
@@ -131,7 +131,7 @@
                 </div>
 
                 <div id="highlightNumberingSetting" class="settingRow">
-                  <div class="settingLabel">
+                  <div class="settingLabel" data-lang="hlAtoms">
                     Επισήμανση ατόμων κατά την αρίθμηση:
                   </div>
                   <div id="highlightNumberingCheck" class="checkBoxContainer selectedCheck">
@@ -139,7 +139,7 @@
                   </div>
                 </div>
                 <div id="highlightNumberingBondsSetting" class="settingRow">
-                  <div class="settingLabel">
+                  <div class="settingLabel" data-lang="hlBonds">
                     Επισήμανση δεσμών κατά την αρίθμηση:
                   </div>
                   <div id="highlightNumberingBondsCheck" class="checkBoxContainer selectedCheck">
@@ -147,7 +147,7 @@
                   </div>
                 </div>
                 <div id="bondAtomsSetting" class="settingRow">
-                  <div class="settingLabel">
+                  <div class="settingLabel" data-lang="hlBondAtoms">
                     Επισήμανση ατόμων δεσμών:
                   </div>
                   <div id="bondAtomsCheck" class="checkBoxContainer unselectedCheck">
@@ -155,7 +155,7 @@
                   </div>
                 </div>
                 <div id="atomColorModeRow" class="settingRow">
-                  <div class="settingLabel">Χρωματισμός ατόμων 2D:</div>
+                  <div class="settingLabel" data-lang="atomColor2D">Χρωματισμός ατόμων 2D:</div>
                   <div id="svgAtomColorCheck" class="checkBoxContainer selectedCheck">
                     &nbsp;<span class="checkBox"></span>
                   </div>
@@ -168,14 +168,8 @@
                     </div>
                   </div>
                 </div>
-                <div id="atomSymbolsSetting" class="settingRow">
-                  <div class="settingLabel">Σύμβολα ατόμων 3D:</div>
-                  <div id="atomSymbolsCheck" class="checkBoxContainer selectedCheck">
-                    &nbsp;<span class="checkBox"></span>
-                  </div>
-                </div>
                 <div id="viewerMaxHeightSetting" class="settingRow">
-                  <div class="settingLabel">Όριο ύψους μεμονωμένου viewer:</div>
+                  <div class="settingLabel" data-lang="maxHeight1">Όριο ύψους μεμονωμένου viewer:</div>
                   <div id="viewerMaxHeightCheck" class="checkBoxContainer unselectedCheck">
                     &nbsp;<span class="checkBox"></span>
                   </div>
@@ -184,18 +178,13 @@
                   <span id="viewerMaxHeightVal" class="viewerHeightVal">Auto</span>
                 </div>
                 <div id="viewerBothHeightSetting" class="settingRow">
-                  <div class="settingLabel">Ύψος δύο viewers (σύνολο):</div>
+                  <div class="settingLabel" data-lang="bothHeight">Ύψος δύο viewers (σύνολο):</div>
                   <div id="viewerBothHeightCheck" class="checkBoxContainer unselectedCheck">
                     &nbsp;<span class="checkBox"></span>
                   </div>
                   <input id="viewerBothHeightRange" class="viewerHeightRange" type="range" min="300" max="1000"
                     step="10" value="300" disabled />
                   <span id="viewerBothHeightVal" class="viewerHeightVal">Auto</span>
-                </div>
-                <div id="customMolSetting" class="settingRow">
-                  <div class="settingLabel">Προσαρμοσμένα μόρια:</div>
-                  <button type="button" id="customMolSaveBtn" class="viewerFullBtn" onclick="fMolDraftSaveAllCustom()">Λήψη .js</button>
-                  <span id="customMolCount" class="viewerHeightVal">0 στη συνεδρία</span>
                 </div>
               </div>
             </div>
@@ -252,6 +241,9 @@
               <div class="HFlex" style="align-items: center">
                 <div id="hydrogensCheck" class="checkBoxContainer selectedCheck">
                   Υδρογόνα <span style="color: #666">C</span>-H<span class="checkBox"></span>
+                </div>
+                <div id="atomSymbolsCheck" class="checkBoxContainer selectedCheck" data-lang="atomSymbolsBar">
+                  Σύμβολα ατόμων <span class="checkBox"></span>
                 </div>
                 <div id="dropMenu" style="margin-top: 2px"></div>
                 <div id="rotateCheck" class="checkBoxContainer unselectedCheck">

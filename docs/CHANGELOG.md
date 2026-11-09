@@ -18,6 +18,13 @@ Forked from v54 (`mulermoc-nom-55.html` + `js/*-55.js` + `css/*-55.css`, `?v=55.
 - Re-optimize entry: `draftMinMore` ("Ελαχιστοποίηση +100 / Minimize +100") button on `jsmol-min` previews; the manual guard admits fresh + unminimized-retry + further, still blocks PubChem/remote 3D.
 - Root-caused this batch from console: the minimize command had been blanked to `" "` by an uncommitted worktree edit (bit-identical 2557-char read-backs, `unmoved — rejected` on both forcefields, small molecule included) — restored to `select all; minimize steps N`. In-tree owner tuning kept as-is: steps currently 300, `spt/init-3.spt` sets a global `minimizationCriterion 0.01`, green `.viewerFullBtn` restyle.
 
+### Settings panel cleanup + i18n rebuild (v55 working tree)
+- `#customMolSetting` row removed (label + per-session download button + counter); the title-bar `#saveMolBtn` is the single save entry (`fMolDraftSaveAllCustom` untouched). `acceptKept` toast reworded to point at it. No dedicated CSS existed.
+- `#atomSymbolsCheck` moved back to `#controls3D` (after hydrogens), out of the settings panel; all handlers/sync are id-based, no JS logic touched. Bar label translates via the value-matched bar list.
+- Settings labels are now `data-lang`-keyed with one generic loop — the positional label↔key map is deleted (it had silently rotated EN labels from the autoLinearize row onward; each label now fetches its own key, which also fixes that shift). AutoLinearize id-block removed (covered by its key).
+- `MULER_VIEWER_SETTINGS` registry + `fSyncViewerSettingsUI()` in molview: one entry per global-backed row (chain-mode radio, atom-color checkbox+radios+disabled state, both height sliders). Panel-open and scenario-apply sync go through it (replacing scattered per-id blocks); DOM-truth checkboxes (drawing, auto-tidy, highlight ×2, bond-atoms) keep their direct capture/apply paths. No DOM rebuild — all existing bindings survive untouched. Tabs hook: group by row id later.
+- EN fixes found live: the new data-lang loop initially used `(root || document)` in a rootless function (ReferenceError swallowed → loop dead, panel stayed Greek) and wrote `firstChild` (indentation whitespace on multi-line labels) — now queries `document` and writes the first non-empty text node (span-safe for the bar checkbox). `atomSymbolsBar` key (`Σύμβολα ατόμων` / `Atom Symbols`) for the bar label; orphaned `atomSymbols3D` key retired.
+
 ## [v54] (molecule edit/create draft flow; LIVE, `index.html` → v54)
 
 New parallel file set `mulermoc-nom-54.html` + `js/*-54.js` + `css/*-54.css`, forked from v53. v54 went live 2026-11-04 (was authoring-only before).

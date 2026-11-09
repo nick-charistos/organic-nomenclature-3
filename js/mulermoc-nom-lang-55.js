@@ -23,7 +23,7 @@ var MULER_STRINGS = {
   atomColor2D: { gr: "Χρωματισμός ατόμων 2D:", en: "2D atom coloring:" },
   byAtom: { gr: "Κατά άτομο", en: "By atom" },
   byGroup: { gr: "Κατά ομάδα", en: "By group" },
-  atomSymbols3D: { gr: "Σύμβολα ατόμων 3D:", en: "3D atom symbols:" },
+  atomSymbolsBar: { gr: "Σύμβολα ατόμων", en: "Atom Symbols" },
   maxHeight1: { gr: "Όριο ύψους μεμονωμένου viewer:", en: "Single viewer max height:" },
   bothHeight: { gr: "Ύψος δύο viewers (σύνολο):", en: "Two viewers height (total):" },
   naming: { gr: "Ονομασία", en: "Naming" },
@@ -70,11 +70,8 @@ var MULER_STRINGS = {
   acceptNeedsSubmit: { gr: "Πάτα πρώτα Υποβολή για προεπισκόπηση.", en: "Press Submit for a preview first." },
   acceptDup: { gr: "Υπάρχει ήδη — επίλεξε το από το μενού.", en: "Already exists — pick it from the menu." },
   acceptSaved: { gr: "Το αρχείο κατέβηκε — βάλτο δίπλα στα δεδομένα.", en: "File downloaded — place it next to the data file." },
-  acceptKept: { gr: "Αποδεκτή στη συνεδρία — αποθήκευσέ τη από Ρυθμίσεις.", en: "Accepted into this session — save it from Settings." },
-  customMols: { gr: "Προσαρμοσμένα μόρια:", en: "Custom molecules:" },
-  customMolSave: { gr: "Λήψη .js", en: "Download .js" },
+  acceptKept: { gr: "Αποδεκτή στη συνεδρία — πάτα «Αποθήκευση νέων μορίων».", en: "Accepted into this session — press “Save new molecules”." },
   saveNewMols: { gr: "Αποθήκευση νέων μορίων", en: "Save new molecules" },
-  customMolSession: { gr: "στη συνεδρία", en: "this session" },
   pickCustomToSave: { gr: "Επίλεξε ένα προσαρμοσμένο μόριο.", en: "Pick a custom molecule." },
   customSaveAllNone: { gr: "Τίποτα νέο για αποθήκευση — σχεδίασε και Αποδέξου ένα μόριο.", en: "Nothing new to save — draw and Accept a molecule first." },
   customSaveAllDone: { gr: "αρχεία κατέβηκαν — βάλτα δίπλα στα δεδομένα.", en: "files downloaded — place them next to the data file." },
@@ -400,15 +397,39 @@ function fMulerPaintStaticChrome() {
   set("#menuToggle", fMulerT("menu"));
   set("#viewerCol .panelTitle > span", fMulerT("molecule"));
   set("#viewerSettingsPanel .settingTitle", fMulerT("settings"));
-  set("#radioChainMode .settingLabel", fMulerT("chainCalc"));
+  // Settings labels translate via their data-lang keys (one per row — add,
+  // remove, or reorder rows freely, no positional map to keep in sync). The
+  // 3D-bar checkbox carries one too. NOTE: query `document` directly (NOT
+  // `root || document` — this function has no root param, and an undeclared
+  // `root` throws, silently killing the whole loop). Labels may share their
+  // element with widgets (bar checkbox span): translate the first non-empty
+  // text node and leave the rest intact (NOT whole-element textContent, which
+  // would delete the widget; NOT firstChild, which hits indentation
+  // whitespace on multi-line labels).
   try {
-    var labels = document.querySelectorAll("#viewerSettingsPanel .settingLabel");
-    // positional: 1 showOrig2D, 2 hlAtoms, 3 hlBonds, 4 hlBondAtoms, 5 atomColor2D, 6 atomSymbols3D, 7 maxHeight1, 8 bothHeight, 9 customMols
-    var map = ["chainCalc", "showOrig2D", "hlAtoms", "hlBonds", "hlBondAtoms", "atomColor2D", "atomSymbols3D", "maxHeight1", "bothHeight", "customMols"];
-    for (var li = 0; li < labels.length && li < map.length; li++) {
-      var t = fMulerT(map[li]);
-      if (t && labels[li].firstChild) labels[li].firstChild.textContent = t + " ";
-      else if (t) labels[li].textContent = t + " ";
+    var dls = document.querySelectorAll("#viewerSettingsPanel [data-lang], #controls3D [data-lang]");
+    for (var dli = 0; dli < dls.length; dli++) {
+      var dlk = null;
+      try { dlk = dls[dli].getAttribute("data-lang"); } catch (eG) { dlk = null; }
+      if (!dlk) continue;
+      var dt = null;
+      try { dt = fMulerT(dlk); } catch (eT) { dt = null; }
+      if (dt && dt !== dlk) {
+        try {
+          var _ch = dls[dli].childNodes;
+          var _done = false;
+          for (var _ci = 0; _ci < _ch.length; _ci++) {
+            try {
+              if (_ch[_ci].nodeType === 3 && String(_ch[_ci].nodeValue || "").trim() !== "") {
+                _ch[_ci].nodeValue = dt + " ";
+                _done = true;
+                break;
+              }
+            } catch (eCn) {}
+          }
+          if (!_done) dls[dli].textContent = dt + " ";
+        } catch (eS) {}
+      }
     }
   } catch (e) {}
   try {
@@ -431,23 +452,7 @@ function fMulerPaintStaticChrome() {
     if (cands[0] && cands[0].firstChild) cands[0].firstChild.textContent = fMulerT("byAtom") + " ";
     if (cands[1] && cands[1].firstChild) cands[1].firstChild.textContent = fMulerT("byGroup") + " ";
   } catch (e) {}
-  try {
-    var csb = document.getElementById("customMolSaveBtn");
-    if (csb) {
-      csb.textContent = fMulerT("customMolSave");
-      csb.setAttribute("data-tooltip", fMulerT("customMolSave"));
-    }
-  } catch (e) {}
-  // autoLinearize label is id-addressed (NOT in the positional map above):
-  // inserting a row mid-panel would shift every index after it.
-  try {
-    var al1 = document.getElementById("autoLinearizeLabel");
-    if (al1) {
-      var alt = fMulerT("autoLinearize");
-      if (alt && al1.firstChild) al1.firstChild.textContent = alt + " ";
-      else if (alt) al1.textContent = alt + " ";
-    }
-  } catch (e) {}
+  // (autoLinearize label is covered by the data-lang loop above — no id block.)
   setTip("#zoomOutBtn", fMulerT("zoomOut") + " 2D");
   setTip("#zoomInBtn", fMulerT("zoomIn") + " 2D");
   setTip("#save2DBtn", fMulerT("saveImage") + " 2D");
