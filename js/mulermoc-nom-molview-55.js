@@ -1845,7 +1845,15 @@ function fMolDraftLocal3DFromMol(molText, expectHeavy) {
     // Bounded + best-effort: UFF can fail on odd valence — null then.
     var ok = !!fJSmolLoadInlineSDF(jmolAppletNomeclature, molText, "");
     if (!ok) return null;
-    try { if (typeof fJSmolScript === "function") fJSmolScript(jmolAppletNomeclature, "select all; add hydrogens; minimize; center selected;"); } catch (eM) { return null; }
+    // Blocking minimize (v55.3): the old fire-and-forget script() raced the
+    // read-back below, capturing pre-minimize coordinates (user had to
+    // re-minimize by hand). scriptWait runs to completion first; steps are
+    // capped to bound the UI freeze on big drawings.
+    try {
+      if (typeof fJSmolScriptWait === "function") fJSmolScriptWait(jmolAppletNomeclature, "select all; add hydrogens; minimize steps 500; center selected;");
+      else if (typeof fJSmolScript === "function") fJSmolScript(jmolAppletNomeclature, "select all; add hydrogens; minimize steps 500; center selected;");
+      else return null;
+    } catch (eM) { return null; }
     // Shared read-back battery (molFile/show/fileContents/write MOL).
     try {
       if (typeof fMolDraftReadBackSDF === "function") return fMolDraftReadBackSDF(expectHeavy) || null;
