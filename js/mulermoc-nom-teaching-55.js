@@ -1,0 +1,1658 @@
+// mulermoc-nom-teaching-54.js
+// Teaching / implementation layer.
+// Contains ruleExamples, menu setup, credit display, and all jQuery event handlers.
+// Depends on: data_54.js (nameExamples), mulermoc-nom-core-54.js (analysis), mulermoc-nom-molview-54.js (viewer).
+
+// ── ruleExamples ──────────────────────────────────────────────────────────
+
+let ruleExamples = {
+  rule0: [1, 3, 7, 11, 14, 4, 8, 9, 2, 5, 6, 10, 12, 13],
+  rule1: [15, 16, 17, 18],
+  rule2: [19, 20, 21, 22, 23, 55, 56, 57],
+  rule3: [24, 25, 26, 27, 28],
+  rule4: [29, 30, 31, 32, 33],
+  rule5: [34, 35, 36, 37],
+  rule6: [38, 39, 40, 41, 42, 58, 59],
+  rule7: [43, 44, 45, 46, 47],
+  rule8: [48, 49, 50, 51, 52, 53, 54],
+};
+
+let moleculeGroupingMode = "all"; // "chemclass", "series", "rule", or "all"
+
+const homologousSeriesLabels = {
+  alkanes: "Αλκάνια",
+  alkenes: "Αλκένια",
+  alkadienes: "Αλκαδιένια",
+  alkynes: "Αλκίνια",
+  enynes: "Αλκενίνια",
+  halogen: "Αλκυλαλογονίδια",
+  alcohol: "Αλκοόλες",
+  ether: "Αιθέρες",
+  aldehyde: "Αλδεΰδες",
+  ketone: "Κετόνες",
+  carboxylicAcid: "Καρβοξυλικά οξέα",
+  ester: "Εστέρες",
+  nitro: "Νιτροενώσεις",
+  cyanide: "Νιτρίλια",
+  hydroxyNitriles: "Υδροξυνιτρίλια",
+  amine: "Αμίνες",
+  aminoAcids: "Αμινοξέα",
+  oxoCarboxylicAcids: "Οξοκαρβοξυλικά οξέα",
+  hydroxyAcids: "Υδροξυοξέα",
+  ketoAcids: "Κετοξέα",
+};
+
+const chemicalClassLabels = {
+  hydrocarbons: "Υδρογονάνθρακες",
+  alkylHalides: "Αλκυλαλογονίδια",
+  alcohols: "Αλκοόλες",
+  ethers: "Αιθέρες",
+  carbonylCompounds: "Καρβονυλικές Ενώσεις",
+  carboxylicAcids: "Καρβοξυλικά Οξέα",
+  esters: "Εστέρες",
+  nitriles: "Νιτρίλια",
+  amines: "Αμίνες",
+  nitro: "Νιτροενώσεις",
+  unclassified: "Μη ταξινομημένα",
+};
+
+// ── fInitTheory ───────────────────────────────────────────────────────────
+
+// Reference table: terminal dash marks the bond to the parent chain.
+function fBuildAlkylRuleTable() {
+  const groups = [
+    ["μεθυλο", "–CH<sub>3</sub>", "Μεθύλιο", "μεθυλο-", "methyl"],
+    ["αιθυλο", "–CH<sub>2</sub>–CH<sub>3</sub>", "Αιθύλιο", "αιθυλο-", "ethyl"],
+    ["προπυλο", "–CH<sub>2</sub>–CH<sub>2</sub>–CH<sub>3</sub>", "Προπύλιο (n-)", "προπυλο-", "propyl"],
+    ["ισοπροπυλο", "–CH(CH<sub>3</sub>)<sub>2</sub>", "Ισοπροπύλιο", "ισοπροπυλο-", "propan-2-yl", "προπαν-2-υλο"],
+    ["βουτυλο", "–CH<sub>2</sub>–CH<sub>2</sub>–CH<sub>2</sub>–CH<sub>3</sub>", "Βουτύλιο (n-)", "βουτυλο-", "butyl"],
+    ["ισοβουτυλο", "–CH<sub>2</sub>–CH(CH<sub>3</sub>)<sub>2</sub>", "Ισοβουτύλιο", "ισοβουτυλο-", "2-methylpropyl", "2-μεθυλοπροπυλο"],
+    ["sec-βουτυλο", "–CH(CH<sub>3</sub>)–CH<sub>2</sub>–CH<sub>3</sub>", "sec-Βουτύλιο", "sec-βουτυλο-", "butan-2-yl", "βουταν-2-υλο"],
+    ["tert-βουτυλο", "–C(CH<sub>3</sub>)<sub>3</sub>", "tert-Βουτύλιο", "tert-βουτυλο-", "2-methylpropan-2-yl (tert-butyl)", "2-μεθυλοπροπαν-2-υλο"],
+  ];
+  var _enAlk = false;
+  try { _enAlk = typeof fMulerLang === "function" && fMulerLang() === "en"; } catch (e) { }
+  // EN: systematic names throughout (display + prefix), no common-name note.
+  var _cap = function (s) { s = String(s); return s.charAt(0).toUpperCase() + s.slice(1); };
+  return "<div class='VFlex namingRuleTable ruleAlkyl'>" +
+    "<div class='HFlex ruleRow'>" +
+    "<div class='ruleCase ruleTableTitle'>" + (_enAlk ? "Structure / linkage" : "Δομή / σύνδεση") + "</div>" +
+    "<div class='ruleName ruleTableTitle'>" + (_enAlk ? "Alkyl / prefix" : "Αλκύλιο / πρόθεμα") + "</div>" +
+    "</div>" +
+    groups.map(function (g) {
+      var _nm = _enAlk ? _cap(g[4]) : g[2];
+      var _pf = _enAlk ? g[4] + "-" : g[3];
+      var _small = _enAlk ? "" : "<small>IUPAC: " + g[4] + ((g.length > 5 && g[5]) ? " · Συστ.: " + g[5] : "") + "</small>";
+      return "<div class='HFlex ruleRow' data-row='alkyl-" + g[0] + "'>" +
+        "<div class='ruleCase alkylFormula'>" + g[1] + "</div>" +
+        "<div class='ruleName'><strong>" + _nm + "</strong><span class='alkylPrefix'>" + _pf +
+        "</span>" + _small + "</div></div>";
+    }).join("") +
+    "</div>" + (_enAlk
+      ? "<p class='alkylRuleNote'>Systematic (substitutive) names.</p>"
+      : "<p class='alkylRuleNote'>Τα ισο-, sec- και tert- εμφανίζονται εδώ ως συνήθεις ονομασίες, μαζί με τις αντίστοιχες συστηματικές.</p>");
+}
+
+// Same reference-table layout as alkyls; the left dash bonds through O.
+function fBuildAlkoxyRuleTable() {
+  const groups = [
+    ["μεθοξυ", "–O–CH<sub>3</sub>", "Μεθοξυομάδα", "μεθοξυ-"],
+    ["αιθοξυ", "–O–CH<sub>2</sub>–CH<sub>3</sub>", "Αιθοξυομάδα", "αιθοξυ-"],
+    ["προποξυ", "–O–CH<sub>2</sub>–CH<sub>2</sub>–CH<sub>3</sub>", "Προποξυομάδα", "προποξυ-"],
+    ["ισοπροποξυ", "–O–CH(CH<sub>3</sub>)<sub>2</sub>", "Ισοπροποξυομάδα", "ισοπροποξυ-", "προπαν-2-υλοξυ"],
+    ["βουτοξυ", "–O–CH<sub>2</sub>–CH<sub>2</sub>–CH<sub>2</sub>–CH<sub>3</sub>", "Βουτοξυομάδα", "βουτοξυ-"],
+  ];
+  // EN systematic names parallel to the Greek school names (same row order).
+  const groupsEN = ["Methoxy", "Ethoxy", "Propoxy", "Isopropoxy", "Butoxy"];
+  const prefixEN = ["methoxy-", "ethoxy-", "propoxy-", "isopropoxy-", "butoxy-"];
+  var _enAlx = false;
+  try { _enAlx = typeof fMulerLang === "function" && fMulerLang() === "en"; } catch (e) { }
+  return "<div class='VFlex namingRuleTable ruleAlkyl ruleAlkoxy'>" +
+    "<div class='HFlex ruleRow'><div class='ruleCase ruleTableTitle'>" + (_enAlx ? "Structure / linkage" : "Δομή / σύνδεση") + "</div>" +
+    "<div class='ruleName ruleTableTitle'>" + (_enAlx ? "Alkoxy group / prefix" : "Αλκοξυομάδα / πρόθεμα") + "</div></div>" +
+    groups.map(function (g, i) {
+      var _nm = _enAlx ? (groupsEN[i] + " group") : g[2];
+      var _pf = _enAlx ? prefixEN[i] : g[3];
+      var _smx = (!_enAlx && g.length > 4 && g[4]) ? "<small>Συστ.: " + g[4] + "</small>" : "";
+      return "<div class='HFlex ruleRow' data-row='alkoxy-" + g[0] + "'>" +
+        "<div class='ruleCase alkylFormula'>" + g[1] + "</div>" +
+        "<div class='ruleName'><strong>" + _nm + "</strong><span class='alkylPrefix'>" + _pf + "</span>" + _smx + "</div></div>";
+    }).join("") + "</div>";
+}
+
+function fInitTheory() {
+  let r0, r1, r2, r3, r4, r1Table, r2Table, r3Table, r4Table;
+  r0 =
+    "Το όνομα μιας άκυκλης οργανικής ένωσης που έχει συνεχή ευθύγραμμη ανθρακική αλυσίδα (χωρίς διακλαδώσεις) προκύπτει από τον συνδυασμό τριών συνθετικών.";
+  r1 =
+    "Το πρώτο συνθετικό δείχνει τον αριθμό των ατόμων άνθρακα της ανθρακικής αλυσίδας.";
+  r2 =
+    "Το δεύτερο συνθετικό δείχνει το είδος των δεσμών μεταξύ των ατόμων άνθρακα (βαθμός κορεσμού της ένωσης).";
+  r3 =
+    "Το τρίτο συνθετικό δηλώνει την χημική τάξη που ανήκει η οργανική ένωση.";
+  r4 = "";
+
+  r1Table = `
+   <div class='VFlex namingRuleTable rule1'>
+        <div class='HFlex ruleRow'>
+                <div class='ruleCase ruleTableTitle'> Άτομα Άνθρακα </div>
+              <div class=' ruleName ruleTableTitle'> 1<sup>o</sup> Συνθετικό </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r1-c1">
+            <div class='ruleCase'>1 C</div>
+            <div class='ruleName'> Μεθ- </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r1-c2">
+            <div class='ruleCase'>2 C</div>
+            <div class='ruleName'> Αιθ- </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r1-c3">
+            <div class='ruleCase'>3 C</div>
+            <div class='ruleName'> Προπ- </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r1-c4">
+            <div class='ruleCase'>4 C</div>
+            <div class='ruleName'> Βουτ- </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r1-c5">
+            <div class='ruleCase'>5 C</div>
+            <div class='ruleName'> Πεντ- </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r1-c6">
+            <div class='ruleCase'>6 C</div>
+            <div class='ruleName'> Εξ- </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r1-c7">
+            <div class='ruleCase'>7 C</div>
+            <div class='ruleName'> Επτ- </div>
+        </div>
+    </div>
+    `;
+
+  r2Table = `
+    <div class='VFlex namingRuleTable rule2'>
+        <div class='HFlex ruleRow'>
+                <div class='ruleCase ruleTableTitle'> Είδος Δεσμών </div>
+              <div class=' ruleName ruleTableTitle'> 2<sup>o</sup> Συνθετικό </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r2-single">
+            <div class='ruleCase'>Απλοί δεσμοί</div>
+            <div class='ruleName'> -αν- </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r2-double">
+            <div class='ruleCase'> 1 διπλός δεσμός </div>
+            <div class='ruleName'> -εν- </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r2-triple">
+            <div class='ruleCase'> 1 τριπλός δεσμός </div>
+            <div class='ruleName'> -ιν- </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r2-didouble">
+            <div class='ruleCase'> 2 διπλοί δεσμοί </div>
+            <div class='ruleName'> -διεν- </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r2-tridouble">
+            <div class='ruleCase'> 3 διπλοί δεσμοί </div>
+            <div class='ruleName'> -τριεν- </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r2-ditriple">
+            <div class='ruleCase'> 2 τριπλοί δεσμοί </div>
+            <div class='ruleName'> -διιν- </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r2-double-triple">
+            <div class='ruleCase'> 1 διπλός + 1 τριπλός</div>
+            <div class='ruleName'> -ενιν- </div>
+        </div>
+    </div>
+    `;
+
+  r3Table = `
+    <div class='VFlex namingRuleTable rule3'>
+        <div class='HFlex ruleRow'>
+                <div class='ruleCase ruleTableTitle'> Χημική Τάξη </div>
+              <div class=' ruleName ruleTableTitle'> 3<sup>o</sup> Συνθετικό </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r3-hydrocarbons">
+            <div class='ruleCase'>Υδρογονάνθρακες R-H</div>
+            <div class='ruleName'> -ιο </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r3-alkyl-halides">
+            <div class='ruleCase'>Αλκυλαλογονίδια R-Χ</div>
+            <div class='ruleName'> -ιο </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r3-alcohols">
+            <div class='ruleCase'> Αλκοόλες R-OH </div>
+            <div class='ruleName'> -όλη </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r3-aldehydes">
+            <div class='ruleCase'> Καρβονυλικές Ενώσεις - Αλδεϋδες R-CH=O </div>
+            <div class='ruleName'> -άλη </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r3-ketones">
+            <div class='ruleCase'> Καρβονυλικές Ενώσεις - Κετόνες R-C(=O)-R' </div>
+            <div class='ruleName'> -όνη </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r3-carboxylic-acids">
+            <div class='ruleCase'> Καρβοξυλικά οξέα R-COOH</div>
+            <div class='ruleName'> -ικό οξύ </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r3-ethers">
+            <div class='ruleCase'> Αιθέρες R-O-R' </div>
+            <div class='ruleName'> -ιο <br> αιθέρας </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r3-esters">
+            <div class='ruleCase'> Εστέρες R-COO-R' </div>
+            <div class='ruleName'> -ικός … εστέρας </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r3-nitro">
+            <div class='ruleCase'>Νιτροενώσεις R-NO<sub>2</sub></div>
+            <div class='ruleName'> -ιο </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r3-nitriles">
+            <div class='ruleCase'> Νιτρίλια R-CN </div>
+            <div class='ruleName'> -νιτρίλιο </div>
+        </div>
+    </div>
+    `;
+  // NOTE: the r3-amino-acids row stays omitted (it was commented out in v41).
+
+  r4Table = `
+    <div class='VFlex namingRuleTable rule4'>
+        <div class='HFlex ruleRow' data-row="r4-carboxylic">
+            <div class='ruleCase'><span class='orderNo'>1.</span> Καρβοξυλομάδα </div>
+            <div class='ruleName'> -COOH </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r4-alkoxycarbonyl">
+            <div class='ruleCase'><span class='orderNo'>2.</span> Εστερομάδα  </div>
+            <div class='ruleName'> -COOR </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r4-cyano">
+            <div class='ruleCase'><span class='orderNo'>3.</span> Κυανομάδα </div>
+            <div class='ruleName'> -CN </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r4-aldehyde">
+            <div class='ruleCase'><span class='orderNo'>4.</span> Αλδεϋδομάδα </div>
+            <div class='ruleName'> -CH=O </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r4-keto">
+            <div class='ruleCase'><span class='orderNo'>5.</span> Κετονομάδα </div>
+            <div class='ruleName'> C-C(=O)-C </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r4-hydroxy">
+            <div class='ruleCase'><span class='orderNo'>6.</span> Υδροξυλομάδα</div>
+            <div class='ruleName'> -OH </div>
+        </div>
+        <div class='HFlex ruleRow' data-row="r4-amino">
+            <div class='ruleCase'><span class='orderNo'>7.</span> Αμινοομάδα</div>
+            <div class='ruleName'> -ΝΗ<sub>2</sub> </div>
+        </div>
+    </div>
+    `;
+
+  let rulesTheory_1_8 = [
+    "Το όνομα μιας άκυκλης οργανικής ένωσης που έχει συνεχή ευθύγραμμη ανθρακική αλυσίδα προκύπτει από τον συνδυασμό τριών συνθετικών. Το 1<sup>ο</sup> Συνθετικό δείχνει τον αριθμό των ατόμων άνθρακα της ανθρακικής αλυσίδας. Το 2<sup>ο</sup> Συνθετικό δείχνει το είδος των δεσμών που υπάρχουν μεταξύ των ατόμων του άνθρακα. Το 3<sup>ο</sup> Συνθετικό δηλώνει την χημική τάξη που ανήκει.",
+    "Η αρίθμηση της ανθρακικής αλυσίδας αρχίζει από το άκρο που είναι πλησιέστερα στην Χαρακτηριστική Ομάδα ή στον Πολλαπλό Δεσμό. Όταν υπάρχει Χαρακτηριστική Ομάδα και Πολλαπλός Δεσμός τότε η αρίθμηση αρχίζει από το άκρο που είναι πλησιέστερα στην Χαρακτηριστική Ομάδα.",
+    "Η θέση της Χαρακτηριστικής Ομάδας ή του Πολλαπλού Δεσμού καθορίζεται με έναν αριθμό που γράφεται στην αρχή του ονόματος της ένωσης.",
+    "Αλδεϋδες (-CH=O), καρβοξυλικά οξέα (-COOH) και νιτρίλια (-CN) είναι Χαρακτηριστικές Ομάδες που βρίσκονται υποχρεωτικά στην άκρη της ανθρακικής αλυσίδας και η αρίθμηση αρχίζει από τον άνθρακα της Χαρακτηριστικής Ομάδας.",
+    "Αν στην οργανική ένωση έχουμε Χαρακτηριστική Ομάδα και Πολλαπλό Δεσμό τότε η θέση του Πολλαπλού Δεσμού καθορίζεται πριν από το βασικό όνομα και η αρίθμηση για την Χαρακτηριστική Ομάδα πριν από το 3<sup>o</sup> συνθετικό που δηλώνει το όνομα της Χαρακτηριστικής Ομάδας",
+    "Αν στην οργανική ένωση έχουμε διπλό δεσμό και τριπλό δεσμό που ισαπέχουν από τα δύο άκρα της ανθρακικής αλυσίδας, η αρίθμηση ξεκινά από το άκρο που είναι πλησιέστερα στον διπλό δεσμό.",
+    "Οι δευτερεύουσες ομάδες αλογόνα (-Χ) και νιτροομάδα (-ΝΟ<sub>2</sub>) δεν δίνουν κατάληξη στο όνομα της ένωσης. Δηλώνονται ως πρόθεμα πριν το βασικό όνομα της ένωσης με την ανάλογη αρίθμηση.",
+    "Όταν η οργανική ένωση διαθέτει 2 ή περισσότερες ίδιες Xαρακτηριστικές Ομάδες τότε πριν από το συνθετικό που δηλώνει την Χαρακτηριστική Ομάδα βάζουμε το πρόθεμα δι-, τρι-, κ.λ.π.",
+    "Όταν η οργανική ένωση διαθέτει 2 ή περισσότερες διαφορετικές Χαρακτηριστικές Ομάδες τότε η ισχυρότερη ομάδα δίνει την κατάληξη στο όνομα της ένωσης και καθορίζει την αρίθμηση της ανθρακικής αλυσίδας.",
+  ];
+
+  namingRules = {
+    general: r0,
+    rule1: r1,
+    rule2: r2,
+    rule3: r3,
+    rule4: r4,
+    table1: r1Table,
+    table2: r2Table,
+    table3: r3Table,
+    table4: r4Table,
+    alkylRule: "Τα αλκύλια προκύπτουν τυπικά με αφαίρεση ενός ατόμου Η από αλκάνιο. Για το πρόθεμα της διακλάδωσης, το μεθύλιο γίνεται μεθυλο-, το αιθύλιο αιθυλο- κ.ο.κ. Η παύλα αριστερά στον τύπο δείχνει τον δεσμό με την κύρια αλυσίδα, όχι αρνητικό φορτίο.",
+    alkylTable: fBuildAlkylRuleTable(),
+    alkoxyRule: "Η αλκοξυομάδα έχει τη μορφή –O–R, όπου R είναι αλκύλιο, και συνδέεται με την κύρια αλυσίδα μέσω του Ο. Το πρόθεμα ονομάζει ολόκληρη την αλκοξυομάδα, μαζί με το Ο. Η παύλα αριστερά δείχνει δεσμό σύνδεσης και όχι αρνητικό φορτίο. Τα προποξυ- και βουτοξυ- του πίνακα αφορούν ευθύγραμμα αλκύλια, ενώ το ισοπροποξυ- διατηρεί τη σχολική ονομασία της εφαρμογής.",
+    alkoxyTable: fBuildAlkoxyRuleTable(),
+    rulesTheory_1_8: rulesTheory_1_8,
+  };
+}
+
+// ── fShowRuleTheory ───────────────────────────────────────────────────────
+
+function fShowRuleTheory() {
+  window.speechSynthesis.cancel();
+  let ruleTitle, ruleTheory;
+  ruleTitle = (typeof fRuleTheoryTitleEN === "function") ? fRuleTheoryTitleEN(selectedRule + 1) : `${selectedRule + 1}<sup>ος</sup> Κανόνας`;
+  const _theoryGR = namingRules.rulesTheory_1_8[selectedRule];
+  const _theory = (typeof fTranslateRuleHTML === "function") ? fTranslateRuleHTML(_theoryGR) : _theoryGR;
+  ruleTheory = `<div class='panelTitle ruleTheoryTitle open'><button class='ruleTheoryToggleBtn' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("showHide") : "Εμφάνιση/Απόκρυψη") + `'></button>${ruleTitle}<button id='narrateBtn' class='narrateBtn' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("ruleNarrate") : "Ανάγνωση κανόνα") + `'>${svgPlay}</button></div><div class='ruleText'>${_theory}</div>`;
+  $("#ruleTheory").html(ruleTheory);
+}
+
+function fUpdateRuleTheoryVisibility() {
+  const showRuleTheory = moleculeGroupingMode === "rule";
+  $("#ruleTheory").toggle(showRuleTheory);
+  if (!showRuleTheory) {
+    $("#ruleTheory").empty();
+  }
+}
+
+// ── fNarrateRule ──────────────────────────────────────────────────────────
+
+function fNarrateRule() {
+  if (window.speechSynthesis.speaking) {
+    window.speechSynthesis.cancel();
+    $("#narrateBtn").html(svgPlay);
+    return;
+  }
+  const rawGR = namingRules.rulesTheory_1_8[selectedRule];
+  let _lang = "gr";
+  try { _lang = (typeof fMulerLang === "function") ? fMulerLang() : "gr"; } catch (e) { }
+  const rawText = (_lang === "en" && typeof fTranslateRuleHTML === "function") ? fTranslateRuleHTML(rawGR) : rawGR;
+  let plainText = rawText
+    .replace(/<[^>]*>/g, "")
+    .replace(/\s*\(-[^)]*\)/g, "");
+  if (_lang !== "en") {
+    plainText = plainText
+      .replace(/3o/g, "τρίτο")
+      .replace(/δι-,?\s*τρι-,?/g, "δί, τρί")
+      .replace(/κ\.λ\.π\.?/g, "και τα λοιπά");
+  }
+  const utterance = new SpeechSynthesisUtterance(plainText);
+  utterance.rate = 0.9;
+  const voices = window.speechSynthesis.getVoices();
+  if (_lang === "en") {
+    utterance.lang = "en-US";
+    try {
+      if (typeof fPickEnglishVoice === "function") {
+        const _ev = fPickEnglishVoice(voices);
+        if (_ev) utterance.voice = _ev;
+      }
+    } catch (e) { }
+  } else {
+    utterance.lang = "el-GR";
+    const greekVoices = voices.filter((v) => v.lang.startsWith("el"));
+    const femaleNames = /eleni|nefeli|maria|sofia|female/i;
+    const maleNames = /stefanos|nikos|kostas|giorgos|male/i;
+    const femaleVoice =
+      greekVoices.find((v) => femaleNames.test(v.name)) ||
+      greekVoices.find((v) => !maleNames.test(v.name)) ||
+      greekVoices[0];
+    if (femaleVoice) utterance.voice = femaleVoice;
+  }
+  utterance.onstart = function () {
+    $("#narrateBtn").html(svgStop);
+  };
+  utterance.onend = function () {
+    $("#narrateBtn").html(svgPlay);
+  };
+  utterance.onerror = function () {
+    $("#narrateBtn").html(svgPlay);
+  };
+  window.speechSynthesis.speak(utterance);
+}
+
+// ── Name narration helpers (UI-level) ─────────────────────────────────────
+const NAME_RATE_SHORT = 0.8;
+const NAME_RATE_MEDIUM = 0.7;
+const NAME_RATE_LONG = 0.6;
+
+// Shared Greek-voice pick: female Greek voice preferred, else any non-male
+// Greek voice, else the first Greek voice, else undefined (browser default).
+function fPickGreekVoice(voices) {
+  var list = Array.isArray(voices) ? voices : [];
+  var greekVoices = list.filter(function (v) { return v && typeof v.lang === "string" && v.lang.indexOf("el") === 0; });
+  if (!greekVoices.length) return undefined;
+  var femaleNames = /eleni|nefeli|maria|sofia|female/i;
+  var maleNames = /stefanos|nikos|kostas|giorgos|male/i;
+  return greekVoices.find(function (v) { return femaleNames.test(v.name); }) ||
+    greekVoices.find(function (v) { return !maleNames.test(v.name); }) ||
+    greekVoices[0];
+}
+
+function fSpeakGreek(text) {
+  window.speechSynthesis.cancel();
+  const cleanText = text.replace(/-/g, " ").replace(/\s+/g, " ").trim();
+  const utterance = new SpeechSynthesisUtterance(cleanText);
+  utterance.lang = "el-GR";
+  utterance.rate = 0.9;
+  const voice = fPickGreekVoice(window.speechSynthesis.getVoices());
+  if (voice) utterance.voice = voice;
+  window.speechSynthesis.speak(utterance);
+}
+
+function fSpeakNameWithPauses() {
+  // Narration follows component visibility: hidden (dash) boxes are skipped.
+  // Rendered boxes (any naming mode) drive the parts; data-list/full-name
+  // fallback is used when boxes are unavailable. Parts are merged into one
+  // utterance so browser inter-utterance boundary gaps are eliminated.
+  var hidden = (typeof window !== "undefined" && Array.isArray(window.nameHiddenComps))
+    ? window.nameHiddenComps
+    : [];
+  var parts = null;
+  try {
+    var boxes = (typeof document !== "undefined")
+      ? document.querySelectorAll(".nameCompContainer .nameCompBox")
+      : null;
+    if (boxes && boxes.length) {
+      parts = [];
+      for (var bi = 0; bi < boxes.length; bi++) {
+        var box = boxes[bi];
+        if (box.classList && box.classList.contains("comp-hidden")) continue;
+        var token = (box.textContent || "").replace(/-/g, " ").replace(/\s+/g, " ").trim();
+        if (token) parts.push(token);
+      }
+    }
+  } catch (e) { parts = null; }
+  if (!parts) {
+    parts = nameComponentsList
+      .filter(function (c, i) { return c && c !== "" && hidden.indexOf("comp" + i) < 0; })
+      .map(function (c) { return String(c).replace(/<[^>]*>/g, ""); });
+  }
+  if (!parts || !parts.length) {
+    const fallback = (typeof currentMolName === "string" ? currentMolName : "")
+      .replace(/<[^>]*>/g, "")
+      .trim();
+    parts = fallback ? [fallback] : [];
+  }
+  if (!parts.length) return;
+
+  window.speechSynthesis.cancel();
+  const voice = fPickGreekVoice(window.speechSynthesis.getVoices());
+  const normalizedParts = parts
+    .map(function (p) { return String(p).replace(/<[^>]*>/g, "").replace(/-/g, " ").replace(/\s+/g, " ").trim(); })
+    .filter(function (p) { return !!p; });
+  const partCount = normalizedParts.length;
+  if (!partCount) return;
+  const rate = partCount <= 4
+    ? NAME_RATE_SHORT
+    : (partCount <= 8 ? NAME_RATE_MEDIUM : NAME_RATE_LONG);
+  const merged = normalizedParts.join(" ");
+  if (!merged) return;
+  const utt = new SpeechSynthesisUtterance(merged);
+  utt.lang = "el-GR";
+  utt.rate = rate;
+  if (voice) utt.voice = voice;
+  window.speechSynthesis.speak(utt);
+}
+
+// ── fSortPropsByCarbonCount ─────────────────────────────────────────────────
+// Ascending total-carbon order, stable on data-file order, unclassified last.
+// Shared by series/chemclass groups and the flat "all molecules" list.
+// Rule mode keeps its pedagogical ruleExamples order (never sorted here).
+function fSortPropsByCarbonCount(props) {
+  return props
+    .map((prop, originalIndex) => ({
+      prop,
+      originalIndex,
+      carbonCount: nameExamples[prop].classification?.carbonCount,
+    }))
+    .sort((left, right) => {
+      const leftCount = left.carbonCount;
+      const rightCount = right.carbonCount;
+      if (leftCount == null && rightCount == null) {
+        return left.originalIndex - right.originalIndex;
+      }
+      if (leftCount == null) return 1;
+      if (rightCount == null) return -1;
+      return leftCount - rightCount || left.originalIndex - right.originalIndex;
+    })
+    .map(({ prop }) => prop);
+}
+
+// ── fInitNomeclatureMenu ──────────────────────────────────────────────────
+
+function fInitNomeclatureMenu() {
+  // One-time grouping restore from ?grouping= (set by the header language
+  // toggle, which reloads the page). Later in-place switches own the global.
+  try {
+    if (!window.__mulerGroupingBooted) {
+      window.__mulerGroupingBooted = true;
+      var _gg = null;
+      try { _gg = new URL(window.location.href).searchParams.get("grouping"); }
+      catch (eU) {
+        try {
+          var _gm = /[?&]grouping=([^&#]*)/.exec(String(window.location.href));
+          _gg = _gm ? decodeURIComponent(_gm[1]) : null;
+        } catch (eM) { _gg = null; }
+      }
+      if (_gg === "chemclass" || _gg === "series" || _gg === "rule" || _gg === "all") moleculeGroupingMode = _gg;
+    }
+  } catch (eB) { /* best-effort */ }
+  const names = Object.keys(nameExamples);
+  const groups = {};
+  const groupLabels = {};
+
+  if (moleculeGroupingMode === "rule") {
+    Object.keys(ruleExamples).forEach((ruleKey, ruleIndex) => {
+      const key = `rule${ruleIndex}`;
+      groups[key] = ruleExamples[ruleKey]
+        .map((index) => names[index - 1])
+        .filter(Boolean);
+      groupLabels[key] = (typeof fRuleTheoryTitleEN === "function") ? fRuleTheoryTitleEN(ruleIndex + 1) : `${ruleIndex + 1}<sup>ος</sup> Κανόνας`;
+    });
+  } else if (moleculeGroupingMode !== "all") {
+    names.forEach((name) => {
+      const classification = nameExamples[name].classification;
+      const key =
+        moleculeGroupingMode === "chemclass"
+          ? classification?.chemicalClass || "unclassified"
+          : classification?.seriesKey || "unclassified";
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(name);
+      groupLabels[key] =
+        (typeof fTaxonomyEN === "function")
+          ? (fTaxonomyEN((moleculeGroupingMode === "chemclass" ? chemicalClassLabels[key] : homologousSeriesLabels[key]) || classification?.taxonomy) || fTaxonomyEN("Μη ταξινομημένα"))
+          : ((moleculeGroupingMode === "chemclass"
+            ? chemicalClassLabels[key]
+            : homologousSeriesLabels[key]) ||
+            classification?.taxonomy ||
+            "Μη ταξινομημένα");
+    });
+  }
+
+  if (moleculeGroupingMode === "series" || moleculeGroupingMode === "chemclass") {
+    Object.keys(groups).forEach((groupKey) => {
+      groups[groupKey] = fSortPropsByCarbonCount(groups[groupKey]);
+    });
+  }
+
+  let myHTML = `<div class='panelTitle'>${(typeof fMulerT === "function") ? fMulerT("examples") : "Μενού"}</div>
+    <div class='groupingMode' role='group' aria-label='${(typeof fMulerT === "function") ? fMulerT("molGrouping") : "Ομαδοποίηση μορίων"}'>
+    <div class='radioCheckContainer ${moleculeGroupingMode === "all" ? "selectedRadio" : "unselectedRadio"}' data-grouping-mode='all'>${(typeof fMulerT === "function") ? fMulerT("allMolecules") : "Όλα τα μόρια"}<span class='radioCheck'></span></div>
+    <div class='radioCheckContainer ${moleculeGroupingMode === "chemclass" ? "selectedRadio" : "unselectedRadio"}' data-grouping-mode='chemclass'>${(typeof fMulerT === "function") ? fMulerT("chemClasses") : "Χημικές Τάξεις"}<span class='radioCheck'></span></div>
+    <div class='radioCheckContainer ${moleculeGroupingMode === "series" ? "selectedRadio" : "unselectedRadio"}' data-grouping-mode='series'>${(typeof fMulerT === "function") ? fMulerT("homolSeries") : "Ομόλογες Σειρές"}<span class='radioCheck'></span></div>
+    <div class='radioCheckContainer ${moleculeGroupingMode === "rule" ? "selectedRadio" : "unselectedRadio"}' data-grouping-mode='rule'>${(typeof fMulerT === "function") ? fMulerT("nomenclatureRules") : "Κανόνες Ονοματολογίας"}<span class='radioCheck'></span></div>
+    </div><div class='menuNomeclature2Container'>`;
+
+  if (moleculeGroupingMode === "all") {
+    let counter = 0;
+    fSortPropsByCarbonCount(names).forEach((prop) => {
+      let myMolFormula = (nameExamples[prop].formula || prop).replace(
+        /(\d+)/g,
+        "<sub>$1</sub>",
+      );
+      myMolFormula = myMolFormula.replace(
+        /(['='])/g,
+        '<span class="bondSymbol large">&#9552;</span>',
+      );
+      myMolFormula = myMolFormula.replace(
+        /(['_'])/g,
+        '<span class="bondSymbol">&#9776;</span>',
+      );
+      counter++;
+      myHTML += `<div id='${prop}' class='menuLi'><span class='menuLiCounter' >${counter}.</span><span class='menuLiFormula'> ${myMolFormula}</span></div>`;
+    });
+  }
+
+  const groupOrder =
+    moleculeGroupingMode === "series"
+      ? [...Object.keys(homologousSeriesLabels), "unclassified"]
+      : moleculeGroupingMode === "chemclass"
+        ? Object.keys(chemicalClassLabels)
+        : Object.keys(groups);
+
+  groupOrder.forEach((groupKey) => {
+    if (!groups[groupKey] || !groups[groupKey].length) return;
+    myHTML += `<div class='crossMenuLi' data-group-key='${groupKey}'> ${groupLabels[groupKey]}</div>
+      <div class='exmplContainer closed'><div class='menuListContainer'>`;
+    groups[groupKey].forEach((prop) => {
+      let myMolFormula = (nameExamples[prop].formula || prop).replace(
+        /(\d+)/g,
+        "<sub>$1</sub>",
+      );
+      myMolFormula = myMolFormula.replace(
+        /(['='])/g,
+        '<span class="bondSymbol large">&#9552;</span>',
+      );
+      myMolFormula = myMolFormula.replace(
+        /(['_'])/g,
+        '<span class="bondSymbol">&#9776;</span>',
+      );
+      myHTML += `<div id='${prop}' class='menuLi'> ${myMolFormula}</div>`;
+    });
+    myHTML += `</div></div>`;
+  });
+
+  myHTML += `</div>`;
+  $("#nomeclature2Menu").html(myHTML);
+  fUpdateRuleTheoryVisibility();
+  // Scenario subset hook (additive, guarded): repaints pick checkboxes after
+  // every menu rebuild (init, grouping switch). No-op without the module.
+  try {
+    if (typeof window.fScenarioPaintPickUi === "function") window.fScenarioPaintPickUi();
+  } catch (e) {
+    /* scenario absent */
+  }
+}
+
+// Visual-only menu selection restore (no reload): re-marks the selected row,
+// reopens its group and restores scroll after a bare menu rebuild (e.g. the
+// language toggle, which must not reload the already-loaded molecule).
+// Pass the scroller's scrollTop captured BEFORE the rebuild. The selected
+// group header is re-marked too (row's group wins; else the last
+// header-clicked group). Visual classes only — never triggers clicks (a
+// header click would deselect the molecule / clear rule state).
+function fRestoreMenuSelection(prevScrollTop, hadRowSel, hadHdrSel) {
+  try {
+    var row = null;
+    try {
+      row = (typeof selectedMol !== "undefined" && selectedMol) ? document.getElementById(selectedMol) : null;
+    } catch (eR) { row = null; }
+    // Only re-mark a row that was marked before the rebuild (an untouched
+    // boot default stays clean).
+    var showRow = !!hadRowSel && !!row;
+    var hdr = null;
+    try {
+      if (showRow && row.closest) {
+        var cont = row.closest(".exmplContainer");
+        hdr = cont && cont.previousElementSibling && cont.previousElementSibling.classList &&
+          cont.previousElementSibling.classList.contains("crossMenuLi") ? cont.previousElementSibling : null;
+      }
+      if (!hdr && !!hadHdrSel) {
+        var gk = null;
+        try { gk = window.__mulerSelGroupKey || null; } catch (eG) { gk = null; }
+        if (gk) hdr = document.querySelector('.crossMenuLi[data-group-key="' + gk + '"]');
+      }
+      document.querySelectorAll(".crossMenuLi.selectedLi").forEach(function (h) { h.classList.remove("selectedLi"); });
+      if (hdr && hdr.classList) hdr.classList.add("selectedLi");
+    } catch (eH) { /* best-effort */ }
+    if (showRow) {
+      try { row.classList.add("selectedLi"); } catch (eC) { /* best-effort */ }
+      try {
+        var cont2 = row.closest ? row.closest(".exmplContainer") : null;
+        if (cont2) {
+          cont2.classList.remove("closed");
+          cont2.classList.add("open");
+          try { cont2.style.display = ""; } catch (eD) { /* best-effort */ }
+        }
+      } catch (eO) { /* best-effort */ }
+    } else if (hdr) {
+      // Header-only selection (no molecule): reopen its group.
+      try {
+        var cont3 = hdr.nextElementSibling;
+        if (cont3 && cont3.classList && cont3.classList.contains("exmplContainer")) {
+          cont3.classList.remove("closed");
+          cont3.classList.add("open");
+          try { cont3.style.display = ""; } catch (eD2) { /* best-effort */ }
+        }
+      } catch (eO2) { /* best-effort */ }
+    }
+    if (typeof prevScrollTop === "number") {
+      try {
+        var scroller = document.querySelector(".menuNomeclature2Container") || document.getElementById("menuDrawer");
+        if (scroller) scroller.scrollTop = prevScrollTop;
+      } catch (eS) { /* best-effort */ }
+    }
+  } catch (e) { /* best-effort */ }
+}
+
+// ── showRadio ─────────────────────────────────────────────────────────────
+
+function showRadio(myLi) {
+  // NOTE (dead code — showRadio is never called): the original concatenation
+  // split rows 2-3 into discarded expressions, so only row 1 ever reached
+  // radioHtml. Assembled here as one template with all three rows, as intended.
+  let radioHtml = `
+    <div class='radioMenuContainer' style='padding:0;margin:0; border-top:0;'> <div class='radioGroupContainer VFlex ' style='display:none'>
+    <div class='radioNoneContainer selectedRadio'> 1<sup>o</sup> μέλος: ν = <span class='n'></span><span class='radioCheck'></span></div>
+    <div class='radioNoneContainer unselectedRadio'> 2<sup>o</sup> μέλος: ν = <span class='n'></span><span class='radioCheck'></span> </div>
+    <div class='radioNoneContainer unselectedRadio'> 3<sup>o</sup> μέλος: ν = <span class='n'></span><span class='radioCheck'></span> </div></div></div>`;
+
+  $(myLi).after(radioHtml);
+
+  updateRadioNumbers(selectedHomoIndex);
+
+  $(".radioGroupContainer").slideDown(300);
+}
+
+// ── fCreateDropMenu ───────────────────────────────────────────────────────
+
+function fCreateDropMenu(myItems) {
+  let selectedLabel = myItems[0];
+  let myHTML = `<div id='dropLabel' class=' closed' >${selectedLabel}</div>
+  <div id='dropLiContainer' class='molvis closed' >`;
+  for (let i = 0; i < myItems.length; i++) {
+    myHTML += `<div id='dropLi${i}' class='dropLi'>${myItems[i]}</div>`;
+  }
+  myHTML += `</div>`;
+  $("#dropMenu").html(myHTML);
+}
+
+// ── fShowCreditLibs ───────────────────────────────────────────────────────
+
+function fShowCreditLibs() {
+  var lang = "gr";
+  try { if (typeof fMulerLang === "function") lang = fMulerLang(); } catch (e) { }
+  var teamNames, ownerName, programName, deptName, uniTag, aboutText, chemInfoLibs, teamLabel, supervisorLabel, chemInfoLibsType1, chemInfoLibsType2;
+  try {
+    if (typeof fMulerT === "function" && typeof MULER_STRINGS !== "undefined" && MULER_STRINGS.creditTeam) {
+      teamNames = fMulerT("creditTeam");
+      ownerName = fMulerT("creditOwner");
+      programName = fMulerT("creditProgram");
+      deptName = fMulerT("creditDept");
+      uniTag = fMulerT("creditUni");
+      aboutText = fMulerT("creditAbout");
+      chemInfoLibs = fMulerT("creditChemInfoLibs");
+      teamLabel = fMulerT("creditTeamLabel");
+      supervisorLabel = fMulerT("creditSupervisorLabel");
+      chemInfoLibsType1 = fMulerT("creditChemInfoLibsType1");
+      chemInfoLibsType2 = fMulerT("creditChemInfoLibsType2");
+    } else { throw 0; }
+  } catch (e) {
+    var en = (lang === "en");
+    teamNames = en ? "Yannis Skendros, Anastasia Theofanidou, Vasilis Koutalas," : "Γιάννης Σκένδρος, Αναστασία Θεοφανίδου, Βασίλης Κουταλάς,";
+    ownerName = en ? "Nickolas Charistos" : "Νικόλας Χαριστός";
+    programName = en ? "Molecular Design and Modelling &bullet; Chemistry Education" : "Μοριακός Σχεδιασμός και Μοντελοποίηση - Χημική Εκπαίδευση";
+    deptName = en ? "Department of Chemistry" : "Τμήμα Χημείας";
+    uniTag = en ? "Aristotle University of Thessaloniki &bullet; 2025-26" : "ΑΠΘ &bullet; 2025-26";
+    aboutText = en ? "Learning organic nomenclature through molecular structure, naming, and linked representations." : "Μάθηση ονοματολογίας οργανικών ενώσεων μέσα από τη δομή, την ονομασία και διασυνδεόμενες αναπαραστάσεις των μορίων";
+    chemInfoLibs = en ? "Chemoinformatics Libraries" : "Βιβλιοθήκες Χημειοπληροφορικής";
+    chemInfoLibsType1 = en ? "2D/3D Viewers and Editors" : "2D/3D Viewers and Editors";
+    chemInfoLibsType2 = en ? "Info, Data and Validation" : "Info, Data and Validation";
+    teamLabel = en ? "Team" : "Ομάδα";
+    supervisorLabel = en ? "Project Leader" : "Project Leader";
+  }
+  let myCredits = `
+  <div class='creditsContainer creditsAbout'>
+    <div class=''>${aboutText}</div>
+  </div>
+  <div class='creditsContainer creditsLib'>
+  <div class='creditsTitle' >${chemInfoLibs}</div>
+  <div class='creditsTitle2' >${chemInfoLibsType1}</div>
+    <div class=''>  <span><a href='https://jsme-editor.org/' target='_blank' rel='noopener'><strong>JSME:</strong> A free molecule editor in JavaScript</a></span>
+    </div>
+        <div class=''> <span><a href='https://jmol.sourceforge.net/' target='_blank' rel='noopener'><strong>JSmol:</strong> An open-source HTML5 viewer for chemical structures in 3D</a> </span>
+    </div>
+    <div class='creditsTitle2' >${chemInfoLibsType2}</div>
+    <div class=''>  <span><a href='https://openclatura.org/' target='_blank' rel='noopener'><strong>Openclatura:</strong>  An open nomenclature framework</a></span>
+    </div>
+     <div class=''>  <span><a href='https://pubchem.ncbi.nlm.nih.gov/' target='_blank' rel='noopener'><strong>PubChem:</strong> The world's largest collection of freely accessible chemical information</a></span>
+    </div>
+  </div>
+  <div class='creditsContainer'>
+   <div class='creditsTitle' >${teamLabel}</div>
+    <div class=''>${teamNames} <a href='https://nicharis.webpages.auth.gr/' target='_blank' rel='noopener'> ${ownerName} </a></div>
+    <div class='creditsTitle' >${supervisorLabel}</div>
+    <div class=''><a href='https://nicharis.webpages.auth.gr/' target='_blank' rel='noopener'> ${ownerName} </a></div>
+  </div>
+  <div class='creditsContainer'>
+    <div class='creditsTitle'>${(lang === "en") ? "MSc Programme:" : "ΠΜΣ:"} <a href='https://molmod-edu.chem.auth.gr/' target='_blank' rel='noopener'>${programName}</a></div>
+    
+    <div class=''>${deptName} &bull; ${uniTag}</div>
+   
+    
+  </div>
+  `;
+  $("#creditsUs").html(myCredits);
+}
+
+// ── fInitDevNotice ────────────────────────────────────────────────────────
+// Work-in-progress banner at the top of #pageContainer. Dismissal is
+// session-only (in-memory flag): it reappears on next visit. Repaint-safe:
+// never re-shows once dismissed, even on step-language chrome refreshes.
+function fInitDevNotice() {
+  try {
+    var dismissed = false;
+    try { dismissed = !!window.__mulerDevNoticeDismissed; } catch (eD) { /* flag unavailable */ }
+    var bar = document.getElementById("devNotice");
+    if (!bar) return;
+    if (dismissed) { bar.style.display = "none"; return; }
+    var txt = null;
+    try {
+      if (typeof fMulerT === "function" && typeof MULER_STRINGS !== "undefined" && MULER_STRINGS.devNotice) txt = fMulerT("devNotice");
+    } catch (eT) { txt = null; }
+    if (txt) {
+      var span = document.getElementById("devNoticeText");
+      if (span) span.textContent = txt;
+      bar.setAttribute("lang", (function () {
+        try { return (typeof fMulerLang === "function" && fMulerLang() === "en") ? "en" : "el"; }
+        catch (eL) { return "el"; }
+      })());
+      var closeBtn = document.getElementById("devNoticeClose");
+      if (closeBtn) {
+        closeBtn.setAttribute("aria-label", txt);
+        try { closeBtn.setAttribute("data-tooltip", txt); } catch (eTT) { /* tooltip attr unavailable */ }
+      }
+    }
+  } catch (e) { /* notice paint unavailable */ }
+}
+
+function fDismissDevNotice() {
+  try { window.__mulerDevNoticeDismissed = true; } catch (eF) { /* flag unavailable */ }
+  try {
+    var bar = document.getElementById("devNotice");
+    if (bar) bar.style.display = "none";
+  } catch (eH) { /* hide unavailable */ }
+  try { if (typeof fResizeViewers === "function") fResizeViewers(); } catch (eR) { /* refit unavailable */ }
+}
+
+// ── getMolData ────────────────────────────────────────────────────────────
+
+function getMolData() {
+  let atomsCount = jsmeNomeclatureApplet.totalNumberOfAtoms();
+  let bondsCount = jsmeNomeclatureApplet.totalNumberOfBonds();
+
+  let str1 = `<div>Άτομα: ${atomsCount}, Δεσμοί: ${bondsCount}</div>`;
+
+  for (let i = 1; i <= atomsCount; i++) {
+    str1 += `<div class='crossMenuLi  atomNo'> Atom ${i}</div>`;
+  }
+
+  for (let i = 1; i <= bondsCount; i++) {
+    str1 += `<div class='crossMenuLi bondNo'> Bond ${i}</div>`;
+  }
+
+  $("#debug").html(str1);
+}
+
+// ── $(document).ready ─────────────────────────────────────────────────────
+
+$(document).ready(function () {
+  fInitData();
+  fInitNamingProps();
+  fInitTheory();
+  fShowNameAnalysis();
+  fShowCreditLibs();
+  fInitDevNotice();
+
+  $(document).on("click", "#narrateBtn", fNarrateRule);
+  $(document).on("click", "#devNoticeClose", fDismissDevNotice);
+
+  $(document).on("click", "#ruleTheory .ruleTheoryToggleBtn", function () {
+    const $title = $(this).closest(".ruleTheoryTitle");
+    $title.toggleClass("open closed");
+    $title.next(".ruleText").slideToggle(200);
+  });
+
+  $(document).on("click", "#narrateAnalysisToggle", function () {
+    narrateAnalysisFlag = !narrateAnalysisFlag;
+    $(this)
+      .html(narrateAnalysisFlag ? svgSpeaker : svgMute)
+      .toggleClass("active", narrateAnalysisFlag)
+      .attr(
+        "data-tooltip",
+        narrateAnalysisFlag ? "Αφήγηση ενεργή" : "Αφήγηση ανενεργή",
+      );
+    // if (!narrateAnalysisFlag) {
+    //   window.speechSynthesis.cancel();
+    //   $("#readNameBtn").prop("disabled", true);
+    // } else {
+    //   $("#readNameBtn").prop("disabled", false);
+    // }
+  });
+
+  $(document).on("click", "#readNameBtn", function () {
+    if (!selectedMol || !nameExamples[selectedMol]) return;
+    if (typeof fSpeakNameWithPauses === "function") {
+      fSpeakNameWithPauses();
+      return;
+    }
+    // Narration follows component visibility: hidden (dash) boxes are
+    // skipped; falls back to the full name when no boxes are rendered.
+    var vis = [];
+    try {
+      document
+        .querySelectorAll(".nameCompContainer .nameCompBox")
+        .forEach(function (b) {
+          if (!b.classList.contains("comp-hidden") && b.textContent) {
+            vis.push(b.textContent);
+          }
+        });
+    } catch (e) {
+      /* DOM unavailable */
+    }
+    const text = (vis.length ? vis.join(" ") : currentMolName).replace(
+      /<[^>]*>/g,
+      "",
+    );
+    if (!text.trim()) return;
+    fSpeakGreek(text);
+  });
+
+  // Ensure read button remains enabled/visible even if other scripts attempt to disable it
+  $("#readNameBtn").prop("disabled", false);
+
+  // Expanded-name floating overlay: same nodes, non-modal (app stays live).
+  $(document).on("click", "#nameExpandBtn", function () {
+    if (window.nameExpanded) fNameExpandClose(true);
+    else fNameExpandOpen();
+  });
+  $(document).on("keydown", function (e) {
+    if ((e.key === "Escape" || e.key === "Esc") && window.nameExpanded) {
+      fNameExpandClose(true);
+      try { $("#nameExpandBtn").focus(); } catch (eF) { /* best-effort */ }
+    }
+  });
+
+  $(document).on("click", "#nameStyleBoxToggle", function () {
+    window.nameBoxFlag = !window.nameBoxFlag;
+    if (window.nameBoxFlag) {
+      $(".nameCompBox ").removeClass("unboxed").addClass("boxed");
+      $(this).addClass("active");
+      $(this).html(svgNameBox).attr("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("showBoxes") : "Πλαίσια συνθετικών"));
+    } else {
+      $(".nameCompBox ").removeClass("boxed").addClass("unboxed");
+      $(this).removeClass("active");
+      $(this)
+        .html(svgNameBoxOff)
+        .attr("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("hideBoxes") : "Χωρίς πλαίσια συνθετικών"));
+    }
+    if (typeof fFitNameComponents === "function") fFitNameComponents();
+  });
+
+  $(document).on("click", "#nameStyleCrossToggle", function () {
+    window.nameCrossFlag = !window.nameCrossFlag;
+    if (window.nameCrossFlag) {
+      $(".nameCompPlus ").removeClass("hide");
+      $(this).addClass("active");
+      $(this).html(svgNameCross).attr("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("splitComps") : "Διαχωρισμένα συνθετικά"));
+    } else {
+      $(this).removeClass("active");
+      $(".nameCompPlus ").addClass("hide");
+      $(this).html(svgNameCrossOff).attr("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("joinedComps") : "Ενωμένα συνθετικά"));
+    }
+    if (typeof fFitNameComponents === "function") fFitNameComponents();
+  });
+
+  // Master eye-edit switch (live-only aid): single icon, active
+  // state via .active highlight; toggling re-renders with the eye buttons
+  // applied. In presentation it stays functional while the naming settings
+  // gear is shown (seeded from the step's visibility flag on step entry).
+  // Never stored — Save/Update captures the result.
+  $(document).on("click", "#nameStyleEyeToggle", function () {
+    window.nameEyeEdit = !window.nameEyeEdit;
+    $(this)
+      .html(svgEyeState)
+      .toggleClass("active", window.nameEyeEdit)
+      .attr("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("compVisibility") : "Ορατότητα συνθετικών"));
+    if (typeof fShowNameAnalysis === "function") fShowNameAnalysis();
+  });
+
+  // Per-component eye toggle (live only — step data untouched in
+  // presentation; authoring persists via Save/Update). Hiding the
+  // currently-selected box mirrors the deselect path: clear highlights +
+  // rule theory first, then re-render (guard forces mode "none").
+  $(document).on("click", ".compEye", function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+    var id = $(this).attr("data-comp");
+    if (!id) return;
+    var wasSel = false;
+    try {
+      var _box = document.getElementById(id);
+      wasSel = !!(_box && _box.classList && _box.classList.contains("selected"));
+    } catch (e) {
+      /* DOM unavailable */
+    }
+    var h = Array.isArray(window.nameHiddenComps)
+      ? window.nameHiddenComps.slice()
+      : [];
+    var at = h.indexOf(id);
+    var hiding = at < 0;
+    if (hiding) h.push(id);
+    else h.splice(at, 1);
+    window.nameHiddenComps = h;
+    if (hiding && wasSel && typeof fClearHighlights === "function") {
+      fClearHighlights();
+      // Repaint the 2D SVG: fClearHighlights resets the applet colors but
+      // the stale highlight + numbering stay painted until fUpdateSVG
+      // rebuilds the SVG (same pairing as the box-deselect path below).
+      if (typeof fUpdateSVG === "function") fUpdateSVG();
+    }
+    if (typeof fShowNameAnalysis === "function") fShowNameAnalysis();
+  });
+
+  // ---- Drop menu: init early so upstream errors don't prevent it loading ----
+  let dropState = false;
+  let selectedLabel;
+
+  let menuItmes = ["Σφαίρες και Ράβδοι", "Χωροπληρωτικό", "Ράβδοι"];
+  try {
+    if (typeof fVisStyleLabels === "function" && typeof fMulerLang === "function" && fMulerLang() === "en") {
+      const _vl = fVisStyleLabels();
+      menuItmes = [_vl.ballnstick, _vl.spacefill, _vl.sticks];
+    }
+  } catch (e) { }
+  fCreateDropMenu(menuItmes);
+
+  $("html").on("click", function () {
+    $("#dropLiContainer").slideUp(100);
+    $("#dropLabel").removeClass("open").addClass("closed");
+    dropState = false;
+  });
+
+  $(document).on("click", "#dropLabel", function (event) {
+    event.stopPropagation();
+    dropState = !dropState;
+    $("#dropLiContainer").slideToggle(100);
+    if (dropState) {
+      $(this).removeClass("closed").addClass("open");
+    } else {
+      $(this).removeClass("open").addClass("closed");
+    }
+  });
+
+  $(document).on("click", ".dropLi", function () {
+    selectedLabel = $(this).html();
+    $("#dropLabel").html(selectedLabel);
+    $("#dropLiContainer").slideUp(100);
+    dropState = false;
+    $("#dropLabel").removeClass("open").addClass("closed");
+  });
+
+  $(document).on("click", ".molvis .dropLi", function () {
+    const myID = $(this).attr("id");
+    switch (myID) {
+      case "dropLi0":
+        vis3D = "ballnstick";
+        break;
+      case "dropLi1":
+        vis3D = "spacefill";
+        break;
+      case "dropLi2":
+        vis3D = "sticks";
+        break;
+    }
+    fSetMolVis3D(vis3D);
+  });
+  // ---- End drop menu early init ----
+
+  // Add data (2D structure files ) to nameExamples object
+
+  $("#zigzagCheck")
+    .addClass("disabledCheck")
+    .removeClass("selectedCheck")
+    .addClass("unselectedCheck");
+
+  $("#radio2DMode").on("click", ".mode2DOption", function () {
+    if ($(this).hasClass("disabledRadio")) {
+      return;
+    }
+    // Draft session (v54 Stage 2): radios are hidden while editing; guard in
+    // case the bar is reached anyway — finish the draft first.
+    if (typeof window !== "undefined" && window.MulerDraft) {
+      try { if (typeof fScenarioToast === "function") fScenarioToast(fMolDraftT("draftLocked", "Finish the draft first (Submit/Cancel).")); } catch (eD) { }
+      return;
+    }
+    let currMode2DNo = $(this)
+      .parent()
+      .children(".radioCheckContainer")
+      .index(this);
+    switch (currMode2DNo) {
+      case 0:
+        mode2D = "condensed";
+        modeSuffix = "_2D_Condensed";
+        $("#zigzagCheck")
+          .addClass("disabledCheck")
+          .removeClass("selectedCheck")
+          .addClass("unselectedCheck");
+        break;
+      case 1:
+        mode2D = "expanded";
+        modeSuffix = "_2D_Expanded";
+        $("#zigzagCheck")
+          .addClass("disabledCheck")
+          .removeClass("selectedCheck")
+          .addClass("unselectedCheck");
+        break;
+      case 2:
+        mode2D = "skeletal";
+        modeSuffix = "_2D_Skeletal";
+        $("#zigzagCheck")
+          .removeClass("disabledCheck")
+          .removeClass("selectedCheck")
+          .addClass("unselectedCheck");
+        break;
+    }
+
+    fUpdateChainModeButton();
+    if (!selectedMol || !nameExamples[selectedMol]) {
+      return;
+    }
+
+    fLoadMol2D();
+    currNumberEl = 0;
+    fShowNameAnalysis();
+  });
+
+  $("#zigzagCheck").on("click", function () {
+    if ($(this).hasClass("disabledCheck")) {
+      return;
+    }
+    // Draft session (v54 Stage 2): see the mode2DOption guard above.
+    if (typeof window !== "undefined" && window.MulerDraft) {
+      try { if (typeof fScenarioToast === "function") fScenarioToast(fMolDraftT("draftLocked", "Finish the draft first (Submit/Cancel).")); } catch (eD) { }
+      return;
+    }
+    // Generic .checkBoxContainer handler fires after this and toggles the class,
+    // so read the CURRENT class to determine what state we are moving TO.
+    if ($(this).hasClass("unselectedCheck")) {
+      mode2D = "condensedZigZag";
+    } else {
+      mode2D = "skeletal";
+    }
+    modeSuffix = "_2D_Skeletal";
+    fUpdateChainModeButton();
+    if (!selectedMol || !nameExamples[selectedMol]) {
+      return;
+    }
+    fLoadMol2D();
+    currNumberEl = 0;
+    fShowNameAnalysis();
+  });
+
+  $("#radioChainMode").on("click", ".radioCheckContainer", function () {
+    if ($(this).hasClass("disabledRadio")) {
+      return;
+    }
+    const idx = $(this).parent().children(".radioCheckContainer").index(this);
+    mainChainMode = idx === 1 ? "algorithmic" : "data";
+
+    if (!selectedMol || !nameExamples[selectedMol]) {
+      return;
+    }
+
+    fClearHighlights();
+    fLoadMol2D();
+    currNumberEl = 0;
+    fShowNameAnalysis();
+  });
+
+  // Ether IUPAC/COMMON naming toggle (rendered in the name panel for ethers only).
+  $(document).on("click", "#radioEtherNaming .etherNamingRadio", function () {
+    if ($(this).hasClass("disabledRadio")) {
+      return;
+    }
+    etherNamingMode = $(this).attr("data-naming-mode") === "common" ? "common" : "iupac";
+    fUpdateEtherNamingButton();
+
+    if (!selectedMol || !nameExamples[selectedMol]) {
+      return;
+    }
+
+    nameAnalysisMode = "none";
+    fClearHighlights();
+    fUpdateSVG();
+    currNumberEl = 0;
+    fShowNameAnalysis();
+  });
+
+  $(document).on("click", "#radioSubstNaming .substNamingRadio", function () {
+    if ($(this).hasClass("disabledRadio")) {
+      return;
+    }
+    substNamingMode = $(this).attr("data-subst-mode") === "sys" ? "sys" : "school";
+    fUpdateSubstNamingButton();
+
+    if (!selectedMol || !nameExamples[selectedMol]) {
+      return;
+    }
+
+    nameAnalysisMode = "none";
+    fClearHighlights();
+    fUpdateSVG();
+    currNumberEl = 0;
+    fShowNameAnalysis();
+  });
+
+  // v54 Stage 2: drawing master switch — checked = show the Edit/New
+  // title-bar entries (authoring drafts); unchecked = hidden, default. The
+  // old single-applet show/hide behavior is gone (the dedicated edit applet
+  // owns the canvas now). Mid-draft toggle is blocked: the bar's Cancel
+  // owns exit while a draft is live.
+  $("#originalJSME").on("click", ".checkBoxContainer", function () {
+    var draftLive = false;
+    try { draftLive = !!(typeof window !== "undefined" && window.MulerDraft); } catch (eD) { }
+    if (draftLive) {
+      // Generic toggler already flipped the class: flip it back + toast.
+      try {
+        $("#originalJSMECheck").removeClass("selectedCheck").addClass("unselectedCheck");
+      } catch (eRv) { }
+      try { if (typeof fScenarioToast === "function") fScenarioToast(fMolDraftT("draftLocked", "Finish the draft first (Submit/Cancel).")); } catch (eT) { }
+      return;
+    }
+    try { if (typeof fMolDraftSyncEntryButtons === "function") fMolDraftSyncEntryButtons(); } catch (eSy) { }
+  });
+
+  // v54: auto-linearize master preference (default on) — tidies school drawings
+  // to the canonical linear layout on Submit. Toggling is always allowed
+  // (it only affects the *next* Submit; nothing strands mid-draft), the bar
+  // button visibility follows on the next sync.
+  $("#autoLinearize").on("click", ".checkBoxContainer", function () {
+    try { if (typeof fMolDraftSyncBar === "function") fMolDraftSyncBar(); } catch (eSy2) { }
+  });
+
+  $("#viewFinalJSMESetting").on("click", ".checkBoxContainer", function () {
+    const enableFinalJSME = $("#finalJSMECheck").hasClass("unselectedCheck");
+    if (enableFinalJSME) {
+      $("#jsmeNomeclatureSVG").slideToggle(200);
+      // $("#jsmeNomeclatureSVG").addClass("hide");
+      $("#radio2DMode").addClass("hide");
+    } else {
+      $("#jsmeNomeclatureSVG").slideToggle(200);
+      // $("#jsmeNomeclatureSVG").removeClass("hide");
+      $("#radio2DMode").removeClass("hide");
+    }
+  });
+
+  $("#viewJSmolSetting").on("click", ".checkBoxContainer", function () {
+    const enableJSmol = $("#viewJSmolCheck").hasClass("unselectedCheck");
+    if (enableJSmol) {
+      $("#nomeclature3D").slideToggle(200);
+      // $("#nomeclature3D").addClass("hide");
+      $("#controls3D").addClass("hide");
+    } else {
+      $("#nomeclature3D").slideToggle(200, function () {
+        // if (window.jmolAppletNomeclature)
+        fJSmolScript(jmolAppletNomeclature, "refresh");
+      });
+      // $("#nomeclature3D").removeClass("hide");
+      $("#controls3D").removeClass("hide");
+      // fJSmolScript(jmolAppletNomeclature, "refresh");
+    }
+  });
+
+  /////////// Export PNG /////////////
+
+  /////////// Export PNG /////////////
+
+  ///////////////  Name Analysis /////////////////
+
+  $(document).on("click", ".nameCompBox", function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+    // Draft session (v54 Stage 2): naming is cleared to a placeholder; box
+    // clicks must not re-highlight or explain.
+    if (typeof window !== "undefined" && window.MulerDraft) {
+      try { if (typeof fScenarioToast === "function") fScenarioToast(fMolDraftT("draftLocked", "Finish the draft first (Submit/Cancel).")); } catch (eD) { }
+      return;
+    }
+    // Hidden (dash) boxes are inert: no highlight, no explanation change.
+    if ($(this).hasClass("comp-hidden")) return;
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    const lockScroll = () => window.scrollTo(scrollX, scrollY);
+    window.addEventListener("scroll", lockScroll);
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() =>
+        window.removeEventListener("scroll", lockScroll),
+      ),
+    );
+    fClearHighlights();
+    fUpdateSVG();
+    if ($(this).hasClass("selected")) {
+      nameAnalysisMode = "none";
+      $(".nameCompBox").removeClass("selected");
+      fClearHighlights();
+      fUpdateSVG();
+      fExplainNameComp();
+    } else {
+      $(".nameCompBox").removeClass("selected");
+      $(this).addClass("selected");
+
+      // Split branch-label pieces (slot 3, comp0bText): per-piece modes.
+      // comp3 keeps the slot-level mode while the slot is unfused.
+      var _bid = "";
+      try { _bid = $(this).attr("id") || ""; } catch (eBid) { _bid = ""; }
+      var _bpxm = /^comp3(b|loc)(\d*)$/.exec(_bid);
+      if (_bpxm && fSplitBranchPiecesActive()) {
+        var _bk = _bpxm[2] === "" ? 2 : parseInt(_bpxm[2], 10) + 1;
+        nameAnalysisMode = _bpxm[1] === "b" ? "compBranchSub" + _bk : "compBranchLoc" + _bk;
+      } else switch ($(this).attr("id")) {
+        case "comp0":
+          nameAnalysisMode = "compNumber1";
+          break;
+        case "comp1":
+          nameAnalysisMode = "compSecondSub1";
+          break;
+        case "comp2":
+          nameAnalysisMode = "compNumber2";
+          break;
+        case "comp3":
+          nameAnalysisMode = fSplitBranchPiecesActive() ? "compBranchSub1" : "compSecondSub2";
+          break;
+        case "comp4":
+          nameAnalysisMode = "compBondPos";
+          break;
+        case "comp5":
+          nameAnalysisMode = "compCarbonsCount";
+          break;
+        case "comp6":
+          nameAnalysisMode = "compBondType";
+          break;
+        case "comp7":
+          nameAnalysisMode = "compEndNumber";
+          break;
+        case "comp8":
+          nameAnalysisMode = "compBondType2";
+          break;
+        case "comp9":
+          nameAnalysisMode = "compSuffix";
+          break;
+        case "comp9loc":
+          // Split-off suffix locants (e.g. "-2,7-"): positions mode — the
+          // class sentence stays on the suffix box (comp9 → compSuffix).
+          nameAnalysisMode = "compSuffixLocants";
+          break;
+        case "comp10":
+          nameAnalysisMode =
+            nameExamples[selectedMol]?.classification?.chemicalClass === "esters"
+              ? "esterAlkyl"
+              : "commonAlkyl1";
+          break;
+        case "comp11":
+          nameAnalysisMode =
+            nameExamples[selectedMol]?.classification?.chemicalClass === "esters"
+              ? "esterEster"
+              : "commonAlkyl2";
+          break;
+        case "comp12":
+          nameAnalysisMode = "commonEther";
+          break;
+        default:
+          nameAnalysisMode = "none";
+          numberingFlag = false;
+          break;
+      }
+
+      fExplainNameComp();
+      if (narrateAnalysisFlag) {
+        const explainText = $("#nameAnalysisExplain")
+          .text()
+          .replace(/\bC\b/g, "");
+        fSpeakGreek(explainText);
+      }
+    }
+    if (typeof fFitNameComponents === "function") fFitNameComponents();
+  });
+
+  // Supplemental reference remains independent of the selected component rule.
+  $(document).on("click", "#alkoxyRuleTitle", function () {
+    const title = $(this), content = $("#alkoxyRuleContainer");
+    const open = content.is(":visible");
+    content.stop(true, true).slideToggle();
+    title.toggleClass("open", !open).toggleClass("closed", open);
+    title.attr("aria-expanded", String(!open));
+  });
+
+  $(document).on("click", "#ruleTitle", function () {
+    $("#ruleContainer").slideToggle();
+    ruleFlag = !ruleFlag;
+    if (ruleFlag) {
+      $("#ruleTitle").addClass("open");
+      $("#ruleTitle").removeClass("closed");
+    } else {
+      $("#ruleTitle").addClass("closed");
+      $("#ruleTitle").removeClass("open");
+    }
+  });
+
+  /// Menu funcionality: SELECT MOLECULE
+  $(document).on("click", ".menuLi", function (event) {
+    // Scenario pick checkboxes live inside rows — they manage themselves.
+    if (event && event.target && $(event.target).closest(".scPickBox").length) return;
+    selectedMol = $(this).attr("id");
+    // Explicit user choice (vs the silent methane boot default): the header
+    // language toggle carries ?mol= only for explicitly chosen molecules.
+    try { window.__mulerUserPickedMol = true; } catch (eUp) { /* best-effort */ }
+
+    $(".menuLi").removeClass("selectedLi");
+    $(this).addClass("selectedLi");
+
+    fSelectMol();
+    // Scenario subset hook (additive, guarded): in pick mode, selecting a
+    // molecule also picks it for the snapshot menu. No-op without the module.
+    try {
+      if (typeof window.fScenarioPickOnSelect === "function") window.fScenarioPickOnSelect(selectedMol);
+    } catch (e) {
+      /* scenario absent */
+    }
+    // Scenario present hook (additive, guarded): in a menu-only step with
+    // interaction on, re-show the naming hint after free-browse selection.
+    try {
+      if (typeof window.fScenarioOnPresentBrowse === "function") window.fScenarioOnPresentBrowse();
+    } catch (e) {
+      /* scenario absent */
+    }
+  });
+
+  /////////////// MENU ///////////////
+
+  $(document).on(
+    "click",
+    ".menuNomeclature2Container .crossMenuLi",
+    function (event) {
+      // Scenario group pick checkbox lives inside the header — self-managed.
+      if (event && event.target && $(event.target).closest(".scGroupBox").length) return;
+      // Toggle shut: clicking the open group closes it again.
+      if (
+        $(this).hasClass("selectedLi") &&
+        $(this).next(".exmplContainer").hasClass("open")
+      ) {
+        fDeselectMol();
+        $(this).removeClass("selectedLi");
+        try { window.__mulerSelGroupKey = null; } catch (eGk) { /* best-effort */ }
+        $(this).next(".exmplContainer").slideUp();
+        $(this).next(".exmplContainer").removeClass("open").addClass("closed");
+        // Rule mode: closing the group clears its theory (mirrors molecule deselect).
+        if (moleculeGroupingMode === "rule") {
+          selectedRule = undefined;
+          window.speechSynthesis.cancel();
+          $("#ruleTheory").empty();
+        }
+        return;
+      }
+
+      fDeselectMol();
+
+      $(".crossMenuLi").removeClass("selectedLi");
+      $(this).addClass("selectedLi");
+      try {
+        var _gk = $(this).attr("data-group-key") || $(this).data("group-key") || null;
+        window.__mulerSelGroupKey = _gk || null;
+      } catch (eGk2) { /* best-effort */ }
+
+      $(".exmplContainer.open").slideUp();
+      $(this).next(".exmplContainer").slideDown();
+
+      $(".exmplContainer").removeClass("open");
+      $(this).next(".exmplContainer").removeClass("closed");
+      $(this).next(".exmplContainer").addClass("open");
+
+      if (moleculeGroupingMode === "rule") {
+        selectedRule = $(this).parent().children(".crossMenuLi").index(this);
+        fShowRuleTheory();
+      }
+    },
+  );
+
+  $(document).on("click", ".groupingMode [data-grouping-mode]", function () {
+    const selectedMode = $(this).data("grouping-mode");
+    if (selectedMode === moleculeGroupingMode) return;
+    const previousMol = selectedMol;
+    moleculeGroupingMode = selectedMode;
+    fInitNomeclatureMenu();
+
+    let $targetMol = $();
+    if (previousMol) {
+      $targetMol = $(".menuLi").filter(function () {
+        return this.id === previousMol;
+      }).first();
+      if (!$targetMol.length) {
+        $targetMol = $(".menuLi").first();
+      }
+    }
+
+    if ($targetMol.length) {
+      // Flat ("all") mode has no group headers — select the molecule directly.
+      const $hdr = $targetMol.closest(".exmplContainer").prev(".crossMenuLi");
+      if ($hdr.length) $hdr.trigger("click");
+      $targetMol.trigger("click");
+    }
+  });
+
+  //////////////////////////////////////////////////////////
+
+  $("#atomSymbolsCheck").on("click", function () {
+    atomSymbols3DFlag = !atomSymbols3DFlag;
+    showAtomSymbols3D();
+  });
+
+  $("#hydrogensCheck").on("click", function () {
+    hydrogens3DFlag = !hydrogens3DFlag;
+    showHydrogens3D();
+  });
+
+  $("#rotateCheck").on("click", function () {
+    rotateFlag = !rotateFlag;
+    rotate3D();
+  });
+
+  svgAtomColors2DFlag = true
+  // $("#svgAtomColorCheck").removeClass("selectedCheck").addClass("unselectedCheck");
+  $("#jsmeNomeclatureSVG").removeClass("svgAtomsColorized");
+  fSyncAtomColorModeDisabled();
+  // No molecule at load → the "Από δεδομένα" bullet starts inactive.
+  if (typeof fUpdateChainModeButton === "function") fUpdateChainModeButton();
+
+  atomColorMode2D = "atom";
+  localStorage.removeItem("atomColorMode2D");
+
+  $("#atomColorMode .atomColorModeRadio")
+    .removeClass("selectedRadio")
+    .addClass("unselectedRadio");
+  $(`#atomColorMode .atomColorModeRadio[data-color-mode='${atomColorMode2D}']`)
+    .removeClass("unselectedRadio")
+    .addClass("selectedRadio");
+
+  $("#svgAtomColorCheck").on("click", function () {
+    svgAtomColors2DFlag = !svgAtomColors2DFlag;
+    $("#jsmeNomeclatureSVG").toggleClass(
+      "svgAtomsColorized",
+      svgAtomColors2DFlag,
+    );
+    fSyncAtomColorModeDisabled();
+    fUpdateSVG();
+    if (numberingFlag) {
+      currNumberEl = 0;
+      fShowNumbering(0);
+    }
+  });
+
+  $("#atomColorMode").on("click", ".atomColorModeRadio", function () {
+    const selectedMode = $(this).attr("data-color-mode");
+    if (!selectedMode || selectedMode === atomColorMode2D) {
+      return;
+    }
+
+    atomColorMode2D = selectedMode;
+    localStorage.setItem("atomColorMode2D", atomColorMode2D);
+
+    fUpdateSVG();
+    if (numberingFlag) {
+      currNumberEl = 0;
+      fShowNumbering(0);
+    }
+  });
+
+  $(".checkBoxContainer").on("click", function () {
+    if ($(this).hasClass("unselectedCheck")) {
+      $(this).removeClass("unselectedCheck");
+      $(this).addClass("selectedCheck");
+    } else {
+      $(this).removeClass("selectedCheck");
+      $(this).addClass("unselectedCheck");
+    }
+  });
+
+  // Bond-atoms setting: re-apply live when flipped with a bond component
+  // selected (αν/εν/ιν). Deferred one tick so the generic handler above has
+  // toggled the class before the highlight readers query it.
+  $("#bondAtomsSetting").on("click", ".checkBoxContainer", function () {
+    setTimeout(function () {
+      if (!/compBondPos|compBondType|compBondType2|compEndNumber/.test(nameAnalysisMode || "")) return;
+      var $sel = $(".nameCompBox.selected");
+      if (!$sel.length) return;
+      $sel.removeClass("selected");
+      $sel.trigger("click");
+    }, 0);
+  });
+
+  // Numbering highlight settings (atoms + bonds): re-apply live when
+  // flipped with the main-chain (or ester acid-fragment) component selected.
+  // Deferred one tick so the generic handler above has toggled the class
+  // before the highlight readers query it. Same pattern as bondAtomsSetting.
+  $("#highlightNumberingSetting, #highlightNumberingBondsSetting").on("click", ".checkBoxContainer", function () {
+    setTimeout(function () {
+      if ((nameAnalysisMode || "") !== "compCarbonsCount") return;
+      var $sel = $(".nameCompBox.selected");
+      if (!$sel.length) return;
+      $sel.removeClass("selected");
+      $sel.trigger("click");
+    }, 0);
+  });
+
+  $(".radioCheckContainer").on("click", function () {
+    if ($(this).hasClass("unselectedRadio")) {
+      let group = $(this).parent().children(".radioCheckContainer");
+      group.removeClass("selectedRadio").addClass("unselectedRadio");
+      $(this).removeClass("unselectedRadio").addClass("selectedRadio");
+    }
+  });
+
+  ////////////// DEBUG //////////////////
+
+  let selectedAtom, selectedBond;
+
+  $("#debug").on("click", ".atomNo", function () {
+    $(".atomNo").removeClass("selectedLi");
+    $(this).addClass("selectedLi");
+    jsmeNomeclatureApplet.resetAtomColors(0);
+    selectedAtom = $(this).parent().children(".atomNo").index(this) + 1;
+    jsmeNomeclatureApplet.setAtomBackgroundColors(0, selectedAtom + ",9");
+    fUpdateSVG();
+  });
+
+  $("#debug").on("click", ".bondNo", function () {
+    $(".bondNo").removeClass("selectedLi");
+    $(this).addClass("selectedLi");
+    jsmeNomeclatureApplet.resetBondColors(0);
+    selectedBond = $(this).parent().children(".bondNo").index(this) + 1;
+    jsmeNomeclatureApplet.setBondBackgroundColors(0, selectedBond + ",9");
+    fUpdateSVG();
+    if (mode2D == "condensed") {
+      fAddHydrogens2SVG();
+    }
+  });
+
+  $("#debug").on("mouseover", ".atomNo", function () {
+    jsmeNomeclatureApplet.resetAtomColors(0);
+    jsmeNomeclatureApplet.setAtomBackgroundColors(0, selectedAtom + ",9");
+    let myAtom = $(this).parent().children(".atomNo").index(this) + 1;
+    jsmeNomeclatureApplet.setAtomBackgroundColors(0, myAtom + ",2");
+    fUpdateSVG();
+  });
+
+  $("#debug").on("mouseover", ".bondNo", function () {
+    jsmeNomeclatureApplet.resetBondColors(0);
+    jsmeNomeclatureApplet.setBondBackgroundColors(0, selectedBond + ",9");
+    let myBond = $(this).parent().children(".bondNo").index(this) + 1;
+    jsmeNomeclatureApplet.setBondBackgroundColors(0, myBond + ",2");
+    fUpdateSVG();
+  });
+
+  $("#debug").on("mouseleave", ".atomNo", function () {
+    jsmeNomeclatureApplet.resetAtomColors(0);
+    jsmeNomeclatureApplet.setAtomBackgroundColors(0, selectedAtom + ",9");
+    fUpdateSVG();
+  });
+
+  $("#debug").on("mouseleave", ".bondNo", function () {
+    jsmeNomeclatureApplet.resetBondColors(0);
+    jsmeNomeclatureApplet.setBondBackgroundColors(0, selectedBond + ",9");
+    fUpdateSVG();
+  });
+});

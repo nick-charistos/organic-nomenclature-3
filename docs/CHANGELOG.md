@@ -4,6 +4,10 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ---
 
+## [v55] (tiered 3D for drafts; LIVE, `index.html` → v55)
+
+Forked from v54 (`mulermoc-nom-55.html` + `js/*-55.js` + `css/*-55.css`, `?v=55.0`). Draft 3D is now 3-tier: PubChem SDF → CIR 3D SDF (`fFetchSDF3D_CIR`, `iupac-55.js`, `sdf?get3d=true`, 8s timeout, fail-soft) → local 2D-MOL + UFF minimize in JSmol (offline, `fMolDraftLocal3DFromMol`: inline `load data` + `add hydrogens` + `minimize`, SDF extracted back via `molFile`/`write SDF`, validated by `fMolDraftValidSDF3D` heavy-count + non-flat-z). Orchestrated by `fMolDraftFetchSDF3DTiered` with epoch/submitId guards; preview shows source-labeled 3D row (local flagged provisional), fetching note, all-miss 2D-only note. Accept ungated on any tier success (was PubChem-3D-only); provenance persisted as `sdf3DSource` (rec + update path + history + save-file headers). No naming-engine changes.
+
 ## [v54] (molecule edit/create draft flow; LIVE, `index.html` → v54)
 
 New parallel file set `mulermoc-nom-54.html` + `js/*-54.js` + `css/*-54.css`, forked from v53. v54 went live 2026-11-04 (was authoring-only before).
