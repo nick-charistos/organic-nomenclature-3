@@ -2735,9 +2735,9 @@ function fParseMolV2000(text) {
       var L = lines[ci + 1 + i] || "";
       var _el = (L.substring(31, 34) || "").trim();
       if (!_el) return null;
-      var _x = parseFloat(L.substring(0, 10)), _y = parseFloat(L.substring(10, 20));
-      if (!isFinite(_x) || !isFinite(_y)) return null;
-      atoms.push({ x: _x, y: _y, el: _el });
+      var _x = parseFloat(L.substring(0, 10)), _y = parseFloat(L.substring(10, 20)), _z = parseFloat(L.substring(20, 30));
+      if (!isFinite(_x) || !isFinite(_y) || !isFinite(_z)) return null;
+      atoms.push({ x: _x, y: _y, z: _z, el: _el });
     }
     for (var j = 0; j < nB; j++) {
       var parts = (lines[ci + 1 + nA + j] || "").trim().split(/\s+/);

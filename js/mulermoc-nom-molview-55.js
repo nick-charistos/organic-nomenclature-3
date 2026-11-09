@@ -1845,19 +1845,34 @@ function fMolDraftLocal3DFromMol(molText, expectHeavy) {
     // Bounded + best-effort: UFF can fail on odd valence — null then.
     var ok = !!fJSmolLoadInlineSDF(jmolAppletNomeclature, molText, "");
     if (!ok) return null;
-    // Blocking minimize (v55.3): the old fire-and-forget script() raced the
-    // read-back below, capturing pre-minimize coordinates (user had to
-    // re-minimize by hand). scriptWait runs to completion first; steps are
-    // capped to bound the UI freeze on big drawings.
+    // Blocking minimize (v55.4): fire-and-forget script() raced read-back with
+    // pre-minimize coords; v55.3's scriptWait then exposed the next layer —
+    // `minimize steps 500` is a silent in-script error on some JSmol builds,
+    // leaving the model flat (the old validator couldn't see flatness: the
+    // parser dropped z). So: capped form first with the minimizer reply
+    // logged, plain-`minimize` retry if the battery still sees flat geometry.
+    var _minReply = null;
     try {
-      if (typeof fJSmolScriptWait === "function") fJSmolScriptWait(jmolAppletNomeclature, "select all; add hydrogens; minimize steps 500; center selected;");
-      else if (typeof fJSmolScript === "function") fJSmolScript(jmolAppletNomeclature, "select all; add hydrogens; minimize steps 500; center selected;");
+      if (typeof fJSmolScriptWait === "function") _minReply = fJSmolScriptWait(jmolAppletNomeclature, "select all; add hydrogens; minimize steps 500; center selected;");
+      else if (typeof fJSmolScript === "function") { fJSmolScript(jmolAppletNomeclature, "select all; add hydrogens; minimize steps 500; center selected;"); _minReply = "(async)"; }
       else return null;
     } catch (eM) { return null; }
-    // Shared read-back battery (molFile/show/fileContents/write MOL).
+    if (_minReply === null) return null; // wrapper fail-closed (JSmol not live)
+    try { console.log("[SDF-3D] tier local-min: minimize reply: " + String(_minReply || "").slice(0, 200)); } catch (eLgM) {}
+    var _first = null;
+    try { if (typeof fMolDraftReadBackSDF === "function") _first = fMolDraftReadBackSDF(expectHeavy) || null; } catch (eRb1) { _first = null; }
+    if (_first) return _first;
+    try { console.log("[SDF-3D] tier local-min: capped minimize yielded nothing valid — retrying plain minimize"); } catch (eLgR) {}
+    try {
+      if (typeof fJSmolScriptWait === "function") _minReply = fJSmolScriptWait(jmolAppletNomeclature, "select all; minimize; center selected;");
+      else if (typeof fJSmolScript === "function") fJSmolScript(jmolAppletNomeclature, "select all; minimize; center selected;");
+      else return null;
+    } catch (eM2) { return null; }
+    if (_minReply === null) return null;
+    try { console.log("[SDF-3D] tier local-min: retry reply: " + String(_minReply || "").slice(0, 200)); } catch (eLgM2) {}
     try {
       if (typeof fMolDraftReadBackSDF === "function") return fMolDraftReadBackSDF(expectHeavy) || null;
-    } catch (eRb) {}
+    } catch (eRb2) {}
     return null;
   } catch (eL) { return null; }
 }
@@ -1866,9 +1881,8 @@ function fMolDraftLocal3DFromMol(molText, expectHeavy) {
 // itself through its configured server proxy (CDN jsmol.php, and verified
 // working with local JSmol files too) — no page-side fetch, hence no CORS
 // wall like the retired direct Cactus fetch. scriptWait blocks until the
-// remote model lands; the SDF text is read back the same way as the local
-// tier (molFile property, `show MOL` fallback — never `write`, which could
-// pop a save dialog). Null on any gap (offline, unknown SMILES, JSmol dead).
+// remote model lands; the SDF text is read back via the shared battery.
+// Null on any gap (offline, unknown SMILES, JSmol dead).
 function fMolDraftRemote3DFromJSmol(smiles, expectHeavy, isCurrent) {
   try {
     if (!smiles) return null;
