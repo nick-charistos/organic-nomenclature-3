@@ -1710,26 +1710,26 @@ function fMolDraftRenderPreview() {
       // provisional), fetching note while pending, all-miss note only at end.
       try {
         if (d.sdf3D && d.sdf3DSource) {
-          var _s3k = d.sdf3DSource === "pubchem" ? "draft3DPubchem" : (d.sdf3DSource === "cir" ? "draft3DCIR" : "draft3DLocal");
-          var _s3f = d.sdf3DSource === "pubchem" ? "3D: PubChem" : (d.sdf3DSource === "cir" ? "3D: CIR (remote-built)" : "3D: local minimize (provisional — needs review)");
+          var _s3k = d.sdf3DSource === "pubchem" ? "draft3DPubchem" : (d.sdf3DSource === "remote" ? "draft3DRemote" : "draft3DLocal");
+          var _s3f = d.sdf3DSource === "pubchem" ? "3D: PubChem" : (d.sdf3DSource === "remote" ? "3D: remote (JSmol)" : "3D: local minimize (provisional — needs review)");
           html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT(_s3k, _s3f)) + "</div>";
         } else if (!d.sdfDone) {
-          html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("draft3DFetching", "Fetching 3D… (PubChem → CIR → local)")) + "</div>";
+          html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("draft3DFetching", "Fetching 3D… (PubChem → remote → local)")) + "</div>";
         } else {
-          html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitNo3DAll", "No 3D model (PubChem/CIR/local minimize) — 2D only.")) + "</div>";
+          html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitNo3DAll", "No 3D model (PubChem/remote/local minimize) — 2D only.")) + "</div>";
         }
       } catch (eS3) {}
     } else {
       html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitNoRecord", "No PubChem record — engine only.")) + "</div>";
       try {
         if (d.sdf3D && d.sdf3DSource) {
-          var _s3k2 = d.sdf3DSource === "pubchem" ? "draft3DPubchem" : (d.sdf3DSource === "cir" ? "draft3DCIR" : "draft3DLocal");
-          var _s3f2 = d.sdf3DSource === "pubchem" ? "3D: PubChem" : (d.sdf3DSource === "cir" ? "3D: CIR (remote-built)" : "3D: local minimize (provisional — needs review)");
+          var _s3k2 = d.sdf3DSource === "pubchem" ? "draft3DPubchem" : (d.sdf3DSource === "remote" ? "draft3DRemote" : "draft3DLocal");
+          var _s3f2 = d.sdf3DSource === "pubchem" ? "3D: PubChem" : (d.sdf3DSource === "remote" ? "3D: remote (JSmol)" : "3D: local minimize (provisional — needs review)");
           html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT(_s3k2, _s3f2)) + "</div>";
         } else if (!d.sdfDone) {
-          html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("draft3DFetching", "Fetching 3D… (PubChem → CIR → local)")) + "</div>";
+          html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("draft3DFetching", "Fetching 3D… (PubChem → remote → local)")) + "</div>";
         } else {
-          html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitNo3DAll", "No 3D model (PubChem/CIR/local minimize) — 2D only.")) + "</div>";
+          html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitNo3DAll", "No 3D model (PubChem/remote/local minimize) — 2D only.")) + "</div>";
         }
       } catch (eS32) {}
     }
@@ -1770,12 +1770,13 @@ function fJSmolLoadInlineSDF(applet, sdfText, tailCmd) {
   } catch (eIn) { return false; }
 }
 
-// ── v55 tiered 3D (PubChem → CIR → local UFF minimize) ───────────────────
-// Tier 1/2 return remote SDF text (or null); tier 3 builds 3D offline from
-// the 2D MOL via JSmol (load data + add H + minimize), no SMILES/CIR.
+// ── v55 tiered 3D (PubChem → JSmol remote → local UFF minimize) ───────────
+// Tier 1 returns remote SDF text; tier 2 resolves `$SMILES` inside the JSmol
+// applet (proxy-routed, no page-side fetch/CORS); tier 3 builds 3D offline
+// from the 2D MOL via JSmol (load data + add H + minimize).
 // fMolDraftValidSDF3D: parse + heavy count + non-flat z (fail closed).
 // fMolDraftLocal3DFromMol: displays the minimized model AND extracts SDF text
-// back (molFile property first, `write SDF` second); null on any gap.
+// back (molFile property first, `show MOL` fallback); null on any gap.
 function fMolDraftValidSDF3D(sdf, expectHeavy) {
   try {
     if (!sdf || sdf.indexOf("V2000") < 0) return false;
@@ -1825,30 +1826,77 @@ function fMolDraftLocal3DFromMol(molText, expectHeavy) {
   } catch (eL) { return null; }
 }
 
+// Tier-2 remote 3D via JSmol `load $SMILES` (v55.1): JSmol resolves `$`
+// itself through its configured server proxy (CDN jsmol.php, and verified
+// working with local JSmol files too) — no page-side fetch, hence no CORS
+// wall like the retired direct Cactus fetch. scriptWait blocks until the
+// remote model lands; the SDF text is read back the same way as the local
+// tier (molFile property, `show MOL` fallback — never `write`, which could
+// pop a save dialog). Null on any gap (offline, unknown SMILES, JSmol dead).
+function fMolDraftRemote3DFromJSmol(smiles, expectHeavy, isCurrent) {
+  try {
+    if (!smiles) return null;
+    if (typeof navigator !== "undefined" && navigator.onLine === false) return null;
+    if (typeof jmolAppletNomeclature === "undefined" || !jmolAppletNomeclature) return null;
+    if (typeof fJSmolLive === "function" && !fJSmolLive()) return null;
+    if (typeof fJSmolScriptWait !== "function" && typeof fJSmolScript !== "function") return null;
+    // Script-quote the SMILES (parens/slashes/backslashes are all legal in
+    // SMILES but special to the Jmol script parser).
+    var q = String(smiles).replace(/\\/g, "\\\\").replace(/"/g, "'");
+    if (!q) return null;
+    if (isCurrent && !isCurrent()) return null;
+    var r = null;
+    try {
+      if (typeof fJSmolScriptWait === "function") r = fJSmolScriptWait(jmolAppletNomeclature, 'load "$' + q + '"');
+      else r = fJSmolScript(jmolAppletNomeclature, 'load "$' + q + '"');
+    } catch (eL) { return null; }
+    if (r === null) return null; // wrapper fail-closed (JSmol not live)
+    if (isCurrent && !isCurrent()) return null;
+    var out = null;
+    try {
+      if (typeof fJSmolGetPropertyAsString === "function") out = fJSmolGetPropertyAsString(jmolAppletNomeclature, "molFile") || null;
+    } catch (eP1) { out = null; }
+    if ((!out || out.indexOf("V2000") < 0) && typeof fJSmolScriptEcho === "function") {
+      try {
+        var w = fJSmolScriptEcho(jmolAppletNomeclature, "show MOL") || "";
+        if (w && w.indexOf("V2000") >= 0) out = w;
+      } catch (eP2) {}
+    }
+    if (!out || out.indexOf("V2000") < 0) return null;
+    if (typeof fMolDraftValidSDF3D === "function" && !fMolDraftValidSDF3D(out, expectHeavy)) return null;
+    return out;
+  } catch (eR) { return null; }
+}
+
 // Tiered resolver: returns {sdf, source} with source in
-// pubchem|cir|jsmol-min|null. Sequential, fail-soft; each tier validated
-// (heavy count + non-flat for local). Guards (epoch/submitId/smiles) checked
-// by the caller after each await via the isCurrent callback.
+// pubchem|remote|jsmol-min|null. Sequential, fail-soft; every tier validated
+// (heavy count + non-flat). Guards (epoch/submitId/smiles) checked by the
+// caller after each await via the isCurrent callback.
 async function fMolDraftFetchSDF3DTiered(smiles, molText, expectHeavy, isCurrent) {
+  var offline = false;
+  try { offline = (typeof navigator !== "undefined" && navigator.onLine === false); } catch (eO) {}
   var sdf = null;
-  try {
-    if (typeof fFetchSDF3D_PubChem === "function") {
-      try { sdf = await fFetchSDF3D_PubChem(smiles); } catch (eP) { sdf = null; }
-    }
-    if (sdf && (!isCurrent || isCurrent())) {
-      if (typeof fMolDraftValidSDF3D === "function" && !fMolDraftValidSDF3D(sdf, 0)) sdf = null;
-      else return { sdf: sdf, source: "pubchem" };
-    } else sdf = null;
-  } catch (eT1) { sdf = null; }
-  try {
-    if (typeof fFetchSDF3D_CIR === "function") {
-      try { sdf = await fFetchSDF3D_CIR(smiles); } catch (eC) { sdf = null; }
-    }
-    if (sdf && (!isCurrent || isCurrent())) {
-      if (typeof fMolDraftValidSDF3D === "function" && !fMolDraftValidSDF3D(sdf, 0)) sdf = null;
-      else return { sdf: sdf, source: "cir" };
-    } else sdf = null;
-  } catch (eT2) { sdf = null; }
+  if (!offline) {
+    try {
+      if (typeof fFetchSDF3D_PubChem === "function") {
+        try { sdf = await fFetchSDF3D_PubChem(smiles); } catch (eP) { sdf = null; }
+      }
+      if (sdf && (!isCurrent || isCurrent())) {
+        if (typeof fMolDraftValidSDF3D === "function" && !fMolDraftValidSDF3D(sdf, 0)) sdf = null;
+        else return { sdf: sdf, source: "pubchem" };
+      } else sdf = null;
+    } catch (eT1) { sdf = null; }
+  }
+  if (!offline) {
+    try {
+      var rem = null;
+      if (typeof fMolDraftRemote3DFromJSmol === "function") {
+        try { rem = fMolDraftRemote3DFromJSmol(smiles, expectHeavy, isCurrent) || null; } catch (eC) { rem = null; }
+      }
+      if (rem && (!isCurrent || isCurrent())) return { sdf: rem, source: "remote" };
+      sdf = null;
+    } catch (eT2) { sdf = null; }
+  }
   try {
     if ((!isCurrent || isCurrent()) && typeof fMolDraftLocal3DFromMol === "function") {
       var loc = fMolDraftLocal3DFromMol(molText, expectHeavy) || null;
@@ -1878,7 +1926,7 @@ function fMolDraftShow3D(sdf) {
   } catch (eJ) { _issued = false; }
   if (!_issued) {
     try { if (typeof fMulerNotePending3D === "function") fMulerNotePending3D(); } catch (eP3b) {}
-    try { fMolDraftToast(fMolDraftT("submitNo3DAll", "No 3D model (PubChem/CIR/local minimize) — 2D only.")); } catch (eT3) {}
+    try { fMolDraftToast(fMolDraftT("submitNo3DAll", "No 3D model (PubChem/remote/local minimize) — 2D only.")); } catch (eT3) {}
     return;
   }
   try { if (typeof fSetMolVis3D === "function") fSetMolVis3D(); } catch (eV) {}
@@ -2169,7 +2217,7 @@ async function fMolDraftSubmit() {
       });
     }
   } catch (eOCf) {}
-  // 4. 3D tiered (v55): PubChem SDF -> CIR 3D SDF -> local 2D-MOL + UFF
+  // 4. 3D tiered (v55): PubChem SDF -> JSmol remote `$SMILES` -> local 2D-MOL + UFF
   // minimize (offline). Any tier success shows 3D and unblocks Accept with
   // provenance in d.sdf3DSource; only all-three-miss keeps the 2D-only note.
   var _tier = { sdf: null, source: null };
@@ -2489,7 +2537,7 @@ async function fMolDraftAccept() {
     }
     d.stale = false;
   } catch (eFr) {}
-  // v55 tiered 3D: PubChem -> CIR -> local UFF minimize. Pending tiered fetch
+  // v55 tiered 3D: PubChem -> JSmol remote -> local UFF minimize. Pending tiered fetch
   // -> wait; all-three-miss -> blocked, stay in draft. Any tier success
   // (d.sdf3D set) is acceptable with provenance in d.sdf3DSource.
   if (typeof d.pubchem === "undefined" || !d.sdfDone) {

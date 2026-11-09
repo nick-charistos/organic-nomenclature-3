@@ -305,47 +305,10 @@ async function fFetchSDF3D_PubChem(smilesOrCid, opts) {
   return sdf || null;
 }
 
-// 3D SDF via NCI/CADD CIR (v55 tier-2): SMILES -> 3D SDF generated server-side.
-// Same fail-soft contract as PubChem above: 404/empty -> null (no 3D),
-// transport errors throw for the caller to catch. 8s AbortController timeout.
-async function fFetchSDF3D_CIR(smiles, opts) {
-  const o = opts || {};
-  const timeoutMs = typeof o.timeoutMs === "number" ? o.timeoutMs : 8000;
-  const enc = fEncodeSMILESForURL(smiles);
-  if (!enc) throw new Error("empty SMILES");
-  const url =
-    "https://cactus.nci.nih.gov/chemical/structure/" + enc + "/sdf?get3d=true";
-  var ctrl = null, timer = null;
-  try {
-    if (typeof AbortController !== "undefined") {
-      ctrl = new AbortController();
-      timer = setTimeout(function () { try { ctrl.abort(); } catch (eA) {} }, timeoutMs);
-    }
-  } catch (eC) { ctrl = null; }
-  var res = null;
-  try {
-    res = await fetch(url, {
-      headers: { Accept: "chemical/x-mdl-sdfile" },
-      signal: ctrl ? ctrl.signal : undefined,
-    });
-  } catch (eF) {
-    try { if (timer) clearTimeout(timer); } catch (eT) {}
-    throw new Error("CIR SDF network error for " + smiles + ": " + String((eF && eF.message) || eF));
-  }
-  try { if (timer) clearTimeout(timer); } catch (eT2) {}
-  if (res.status === 404) {
-    console.log("[SDF-3D] CIR: no 3D for " + smiles);
-    return null;
-  }
-  if (!res.ok) throw new Error("CIR SDF " + res.status + " for " + smiles);
-  const sdf = await res.text();
-  if (!sdf || sdf.indexOf("V2000") < 0) {
-    console.log("[SDF-3D] CIR: empty/non-SDF for " + smiles);
-    return null;
-  }
-  console.log("[SDF-3D] CIR fetched " + sdf.length + " chars for " + smiles);
-  return sdf;
-}
+// (v55.1) Direct Cactus SDF fetch retired: cactus.nci.nih.gov sends no CORS
+// headers, so browser fetch always dies here. Tier-2 remote 3D now goes via
+// JSmol `load $SMILES` (applet proxy-routed, no page-side fetch) in
+// fMolDraftRemote3DFromJSmol (molview-55.js).
 
 function fSleepMs(ms) {
   return new Promise(function (r) {
