@@ -2084,6 +2084,74 @@ function fMolDraftLocal3DFromMol(molText, expectHeavy) {
   } catch (eL) { return null; }
 }
 
+// OK-only save dialog (v55.11): single OK button (no cancel choice — the
+// author judges the geometry and takes responsibility). ESC/backdrop
+// dismisses WITHOUT storing; OK stores best-effort and unlocks Accept.
+var fMolDraftMinOKEl = null;
+var fMolDraftMinOKFn = null;
+var fMolDraftMinOKKey = null;
+var fMolDraftMinOKPrevFocus = null;
+function fMolDraftMinOKClose(store) {
+  var fn = null;
+  try { if (store && typeof fMolDraftMinOKFn === "function") fn = fMolDraftMinOKFn; } catch (eG) { fn = null; }
+  var ov = null;
+  try { ov = fMolDraftMinOKEl; } catch (eO) { ov = null; }
+  try {
+    if (ov) {
+      ov.classList.remove("show");
+      if (ov.parentNode) { try { ov.parentNode.removeChild(ov); } catch (eR) {} }
+    }
+  } catch (eRm) {}
+  try { fMolDraftMinOKEl = null; } catch (eN) {}
+  try { fMolDraftMinOKFn = null; } catch (eF) {}
+  if (fMolDraftMinOKKey) {
+    try { document.removeEventListener("keydown", fMolDraftMinOKKey, true); } catch (eK) {}
+    try { fMolDraftMinOKKey = null; } catch (eK2) {}
+  }
+  try {
+    if (fMolDraftMinOKPrevFocus && document.contains(fMolDraftMinOKPrevFocus) && fMolDraftMinOKPrevFocus.focus) fMolDraftMinOKPrevFocus.focus();
+  } catch (eF2) {}
+  try { fMolDraftMinOKPrevFocus = null; } catch (eP) {}
+  if (fn) { try { fn(); } catch (eFn) {} }
+}
+function fMolDraftMinimizeDialog(msg, onOk) {
+  try { fMolDraftMinOKClose(false); } catch (eC) {}
+  var ov = document.createElement("div");
+  ov.id = "molDraftMinOK";
+  ov.setAttribute("role", "dialog");
+  ov.setAttribute("aria-modal", "true");
+  ov.innerHTML = "<div class='scConfirmPanel'><div class='scConfirmMsg'></div>" +
+    "<div class='scConfirmBtns'><button type='button' class='scConfirmOk'>OK</button></div></div>";
+  try {
+    var m = ov.querySelector(".scConfirmMsg");
+    if (m) m.textContent = msg || "";
+  } catch (eM) {}
+  try { document.body.appendChild(ov); } catch (eA) { return; }
+  try { fMolDraftMinOKEl = ov; } catch (eE) {}
+  try { fMolDraftMinOKFn = (typeof onOk === "function") ? onOk : null; } catch (eF) {}
+  try { fMolDraftMinOKPrevFocus = document.activeElement; } catch (eAf) { fMolDraftMinOKPrevFocus = null; }
+  var okB = null;
+  try { okB = ov.querySelector(".scConfirmOk"); } catch (eQ) {}
+  if (okB) okB.onclick = function (e) { if (e && e.stopPropagation) e.stopPropagation(); fMolDraftMinOKClose(true); };
+  ov.onclick = function (e) { if (e.target === ov) fMolDraftMinOKClose(false); };
+  fMolDraftMinOKKey = function (e) {
+    if (e.key === "Escape" || e.key === "Esc") {
+      if (e.preventDefault) e.preventDefault();
+      if (e.stopPropagation) e.stopPropagation();
+      fMolDraftMinOKClose(false);
+      return;
+    }
+    // Single-button trap: Tab never leaves the dialog.
+    if (e.key === "Tab") {
+      if (e.preventDefault) e.preventDefault();
+      try { var b = ov.querySelector(".scConfirmOk"); if (b && b.focus) b.focus(); } catch (eT) {}
+    }
+  };
+  try { document.addEventListener("keydown", fMolDraftMinOKKey, true); } catch (eK3) {}
+  ov.classList.add("show");
+  try { if (okB && okB.focus) okB.focus(); } catch (eFo) {}
+}
+
 // Manual 3D minimize fallback (v55.5): same pipeline as auto tier 3, but
 // user-triggered from the preview when every auto tier missed (odd valence,
 // slow convergence, JSmol build quirks). Reuses fMolDraftLocal3DFromMol, so
@@ -2105,55 +2173,54 @@ function fMolDraftManualMinimize() {
   } catch (eM) { out = null; }
   try { d._minimizing = false; } catch (eMf) {}
   if (!window.MulerDraft || window.MulerDraft !== d || d._epoch !== _e || d._submitId !== _s || d.smiles !== _sm) return;
-  if (out) {
-    d.sdf3D = out;
-    d.sdf3DSource = "jsmol-min";
-    try { if (typeof fMolDraftShow3D === "function") fMolDraftShow3D(out); } catch (eS3) {}
-    try { fMolDraftToast(fMolDraftT("draftMinDone", "3D minimized locally — review the model, then Accept.")); } catch (eTd) {}
-  } else {
-    // No validated minimized model: offer honest best-effort (v55.10).
-    // The live model (write MOL, heavy count only — no flatness/movement
-    // gate) is saved as explicitly-unminimized IFF the author confirms, so
-    // Accept unlocks on completion with truthful provenance instead of a
-    // silent flat-as-3D record. Refusal keeps the draft locked.
-    var _live = null, _lh = 0;
+  // v55.11: the author judges the geometry, not the heuristics. Always show
+  // the OK-only save dialog after the pipeline; OK stores best-effort
+  // (validated minimized preferred, live model as explicitly-unminimized
+  // fallback) and unlocks Accept. ESC/backdrop = back out, stay locked.
+  var _best = null, _bestSrc = null, _bestLive = false;
+  if (out) { _best = out; _bestSrc = "jsmol-min"; }
+  else {
     try {
       var _w = null;
       try { if (typeof fJSmolScriptEcho === "function") _w = fJSmolScriptEcho(jmolAppletNomeclature, "write MOL") || null; } catch (eW) { _w = null; }
       if (_w && _w.indexOf("V2000") >= 0 && typeof fParseMolV2000 === "function") {
-        var _pp = fParseMolV2000(_w);
+        var _pp = fParseMolV2000(_w), _lhc = 0;
         if (_pp && _pp.atoms) {
-          for (var _li = 0; _li < _pp.atoms.length; _li++) { var _le = String(_pp.atoms[_li].el || ""); if (_le && _le !== "H" && _le !== "h") _lh++; }
+          for (var _li = 0; _li < _pp.atoms.length; _li++) { var _le = String(_pp.atoms[_li].el || ""); if (_le && _le !== "H" && _le !== "h") _lhc++; }
           var _eh2 = 0;
           try { _eh2 = (typeof d.expectHeavy === "number" && d.expectHeavy > 0) ? d.expectHeavy : 0; } catch (eEH2) {}
-          if (_eh2 && _lh === _eh2) _live = _w;
+          if (_eh2 && _lhc === _eh2) { _best = _w; _bestSrc = "jsmol-unminimized"; _bestLive = true; }
         }
       }
-    } catch (eL) { _live = null; }
-    if (!_live) {
-      try { fMolDraftToast(fMolDraftT("submitNo3DAll", "No 3D model (PubChem/remote/local minimize) — 2D only.")); } catch (eT) {}
-    } else {
-      var _saveUnmin = function () {
-        try {
-          if (!window.MulerDraft || window.MulerDraft !== d || d._epoch !== _e || d._submitId !== _s || d.smiles !== _sm) return;
-          d.sdf3D = _live;
-          d.sdf3DSource = "jsmol-unminimized";
-          try { if (typeof fMolDraftShow3D === "function") fMolDraftShow3D(_live); } catch (eS32) {}
-          try { fMolDraftToast(fMolDraftT("draftMinUnminDone", "Unoptimized 3D saved — review it, then Accept.")); } catch (eTd2) {}
-          try { fMolDraftRenderPreview(); } catch (eR2) {}
-          try { if (typeof fMolDraftSyncBar === "function") fMolDraftSyncBar(); } catch (eSy3) {}
-        } catch (eCb) {}
-      };
-      if (typeof fScenarioConfirm === "function") {
-        var _cm = "", _cy = "";
-        try { _cm = fMolDraftT("draftMinUnminConfirm", "Minimization failed — save unoptimized 3D?"); } catch (eCm) {}
-        try { _cy = fMolDraftT("draftMinUnminYes", "Save anyway"); } catch (eCy) {}
-        try { fScenarioConfirm(_cm, _saveUnmin, _cy); } catch (eSc) { try { _saveUnmin(); } catch (eFb) {} }
-      } else { try { _saveUnmin(); } catch (eFb2) {} }
-    }
+    } catch (eL) { _best = null; _bestSrc = null; _bestLive = false; }
   }
-  try { fMolDraftRenderPreview(); } catch (eR) {}
-  try { if (typeof fMolDraftSyncBar === "function") fMolDraftSyncBar(); } catch (eSy2) {}
+  var _storeBest = function () {
+    try {
+      if (!window.MulerDraft || window.MulerDraft !== d || d._epoch !== _e || d._submitId !== _s || d.smiles !== _sm) return;
+      if (!_best) {
+        try { fMolDraftToast(fMolDraftT("submitNo3DAll", "No 3D model (PubChem/remote/local minimize) — 2D only.")); } catch (eT) {}
+        try { fMolDraftRenderPreview(); } catch (eR0) {}
+        try { if (typeof fMolDraftSyncBar === "function") fMolDraftSyncBar(); } catch (eSy0) {}
+        return;
+      }
+      d.sdf3D = _best;
+      d.sdf3DSource = _bestSrc || "jsmol-unminimized";
+      try { if (typeof fMolDraftShow3D === "function") fMolDraftShow3D(_best); } catch (eS3) {}
+      if (!_bestLive) {
+        try { fMolDraftToast(fMolDraftT("draftMinDone", "3D minimized locally — review the model, then Accept.")); } catch (eTd) {}
+      } else {
+        try { fMolDraftToast(fMolDraftT("draftMinUnminDone", "Unoptimized 3D saved — review it, then Accept.")); } catch (eTd2) {}
+      }
+      try { fMolDraftRenderPreview(); } catch (eR2) {}
+      try { if (typeof fMolDraftSyncBar === "function") fMolDraftSyncBar(); } catch (eSy3) {}
+    } catch (eCb) {}
+  };
+  var _msg = "";
+  try { _msg = fMolDraftT("draftMinSave3D", "Save the 3D conformation of the molecule once geometry optimization completes."); } catch (eMm) { _msg = "Save the 3D conformation of the molecule once geometry optimization completes."; }
+  try {
+    if (typeof fMolDraftMinimizeDialog === "function") fMolDraftMinimizeDialog(_msg, _storeBest);
+    else _storeBest();
+  } catch (eDg) { try { _storeBest(); } catch (eFb) {} }
 }
 
 // Tier-2 remote 3D via JSmol `load $SMILES` (v55.1): JSmol resolves `$`
