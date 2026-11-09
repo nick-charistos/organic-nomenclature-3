@@ -1992,20 +1992,65 @@ function fMolDraftJiggleZ(molText, amp) {
   } catch (e) { return molText; }
 }
 
-function fMolDraftLocal3DFromMol(molText, expectHeavy) {
+// One fire-and-forget minimize round (v55.13): snapshot the live model, fire
+// minimize async WITHOUT any follow-up script (follow-ups interrupt the
+// in-flight run — console-proven: interactive `minimize steps 500`
+// converges while scriptWait+immediate-read got exactly 0.000), wait 25 s
+// undisturbed, single read-back. Acceptance = valid AND moved vs the
+// pre-fire snapshot (no convergence requirement: partial descent counts).
+function fMolDraftLocal3DRelaxFF(expectHeavy, ffName) {
+  return (async function () {
   try {
-    if (!molText || typeof jmolAppletNomeclature === "undefined" || !jmolAppletNomeclature) return null;
-    if (typeof fJSmolLive === "function" && !fJSmolLive()) return null;
-    if (typeof fJSmolLoadInlineSDF !== "function") return null;
-    // Load 2D geometry, untangle + jiggle it, add explicit H, minimize locally.
-    // Bounded + best-effort: UFF can fail on odd valence — null then.
-    // v55.5: `zap` first (`load data` appends frames); isolated blocking steps
-    // with reply logging (`add hydrogens` is not a Jmol command — the silent
-    // whole-line killer; correct form is `calculate hydrogens`). v55.7/9:
-    // pure-JS 2D untangle (tames E=46000+ overlap divergence) + z-jiggle
-    // (breaks the planar saddle: zero z-forces freeze MMFF on flat input).
-    // Movement is measured against the PREPARED input so prep noise alone
-    // cannot pass. Capped minimize first, plain retry on battery failure.
+    var _pre = null;
+    try { if (typeof fJSmolScriptEcho === "function") _pre = fJSmolScriptEcho(jmolAppletNomeclature, "write MOL") || null; } catch (eP0) { _pre = null; }
+    try {
+      if (typeof fJSmolScript === "function") {
+        try { fJSmolScript(jmolAppletNomeclature, "set forceField " + ffName + ";"); } catch (eF) {}
+        fJSmolScript(jmolAppletNomeclature, "select all; minimize steps 500;");
+      }
+      else if (typeof fJSmolScriptWait === "function") fJSmolScriptWait(jmolAppletNomeclature, "select all; minimize steps 500;");
+      else return null;
+    } catch (eM) { return null; }
+    try { console.log("[SDF-3D] tier local-min: " + ffName + " minimize fired — single read-back in 25 s, no scripts meanwhile"); } catch (eLgF) {}
+    try { await new Promise(function (res) { try { setTimeout(res, 25000); } catch (eT) { try { res(); } catch (eR) {} } }); } catch (eW) {}
+    var cand = null;
+    try { if (typeof fMolDraftReadBackSDF === "function") cand = fMolDraftReadBackSDF(expectHeavy) || null; } catch (eRb) { cand = null; }
+    var moved = false;
+    try { if (typeof fMolDraftMeanDisplacement === "function") moved = (fMolDraftMeanDisplacement(_pre, cand) >= 0.05); } catch (eMv) { moved = false; }
+    try { console.log("[SDF-3D] tier local-min: " + ffName + " candidate " + (moved ? "moved — accepted" : "unmoved — rejected")); } catch (eLgC) {}
+    if (cand && moved) {
+      try { if (typeof fJSmolScript === "function") fJSmolScript(jmolAppletNomeclature, "select all; center selected;"); } catch (eC) {}
+      return cand;
+    }
+    return null;
+  } catch (e) { return null; }
+  })();
+}
+
+// MMFF round first (console-proven on this chemistry), UFF fallback.
+function fMolDraftLocal3DRelaxBoth(expectHeavy) {
+  return (async function () {
+  try {
+    var _m = null;
+    try { if (typeof fMolDraftLocal3DRelaxFF === "function") _m = await fMolDraftLocal3DRelaxFF(expectHeavy, "MMFF") || null; } catch (eM) { _m = null; }
+    if (_m) return _m;
+    try { console.log("[SDF-3D] tier local-min: MMFF round yielded nothing — retrying UFF"); } catch (eLgR) {}
+    var _u = null;
+    try { if (typeof fMolDraftLocal3DRelaxFF === "function") _u = await fMolDraftLocal3DRelaxFF(expectHeavy, "UFF") || null; } catch (eU) { _u = null; }
+    return _u;
+  } catch (e) { return null; }
+  })();
+}
+
+// One-time start-of-draft preparation (v55.13): zap → untangle → jiggle →
+// load → drain-verify → calc-H. Returns {ok}. Repeat presses skip it (the
+// live model is already prepared) and continue from the live geometry, so
+// every press walks further down.
+function fMolDraftLocal3DPrepare(molText, expectHeavy) {
+  try {
+    if (!molText || typeof jmolAppletNomeclature === "undefined" || !jmolAppletNomeclature) return { ok: false };
+    if (typeof fJSmolLive === "function" && !fJSmolLive()) return { ok: false };
+    if (typeof fJSmolLoadInlineSDF !== "function") return { ok: false };
     var _step = function (cmd, label) {
       var r = null;
       try {
@@ -2017,26 +2062,18 @@ function fMolDraftLocal3DFromMol(molText, expectHeavy) {
       try { console.log("[SDF-3D] tier local-min: " + label + " reply: " + String(r || "").slice(0, 2000)); } catch (eLg) {}
       return r;
     };
-    if (_step("zap;", "zap") === null) return null;
-    // v55.9 start: 2D untangle (non-bonded heavy overlaps → sane MMFF energy)
-    // then z-jiggle (breaks the planar saddle). Both pure-JS, self-verifying.
+    if (_step("zap;", "zap") === null) return { ok: false };
     var _base = molText;
     try { if (typeof fMolDraftUntangle2D === "function") _base = fMolDraftUntangle2D(molText, 0.9) || molText; } catch (eU) { _base = molText; }
     var _jig = _base;
     try { if (typeof fMolDraftJiggleZ === "function") _jig = fMolDraftJiggleZ(_base, 0.3) || _base; } catch (eJ) { _jig = _base; }
     var ok = !!fJSmolLoadInlineSDF(jmolAppletNomeclature, _jig, "");
-    if (!ok) return null;
-    // Queue drain: `load data` issues async, so a blocking no-op runs after
-    // it — subsequent steps are guaranteed a loaded model. Then verify the
-    // LIVE model (v55.9, via `write MOL` — the stale `fileContents` dump
-    // proved untrustworthy): expected heavy count AND matches what was just
-    // loaded (displacement ≈ 0). Never minimize a stale/empty model.
-    if (_step("select all;", "load-sync") === null) return null;
+    if (!ok) return { ok: false };
+    if (_step("select all;", "load-sync") === null) return { ok: false };
     if (expectHeavy) {
+      var _lw = null, _lh = 0, _lok = false, _lm = -1;
       try {
-        var _lw = null;
         try { if (typeof fJSmolScriptEcho === "function") _lw = fJSmolScriptEcho(jmolAppletNomeclature, "write MOL") || null; } catch (eLw) { _lw = null; }
-        var _lh = 0, _lok = false, _lm = -1;
         try {
           if (_lw && _lw.indexOf("V2000") >= 0 && typeof fParseMolV2000 === "function" && typeof fMolDraftMeanDisplacement === "function") {
             var _lp = fParseMolV2000(_lw);
@@ -2047,41 +2084,47 @@ function fMolDraftLocal3DFromMol(molText, expectHeavy) {
             }
           }
         } catch (eLp) { _lok = false; }
-        try { console.log("[SDF-3D] tier local-min: load-verify heavy=" + _lh + " (expect " + expectHeavy + "), matches-loaded=" + (_lm >= 0 ? _lm.toFixed(3) : "?")); } catch (eLgV) {}
-        if (!_lok) return null;
-      } catch (eLv) { return null; }
+      } catch (eLv) { _lok = false; }
+      try { console.log("[SDF-3D] tier local-min: load-verify heavy=" + _lh + " (expect " + expectHeavy + "), matches-loaded=" + (_lm >= 0 ? _lm.toFixed(3) : "?")); } catch (eLgV) {}
+      if (!_lok) return { ok: false };
     }
-    if (_step("select all; calculate hydrogens;", "add-H") === null) return null;
-    // Acceptance needs a candidate that is BOTH valid AND moved (v55.6+):
-    // a flat-but-parseable blob must never pass on shape alone; movement is
-    // measured vs the jiggled input so jiggle noise alone cannot pass either.
-    var _take = function (cand, from) {
-      if (!cand) return null;
-      var moved = false;
-      try { if (typeof fMolDraftMovedEnough === "function") moved = !!fMolDraftMovedEnough(_jig, cand); } catch (eMv) { moved = false; }
-      if (!moved) {
-        try { console.log("[SDF-3D] tier local-min: " + from + " candidate unmoved — rejected"); } catch (eLgM) {}
-        return null;
-      }
-      try { if (typeof fJSmolScript === "function") fJSmolScript(jmolAppletNomeclature, "select all; center selected;"); } catch (eC) {}
-      return cand;
-    };
-    if (_step("select all; minimize steps 500;", "minimize-capped") === null) return null;
-    var _first = null;
-    try { if (typeof fMolDraftReadBackSDF === "function") _first = fMolDraftReadBackSDF(expectHeavy) || null; } catch (eRb1) { _first = null; }
-    var _took = null;
-    try { _took = _take(_first, "capped"); } catch (eTk1) { _took = null; }
-    if (_took) return _took;
-    try { console.log("[SDF-3D] tier local-min: no moved geometry yet — retrying plain minimize"); } catch (eLgR) {}
-    if (_step("select all; minimize;", "minimize-plain") === null) return null;
-    var _second = null;
-    try { if (typeof fMolDraftReadBackSDF === "function") _second = fMolDraftReadBackSDF(expectHeavy) || null; } catch (eRb2) { _second = null; }
-    try {
-      var _took2 = _take(_second, "plain");
-      if (_took2) return _took2;
-    } catch (eTk2) {}
-    return null;
-  } catch (eL) { return null; }
+    if (_step("select all; calculate hydrogens;", "add-H") === null) return { ok: false };
+    return { ok: true };
+  } catch (e) { return { ok: false }; }
+}
+
+// Tier-3 local 3D, v55.13: prepare once per draft (skipPrepare on repeat
+// presses continues from the live model), relax MMFF then UFF. Returns
+// {sdf, prepared} — the handler tracks preparedness for iterative presses.
+function fMolDraftLocal3DFromMol(molText, expectHeavy, skipPrepare) {
+  return (async function () {
+  try {
+    var _prepped = false;
+    if (!skipPrepare) {
+      var _pr = null;
+      try { if (typeof fMolDraftLocal3DPrepare === "function") _pr = fMolDraftLocal3DPrepare(molText, expectHeavy) || null; } catch (eP) { _pr = null; }
+      if (!_pr || !_pr.ok) return { sdf: null, prepared: false };
+      _prepped = true;
+    } else {
+      _prepped = true;
+      try {
+        var _lv = null;
+        try { if (typeof fJSmolScriptEcho === "function") _lv = fJSmolScriptEcho(jmolAppletNomeclature, "write MOL") || null; } catch (eL2) { _lv = null; }
+        var _lc2 = 0;
+        if (_lv && _lv.indexOf("V2000") >= 0 && typeof fParseMolV2000 === "function") {
+          var _lpp2 = fParseMolV2000(_lv);
+          if (_lpp2 && _lpp2.atoms) for (var _li2 = 0; _li2 < _lpp2.atoms.length; _li2++) { var _le2 = String(_lpp2.atoms[_li2].el || ""); if (_le2 && _le2 !== "H" && _le2 !== "h") _lc2++; }
+        }
+        try { console.log("[SDF-3D] tier local-min: repeat press, live-model heavy=" + _lc2 + " (expect " + expectHeavy + ")"); } catch (eLgL2) {}
+        if (_lc2 !== expectHeavy) return { sdf: null, prepared: false };
+      } catch (eLv2) { return { sdf: null, prepared: false }; }
+    }
+    var _both = null;
+    try { if (typeof fMolDraftLocal3DRelaxBoth === "function") _both = await fMolDraftLocal3DRelaxBoth(expectHeavy) || null; } catch (eB) { _both = null; }
+    if (_both) return { sdf: _both, prepared: _prepped };
+    return { sdf: null, prepared: _prepped };
+  } catch (eL) { return { sdf: null, prepared: false }; }
+  })();
 }
 
 // OK-only save dialog (v55.11): single OK button (no cancel choice — the
@@ -2158,21 +2201,34 @@ function fMolDraftMinimizeDialog(msg, onOk) {
 // provenance stays `jsmol-min`/provisional. Visible only when submitted,
 // fetch done, and still 3D-less; guards re-entrancy + draft identity.
 function fMolDraftManualMinimize() {
-  var d = null;
-  try { d = window.MulerDraft; } catch (eD) { return; }
-  if (!d || (typeof fMolDraftPresenting === "function" && fMolDraftPresenting())) return;
+  return (async function () {
+  try {
+    var d = null;
+    try { d = window.MulerDraft; } catch (eD) { return; }
+    if (!d || (typeof fMolDraftPresenting === "function" && fMolDraftPresenting())) return;
   if (!d.submitted || !d.sdfDone || d.sdf3D || d.submitting || d._minimizing) return;
   var _e = d._epoch, _s = d._submitId, _sm = d.smiles;
   d._minimizing = true;
   try { if (typeof fMolDraftSyncBar === "function") fMolDraftSyncBar(); } catch (eSy) {}
+  try {
+    var _stM = document.getElementById("molDraftStatus");
+    if (_stM) _stM.textContent = fMolDraftT("draftMinimizing", "Minimizing 3D… please wait.");
+  } catch (eStM) {}
   var out = null;
   try {
     var _eh = 0;
     try { _eh = (typeof d.expectHeavy === "number" && d.expectHeavy > 0) ? d.expectHeavy : 0; } catch (eEH) {}
-    if (typeof fMolDraftLocal3DFromMol === "function") out = fMolDraftLocal3DFromMol(d.molText, _eh) || null;
+    var _lrM = null;
+    try { if (typeof fMolDraftLocal3DFromMol === "function") _lrM = await fMolDraftLocal3DFromMol(d.molText, _eh, !!d._minPrepared) || null; } catch (eM2) { _lrM = null; }
+    out = (_lrM && _lrM.sdf) || null;
+    try { d._minPrepared = !!(_lrM && _lrM.prepared); } catch (eMp) {}
   } catch (eM) { out = null; }
   try { d._minimizing = false; } catch (eMf) {}
   if (!window.MulerDraft || window.MulerDraft !== d || d._epoch !== _e || d._submitId !== _s || d.smiles !== _sm) return;
+  try {
+    var _stM2 = document.getElementById("molDraftStatus");
+    if (_stM2) _stM2.textContent = fMolDraftT("draftPreview", "Preview") + ": " + (d.engineName || "");
+  } catch (eStR) {}
   // v55.11: the author judges the geometry, not the heuristics. Always show
   // the OK-only save dialog after the pipeline; OK stores best-effort
   // (validated minimized preferred, live model as explicitly-unminimized
@@ -2221,6 +2277,8 @@ function fMolDraftManualMinimize() {
     if (typeof fMolDraftMinimizeDialog === "function") fMolDraftMinimizeDialog(_msg, _storeBest);
     else _storeBest();
   } catch (eDg) { try { _storeBest(); } catch (eFb) {} }
+  } catch (eOuter) {}
+  })();
 }
 
 // Tier-2 remote 3D via JSmol `load $SMILES` (v55.1): JSmol resolves `$`
@@ -2309,7 +2367,9 @@ async function fMolDraftFetchSDF3DTiered(smiles, molText, expectHeavy, isCurrent
   }
   try {
     if ((!isCurrent || isCurrent()) && typeof fMolDraftLocal3DFromMol === "function") {
-      var loc = fMolDraftLocal3DFromMol(molText, expectHeavy) || null;
+      var _lr = null;
+      try { _lr = await fMolDraftLocal3DFromMol(molText, expectHeavy) || null; } catch (eT3b) { _lr = null; }
+      var loc = (_lr && _lr.sdf) || null;
       if (loc && (!isCurrent || isCurrent())) return { sdf: loc, source: "jsmol-min" };
       try { console.log("[SDF-3D] tier local-min: " + (loc ? loc.length + " chars" : "miss")); } catch (eLgL) {}
     }
@@ -2521,6 +2581,7 @@ async function fMolDraftSubmit() {
   window.MulerDraft.sdf3D = null;
   window.MulerDraft.sdf3DSource = null;
   window.MulerDraft.sdfDone = false;
+  try { window.MulerDraft._minPrepared = false; } catch (eMp0) {}
   window.MulerDraft.openclatura = undefined;
   window.MulerDraft.openclaturaErr = false;
   fMolDraftRenderPreview();

@@ -88,6 +88,7 @@ var MULER_STRINGS = {
   submitNo3DAll: { gr: "Χωρίς τρισδιάστατο μοντέλο (PubChem/απομακρυσμένα/τοπική ελαχιστοποίηση) — μόνο 2D.", en: "No 3D model (PubChem/remote/local minimize) — 2D only." },
   draft3DSource: { gr: "3D:", en: "3D:" },
   draftMinBtn: { gr: "Ελαχιστοποίηση 3D (τοπική)", en: "Minimize 3D (local)" },
+  draftMinimizing: { gr: "Ελαχιστοποίηση 3D σε εξέλιξη… παρακαλώ περιμένετε.", en: "Minimizing 3D… please wait." },
   draftMinUnminDone: { gr: "Μη βελτιστοποιημένο 3D αποθηκεύτηκε — έλεγξέ το και πάτα Αποδοχή.", en: "Unoptimized 3D saved — review it, then Accept." },
   draftMinSave3D: { gr: "Αποθηκεύστε την 3D διαμόρφωση του μορίου όταν ολοκληρωθεί η βελτιστοποίηση της γεωμετρίας.", en: "Save the 3D conformation of the molecule once geometry optimization completes." },
   draft3DUnmin: { gr: "3D: μη βελτιστοποιημένο (τοπικό — θέλει έλεγχο)", en: "3D: unminimized (local — needs review)" },
