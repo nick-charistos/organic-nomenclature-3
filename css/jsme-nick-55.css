@@ -340,6 +340,69 @@ header {
 .draftV-wrong {
   color: #b3261e;
 }
+/* v55.x blocking minimize-wait window (draft UI — lives in main CSS
+   with the other draft styles): overlay + panel, single Cancel button. */
+#molDraftMinWait {
+   position: fixed;
+   inset: 0;
+   z-index: 700;
+   display: none;
+   align-items: center;
+   justify-content: center;
+   background: rgba(0, 0, 0, .45);
+   font-family: "Roboto Condensed", sans-serif;
+}
+
+#molDraftMinWait.show {
+   display: flex;
+}
+
+#molDraftMinWait .scConfirmPanel {
+   background: #fff;
+   color: var(--darkBlue);
+   border: 2px solid var(--darkBlue);
+   border-radius: 8px;
+   padding: 16px 18px;
+   max-width: min(420px, 86vw);
+   box-shadow: 0 8px 28px rgba(0, 0, 0, .35);
+}
+
+#molDraftMinWait .scConfirmMsg {
+   font-size: 1rem;
+   font-weight: bold;
+   line-height: 1.35;
+   margin-bottom: 14px;
+   word-break: break-word;
+}
+
+#molDraftMinWait .scConfirmBtns {
+   display: flex;
+   gap: 10px;
+   justify-content: flex-end;
+}
+
+#molDraftMinWait .scConfirmBtns button {
+   font-family: inherit;
+   font-weight: bold;
+   font-size: .95rem;
+   cursor: pointer;
+   padding: 6px 14px;
+   border-radius: 4px;
+   border: 1px solid var(--darkBlue);
+   background: var(--darkBlue);
+   color: #fff;
+   transition: all 0.2s;
+}
+
+#molDraftMinWait .scConfirmBtns button:hover {
+   filter: brightness(1.15);
+}
+
+#molDraftMinWait .scConfirmBtns button:focus-visible {
+   outline: 2px solid var(--darkBlue);
+   outline-offset: 1px;
+}
+
 
 .draftOracleRow {
   font-size: 0.9rem;
