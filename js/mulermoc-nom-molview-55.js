@@ -1712,9 +1712,10 @@ function fMolDraftRenderPreview() {
       // provisional), fetching note while pending, all-miss note only at end.
       try {
         if (d.sdf3D && d.sdf3DSource) {
-          var _s3k = d.sdf3DSource === "pubchem" ? "draft3DPubchem" : (d.sdf3DSource === "remote" ? "draft3DRemote" : "draft3DLocal");
-          var _s3f = d.sdf3DSource === "pubchem" ? "3D: PubChem" : (d.sdf3DSource === "remote" ? "3D: remote (JSmol)" : "3D: local minimize (provisional — needs review)");
+          var _s3k = d.sdf3DSource === "pubchem" ? "draft3DPubchem" : (d.sdf3DSource === "remote" ? "draft3DRemote" : (d.sdf3DSource === "jsmol-unminimized" ? "draft3DUnmin" : "draft3DLocal"));
+          var _s3f = d.sdf3DSource === "pubchem" ? "3D: PubChem" : (d.sdf3DSource === "remote" ? "3D: remote (JSmol)" : (d.sdf3DSource === "jsmol-unminimized" ? "3D: unminimized (local — needs review)" : "3D: local minimize (provisional — needs review)"));
           html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT(_s3k, _s3f)) + "</div>";
+          if (d.sdf3DSource === "jsmol-unminimized") html += "<div class='draftOracleRow'><button type='button' class='viewerFullBtn draftMinBtn' onclick='fMolDraftManualMinimize()'>" + fMolDraftEsc(fMolDraftT("draftMinBtn", "Minimize 3D (local)")) + "</button></div>";
         } else if (!d.sdfDone) {
           html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("draft3DFetching", "Fetching 3D… (PubChem → remote → local)")) + "</div>";
         } else {
@@ -1725,9 +1726,10 @@ function fMolDraftRenderPreview() {
       html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitNoRecord", "No PubChem record — engine only.")) + "</div>";
       try {
         if (d.sdf3D && d.sdf3DSource) {
-          var _s3k2 = d.sdf3DSource === "pubchem" ? "draft3DPubchem" : (d.sdf3DSource === "remote" ? "draft3DRemote" : "draft3DLocal");
-          var _s3f2 = d.sdf3DSource === "pubchem" ? "3D: PubChem" : (d.sdf3DSource === "remote" ? "3D: remote (JSmol)" : "3D: local minimize (provisional — needs review)");
+          var _s3k2 = d.sdf3DSource === "pubchem" ? "draft3DPubchem" : (d.sdf3DSource === "remote" ? "draft3DRemote" : (d.sdf3DSource === "jsmol-unminimized" ? "draft3DUnmin" : "draft3DLocal"));
+          var _s3f2 = d.sdf3DSource === "pubchem" ? "3D: PubChem" : (d.sdf3DSource === "remote" ? "3D: remote (JSmol)" : (d.sdf3DSource === "jsmol-unminimized" ? "3D: unminimized (local — needs review)" : "3D: local minimize (provisional — needs review)"));
           html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT(_s3k2, _s3f2)) + "</div>";
+          if (d.sdf3DSource === "jsmol-unminimized") html += "<div class='draftOracleRow'><button type='button' class='viewerFullBtn draftMinBtn' onclick='fMolDraftManualMinimize()'>" + fMolDraftEsc(fMolDraftT("draftMinBtn", "Minimize 3D (local)")) + "</button></div>";
         } else if (!d.sdfDone) {
           html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("draft3DFetching", "Fetching 3D… (PubChem → remote → local)")) + "</div>";
         } else {
@@ -2109,7 +2111,46 @@ function fMolDraftManualMinimize() {
     try { if (typeof fMolDraftShow3D === "function") fMolDraftShow3D(out); } catch (eS3) {}
     try { fMolDraftToast(fMolDraftT("draftMinDone", "3D minimized locally — review the model, then Accept.")); } catch (eTd) {}
   } else {
-    try { fMolDraftToast(fMolDraftT("submitNo3DAll", "No 3D model (PubChem/remote/local minimize) — 2D only.")); } catch (eT) {}
+    // No validated minimized model: offer honest best-effort (v55.10).
+    // The live model (write MOL, heavy count only — no flatness/movement
+    // gate) is saved as explicitly-unminimized IFF the author confirms, so
+    // Accept unlocks on completion with truthful provenance instead of a
+    // silent flat-as-3D record. Refusal keeps the draft locked.
+    var _live = null, _lh = 0;
+    try {
+      var _w = null;
+      try { if (typeof fJSmolScriptEcho === "function") _w = fJSmolScriptEcho(jmolAppletNomeclature, "write MOL") || null; } catch (eW) { _w = null; }
+      if (_w && _w.indexOf("V2000") >= 0 && typeof fParseMolV2000 === "function") {
+        var _pp = fParseMolV2000(_w);
+        if (_pp && _pp.atoms) {
+          for (var _li = 0; _li < _pp.atoms.length; _li++) { var _le = String(_pp.atoms[_li].el || ""); if (_le && _le !== "H" && _le !== "h") _lh++; }
+          var _eh2 = 0;
+          try { _eh2 = (typeof d.expectHeavy === "number" && d.expectHeavy > 0) ? d.expectHeavy : 0; } catch (eEH2) {}
+          if (_eh2 && _lh === _eh2) _live = _w;
+        }
+      }
+    } catch (eL) { _live = null; }
+    if (!_live) {
+      try { fMolDraftToast(fMolDraftT("submitNo3DAll", "No 3D model (PubChem/remote/local minimize) — 2D only.")); } catch (eT) {}
+    } else {
+      var _saveUnmin = function () {
+        try {
+          if (!window.MulerDraft || window.MulerDraft !== d || d._epoch !== _e || d._submitId !== _s || d.smiles !== _sm) return;
+          d.sdf3D = _live;
+          d.sdf3DSource = "jsmol-unminimized";
+          try { if (typeof fMolDraftShow3D === "function") fMolDraftShow3D(_live); } catch (eS32) {}
+          try { fMolDraftToast(fMolDraftT("draftMinUnminDone", "Unoptimized 3D saved — review it, then Accept.")); } catch (eTd2) {}
+          try { fMolDraftRenderPreview(); } catch (eR2) {}
+          try { if (typeof fMolDraftSyncBar === "function") fMolDraftSyncBar(); } catch (eSy3) {}
+        } catch (eCb) {}
+      };
+      if (typeof fScenarioConfirm === "function") {
+        var _cm = "", _cy = "";
+        try { _cm = fMolDraftT("draftMinUnminConfirm", "Minimization failed — save unoptimized 3D?"); } catch (eCm) {}
+        try { _cy = fMolDraftT("draftMinUnminYes", "Save anyway"); } catch (eCy) {}
+        try { fScenarioConfirm(_cm, _saveUnmin, _cy); } catch (eSc) { try { _saveUnmin(); } catch (eFb) {} }
+      } else { try { _saveUnmin(); } catch (eFb2) {} }
+    }
   }
   try { fMolDraftRenderPreview(); } catch (eR) {}
   try { if (typeof fMolDraftSyncBar === "function") fMolDraftSyncBar(); } catch (eSy2) {}
