@@ -1798,12 +1798,13 @@ function fMolDraftValidSDF3D(sdf, expectHeavy) {
   } catch (eV) { return false; }
 }
 
-// Shared SDF read-back battery (v55.2): tries every known extraction in turn
+// Shared SDF read-back battery (v55.6): tries every known extraction in turn
 // and returns the first that parses as V2000 with the expected heavy count
-// and non-flat z. Logs each attempt (method + length + verdict) so the next
-// failure diagnoses itself. `fileContents` returns the as-loaded text, so it
-// only helps when the loaded file already carried 3D (tier 2), never tier 3
-// (flat 2D fails validation and is skipped). `write MOL` rides last.
+// and non-flat z. Logs method + length + heavy count + z-spread + verdict so
+// disagreements (molFile vs write MOL on one model) diagnose themselves.
+// `fileContents` returns the as-loaded text, so it only helps when the loaded
+// file already carried 3D (tier 2), never tier 3 (flat 2D fails validation).
+// `write MOL` rides last.
 function fMolDraftReadBackSDF(expectHeavy) {
   var cands = [];
   try {
@@ -1811,11 +1812,6 @@ function fMolDraftReadBackSDF(expectHeavy) {
     try { if (typeof fJSmolGetPropertyAsString === "function") m1 = fJSmolGetPropertyAsString(jmolAppletNomeclature, "molFile") || null; } catch (eM1) { m1 = null; }
     cands.push({ via: "molFile", text: m1 });
   } catch (eB1) {}
-  try {
-    var m2 = null;
-    try { if (typeof fJSmolScriptEcho === "function") m2 = fJSmolScriptEcho(jmolAppletNomeclature, "show MOL") || null; } catch (eM2) { m2 = null; }
-    cands.push({ via: "showMOL", text: m2 });
-  } catch (eB2) {}
   try {
     var m3 = null;
     try { if (typeof fJSmolGetPropertyAsString === "function") m3 = fJSmolGetPropertyAsString(jmolAppletNomeclature, "fileContents") || null; } catch (eM3) { m3 = null; }
@@ -1827,13 +1823,56 @@ function fMolDraftReadBackSDF(expectHeavy) {
     cands.push({ via: "writeMOL", text: m4 });
   } catch (eB4) {}
   for (var i = 0; i < cands.length; i++) {
-    var t = cands[i].text, ok = false, len = 0;
+    var t = cands[i].text, ok = false, len = 0, h = 0, zs = -1;
     try { len = t ? t.length : 0; } catch (eL0) { len = 0; }
-    try { ok = !!(t && t.indexOf("V2000") >= 0 && typeof fMolDraftValidSDF3D === "function" && fMolDraftValidSDF3D(t, expectHeavy)); } catch (eV) { ok = false; }
-    try { console.log("[SDF-3D] read-back " + cands[i].via + ": " + len + " chars, valid=" + ok); } catch (eLg) {}
+    try {
+      if (t && t.indexOf("V2000") >= 0 && typeof fParseMolV2000 === "function") {
+        var p = fParseMolV2000(t);
+        if (p && p.atoms && p.atoms.length) {
+          var zMin = Infinity, zMax = -Infinity;
+          for (var k = 0; k < p.atoms.length; k++) {
+            var e = String(p.atoms[k].el || "");
+            if (e && e !== "H" && e !== "h") h++;
+            var z = p.atoms[k].z;
+            if (typeof z === "number" && isFinite(z)) { if (z < zMin) zMin = z; if (z > zMax) zMax = z; }
+          }
+          if (zMin !== Infinity) { try { zs = zMax - zMin; } catch (eZs) { zs = -1; } }
+          ok = !!(typeof fMolDraftValidSDF3D === "function" && fMolDraftValidSDF3D(t, expectHeavy));
+        }
+      }
+    } catch (eV) { ok = false; }
+    try {
+      var _zs = (zs < 0) ? "n/a" : (zs.toFixed ? zs.toFixed(3) : String(zs));
+      console.log("[SDF-3D] read-back " + cands[i].via + ": " + len + " chars, heavy=" + h + ", zspread=" + _zs + ", valid=" + ok);
+    } catch (eLg) {}
     if (ok) return t;
   }
   return null;
+}
+
+// Tier-3 movement proof (v55.6): the input is always flat 2D, so a real
+// minimization must displace heavy atoms (tetrahedral carbons cannot stay
+// planar). Compares heavy-atom coords in order (add-H appends Hs, heavy order
+// is preserved); mean displacement under 0.05 A means the minimizer never
+// acted, and the candidate is rejected even if it parses.
+function fMolDraftMovedEnough(beforeMol, afterSDF) {
+  try {
+    if (typeof fParseMolV2000 !== "function" || !beforeMol || !afterSDF) return false;
+    var a = fParseMolV2000(beforeMol), b = fParseMolV2000(afterSDF);
+    if (!a || !b || !a.atoms || !b.atoms) return false;
+    var ha = [], hb = [], i;
+    for (i = 0; i < a.atoms.length; i++) { var ea = String(a.atoms[i].el || ""); if (ea && ea !== "H" && ea !== "h") ha.push(a.atoms[i]); }
+    for (i = 0; i < b.atoms.length; i++) { var eb = String(b.atoms[i].el || ""); if (eb && eb !== "H" && eb !== "h") hb.push(b.atoms[i]); }
+    if (!ha.length || ha.length !== hb.length) return false;
+    var sum = 0;
+    for (i = 0; i < ha.length; i++) {
+      var dx = (hb[i].x || 0) - (ha[i].x || 0), dy = (hb[i].y || 0) - (ha[i].y || 0), dz = (hb[i].z || 0) - (ha[i].z || 0);
+      sum += Math.sqrt(dx * dx + dy * dy + dz * dz);
+    }
+    var mean = sum / ha.length;
+    try { console.log("[SDF-3D] tier local-min: mean heavy displacement = " + mean.toFixed(3) + " A"); } catch (eL) {}
+    return mean >= 0.05;
+  } catch (e) { return false; }
 }
 
 function fMolDraftLocal3DFromMol(molText, expectHeavy) {
@@ -1856,28 +1895,40 @@ function fMolDraftLocal3DFromMol(molText, expectHeavy) {
         else return null;
       } catch (eS) { return null; }
       if (r === null) return null; // wrapper fail-closed (JSmol not live)
-      try { console.log("[SDF-3D] tier local-min: " + label + " reply: " + String(r || "").slice(0, 200)); } catch (eLg) {}
+      try { console.log("[SDF-3D] tier local-min: " + label + " reply: " + String(r || "").slice(0, 2000)); } catch (eLg) {}
       return r;
     };
     if (_step("zap;", "zap") === null) return null;
     var ok = !!fJSmolLoadInlineSDF(jmolAppletNomeclature, molText, "");
     if (!ok) return null;
     if (_step("select all; calculate hydrogens;", "add-H") === null) return null;
+    // Acceptance needs a candidate that is BOTH valid AND moved (v55.6):
+    // a flat-but-parseable blob must never pass on shape alone.
+    var _take = function (cand, from) {
+      if (!cand) return null;
+      var moved = false;
+      try { if (typeof fMolDraftMovedEnough === "function") moved = !!fMolDraftMovedEnough(molText, cand); } catch (eMv) { moved = false; }
+      if (!moved) {
+        try { console.log("[SDF-3D] tier local-min: " + from + " candidate unmoved — rejected"); } catch (eLgM) {}
+        return null;
+      }
+      try { if (typeof fJSmolScript === "function") fJSmolScript(jmolAppletNomeclature, "select all; center selected;"); } catch (eC) {}
+      return cand;
+    };
     if (_step("select all; minimize steps 500;", "minimize-capped") === null) return null;
     var _first = null;
     try { if (typeof fMolDraftReadBackSDF === "function") _first = fMolDraftReadBackSDF(expectHeavy) || null; } catch (eRb1) { _first = null; }
-    if (_first) {
-      try { if (typeof fJSmolScript === "function") fJSmolScript(jmolAppletNomeclature, "select all; center selected;"); } catch (eC) {}
-      return _first;
-    }
-    try { console.log("[SDF-3D] tier local-min: capped minimize yielded nothing valid — retrying plain minimize"); } catch (eLgR) {}
+    var _took = null;
+    try { _took = _take(_first, "capped"); } catch (eTk1) { _took = null; }
+    if (_took) return _took;
+    try { console.log("[SDF-3D] tier local-min: no moved geometry yet — retrying plain minimize"); } catch (eLgR) {}
     if (_step("select all; minimize;", "minimize-plain") === null) return null;
     var _second = null;
     try { if (typeof fMolDraftReadBackSDF === "function") _second = fMolDraftReadBackSDF(expectHeavy) || null; } catch (eRb2) { _second = null; }
-    if (_second) {
-      try { if (typeof fJSmolScript === "function") fJSmolScript(jmolAppletNomeclature, "select all; center selected;"); } catch (eC2) {}
-      return _second;
-    }
+    try {
+      var _took2 = _take(_second, "plain");
+      if (_took2) return _took2;
+    } catch (eTk2) {}
     return null;
   } catch (eL) { return null; }
 }
