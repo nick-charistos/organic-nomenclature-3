@@ -781,13 +781,15 @@ function fMolDraftHideBar() {
   } catch (eH) {}
 }
 
-// Draft bar state machine (v54 Stage 2): Submit dims once a fresh,
-// PubChem-3D-backed preview is up (it returns via Draw), and both dim while
+// Draft bar state machine (v54 Stage 2, v55 tiers): Submit dims once a fresh,
+// 3D-backed preview is up (it returns via Draw), and both dim while
 // submitting. The editor-visible clause is the strand guard: the preview
 // view hides the canvas, so every drawable state goes through Draw, which
 // re-lights Submit — no reliance on the live JSME stale callback (name
 // unverified against the bundled build). Accept lights only on a fresh
-// preview; stale never lights it, and edit mode never lights it (Accept acts
+// preview with 3D from ANY tier (PubChem/remote/local) — no PubChem-record
+// requirement (v55: novel molecules carry sdf3D with null pubchem); stale
+// never lights it, and edit mode never lights it (Accept acts
 // on the preview). Draw is visible from the first Submit and lit only in
 // preview view — a no-op while the canvas is already up. Beautify (school
 // linear layout) is offered only for school-geometry drafts (condensed,
@@ -803,7 +805,7 @@ function fMolDraftSyncBar() {
     var submitActive = false, acceptActive = false;
     if (!d.submitting) {
       if (!d.submitted || d.stale || editorVisible) submitActive = true;
-      if (d.submitted && !d.stale && d.pubchem && d.sdf3D && !editorVisible) acceptActive = true;
+      if (d.submitted && !d.stale && d.sdf3D && !editorVisible) acceptActive = true;
     }
     if (submitActive) { bs.classList.add("active"); bs.classList.remove("btnInactive"); }
     else { bs.classList.remove("active"); bs.classList.add("btnInactive"); }
@@ -2030,6 +2032,7 @@ function fMolDraftManualMinimize() {
     d.sdf3D = out;
     d.sdf3DSource = "jsmol-min";
     try { if (typeof fMolDraftShow3D === "function") fMolDraftShow3D(out); } catch (eS3) {}
+    try { fMolDraftToast(fMolDraftT("draftMinDone", "3D minimized locally — review the model, then Accept.")); } catch (eTd) {}
   } else {
     try { fMolDraftToast(fMolDraftT("submitNo3DAll", "No 3D model (PubChem/remote/local minimize) — 2D only.")); } catch (eT) {}
   }
