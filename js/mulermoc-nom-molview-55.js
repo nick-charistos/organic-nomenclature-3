@@ -1874,16 +1874,23 @@ function fMolDraftMovedEnough(beforeMol, afterSDF) {
   } catch (e) { return false; }
 }
 
-// Pure-JS z-jiggle (v55.7): breaks the planar-saddle trap before MMFF runs.
+// Pure-JS z-jiggle (v55.7+): breaks the planar-saddle trap before MMFF runs.
 // From exactly-flat z=0 every z-force is zero by symmetry, so steepest
 // descent can never leave the plane (observed: heavies frozen at 0.000 A
 // while H-noise faked spread). ±0.3 A uniform noise per atom gives real 3D
 // gradients; small enough to keep topology. Byte-identical except the z
-// field (cols 20-30); falls back to the input on any gap.
+// field (cols 20-30). Self-verifying (v55.8): short-line MOLs used to come
+// out unparseable and poison the loader — the result is parsed and heavy
+// count-checked against the input, falling back to the un-jiggled input.
 function fMolDraftJiggleZ(molText, amp) {
   try {
     if (!molText || typeof fParseMolV2000 !== "function") return molText;
     if (typeof fMolCountsLine !== "function") return molText;
+    var refH = 0;
+    try {
+      var ref = fParseMolV2000(molText) || null;
+      if (ref && ref.atoms) for (var i0 = 0; i0 < ref.atoms.length; i0++) { var re0 = String(ref.atoms[i0].el || ""); if (re0 && re0 !== "H" && re0 !== "h") refH++; }
+    } catch (eR) { refH = 0; }
     var lines = String(molText).split(/\r?\n/);
     var ci = fMolCountsLine(lines);
     if (ci < 0) return molText;
@@ -1892,13 +1899,22 @@ function fMolDraftJiggleZ(molText, amp) {
     var A = (typeof amp === "number" && isFinite(amp) && amp > 0) ? amp : 0.3;
     for (var i = 0; i < nA; i++) {
       var idx = ci + 1 + i, L = lines[idx] || "";
-      if (L.length < 30) continue;
+      while (L.length < 34) L += " ";
       var jz = (Math.random() - 0.5) * 2 * A;
       var zs = ("          " + jz.toFixed(4)).slice(-10);
       lines[idx] = L.substring(0, 20) + zs + L.substring(30);
     }
+    var out = lines.join("\n");
+    try {
+      var chk = fParseMolV2000(out) || null, chkH = 0;
+      if (chk && chk.atoms) for (var k = 0; k < chk.atoms.length; k++) { var ce = String(chk.atoms[k].el || ""); if (ce && ce !== "H" && ce !== "h") chkH++; }
+      if (!chk || (refH && chkH !== refH)) {
+        try { console.log("[SDF-3D] tier local-min: jiggle failed self-verify — using un-jiggled input"); } catch (eLgV) {}
+        return molText;
+      }
+    } catch (eV) { return molText; }
     try { console.log("[SDF-3D] tier local-min: z-jiggle ±" + A + " A on " + nA + " atoms"); } catch (eL) {}
-    return lines.join("\n");
+    return out;
   } catch (e) { return molText; }
 }
 
@@ -1934,8 +1950,28 @@ function fMolDraftLocal3DFromMol(molText, expectHeavy) {
     var ok = !!fJSmolLoadInlineSDF(jmolAppletNomeclature, _jig, "");
     if (!ok) return null;
     // Queue drain: `load data` issues async, so a blocking no-op runs after
-    // it — subsequent steps are guaranteed a loaded model.
+    // it — subsequent steps are guaranteed a loaded model. Then verify the
+    // load itself (v55.8): the as-loaded text must carry the expected heavies
+    // before any minimize runs on it — never minimize emptiness.
     if (_step("select all;", "load-sync") === null) return null;
+    if (expectHeavy) {
+      try {
+        var _lf = null;
+        try { if (typeof fJSmolGetPropertyAsString === "function") _lf = fJSmolGetPropertyAsString(jmolAppletNomeclature, "fileContents") || null; } catch (eLf) { _lf = null; }
+        var _lh = 0, _lok = false;
+        try {
+          if (_lf && _lf.indexOf("V2000") >= 0 && typeof fParseMolV2000 === "function") {
+            var _lp = fParseMolV2000(_lf);
+            if (_lp && _lp.atoms) {
+              for (var _li = 0; _li < _lp.atoms.length; _li++) { var _le = String(_lp.atoms[_li].el || ""); if (_le && _le !== "H" && _le !== "h") _lh++; }
+              _lok = (_lh === expectHeavy);
+            }
+          }
+        } catch (eLp) { _lok = false; }
+        try { console.log("[SDF-3D] tier local-min: load-verify heavy=" + _lh + " (expect " + expectHeavy + ")"); } catch (eLgV) {}
+        if (!_lok) return null;
+      } catch (eLv) { return null; }
+    }
     if (_step("select all; calculate hydrogens;", "add-H") === null) return null;
     // Acceptance needs a candidate that is BOTH valid AND moved (v55.6+):
     // a flat-but-parseable blob must never pass on shape alone; movement is
@@ -2447,11 +2483,47 @@ async function fMolDraftSubmit() {
   } else {
     window.MulerDraft.sdf3D = null;
     window.MulerDraft.sdf3DSource = null;
+    // v55.8: load the flat drawing into the 3D viewer anyway (honest starting
+    // point) — the manual Minimize button beside the 2D-only note takes it
+    // from here, and Accept stays locked until valid 3D exists.
+    try { if (typeof fMolDraftShowFlat3D === "function") fMolDraftShowFlat3D(); } catch (eF3) {}
   }
   try { if (typeof fMolDraftRefreshAcceptKey === "function") fMolDraftRefreshAcceptKey(); } catch (eK2) {}
   fMolDraftRenderPreview();
   try { fMolDraftSyncBar(); } catch (eSy2) {}
 }
+// Show-flat fallback (v55.8): when every 3D tier misses, display the flat
+// drawing in the 3D viewer anyway (honest starting point) with the manual
+// Minimize button beside the 2D-only note. No 3D analysis runs on flat data
+// (it would pollute the 3D naming globals); Accept stays locked (sdf3D null).
+// Teardown already re-hides the viewer via the preview3D snapshot.
+function fMolDraftShowFlat3D() {
+  try {
+    var d = null;
+    try { d = window.MulerDraft; } catch (eD) { return; }
+    if (!d || !d.molText) return;
+    if (typeof jmolAppletNomeclature === "undefined" || !jmolAppletNomeclature) return;
+    if (typeof fJSmolLive === "function" && !fJSmolLive()) return;
+    try {
+      if (typeof fJSmolScriptWait === "function") { if (fJSmolScriptWait(jmolAppletNomeclature, "zap;") === null) return; }
+    } catch (eZ) {}
+    var ok = false;
+    try { if (typeof fJSmolLoadInlineSDF === "function") ok = !!fJSmolLoadInlineSDF(jmolAppletNomeclature, d.molText, "script spt/init-3.spt;"); } catch (eL) { ok = false; }
+    if (!ok) return;
+    try {
+      var b3 = document.getElementById("view3DBtn");
+      if (b3 && !b3.classList.contains("active") && typeof fToggleViewer3D === "function") {
+        fToggleViewer3D();
+        try { window.MulerDraft.preview3D = true; } catch (eP) {}
+      }
+    } catch (eV) {}
+    try { if (typeof fSetMolVis3D === "function") fSetMolVis3D(); } catch (eVs) {}
+    try { if (typeof rotate3D === "function") rotate3D(); } catch (eR) {}
+    try { if (typeof fResizeViewers === "function") fResizeViewers(); } catch (eRz) {}
+    try { console.log("[SDF-3D] flat drawing shown in 3D viewer — manual minimize available"); } catch (eLg) {}
+  } catch (eF) {}
+}
+
 // Shared visual teardown (Cancel + Accept): hides the draft chrome and
 // restores display mode. Returns the snapshot callers need (3D visibility,
 // chain mode). Does NOT reselect — callers own that.
