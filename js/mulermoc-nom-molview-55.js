@@ -1798,6 +1798,44 @@ function fMolDraftValidSDF3D(sdf, expectHeavy) {
   } catch (eV) { return false; }
 }
 
+// Shared SDF read-back battery (v55.2): tries every known extraction in turn
+// and returns the first that parses as V2000 with the expected heavy count
+// and non-flat z. Logs each attempt (method + length + verdict) so the next
+// failure diagnoses itself. `fileContents` returns the as-loaded text, so it
+// only helps when the loaded file already carried 3D (tier 2), never tier 3
+// (flat 2D fails validation and is skipped). `write MOL` rides last.
+function fMolDraftReadBackSDF(expectHeavy) {
+  var cands = [];
+  try {
+    var m1 = null;
+    try { if (typeof fJSmolGetPropertyAsString === "function") m1 = fJSmolGetPropertyAsString(jmolAppletNomeclature, "molFile") || null; } catch (eM1) { m1 = null; }
+    cands.push({ via: "molFile", text: m1 });
+  } catch (eB1) {}
+  try {
+    var m2 = null;
+    try { if (typeof fJSmolScriptEcho === "function") m2 = fJSmolScriptEcho(jmolAppletNomeclature, "show MOL") || null; } catch (eM2) { m2 = null; }
+    cands.push({ via: "showMOL", text: m2 });
+  } catch (eB2) {}
+  try {
+    var m3 = null;
+    try { if (typeof fJSmolGetPropertyAsString === "function") m3 = fJSmolGetPropertyAsString(jmolAppletNomeclature, "fileContents") || null; } catch (eM3) { m3 = null; }
+    cands.push({ via: "fileContents", text: m3 });
+  } catch (eB3) {}
+  try {
+    var m4 = null;
+    try { if (typeof fJSmolScriptEcho === "function") m4 = fJSmolScriptEcho(jmolAppletNomeclature, "write MOL") || null; } catch (eM4) { m4 = null; }
+    cands.push({ via: "writeMOL", text: m4 });
+  } catch (eB4) {}
+  for (var i = 0; i < cands.length; i++) {
+    var t = cands[i].text, ok = false, len = 0;
+    try { len = t ? t.length : 0; } catch (eL0) { len = 0; }
+    try { ok = !!(t && t.indexOf("V2000") >= 0 && typeof fMolDraftValidSDF3D === "function" && fMolDraftValidSDF3D(t, expectHeavy)); } catch (eV) { ok = false; }
+    try { console.log("[SDF-3D] read-back " + cands[i].via + ": " + len + " chars, valid=" + ok); } catch (eLg) {}
+    if (ok) return t;
+  }
+  return null;
+}
+
 function fMolDraftLocal3DFromMol(molText, expectHeavy) {
   try {
     if (!molText || typeof jmolAppletNomeclature === "undefined" || !jmolAppletNomeclature) return null;
@@ -1808,21 +1846,11 @@ function fMolDraftLocal3DFromMol(molText, expectHeavy) {
     var ok = !!fJSmolLoadInlineSDF(jmolAppletNomeclature, molText, "");
     if (!ok) return null;
     try { if (typeof fJSmolScript === "function") fJSmolScript(jmolAppletNomeclature, "select all; add hydrogens; minimize; center selected;"); } catch (eM) { return null; }
-    var out = null;
+    // Shared read-back battery (molFile/show/fileContents/write MOL).
     try {
-      if (typeof fJSmolGetPropertyAsString === "function") out = fJSmolGetPropertyAsString(jmolAppletNomeclature, "molFile") || null;
-    } catch (eP1) { out = null; }
-    if ((!out || out.indexOf("V2000") < 0) && typeof fJSmolScriptEcho === "function") {
-      // `show` returns text (no download side effect; `write` could pop a
-      // save dialog in some builds, so it is deliberately not used here).
-      try {
-        var w = fJSmolScriptEcho(jmolAppletNomeclature, "show MOL") || "";
-        if (w && w.indexOf("V2000") >= 0) out = w;
-      } catch (eP2) {}
-    }
-    if (!out || out.indexOf("V2000") < 0) return null;
-    if (!fMolDraftValidSDF3D(out, expectHeavy)) return null;
-    return out;
+      if (typeof fMolDraftReadBackSDF === "function") return fMolDraftReadBackSDF(expectHeavy) || null;
+    } catch (eRb) {}
+    return null;
   } catch (eL) { return null; }
 }
 
@@ -1852,19 +1880,16 @@ function fMolDraftRemote3DFromJSmol(smiles, expectHeavy, isCurrent) {
     } catch (eL) { return null; }
     if (r === null) return null; // wrapper fail-closed (JSmol not live)
     if (isCurrent && !isCurrent()) return null;
-    var out = null;
     try {
-      if (typeof fJSmolGetPropertyAsString === "function") out = fJSmolGetPropertyAsString(jmolAppletNomeclature, "molFile") || null;
-    } catch (eP1) { out = null; }
-    if ((!out || out.indexOf("V2000") < 0) && typeof fJSmolScriptEcho === "function") {
-      try {
-        var w = fJSmolScriptEcho(jmolAppletNomeclature, "show MOL") || "";
-        if (w && w.indexOf("V2000") >= 0) out = w;
-      } catch (eP2) {}
-    }
-    if (!out || out.indexOf("V2000") < 0) return null;
-    if (typeof fMolDraftValidSDF3D === "function" && !fMolDraftValidSDF3D(out, expectHeavy)) return null;
-    return out;
+      var _rl = "?";
+      try { _rl = String(r == null ? "" : r).length + " chars"; } catch (eRl) {}
+      console.log("[SDF-3D] tier remote: load returned " + _rl);
+    } catch (eLg) {}
+    // Shared read-back battery (molFile/show/fileContents/write MOL).
+    try {
+      if (typeof fMolDraftReadBackSDF === "function") return fMolDraftReadBackSDF(expectHeavy) || null;
+    } catch (eRb) {}
+    return null;
   } catch (eR) { return null; }
 }
 
@@ -1885,6 +1910,7 @@ async function fMolDraftFetchSDF3DTiered(smiles, molText, expectHeavy, isCurrent
         if (typeof fMolDraftValidSDF3D === "function" && !fMolDraftValidSDF3D(sdf, 0)) sdf = null;
         else return { sdf: sdf, source: "pubchem" };
       } else sdf = null;
+      try { console.log("[SDF-3D] tier pubchem: " + (sdf ? sdf.length + " chars" : "miss")); } catch (eLgP) {}
     } catch (eT1) { sdf = null; }
   }
   if (!offline) {
@@ -1894,6 +1920,7 @@ async function fMolDraftFetchSDF3DTiered(smiles, molText, expectHeavy, isCurrent
         try { rem = fMolDraftRemote3DFromJSmol(smiles, expectHeavy, isCurrent) || null; } catch (eC) { rem = null; }
       }
       if (rem && (!isCurrent || isCurrent())) return { sdf: rem, source: "remote" };
+      try { console.log("[SDF-3D] tier remote: " + (rem ? rem.length + " chars" : "miss")); } catch (eLgR) {}
       sdf = null;
     } catch (eT2) { sdf = null; }
   }
@@ -1901,6 +1928,7 @@ async function fMolDraftFetchSDF3DTiered(smiles, molText, expectHeavy, isCurrent
     if ((!isCurrent || isCurrent()) && typeof fMolDraftLocal3DFromMol === "function") {
       var loc = fMolDraftLocal3DFromMol(molText, expectHeavy) || null;
       if (loc && (!isCurrent || isCurrent())) return { sdf: loc, source: "jsmol-min" };
+      try { console.log("[SDF-3D] tier local-min: " + (loc ? loc.length + " chars" : "miss")); } catch (eLgL) {}
     }
   } catch (eT3) {}
   return { sdf: null, source: null };
