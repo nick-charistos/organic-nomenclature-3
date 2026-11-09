@@ -1,14 +1,14 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `d871784` (2026-11-09) — v55
-> wait window + countdown, scaled wait, STOP discipline, save-dialog removal,
-> further +100 rounds (`?v=55.0`, `index.html` → v55). Tree clean after this
-> commit. Remaining: browser 141 sweep + P3 blessing of Greek word forms,
-> completion-callback wait (spike, replaces blind wall-clock), energy
-> comparison for true convergence. Full record: `docs/SESSION-NOTES.md`
-> 2026-11-09 (cont.) + `docs/CHANGELOG.md` [v55] + handoff
-> `docs/SESSION-HANDOFF-2026-11-09-TIERED-3D.md`. Routine on the other
-> machine: pull first, hard-reload (Ctrl+Shift+R — `?v=55.0` unchanged),
+> **Resume pointer (cross-machine):** HEAD `3cb9890` (2026-11-09) — v55
+> settings cleanup + i18n rebuild (`?v=55.0`, `index.html` → v55). Tree clean
+> after this commit. Remaining: browser sweep (EN panel labels incl. bar,
+> 141 molecules, Present round-trips) + P3 blessing of Greek word forms,
+> completion-callback wait (spike), energy comparison for true convergence,
+> settings tabs (registry groups by row id when needed). Full record:
+> `docs/SESSION-NOTES.md` 2026-11-09 entries + `docs/CHANGELOG.md` [v55] +
+> handoff `docs/SESSION-HANDOFF-2026-11-09-TIERED-3D.md`. Routine on the
+> other machine: pull first, hard-reload (Ctrl+Shift+R — `?v=55.0` unchanged),
 > then resume from `git log --oneline -5` + `git status`. OpenCode sessions
 > stay machine-local.
 >
