@@ -87,6 +87,7 @@ var MULER_STRINGS = {
   acceptNeeds3D: { gr: "Αποδοχή μόνο με τρισδιάστατο μοντέλο — περίμενε να ολοκληρωθεί η ανάκτηση 3D.", en: "Acceptance requires a 3D model — wait for the 3D fetch to finish." },
   submitNo3DAll: { gr: "Χωρίς τρισδιάστατο μοντέλο (PubChem/απομακρυσμένα/τοπική ελαχιστοποίηση) — μόνο 2D.", en: "No 3D model (PubChem/remote/local minimize) — 2D only." },
   draft3DSource: { gr: "3D:", en: "3D:" },
+  draftMinBtn: { gr: "Ελαχιστοποίηση 3D (τοπική)", en: "Minimize 3D (local)" },
   draft3DPubchem: { gr: "3D: PubChem", en: "3D: PubChem" },
   draft3DRemote: { gr: "3D: απομακρυσμένη δημιουργία (JSmol)", en: "3D: remote-built (JSmol)" },
   draft3DLocal: { gr: "3D: τοπική ελαχιστοποίηση (προσωρινό — θέλει έλεγχο)", en: "3D: local minimize (provisional — needs review)" },

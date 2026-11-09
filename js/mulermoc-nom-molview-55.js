@@ -1716,7 +1716,7 @@ function fMolDraftRenderPreview() {
         } else if (!d.sdfDone) {
           html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("draft3DFetching", "Fetching 3D… (PubChem → remote → local)")) + "</div>";
         } else {
-          html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitNo3DAll", "No 3D model (PubChem/remote/local minimize) — 2D only.")) + "</div>";
+          html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitNo3DAll", "No 3D model (PubChem/remote/local minimize) — 2D only.")) + " <button type='button' class='viewerFullBtn draftMinBtn' onclick='fMolDraftManualMinimize()'>" + fMolDraftEsc(fMolDraftT("draftMinBtn", "Minimize 3D (local)")) + "</button></div>";
         }
       } catch (eS3) {}
     } else {
@@ -1729,7 +1729,7 @@ function fMolDraftRenderPreview() {
         } else if (!d.sdfDone) {
           html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("draft3DFetching", "Fetching 3D… (PubChem → remote → local)")) + "</div>";
         } else {
-          html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitNo3DAll", "No 3D model (PubChem/remote/local minimize) — 2D only.")) + "</div>";
+          html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitNo3DAll", "No 3D model (PubChem/remote/local minimize) — 2D only.")) + " <button type='button' class='viewerFullBtn draftMinBtn' onclick='fMolDraftManualMinimize()'>" + fMolDraftEsc(fMolDraftT("draftMinBtn", "Minimize 3D (local)")) + "</button></div>";
         }
       } catch (eS32) {}
     }
@@ -1843,38 +1843,75 @@ function fMolDraftLocal3DFromMol(molText, expectHeavy) {
     if (typeof fJSmolLoadInlineSDF !== "function") return null;
     // Load flat 2D geometry, add explicit H where missing, minimize locally.
     // Bounded + best-effort: UFF can fail on odd valence — null then.
+    // v55.5: `zap` first (`load data` appends frames — stale frames ghost the
+    // display and corrupt `write MOL` read-back); isolated blocking steps with
+    // reply logging (`add hydrogens` is not a Jmol command — the silent
+    // whole-line killer found in testing; correct form is `calculate
+    // hydrogens`). Capped minimize first, plain retry on battery failure.
+    var _step = function (cmd, label) {
+      var r = null;
+      try {
+        if (typeof fJSmolScriptWait === "function") r = fJSmolScriptWait(jmolAppletNomeclature, cmd);
+        else if (typeof fJSmolScript === "function") { fJSmolScript(jmolAppletNomeclature, cmd); r = "(async)"; }
+        else return null;
+      } catch (eS) { return null; }
+      if (r === null) return null; // wrapper fail-closed (JSmol not live)
+      try { console.log("[SDF-3D] tier local-min: " + label + " reply: " + String(r || "").slice(0, 200)); } catch (eLg) {}
+      return r;
+    };
+    if (_step("zap;", "zap") === null) return null;
     var ok = !!fJSmolLoadInlineSDF(jmolAppletNomeclature, molText, "");
     if (!ok) return null;
-    // Blocking minimize (v55.4): fire-and-forget script() raced read-back with
-    // pre-minimize coords; v55.3's scriptWait then exposed the next layer —
-    // `minimize steps 500` is a silent in-script error on some JSmol builds,
-    // leaving the model flat (the old validator couldn't see flatness: the
-    // parser dropped z). So: capped form first with the minimizer reply
-    // logged, plain-`minimize` retry if the battery still sees flat geometry.
-    var _minReply = null;
-    try {
-      if (typeof fJSmolScriptWait === "function") _minReply = fJSmolScriptWait(jmolAppletNomeclature, "select all; add hydrogens; minimize steps 500; center selected;");
-      else if (typeof fJSmolScript === "function") { fJSmolScript(jmolAppletNomeclature, "select all; add hydrogens; minimize steps 500; center selected;"); _minReply = "(async)"; }
-      else return null;
-    } catch (eM) { return null; }
-    if (_minReply === null) return null; // wrapper fail-closed (JSmol not live)
-    try { console.log("[SDF-3D] tier local-min: minimize reply: " + String(_minReply || "").slice(0, 200)); } catch (eLgM) {}
+    if (_step("select all; calculate hydrogens;", "add-H") === null) return null;
+    if (_step("select all; minimize steps 500;", "minimize-capped") === null) return null;
     var _first = null;
     try { if (typeof fMolDraftReadBackSDF === "function") _first = fMolDraftReadBackSDF(expectHeavy) || null; } catch (eRb1) { _first = null; }
-    if (_first) return _first;
+    if (_first) {
+      try { if (typeof fJSmolScript === "function") fJSmolScript(jmolAppletNomeclature, "select all; center selected;"); } catch (eC) {}
+      return _first;
+    }
     try { console.log("[SDF-3D] tier local-min: capped minimize yielded nothing valid — retrying plain minimize"); } catch (eLgR) {}
-    try {
-      if (typeof fJSmolScriptWait === "function") _minReply = fJSmolScriptWait(jmolAppletNomeclature, "select all; minimize; center selected;");
-      else if (typeof fJSmolScript === "function") fJSmolScript(jmolAppletNomeclature, "select all; minimize; center selected;");
-      else return null;
-    } catch (eM2) { return null; }
-    if (_minReply === null) return null;
-    try { console.log("[SDF-3D] tier local-min: retry reply: " + String(_minReply || "").slice(0, 200)); } catch (eLgM2) {}
-    try {
-      if (typeof fMolDraftReadBackSDF === "function") return fMolDraftReadBackSDF(expectHeavy) || null;
-    } catch (eRb2) {}
+    if (_step("select all; minimize;", "minimize-plain") === null) return null;
+    var _second = null;
+    try { if (typeof fMolDraftReadBackSDF === "function") _second = fMolDraftReadBackSDF(expectHeavy) || null; } catch (eRb2) { _second = null; }
+    if (_second) {
+      try { if (typeof fJSmolScript === "function") fJSmolScript(jmolAppletNomeclature, "select all; center selected;"); } catch (eC2) {}
+      return _second;
+    }
     return null;
   } catch (eL) { return null; }
+}
+
+// Manual 3D minimize fallback (v55.5): same pipeline as auto tier 3, but
+// user-triggered from the preview when every auto tier missed (odd valence,
+// slow convergence, JSmol build quirks). Reuses fMolDraftLocal3DFromMol, so
+// provenance stays `jsmol-min`/provisional. Visible only when submitted,
+// fetch done, and still 3D-less; guards re-entrancy + draft identity.
+function fMolDraftManualMinimize() {
+  var d = null;
+  try { d = window.MulerDraft; } catch (eD) { return; }
+  if (!d || (typeof fMolDraftPresenting === "function" && fMolDraftPresenting())) return;
+  if (!d.submitted || !d.sdfDone || d.sdf3D || d.submitting || d._minimizing) return;
+  var _e = d._epoch, _s = d._submitId, _sm = d.smiles;
+  d._minimizing = true;
+  try { if (typeof fMolDraftSyncBar === "function") fMolDraftSyncBar(); } catch (eSy) {}
+  var out = null;
+  try {
+    var _eh = 0;
+    try { _eh = (typeof d.expectHeavy === "number" && d.expectHeavy > 0) ? d.expectHeavy : 0; } catch (eEH) {}
+    if (typeof fMolDraftLocal3DFromMol === "function") out = fMolDraftLocal3DFromMol(d.molText, _eh) || null;
+  } catch (eM) { out = null; }
+  try { d._minimizing = false; } catch (eMf) {}
+  if (!window.MulerDraft || window.MulerDraft !== d || d._epoch !== _e || d._submitId !== _s || d.smiles !== _sm) return;
+  if (out) {
+    d.sdf3D = out;
+    d.sdf3DSource = "jsmol-min";
+    try { if (typeof fMolDraftShow3D === "function") fMolDraftShow3D(out); } catch (eS3) {}
+  } else {
+    try { fMolDraftToast(fMolDraftT("submitNo3DAll", "No 3D model (PubChem/remote/local minimize) — 2D only.")); } catch (eT) {}
+  }
+  try { fMolDraftRenderPreview(); } catch (eR) {}
+  try { if (typeof fMolDraftSyncBar === "function") fMolDraftSyncBar(); } catch (eSy2) {}
 }
 
 // Tier-2 remote 3D via JSmol `load $SMILES` (v55.1): JSmol resolves `$`
@@ -1894,6 +1931,14 @@ function fMolDraftRemote3DFromJSmol(smiles, expectHeavy, isCurrent) {
     // SMILES but special to the Jmol script parser).
     var q = String(smiles).replace(/\\/g, "\\\\").replace(/"/g, "'");
     if (!q) return null;
+    if (isCurrent && !isCurrent()) return null;
+    // zap first: a plain `load` can append frames, and stale frames corrupt
+    // the read-back battery below (v55.5 lesson from `load data`).
+    try {
+      if (typeof fJSmolScriptWait === "function") { if (fJSmolScriptWait(jmolAppletNomeclature, "zap;") === null) return null; }
+      else if (typeof fJSmolScript === "function") fJSmolScript(jmolAppletNomeclature, "zap;");
+      else return null;
+    } catch (eZ) {}
     if (isCurrent && !isCurrent()) return null;
     var r = null;
     try {
@@ -1949,7 +1994,7 @@ async function fMolDraftFetchSDF3DTiered(smiles, molText, expectHeavy, isCurrent
         try { rem = fMolDraftRemote3DFromJSmol(smiles, expectHeavy, isCurrent) || null; } catch (eC) { rem = null; }
       }
       if (rem && (!isCurrent || isCurrent())) return { sdf: rem, source: "remote" };
-      try { console.log("[SDF-3D] tier remote: " + (rem ? rem.length + " chars" : "miss")); } catch (eLgR) {}
+      if (!_skipR) { try { console.log("[SDF-3D] tier remote: " + (rem ? rem.length + " chars" : "miss")); } catch (eLgR) {} }
       sdf = null;
     } catch (eT2) { sdf = null; }
   }
@@ -2290,6 +2335,7 @@ async function fMolDraftSubmit() {
       }
     } catch (eEH) { _expH = 0; }
     var _molT = drawing.molText;
+    try { window.MulerDraft.expectHeavy = _expH; } catch (eXH) {}
     var _isCur = function () {
       try {
         return !(!window.MulerDraft || window.MulerDraft._submitId !== _mySid ||
