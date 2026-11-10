@@ -2115,7 +2115,7 @@ function fScenarioRestoreChrome(viewers) {
     "save2DBtn", "save3DBtn",
     "jsmeNomeclatureDIV",
     "menuCol", "viewerCol", "viewerVisBtns", "viewerSettingsBtnDiv", "viewerSettingsPanel",
-    "nameAnalysisContainer", "nameSettingsPanel",
+    "nameAnalysisContainer", "analysisCol", "nameSettingsPanel",
   ];
   ids.forEach(function (id) {
     try {
@@ -3930,6 +3930,9 @@ function fScenarioApplyNamingChrome(show) {
     show = show || _st.show || {};
     // naming panel + settings + audio
     fScenarioHide("nameAnalysisContainer", present && show.naming === false);
+    // naming master off hides the whole right column (not just the naming
+    // container), so viewers + text card recenter like menuCol/viewerCol.
+    fScenarioHide("analysisCol", present && show.naming === false);
     // locked name interaction: boxes ignore mouse clicks in presentation
     // (CSS .locked); the stored highlight + explanation still replay via
     // fScenarioClickNameBox. Hide the explain line only when locked with no

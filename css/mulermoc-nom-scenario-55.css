@@ -2506,9 +2506,17 @@ body.scPinned #mainAppContainer:focus-visible {
    margin: 12px 0;
    padding: 5px;
    overflow-x: auto;
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   justify-content: center;
    /* background: var(--veryLightGray); */
    /* border: 1px solid var(--lightBlue); */
    /* border-radius: 6px; */
+}
+
+.mu-note .note-embed > div:first-child {
+ max-width: 400px;
 }
 
 .mu-note .note-embed .namingRuleTable {

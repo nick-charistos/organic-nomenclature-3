@@ -2697,3 +2697,8 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * Drawer `showRow` split into `.scShowRow.scStepViewersSettings` (2D/3D `show.controls`, viewer-off disable unchanged) + `.scShowRow.scStepNameSettings` (master `show.naming` first, then `nameSettings`/`nameClick`/`nameEye`); `.scMenuGroupsRow` untouched. Existing `.scShowRow` flex/tooltip/disabled CSS reused, no new rules.
 * New master `showNaming` key ("Εμφάνιση ονομασίας" / "Show naming"), default checked (absent/legacy = true via `fScenarioDefaults`); off disables the 3 naming children (`disabled` + `.disabled`, values kept so re-check restores ticks); `nameEye` keeps its molecule-gate. Present already hides the naming container on `show.naming===false`.
 * `fScenarioUpdateStep` preserves `show.naming`; capture already defaults `naming:true`. No schema bump (additive boolean).
+
+## 2026-11-10 (cont.) — naming master hides analysisCol (v55 working copy)
+
+* `show.naming===false` in Present now hides `analysisCol` wholesale (`fScenarioApplyNamingChrome`, alongside the existing `nameAnalysisContainer` hide); authoring early-returns untouched. `fScenarioRestoreChrome` ids add `analysisCol` so Exit / authoring Go restores it. Naming-off also hides rules (same column) — turn naming on if a step needs `#ruleTheoryContainer`.
+* In-tree owner CSS kept as-is: `.mu-note .note-embed` flex-column centered (`css/mulermoc-nom-scenario-55.css`), `.mu-note .note-embed > div:first-child` max-width 400px.

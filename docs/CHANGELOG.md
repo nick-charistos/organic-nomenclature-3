@@ -30,6 +30,8 @@ Forked from v54 (`mulermoc-nom-55.html` + `js/*-55.js` + `css/*-55.css`, `?v=55.
 - PubChem tier now enforces heavy count: `fMolDraftFetchSDF3DTiered` validates with `expectHeavy` instead of `0` (same guard added to the legacy direct-PubChem fallback); `expectHeavy=0` still skips the check as before.
 - Present hides `#viewerCol` wholesale when both viewers are off (`fScenarioChrome`: `present && !show2D && !show3D`, same flex-recenter pattern as `menuCol`); authoring untouched. `fScenarioRestoreChrome` ids add `viewerCol` so Exit / authoring Go restores it. Text span/height helpers already skip hidden cols, `fResizeViewers` early-returns on zero width.
 - Step drawer rows grouped: `.scStepViewersSettings` (2D/3D `show.controls`) + `.scStepNameSettings` (master `show.naming` "Εμφάνιση ονομασίας"/"Show naming" default checked + `nameSettings`/`nameClick`/`nameEye`); master off disables the 3 children, values kept. `.scMenuGroupsRow` unchanged. `fScenarioUpdateStep` preserves `show.naming`; legacy/absent = true. No schema bump.
+- Naming master hides the whole right column: `show.naming===false` in Present now hides `analysisCol` (was only `nameAnalysisContainer`), so viewers + text card recenter; `fScenarioRestoreChrome` ids add `analysisCol`. Authoring untouched. Note: naming-off also hides rules (same column).
+- In-tree owner CSS kept as-is: `.mu-note .note-embed` centered column (`scenario-55.css`), first-child embed capped at 400px.
 
 ## [v54] (molecule edit/create draft flow; LIVE, `index.html` → v54)
 
