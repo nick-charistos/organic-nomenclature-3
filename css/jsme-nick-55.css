@@ -2752,12 +2752,14 @@ color: var(--veryLightEarth);
    Portrait phones get a "rotate device" prompt; a stacked fallback is
    shown underneath if dismissed. */
 
-/* Menu collapse button — tree-lines icon at the left of the menu title.
-   Absolute (mirrored from .settingsBtn) so it never overlaps the centered
-   title text or the authoring-time scPickToggle appended at the right. */
+/* Menu collapse button — tree-lines icon at the RIGHT of the menu title.
+   Absolute (mirrored from .settingsBtn): the authoring-time scPickToggle
+   owns the left slot (absolute left:12px in the scenario CSS), the title
+   text stays centered, nothing else lives on the right. */
 .menuCollapseBtn {
   position: absolute;
-  left: 8px;
+  left: auto;
+  right: 8px;
   top: 50%;
   transform: translateY(-50%);
   width: 24px;
@@ -2780,8 +2782,8 @@ color: var(--veryLightEarth);
 
 /* Edge-anchored tooltip bubble: a centered one would clip at the narrow rail. */
 #nomeclature2Menu .panelTitle > #menuCollapseBtn[data-tooltip]::after {
-  left: 0;
-  right: auto;
+  left: auto;
+  right: 0;
   transform: none;
   width: max-content;
   max-width: calc(100vw - 2rem);
@@ -2792,8 +2794,8 @@ color: var(--veryLightEarth);
 }
 
 #nomeclature2Menu .panelTitle > #menuCollapseBtn[data-tooltip]::before {
-  left: 12px;
-  right: auto;
+  left: auto;
+  right: 12px;
   transform: none;
 }
 
