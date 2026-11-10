@@ -911,7 +911,14 @@ $(document).ready(function () {
       "",
     );
     if (!text.trim()) return;
-    fSpeakGreek(text);
+    // Language-aware voice (v55.x): EN names via fSpeakMuler (Zira), Greek
+    // via the legacy path. Unreachable while fSpeakNameWithPauses exists,
+    // but kept consistent so a future refactor can't revive the Greek-voice
+    // fallback on English text.
+    var _rnLang = "gr";
+    try { _rnLang = (typeof fMulerLang === "function") ? fMulerLang() : "gr"; } catch (eL2) { _rnLang = "gr"; }
+    if (_rnLang === "en" && typeof fSpeakMuler === "function") fSpeakMuler(text);
+    else fSpeakGreek(text);
   });
 
   // Ensure read button remains enabled/visible even if other scripts attempt to disable it
@@ -1365,7 +1372,13 @@ $(document).ready(function () {
         const explainText = $("#nameAnalysisExplain")
           .text()
           .replace(/\bC\b/g, "");
-        fSpeakGreek(explainText);
+        // Language-aware voice (v55.x): explanations are translated (fTX),
+        // so speak them with the matching voice — EN via fSpeakMuler (Zira),
+        // Greek via the legacy path. typeof-guarded: lang file loads later.
+        var _exLang = "gr";
+        try { _exLang = (typeof fMulerLang === "function") ? fMulerLang() : "gr"; } catch (eL) { _exLang = "gr"; }
+        if (_exLang === "en" && typeof fSpeakMuler === "function") fSpeakMuler(explainText);
+        else fSpeakGreek(explainText);
       }
     }
     if (typeof fFitNameComponents === "function") fFitNameComponents();
