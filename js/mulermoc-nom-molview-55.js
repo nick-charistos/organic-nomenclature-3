@@ -12930,10 +12930,33 @@ function fSetMolVis3D(theVisModel) {
 // split the remainder equally; both viewers share the VIEWER_MIN_H floor
 // (mirrors the CSS minimums), the phone landscape cap stays as ceiling.
 // Returns {h2, h3} (0 = hidden).
+
+// Scroll-stable viewport height (v55.x, mobile): window.innerHeight slides
+// with the URL bar on scroll (~50px); feeding it live recomputed viewer
+// heights mid-scroll and ping-ponged the column ResizeObserver. Cached;
+// refreshed only on width change (rotation/resize), large deltas
+// (keyboard/split-screen) or first run. Falls back to live on any gap.
+var _stableVH = 0, _stableVW = 0;
+function fStableViewportH() {
+  try {
+    var liveW = 0, liveH = 0;
+    try { liveW = window.innerWidth || 0; liveH = window.innerHeight || 0; } catch (eM) {}
+    if (!(liveH > 0)) return _stableVH > 0 ? _stableVH : 0;
+    if (!(_stableVH > 0) || (liveW > 0 && liveW !== _stableVW) || Math.abs(liveH - _stableVH) > 120) {
+      _stableVH = liveH; _stableVW = liveW;
+    }
+    return _stableVH;
+  } catch (e) { return 0; }
+}
 function fViewerHeights2D3D(raw) {
   var out = { h2: 0, h3: 0, full: 0 };
   try {
-    var total = window.innerHeight - 30; // header
+    // Scroll-stable viewport (v55.x): live innerHeight slides with the
+    // mobile URL bar; the cached value keeps heights still mid-scroll.
+    var _vph = 0;
+    try { if (typeof fStableViewportH === "function") _vph = fStableViewportH() || 0; } catch (eV) { _vph = 0; }
+    if (!(_vph > 0)) { try { _vph = window.innerHeight || 0; } catch (eV2) { _vph = 0; } }
+    var total = _vph - 30; // header
     var h1 = document.getElementById("pageTitle");
     if (h1 && h1.offsetParent !== null) total -= h1.offsetHeight;
     // WIP notice banner (normal flow above the title while not dismissed).
@@ -13031,7 +13054,7 @@ function fViewerHeights2D3D(raw) {
       show3D ? Math.max(eachFull, VIEWER_MIN_H) : 0
     );
     var maxViewerH =
-      window.innerHeight < 430 ? Math.floor(window.innerHeight * 0.3) : Infinity;
+      _vph < 430 ? Math.floor(_vph * 0.3) : Infinity;
     // Single visible viewer: cap its height. Default is "full" (whole single
     // share); null uses the both-visible share so hiding the other viewer
     // never resizes the survivor; an explicit px cap also overrides. The cap
@@ -13076,6 +13099,19 @@ function fViewerHeights2D3D(raw) {
     }
     if (show2D) out.h2 = Math.min(Math.max(each2, VIEWER_MIN_H), cap2, maxViewerH);
     if (show3D) out.h3 = Math.min(Math.max(each3, VIEWER_MIN_H), cap3, maxViewerH);
+    // Width bound (v55.x): a viewer is never taller than it is wide
+    // (width/height >= 1), phones and desktop alike. Widths don't move on
+    // scroll, so this also damps any residual URL-bar jitter. Final word —
+    // applies to auto split, stored px caps and "Full".
+    try {
+      var _w2 = 0, _w3 = 0;
+      try { if (vc && vc.clientWidth > 0) _w2 = Math.max(vc.clientWidth - 4, 50); } catch (eW2) {}
+      try { var _c3 = document.getElementById("nomeclature3D"); if (_c3 && _c3.clientWidth > 0) _w3 = _c3.clientWidth; } catch (eW3) {}
+      if (show2D && _w2 > 0 && out.h2 > _w2) out.h2 = _w2;
+      if (show3D && _w3 > 0 && out.h3 > _w3) out.h3 = _w3;
+      var _wF = _w2 > 0 ? _w2 : _w3;
+      if (_wF > 0 && out.full > _wF) out.full = _wF;
+    } catch (eW) { /* width clamp best-effort */ }
   } catch (eH) { /* measuring unavailable */ }
   return out;
 }

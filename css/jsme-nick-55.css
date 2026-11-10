@@ -527,6 +527,7 @@ header {
 
 #viewerSettingsPanel.open {
   max-height: min(70vh, 400px);
+  max-height: min(70svh, 400px);
   padding: 6px 8px;
   overflow-y: auto;
 }
