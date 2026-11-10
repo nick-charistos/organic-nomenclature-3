@@ -945,6 +945,7 @@ header {
 .scMolBadge[data-tooltip]::after,
 .scDragHandle[data-tooltip]::after,
 .menuCollapseBtn[data-tooltip]::after,
+.nameExplainAll[data-tooltip]::after,
 .langButtonClass[data-tooltip]::after {
   content: attr(data-tooltip);
   background: var(--darkBlue);
@@ -2032,13 +2033,13 @@ header {
 }
 
 .nameCompBox.selected::after {
-  content: "";
+  /* content: "";
   position: absolute;
   left: calc(50% - 3px);
   top: 100%;
   width: 6px;
   height: 22px;
-  background-color: var(--vibrantGreen);
+  background-color: var(--vibrantGreen); */
   /* box-shadow: 1px 1px 3px 0px rgba(0,0,0,0.5); */
 }
 
@@ -2210,20 +2211,20 @@ header {
 .explainTable {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  max-height: 320px;
-  overflow-y: auto;
-  padding-right: 2px;
+  gap: 4px;
+  /* max-height: 320px; */
+  /* overflow-y: auto; */
+  /* padding-right: 2px; */
 }
 
 .explainRow {
   display: flex;
   gap: 8px;
-  align-items: flex-start;
-  padding: 6px 8px;
+  align-items: stretch;
+  /* padding: 6px 8px; */
   background: #fff;
   border: 1px solid var(--lightBlue);
-  border-radius: 4px;
+  border-radius: 2px;
   cursor: pointer;
 }
 
@@ -2237,19 +2238,21 @@ header {
 }
 
 .explainChip {
-  flex: 0 0 auto;
-  color: var(--darkBlue);
-  background-color: var(--veryLightEarth);
-  border: 1px solid var(--darkEarth);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-weight: bold;
-  white-space: nowrap;
+	flex: 0 0 auto;
+	color: #000;
+	background-color: var(--veryLightEarth);
+	border-right: 1px solid var(--lightBlue);
+	padding: 5px 6px;
+	/* border-radius: 4px; */
+	font-weight: bold;
+	white-space: nowrap;
+	/* height: 100%; */
 }
 
 .explainCell {
   flex: 1 1 auto;
   min-width: 0;
+  padding: 5px;
 }
 
 .explainCell .explainText {
