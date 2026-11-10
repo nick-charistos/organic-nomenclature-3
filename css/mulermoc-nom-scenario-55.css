@@ -2314,7 +2314,7 @@ body.scPinned .scenarioDrawer.open {
    display: none;
    position: absolute;
    top: 40vh;
-   z-index: 60;
+   z-index: 600;
    width: 34px;
    height: 44px;
    padding: 0;

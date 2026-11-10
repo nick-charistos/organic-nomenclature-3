@@ -2233,8 +2233,9 @@ header {
 }
 
 .explainRow.selected {
-  outline: 2px solid var(--darkBlue);
-  outline-offset: -2px;
+outline: 2px solid var(--vibrantGreen);
+  outline-offset: -1px;
+  border-color: var(--vibrantGreen);
 }
 
 .explainChip {
