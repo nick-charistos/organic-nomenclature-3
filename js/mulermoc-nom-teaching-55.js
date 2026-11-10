@@ -869,12 +869,14 @@ $(document).ready(function () {
 
   $(document).on("click", "#narrateAnalysisToggle", function () {
     narrateAnalysisFlag = !narrateAnalysisFlag;
+    var _narrTip = narrateAnalysisFlag ? "Αφήγηση ενεργή" : "Αφήγηση ανενεργή";
+    try { if (typeof fMulerT === "function") _narrTip = fMulerT(narrateAnalysisFlag ? "narrateOn" : "narrateOff"); } catch (eT) {}
     $(this)
       .html(narrateAnalysisFlag ? svgSpeaker : svgMute)
       .toggleClass("active", narrateAnalysisFlag)
       .attr(
         "data-tooltip",
-        narrateAnalysisFlag ? "Αφήγηση ενεργή" : "Αφήγηση ανενεργή",
+        _narrTip,
       );
     // if (!narrateAnalysisFlag) {
     //   window.speechSynthesis.cancel();

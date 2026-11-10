@@ -974,15 +974,18 @@ function fMulerWireToggle() {
   } catch (e) {}
 }
 
-// Wire EN narration: when lang=en, capture read/narrate clicks and speak
+// Wire EN narration: when lang=en, capture the read-name click and speak
 // the visible English name instead of the Greek TTS path. Greek default untouched.
+// NOTE: #narrateAnalysisToggle is deliberately NOT intercepted — it only arms
+// per-component narration (its own jQuery handler owns the flag); capturing it
+// here would speak the whole name and stopPropagation would kill the toggle.
 function fWireENTTS() {
   try {
     document.addEventListener("click", function (ev) {
       var lang = "gr";
       try { lang = fMulerLang(); } catch (e) {}
       if (lang !== "en") return;
-      var t = ev && ev.target && ev.target.closest ? ev.target.closest("#readNameBtn,#narrateAnalysisToggle") : null;
+      var t = ev && ev.target && ev.target.closest ? ev.target.closest("#readNameBtn") : null;
       if (!t) return;
       var txt = "";
       try {
@@ -990,6 +993,7 @@ function fWireENTTS() {
         if (boxes && boxes.length) {
           var parts = [];
           for (var i = 0; i < boxes.length; i++) {
+            try { if (boxes[i].classList && boxes[i].classList.contains("comp-hidden")) continue; } catch (eH) {}
             var s = (boxes[i].textContent || "").trim();
             if (s) parts.push(s);
           }
