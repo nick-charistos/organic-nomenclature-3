@@ -1,12 +1,12 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `3cb9890` (2026-11-09) — v55
-> settings cleanup + i18n rebuild (`?v=55.0`, `index.html` → v55). Tree clean
+> **Resume pointer (cross-machine):** HEAD `c9aad64` (2026-11-10) — v55
+> drift fixes + present viewerCol hide (`?v=55.0`, `index.html` → v55). Tree clean
 > after this commit. Remaining: browser sweep (EN panel labels incl. bar,
-> 141 molecules, Present round-trips) + P3 blessing of Greek word forms,
+> 141 molecules, Present round-trips incl. viewers-off viewerCol hide) + P3 blessing of Greek word forms,
 > completion-callback wait (spike), energy comparison for true convergence,
 > settings tabs (registry groups by row id when needed). Full record:
-> `docs/SESSION-NOTES.md` 2026-11-09 entries + `docs/CHANGELOG.md` [v55] +
+> `docs/SESSION-NOTES.md` 2026-11-09/10 entries + `docs/CHANGELOG.md` [v55] +
 > handoff `docs/SESSION-HANDOFF-2026-11-09-TIERED-3D.md`. Routine on the
 > other machine: pull first, hard-reload (Ctrl+Shift+R — `?v=55.0` unchanged),
 > then resume from `git log --oneline -5` + `git status`. OpenCode sessions
@@ -2671,7 +2671,7 @@ All `*55*`-only (`molview-55.js` + `lang-55.js` + `scenario-55.css`); naming eng
 * Save dialog removed (owner: redundant with Accept): manual stores best-effort directly; dialog code + `#molDraftMinOK` CSS + `draftMinSave3D` key deleted. Accept stays the author gate, provenance stays labeled.
 * Steps: `MOLMIN_STEPS` (fresh/auto, gated ≥ 0.05 Å) + `MOLMIN_FURTHER_STEPS = 100` (further from last minimized geometry, no gate — any valid candidate banks; miss keeps previous with renamed `draftMinFurtherMiss` "no valid result" toast, never a convergence claim). Verdict logs carry numeric `disp=`. Further rounds reload the stored SDF deterministically first (zap + inline load + echo verify with length logging) instead of trusting live applet state (that trust produced the false `heavy=0` miss that started this thread).
 * Re-optimize entry: `draftMinMore` (+100) button on `jsmol-min` previews; guard admits fresh + unminimized-retry + further, still blocks PubChem/remote.
-* Root-caused from console mid-session: the minimize command had been blanked to `" "` by an uncommitted worktree edit (bit-identical 2557-char read-backs, `unmoved — rejected` both FFs, small molecule included) — restored to `select all; minimize steps N`. Owner in-tree tuning kept as-is (steps 300, global `minimizationCriterion 0.01` in `spt/init-3.spt`, green `.viewerFullBtn`).
+* Root-caused from console mid-session: the minimize command had been blanked to `" "` by an uncommitted worktree edit (bit-identical 2557-char read-backs, `unmoved — rejected` both FFs, small molecule included) — restored to `select all; minimize steps N`. Owner in-tree tuning kept as-is (steps 500 via `MOLMIN_STEPS`, global `minimizationCriterion 0.005` in `spt/init-3.spt`, green `.viewerFullBtn`).
 * Standing rule re-confirmed the hard way: any mid-run applet poll risks interrupting the in-flight minimize; the only legal mid-run applet script is the halt command — and even that only when a run is actually in flight.
 
 ## 2026-11-09 (cont.) — settings cleanup + i18n rebuild (v55 working copy)
@@ -2681,3 +2681,11 @@ All `*55*`-only (`molview-55.js` + `lang-55.js` + `scenario-55.css`); naming eng
 * Settings labels are `data-lang`-keyed with one generic loop; positional map + autoLinearize id-block deleted. This also fixes the pre-existing EN rotation (map shifted from the autoLinearize row onward — confirmed live when `#atomColorModeRow` showed "3D atom symbols:").
 * `MULER_VIEWER_SETTINGS` + `fSyncViewerSettingsUI()` (molview): panel-open and scenario-apply sync through one loop; DOM-truth checkboxes keep direct paths. No DOM rebuild — all bindings survive. Tabs hook: group by row id later.
 * EN fixes found live: data-lang loop used `(root || document)` in a rootless function (ReferenceError swallowed → loop dead) and wrote `firstChild` (indentation whitespace) — now `document` + first non-empty text node (span-safe). `atomSymbolsBar` key (`Σύμβολα ατόμων` / `Atom Symbols`); orphan `atomSymbols3D` retired. The bar-text/colon mismatch that started this thread (`'Σύμβολα ατόμων:'` key vs `'Σύμβολα ατόμων'` text) is now impossible by construction.
+
+## 2026-11-10 — drift fixes + present viewerCol hide (v55 working copy)
+
+All `*55*`-only (`molview-55.js` + `scenario-55.js` + docs); naming engine untouched. `node --check` clean on both JS files.
+
+* Drift fix: `MOLMIN_FURTHER_STEPS` 200 → 100 to match commit msg / CHANGELOG / `draftMinMore` "+100"; `MOLMIN_STEPS` stays 500 (console-proven `minimize steps 500` convergence). Docs corrected from stale "steps 300" / `minimizationCriterion 0.01` to tree truth 500 / `0.005` (`CHANGELOG.md`, this file's 2026-11-09 entry).
+* PubChem tier validates heavy count: `fMolDraftFetchSDF3DTiered` passes `expectHeavy` (was `0`, skipping the check); same guard on the legacy direct-PubChem fallback in `fMolDraftSubmit`. `expectHeavy=0` still skips as before.
+* Present hides `#viewerCol` when both viewers off: `fScenarioChrome` adds `fScenarioHide("viewerCol", present && !show2D && !show3D)` (flex-recenter like `menuCol`); authoring (`present=false`) untouched. `fScenarioRestoreChrome` ids add `viewerCol` so Exit / authoring Go restores it. Text span/height + `fResizeViewers` already tolerate hidden cols (offsetParent skip / zero-width early-return).

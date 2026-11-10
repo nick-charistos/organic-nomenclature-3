@@ -2114,7 +2114,7 @@ function fScenarioRestoreChrome(viewers) {
   var ids = [
     "save2DBtn", "save3DBtn",
     "jsmeNomeclatureDIV",
-    "menuCol", "viewerVisBtns", "viewerSettingsBtnDiv", "viewerSettingsPanel",
+    "menuCol", "viewerCol", "viewerVisBtns", "viewerSettingsBtnDiv", "viewerSettingsPanel",
     "nameAnalysisContainer", "nameSettingsPanel",
   ];
   ids.forEach(function (id) {
@@ -4032,6 +4032,9 @@ function fScenarioChrome(show) {
   var _menuStep = _ps.steps[_ps.index];
   var _menuOn = present && _menuStep && _menuStep.show && _menuStep.show.menu === true;
   fScenarioHide("menuCol", present && !_menuOn);
+  // viewer column: hide wholesale in presentation when both viewers are off
+  // (flex row recenters the rest, same as menuCol above).
+  fScenarioHide("viewerCol", present && !show2D && !show3D);
   // pick UI never appears in presentation (paint strips it on rebuilds too)
   if (present) {
     try {

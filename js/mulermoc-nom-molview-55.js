@@ -2046,7 +2046,7 @@ function fMolDraftJiggleZ(molText, amp) {
 // MOLMIN_STEPS with the movement gate; further rounds use
 // MOLMIN_FURTHER_STEPS with no gate — any valid result banks).
 var MOLMIN_STEPS = 500;
-var MOLMIN_FURTHER_STEPS = 200;
+var MOLMIN_FURTHER_STEPS = 100;
 var MOLMIN_WAIT_S = 10;
 // Blind-wait budget per minimize round (v55.x): the base 10 s covers small
 // systems; large systems need longer since the step budget scales worse
@@ -2568,7 +2568,7 @@ async function fMolDraftFetchSDF3DTiered(smiles, molText, expectHeavy, isCurrent
         try { sdf = await fFetchSDF3D_PubChem(smiles); } catch (eP) { sdf = null; }
       }
       if (sdf && (!isCurrent || isCurrent())) {
-        if (typeof fMolDraftValidSDF3D === "function" && !fMolDraftValidSDF3D(sdf, 0)) sdf = null;
+        if (typeof fMolDraftValidSDF3D === "function" && !fMolDraftValidSDF3D(sdf, expectHeavy)) sdf = null;
         else return { sdf: sdf, source: "pubchem" };
       } else sdf = null;
       try { console.log("[SDF-3D] tier pubchem: " + (sdf ? sdf.length + " chars" : "miss")); } catch (eLgP) {}
@@ -2962,6 +2962,7 @@ async function fMolDraftSubmit() {
     } else if (typeof fFetchSDF3D_PubChem === "function") {
       var _s0 = null;
       try { _s0 = await fFetchSDF3D_PubChem(submittingSmiles); } catch (eS) { _s0 = null; }
+      if (_s0 && typeof fMolDraftValidSDF3D === "function" && !fMolDraftValidSDF3D(_s0, _expH)) _s0 = null;
       if (_s0) _tier = { sdf: _s0, source: "pubchem" };
     }
   } catch (eS) { _tier = { sdf: null, source: null }; }
