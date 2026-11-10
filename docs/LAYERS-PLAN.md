@@ -2,7 +2,7 @@
 
 Source of truth for the four layers of the twofold+1 vision (see `README.md`):
 1. a useful community tool, 2. ongoing research publications, 3. (+1) platform for isomerism/reactions and beyond.
-Baseline: **v52 live** (`index.html` → v52 — 136 molecules, unified inline/modal rich note editor with WYSIWYG + HTML source and staged Apply/Cancel, safe rich HTML notes, rule-table components, compact icon toolbar, and a Snap-free native `MuSVG` 2D overlay; default scenario `Αλκάνια-Αιθάνιο-τεστ`). The v51 rich notes, v50 per-step presentation text position (top/left/right sticky rail) + persistent naming shell, and the v49 MSc-student import are retained; v51/v50/v49/v48/v47/v46/v45/v44 runnable at root, v43 frozen at tag `v43`. The `MuSVG.parse()` OOM/XML crash was fixed on 2026-10-25; two pre-existing skeletal JSmol failures remain.
+Baseline: **v55 live** (`index.html` → v55 — 141 molecules, tiered draft 3D with Accept on any tier, plus the unified inline/modal rich note editor with WYSIWYG + HTML source and staged Apply/Cancel, safe rich HTML notes, rule-table components, compact icon toolbar, and a Snap-free native `MuSVG` 2D overlay; default scenario `Αλκάνια-Αιθάνιο-τεστ`). The v54 molecule drafts, v53 full English layer, v51 rich notes, v50 per-step presentation text position (top/left/right sticky rail) + persistent naming shell, and the v49 MSc-student import are retained; v54/v53/v52/v51/v50/v49/v48/v47/v46/v45/v44 runnable at root, v43 frozen at tag `v43`. The `MuSVG.parse()` OOM/XML crash was fixed on 2026-10-25; two pre-existing skeletal JSmol failures remain.
 Hosting: **embedded static** — the chemistry app stays dependency-free static; Drupal owns scenarios, exercises/quizzes, users/sessions, logging, exports.
 
 ---
@@ -11,14 +11,14 @@ Hosting: **embedded static** — the chemistry app stays dependency-free static;
 
 | Layer | Entry | Chrome / behavior | Owner | Exit criteria |
 |---|---|---|---|---|
-| **LEARN** | `mulermoc-nom-52.html?scenario=scenarios/<name>.json&present=1#step=N` (hosted) or Import (offline/`file://`) | linear snapshots (`selectedMol + show.* + note`); menu hidden in present; Exit restores menu (`menu-open`) + exit-step viewers/bars + settings panels; in-memory steps kept | P1 (player) + P3 (content) + P2-lite (listing) | teacher unfamiliar with code can Present + Exit in class |
-| **EXPLORE** | `mulermoc-nom-52.html` (no params) | free browsing, left menu (series-first), all DB molecules | P1 (app) + P4→P3 (molecules) | menu search works; scenario-needed molecules present |
+| **LEARN** | `mulermoc-nom-55.html?scenario=scenarios/<name>.json&present=1#step=N` (hosted) or Import (offline/`file://`) | linear snapshots (`selectedMol + show.* + note`); menu hidden in present; Exit restores menu (`menu-open`) + exit-step viewers/bars + settings panels; in-memory steps kept | P1 (player) + P3 (content) + P2-lite (listing) | teacher unfamiliar with code can Present + Exit in class |
+| **EXPLORE** | `mulermoc-nom-55.html` (no params) | free browsing, left menu (series-first), all DB molecules | P1 (app) + P4→P3 (molecules) | menu search works; scenario-needed molecules present |
 | **PRACTICE** | TBD (`?exercise=` + `itemType`) on the same engine | until-correct feedback loop, attempt counting; reuses `fSelectMol` + name-box click path | P1 + P3 (wording) + P2 (schema) | 3 types v1 usable in small-class pilots |
 | **PLAY** | TBD (Drupal quiz session) | gamified items, score/streak/levels v1; events queued offline, synced to Drupal | P2 leads, P1 thin client; P5/P6 research | response+time log → CSV; EPAL-vs-Lyceum analysis possible |
 
 `show.*`, `scenarioVersion: 1`, and validation policy are defined in `docs/didactic-scenario-plan.md`.
 Exercise `itemType` and log `domain` reserve `nomenclature | isomerism | reactions`.
-Scenario schema and log events reserve an optional `lang` field (`gr` default; no implementation until Phase 5).
+Scenario schema and log events carry an optional `lang` field (`gr` default; implemented in v53: `?lang=en` + per-step `step.lang`).
 
 ---
 
@@ -77,8 +77,8 @@ Total to 4-layer pilot: ~6–9 months with this team. LEARN-pilot usable this se
 
 Greek first this year (Phases 1–4 above). If accomplished, upgrade to a full English version for teachers and learners — same otterbein-style play: the best-in-class answer to one hard topic (multirepresentational nomenclature), spread via the submitted paper as launch vehicle.
 
-* **E1 — `?lang=` infrastructure (~1 wk):** central `STRINGS` table (`gr` default, per-key fallback to GR so partial EN never blanks the UI); `?lang=en` flag persisted in scenario URLs (`?scenario=…&lang=en&present=1#step=N`); TTS voice pick per lang. One codebase — no `*-en.html` copy. No chemistry changes.
-* **E2 — English name assembly (2–4 wk, the real work):** parallel `fGuessNameEN` path (no Greek euphony connector, English substituent conventions, common-name handling); validated molecule-by-molecule against the same 136-set (136 `nameExamples` keys); Greek output byte-identical after (regression gate). P1 + P4.
+* **E1 — `?lang=` infrastructure: SHIPPED in v53** (~1 wk was the estimate): central `STRINGS` table (`gr` default, per-key fallback to GR so partial EN never blanks the UI); `?lang=en` flag persisted in scenario URLs (`?scenario=…&lang=en&present=1#step=N`); TTS voice pick per lang. One codebase — no `*-en.html` copy. No chemistry changes.
+* **E2 — English name assembly: SHIPPED in v53** (2–4 wk was the estimate, the real work): parallel `fGuessNameEN` path (no Greek euphony connector, English substituent conventions, common-name handling); validated molecule-by-molecule against the 141-set; Greek output byte-identical after (regression gate). P1 + P4.
 * **E3 — EN scenario library (parallel, P3):** 3–5 EN-authored scenarios (English classroom narratives, not translations), same schema + two-level notes.
 * **E4 — Release as companion:** stable EN entry link + short teacher guide + citation to the submitted paper.
 * **Entry criteria:** Greek LEARN pilot done + paper submitted + engine frozen. **Estimate:** ~6–10 weeks. **Owner:** P1 + P3 + P4; P2 aligns the paper to cite the EN link.

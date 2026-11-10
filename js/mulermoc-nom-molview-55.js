@@ -910,7 +910,7 @@ function fMolDraftBackToEdit() {
   // on _submitId and abort when it changes, so a Draw mid-fetch cannot paint
   // the old drawing's oracle over the new canvas. Accept-time re-check stays
   // authoritative, but the UX no longer desyncs until then.
-  try { if (window.MulerDraft.submitting) window.MulerDraft._submitId = (window.MulerDraft._submitId || 0) + 1; } catch (eSi) {}
+  try { if (window.MulerDraft.submitting || window.MulerDraft._minimizing) { window.MulerDraft._submitId = (window.MulerDraft._submitId || 0) + 1; window.MulerDraft._minimizing = false; } } catch (eSi) {}
   try { if (typeof fMolDraftMinStopEngine === "function") fMolDraftMinStopEngine(); } catch (eSe) {}
   try { if (typeof fMolDraftMinWaitClose === "function") fMolDraftMinWaitClose(); } catch (eWc) {}
   // Like Edit entry: 3D away (hide, not zap — viewport fragility), then the
@@ -2065,8 +2065,9 @@ function fMolDraftMinWaitSecs(expectHeavy) {
 // One fire-and-forget minimize round (v55.13): snapshot the live model, fire
 // minimize async WITHOUT any follow-up script (follow-ups interrupt the
 // in-flight run — console-proven: interactive `minimize steps 500`
-// converges while scriptWait+immediate-read got exactly 0.000), wait
-// MOLMIN_WAIT_S undisturbed, single read-back. Acceptance = valid AND moved
+// converges while scriptWait+immediate-read got exactly 0.000), wait the
+// scaled budget (fMolDraftMinWaitSecs: base + heavies, capped) undisturbed,
+// single read-back. Acceptance = valid AND moved
 // vs the pre-fire snapshot (no convergence requirement: partial descent counts).
 function fMolDraftLocal3DRelaxFF(expectHeavy, ffName, steps, skipGate) {
   return (async function () {
@@ -2618,7 +2619,7 @@ async function fMolDraftFetchSDF3DTiered(smiles, molText, expectHeavy, isCurrent
       if (loc && (!isCurrent || isCurrent())) return { sdf: loc, source: "jsmol-min" };
       try { console.log("[SDF-3D] tier local-min: " + (loc ? loc.length + " chars" : "miss")); } catch (eLgL) {}
     }
-  } catch (eT3) {}
+  } catch (eT3) { try { if (typeof fMolDraftMinWaitClose === "function") fMolDraftMinWaitClose(); } catch (eWc2) {} }
   return { sdf: null, source: null };
 }
 

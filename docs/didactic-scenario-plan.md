@@ -32,7 +32,13 @@ progress tracking, server storage.
 > and `styleHighlight` is additive (`bondAtoms`, `numberingAtoms`).
 > `menuGroups` is additive (`molecules` default = flat list, `chemclass` /
 > `series` classify the picked subset; unknown values coerce out, missing or
-> empty falls back to flat — no version bump). `styleText` is additive
+> empty falls back to flat — no version bump). `show.naming` is additive
+> (master visibility switch, default checked; absent/legacy = shown — no
+> version bump): unchecked hides the whole `analysisCol` in Present and
+> disables the `nameSettings`/`nameClick`/`nameEye` drawer checkboxes.
+> Drawer rows are grouped (`.scStepViewersSettings` for 2D/3D `show.controls`,
+> `.scStepNameSettings` for `show.naming` + naming checkboxes).
+> `styleText` is additive
 > (`fontSizePx` 12–28/null is the legacy whole-note base, `textWidthPx`
 > 320–1200/null is still parsed but ignored by v52, `columns` 1|2/null,
 > `position` `"left"`/`"right"`/null (v50); null = theme defaults). Per-block
@@ -91,7 +97,7 @@ progress tracking, server storage.
 }
 ```
 
-State notes (grounded in v52; v42–v51 identical unless noted):
+State notes (grounded in v55; v42–v54 identical unless noted):
 
 * `author` (v52, additive, no version bump) is optional free text on the
   scenario card: blank/whitespace-only/absent → `"Unknown"` (trimmed, capped at
@@ -269,7 +275,10 @@ Visibility rules:
    With no molecule selected the component row shows the muted placeholder
    “Επιλέξτε μόριο για ανάλυση ονόματος”; the explain line also hides when
    zero boxes are actually visible. Accepted iff the subset is non-empty.
-* `show.naming` / `show.rule` toggle the explanation and rule
+* `show.naming` hides the whole right column in Present (`analysisCol`,
+  added in v55 — was only `nameAnalysisContainer`): viewers + text card
+  recenter; authoring untouched. Note: naming-off also hides rules (same
+  column). `show.rule` toggles the explanation and rule
   panels. `show.nameSettings` toggles the naming gear + panel and voice
   buttons (per-step drawer checkbox `Name controls`, default unchecked);
   the `Ονομασία` title remains visible either way. The shell (title +
@@ -369,7 +378,18 @@ Visibility rules:
   drawer is hidden by CSS while the bar is away, and Exit scrolls it back
   to the presented step. The Steps button (or a bar-gap click) still
   closes it deliberately.
-* Step rows: number + type badge (`molecule`/`menu`, key in tooltip)
+* Step rows (collapsible accordion, live-only — no schema): each row renders
+  collapsed showing its header (`.srowHead`: drag grip, number + type/language
+  badges, title field, Go/Present/Update/Dupe/Up/Down + collapse toggle +
+  delete pinned top-right); the body (`.srowBody`: note editor, viewer/naming
+  checkbox groups, menu groups) expands on toggle, head-space/row-padding
+  click or title focus, collapsing the other rows (accordion; all-collapsed
+  allowed). `Update` re-opens its row. Collapse animates
+  (`max-height` + fade, off under `prefers-reduced-motion`); expanded bodies
+  keep `overflow:visible` so tooltips aren't clipped. Srow head tooltips are
+  edge-anchored (Go/Present left, Up/Down/Collapse/delete right, middle
+  centered, last-row flips above) and content-sized (`max-content` + caps).
+  Contents: number + type badge (`molecule`/`menu`, key in tooltip)
   stacked in `.scStepNumberWrap`, step title (`Τίτλος βήματος` label
   above the field, defaults to the live Greek IUPAC name at Save —
   key fallback, `"menu"` for menu-only), per-step educational text
@@ -384,8 +404,10 @@ Visibility rules:
   Δεξιά` icon dropdown `styleText.position` (`"left"`/`"right"`, or null = top;
   v50); `<small>`/`<big>` still render in saved notes but are not inserted),
   per-step chrome
-   checkboxes (`2D controls`, `3D controls`, `Name controls`,
-   `Name interact`, `Ορατότητα συνθετικών`, plus `Ταξινομήσεις Μένου` (`Μόρια` default-checked,
+   checkboxes (grouped rows: `.scStepViewersSettings` for `2D/3D controls`,
+   `.scStepNameSettings` for master `show.naming` (“Εμφάνιση ονομασίας”,
+   default checked — off hides the whole `analysisCol` in Present and disables
+   the rest) + `Name controls`, `Name interact`, `Ορατότητα συνθετικών`, plus `Ταξινομήσεις Μένου` (`Μόρια` default-checked,
   `Χημικές Τάξεις`, `Ομόλογες Σειρές` — presentation-only menu views,
   shown only on menu-carrying steps, all-off valid → flat fallback;
   see §2) — see §2; no `Text`/`Menu`: text is automatic, menu
@@ -401,8 +423,10 @@ Visibility rules:
    0-based index; card Play omits it and starts at step 1), `Update`
   (rewrite the step's stored view snapshot from the current live view:
   Go → tweak molecule, 2D/3D modes + styles, naming clicks/toggles,
-   camera, pick → Update; preserves `title`/`note` + the 4 chrome
-   checkboxes + `show.nameEye` + `menuGroups` + `styleText` (legacy size, parsed width, columns, position), refreshes everything visual incl. `nameAnalysisMode`,
+   camera, pick → Update; preserves `title`/`note`/`noteFormat` +
+   `styleText` (fontSizePx, textWidthPx, columns, position) + `show.controls`
+   + `show.naming` + `show.nameSettings` + `show.nameClick` + `show.nameEye` +
+   `menuGroups`, refreshes everything visual incl. `nameAnalysisMode`,
    `styleName.hidden` (from the live eye toggles),
    `menuSubset`/`show.menu`/`show.viewers`; toasts kind/subset changes),
   `⧉` duplicate (deep-clone after, title + ` (αντίγραφο)`),
@@ -463,8 +487,10 @@ Visibility rules:
   the top card before `#mainAppContainer`. In presentation the top card spans
   the union of the visible menu/viewer/analysis columns (menu only when the
   step shows it), measured by JS into `--scStepTextFitWidth` /
-  `--scStepTextFitLeft`, clamped to `#authorLayout`, with a full-width fallback
-  and the 1600px cap. The rail always renders one column and fits its content
+  `--scStepTextFitLeft`, clamped to `#authorLayout`, with a centered
+  900px fallback when no column is visible and the 1600px cap. Narrow spans
+  (single column) clamp to centered 900px; wide multi-column spans keep full
+  measured width. The rail always renders one column and fits its content
   up to a max-height cap (`align-self:flex-start`, `height:auto` on a
   full-height `authorLayout > mainAppContainer > mainApp3Columns` chain);
   long rails internal-scroll capped 20px above `#creditsUs` and never push
@@ -477,7 +503,13 @@ Visibility rules:
   `fViewerHeights2D3D` skips the note-height subtraction only while a side rail
   is actually applied.
 * `#menuCol` is hidden wholesale in presentation so the remaining
-  columns center on the page; exit restores it. Exception: a step with
+  columns center on the page; exit restores it. `#viewerCol` likewise hides
+  when both viewers are off, and `#analysisCol` hides when `show.naming` is
+  off (rules hide with it — turn naming on if a step needs the rule panel).
+  A lone visible column gets the shared 900px Present cap
+  (`.present-single-menu/viewer/analysis`, viewer-only keeps the
+  `.present-wide-viewer` alias); multi-column steps keep base widths.
+  Exception: a step with
   `show.menu` shows its `menuSubset` with local
   1..N numbering (never the dataset-global counter) — flat list by default,
   single-grouped collapsible view for one classified `menuGroups` mode, or

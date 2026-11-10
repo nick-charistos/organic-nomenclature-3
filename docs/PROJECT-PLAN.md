@@ -5,7 +5,7 @@
 > **Name:** **Molwave** platform; **MuLERMoCs** is retained as the research-framework codename. (`Namelecule` is a separate variant by Yiannis, not the product name.)
 
 **Principal Investigator:** N. Charistos, Department of Chemistry, ΑΠΘ
-**Status:** Active development | v52 live (136 molecules — 136 `nameExamples` keys): unified rich note editor (inline WYSIWYG, modal WYSIWYG + HTML source, lazy legacy-text upgrade, staged Apply/Cancel and dirty-close confirm); safe rich HTML notes (DOMPurify), rule-table components, a compact icon toolbar, and a Snap-free native `MuSVG` 2D overlay; the v51 rich notes, v50 presentation rails/persistent naming shell, and the v49 MSc-student `thesis-work` import are retained; the 2026-10-26 thesis-work port adds 28 molecules (126 total), ketone/aldehyde/ether graph guards, methanal handling, sequential ketone numbering, and ether naming/highlight fixes; the 2026-10-28 acid extension adds 10 carboxylic acids (136 total) with acid graph guards and sequential acid numbering. Default scenario: `Αλκάνια-Αιθάνιο-τεστ`. `index.html` → v52, v51/v50/v49/v48/v47/v46/v45/v44 runnable at root, v43 frozen at tag `v43`, v42 frozen in repo2. Automated Chrome/Firefox matrices pass; `MuSVG.parse()` OOM/XML crash fixed. The two pre-existing skeletal JSmol failures and some manual coverage remain open.
+**Status:** Active development | v55 live (141 molecules — 141 `nameExamples` keys): unified rich note editor (inline WYSIWYG, modal WYSIWYG + HTML source, lazy legacy-text upgrade, staged Apply/Cancel and dirty-close confirm); safe rich HTML notes (DOMPurify), rule-table components, a compact icon toolbar, and a Snap-free native `MuSVG` 2D overlay; molecule Edit/New drafts with engine + PubChem preview, per-name verdicts and Accept into custom molecules; tiered draft 3D (PubChem → JSmol-remote → local UFF minimize) with Accept on any tier; the v51 rich notes, v50 presentation rails/persistent naming shell, and the v49 MSc-student `thesis-work` import are retained; the 2026-10-26 thesis-work port adds 28 molecules (126 total), ketone/aldehyde/ether graph guards, methanal handling, sequential ketone numbering, and ether naming/highlight fixes; the 2026-10-28 acid extension adds 10 carboxylic acids (136 total) with acid graph guards and sequential acid numbering; plus 5 thesis-work esters (141 total). Default scenario: `Αλκάνια-Αιθάνιο-τεστ`. `index.html` → v55, v54/v53/v52/v51/v50/v49/v48/v47/v46/v45/v44 runnable at root, v43 frozen at tag `v43`, v42 frozen in repo2. Automated Chrome/Firefox matrices pass; `MuSVG.parse()` OOM/XML crash fixed. The two pre-existing skeletal JSmol failures and some manual coverage remain open.
 **Last updated:** 2026-10-26
 
 > **2026-10 update:** vision is now twofold+1 (community tool + research publications + platform for isomerism/reactions) with four layers in LEARN-first order — LEARN → EXPLORE-lite → PRACTICE → PLAY. The static chemistry app is embedded in Drupal; logging is research-primary. Source of truth for layers: `docs/LAYERS-PLAN.md`. Team P1–P6 roles and timeline are defined there and in `README.md`. What follows below is the original plan text, kept for theory and history; version/count claims predating v44 are superseded.
@@ -60,7 +60,7 @@ Each step removes one scaffolding layer. Familiar representations constrain inte
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  MODULE 1: Organic Nomenclature          [ACTIVE — v52]         │
+│  MODULE 1: Organic Nomenclature          [ACTIVE — v55]         │
 ├─────────────────────────────────────────────────────────────────┤
 │  MODULE 2: Isomerism                     [PLANNED — Phase 3]    │
 ├─────────────────────────────────────────────────────────────────┤
@@ -71,20 +71,20 @@ Each step removes one scaffolding layer. Familiar representations constrain inte
 
 ---
 
-## Module 1: Organic Nomenclature — Current State (v52 live; v37 text below kept for history)
+## Module 1: Organic Nomenclature — Current State (v55 live; v37 text below kept for history)
 
 ### What exists
-- **136 molecules** (136 `nameExamples` keys: the previous 98 plus 9 ketones/diones/ynones, 12 aldehydes/dials, 7 monoethers and 10 carboxylic acids) covering homologous-series menu groups (series-first, rules secondary)
+- **141 molecules** (141 `nameExamples` keys: the previous 136 plus 5 thesis-work esters) covering homologous-series menu groups (series-first, rules secondary)
 - **v51 data (retained)** — adds 18 molecules (9 alcohols, 6 dienes, 3 enynes), 54 embedded 2D forms and 18 runtime 3D SDFs, with bounded acyclic-alcohol branch naming; the existing 80 entries are unchanged. Branch prefixes are still limited to pure acyclic hydrocarbons/alcohols; other series need the generic branch/FG-profile refactor.
 - **Algorithmic IUPAC engine** — DFS main chain determination, 3-tier locant rules, Greek euphony; ester two-word naming + ether systematic/common toggle since v40/v41
 - **5 representation modes** — condensed, expanded, annotated skeletal (partial), skeletal, 3D
 - **Synchronized highlighting** — same atom/bond highlighted simultaneously in 2D and 3D
 - **Teaching layer** — rule-based explanations, component name boxes, TTS narration in Greek
-- **Didactic scenarios (current `-52`; scaffold since v43)** — additive `js/mulermoc-nom-scenario-52.js`: snapshot capture/validate/apply/export/import, `?scenario=&present=#step=` playback, exit restores full chrome; default preload is `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json`. v52 adds the unified rich note editor (inline WYSIWYG, modal WYSIWYG + HTML source, lazy legacy-text upgrade, staged Apply/Cancel, dirty-close confirm); the same-day refinement adds UL/OL lists, per-block font size/alignment, an image sizing dialog, a presentation top card that spans the visible app columns (capped at 1600px), and a stretch side rail, and removes the URL image tool. UL/OL remain in the inline toolbar; image, table, and predefined-content inserts are modal-only. It retains the v51 rich HTML notes, rule-table components, compact icon toolbar, v50 per-step text position (top/left/right rail), and persistent naming shell.
+- **Didactic scenarios (current `-55`; scaffold since v43)** — additive `js/mulermoc-nom-scenario-55.js`: snapshot capture/validate/apply/export/import, `?scenario=&present=#step=` playback, exit restores full chrome; default preload is `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json`. v52 adds the unified rich note editor (inline WYSIWYG, modal WYSIWYG + HTML source, lazy legacy-text upgrade, staged Apply/Cancel, dirty-close confirm); the same-day refinement adds UL/OL lists, per-block font size/alignment, an image sizing dialog, a presentation top card that spans the visible app columns (capped at 1600px), and a stretch side rail, and removes the URL image tool. UL/OL remain in the inline toolbar; image, table, and predefined-content inserts are modal-only. It retains the v51 rich HTML notes, rule-table components, compact icon toolbar, v50 per-step text position (top/left/right rail), and persistent naming shell.
 - **Main-chain stepper (v47, done)** — FG-aware multiple-bond-first pool (max `C=C/C≡C` → max `C=C` → length) with settings-panel `‹ n/N ›` stepper, rank-parallel 2D+3D
 - **Fluid viewers + authoring pin-dock (v48, retained through v52)** — 2D/3D viewers fit their container (native `setSize`, container-derived heights); the scenario bar pins full-height beside the app (scoped horizontal scroll with cues) so name settings stay reachable while authoring; plus per-viewer single max-height and combined double-viewer height controls and a settings-panel UI pass (toggles consolidated, main-chain `Από δεδομένα` disabled without stored data)
 - **Student import (v49, retained in v52)** — acyclic-alkane parent-chain ranking (most carbon branches → lowest branch locants) with explicit terminal unsaturation locant (`3-μεθυλο-1-βουτένιο`); 73rd molecule `ethyl_3_dimethyl_2_5_hexane` + 3D SDF; stored chains for the alkene test molecules; alkene scenarios (`Αλκένια-Αιθένιο`, `Αλκένια-Ονοματολογία_και_διακλαδώσεις`); alkyl reference table for locants/branches and enyne `-ιν-` rule-table fix
-- **Presentation polish (v52 live, added in v50)** — per-step text placement top/left/right as a fourth-column sticky rail, plus a persistent naming title/gear shell with a no-molecule placeholder and a zero-visible-box explain-line guard
+- **Presentation polish (live, added in v50)** — per-step text placement top/left/right as a fourth-column sticky rail, plus a persistent naming title/gear shell with a no-molecule placeholder and a zero-visible-box explain-line guard
 - **Technical validation** — algorithm verified against the curated set; tertiary-amine R3N classification fixed in v44 via the bond-order N-table; multi-substituent alkane naming (`2,3-διμεθυλοβουτάνιο`) fixed in v45 (browser verification pending)
 
 ### Known gaps to fill (immediate work)
@@ -242,20 +242,20 @@ RQ4: Learner strategies                    detection                    adaptive
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    DATA LAYER                               │
-│  jsme-nick-nomeclature-moc2-data_52.js                      │
-│  136 molecules: MOL strings, main chain, 3D SDF paths        │
+│  jsme-nick-nomeclature-moc2-data_55.js                      │
+│  141 molecules: MOL strings, main chain, 3D SDF paths        │
 └────────────────────────┬────────────────────────────────────┘
                          ↓
 ┌─────────────────────────────────────────────────────────────┐
 │                    CORE ENGINE                              │
-│  mulermoc-nom-core-52.js  (pure JS, no DOM)                 │
+│  mulermoc-nom-core-55.js  (pure JS, no DOM)                 │
 │  fAnalyseStructure → fDetectMolType → fCalcMainChain        │
 │  → fGuessName → Greek IUPAC name + component list          │
 └────────────────────────┬────────────────────────────────────┘
                          ↓
 ┌──────────────────┬──────────────────┬───────────────────────┐
 │   VIEWER LAYER   │  TEACHING LAYER  │     QUIZ LAYER        │
-│  molview-52.js   │  teaching-52.js  │  (quiz-nom-1.js)      │
+│  molview-55.js   │  teaching-55.js  │  (quiz-nom-1.js)      │
 │  JSME (2D)       │  Rule text/tables│  5 scenarios          │
 │  JSmol (3D)      │  TTS narration   │  Session logging      │
 │  native SVG      │  Name boxes      │  Research mode        │

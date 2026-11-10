@@ -2,7 +2,7 @@
 
 > **Name:** **Molwave** platform vision; **MuLERMoCs** (*Multiple-Level External Representations for Molecular Concepts*) is retained as the research-framework codename for methods continuity. (`Namelecule` is a separate variant by Yiannis, not the product name.)
 
-A Greek-first interactive learning platform for organic nomenclature, built around molecular structure, naming logic, and multiple representations. It is a no-build static web app (JSME, JSmol, jQuery, vanilla JavaScript; live v54 adds molecule edit/create drafts over the v53 full English UI + molecule-naming layer and the Snap-free v52 base, Greek default preserved) intended to be embedded in Drupal.
+A Greek-first interactive learning platform for organic nomenclature, built around molecular structure, naming logic, and multiple representations. It is a no-build static web app (JSME, JSmol, jQuery, vanilla JavaScript; live v55 adds tiered draft 3D — PubChem → JSmol-remote → local UFF minimize — with Accept on any tier, over the v54 molecule edit/create drafts, the v53 full English UI + molecule-naming layer and the Snap-free v52 base, Greek default preserved) intended to be embedded in Drupal.
 
 Designed and developed by Nickolas Charistos
 
@@ -22,14 +22,14 @@ Designed and developed by Nickolas Charistos
 
 | Layer | File |
 |---|---|
-| Core engine (analysis + naming) | [js/mulermoc-nom-core-54.js](js/mulermoc-nom-core-54.js) |
-| Viewer (JSME / JSmol / native SVG) | [js/mulermoc-nom-molview-54.js](js/mulermoc-nom-molview-54.js) |
-| Teaching (rules, narration, UI wiring) | [js/mulermoc-nom-teaching-54.js](js/mulermoc-nom-teaching-54.js) |
-| Scenario module (LEARN authoring + presentation) | [js/mulermoc-nom-scenario-54.js](js/mulermoc-nom-scenario-54.js) |
-| EN chrome + naming + oracle | [js/mulermoc-nom-lang-54.js](js/mulermoc-nom-lang-54.js), [js/mulermoc-nom-name-en-54.js](js/mulermoc-nom-name-en-54.js), [js/mulermoc-nom-iupac-54.js](js/mulermoc-nom-iupac-54.js) |
+| Core engine (analysis + naming) | [js/mulermoc-nom-core-55.js](js/mulermoc-nom-core-55.js) |
+| Viewer (JSME / JSmol / native SVG) | [js/mulermoc-nom-molview-55.js](js/mulermoc-nom-molview-55.js) |
+| Teaching (rules, narration, UI wiring) | [js/mulermoc-nom-teaching-55.js](js/mulermoc-nom-teaching-55.js) |
+| Scenario module (LEARN authoring + presentation) | [js/mulermoc-nom-scenario-55.js](js/mulermoc-nom-scenario-55.js) |
+| EN chrome + naming + oracle | [js/mulermoc-nom-lang-55.js](js/mulermoc-nom-lang-55.js), [js/mulermoc-nom-name-en-55.js](js/mulermoc-nom-name-en-55.js), [js/mulermoc-nom-iupac-55.js](js/mulermoc-nom-iupac-55.js) |
 | Shared icon helper | [js/ui-icons.js](js/ui-icons.js) |
-| Molecule data (141 molecules — 141 `nameExamples` keys) | [js/jsme-nick-nomeclature-moc2-data_54.js](js/jsme-nick-nomeclature-moc2-data_54.js) |
-| Styles | [css/jsme-nick-54.css](css/jsme-nick-54.css), [css/mulermoc-nom-scenario-54.css](css/mulermoc-nom-scenario-54.css) |
+| Molecule data (141 molecules — 141 `nameExamples` keys) | [js/jsme-nick-nomeclature-moc2-data_55.js](js/jsme-nick-nomeclature-moc2-data_55.js) |
+| Styles | [css/jsme-nick-55.css](css/jsme-nick-55.css), [css/mulermoc-nom-scenario-55.css](css/mulermoc-nom-scenario-55.css) |
 | Stored scenarios | [scenarios/](scenarios/) (`Αλκάνια-Αιθάνιο-τεστ` default, `Αλκάνια-Αιθάνιο` legacy retained, `Αλκένια-Αιθένιο`, `Αλκένια-Ονοματολογία_και_διακλαδώσεις`; Greek filenames stay URL-encoded in `?scenario=` links) |
 
 ---
@@ -39,15 +39,15 @@ Designed and developed by Nickolas Charistos
 | Site | Serves | Status |
 |---|---|---|
 | [organic-nomenclature-2](https://nick-charistos.github.io/organic-nomenclature-2/) | v42 | frozen — emergency hotfixes only |
-| [organic-nomenclature-3](https://nick-charistos.github.io/organic-nomenclature-3/) | v54 live | active — all new work happens here |
+| [organic-nomenclature-3](https://nick-charistos.github.io/organic-nomenclature-3/) | v55 live | active — all new work happens here |
 
-Root holds the files of the current live set (`*54*`; `mulermoc-nom-53.html` and `mulermoc-nom-52.html` plus `mulermoc-nom-51.html`…`-42.html` are kept runnable alongside). Older file sets live in [archive/](archive/README.md) (non-runnable museum). Runnable history via git tags `v41`–`v44`.
+Root holds the files of the current live set (`*55*`; `mulermoc-nom-54.html` and `mulermoc-nom-53.html` plus `mulermoc-nom-52.html`…`-42.html` are kept runnable alongside). Older file sets live in [archive/](archive/README.md) (non-runnable museum). Runnable history via git tags `v41`–`v44`.
 
 Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (only `image-svgrepo-Industrial-Sharp.svg` is kept; other icons are inlined/served by `js/ui-icons.js`), PDFs, `mols/branched/`, and the large JSmol runtime. Small security- or compatibility-critical libraries are vendored under `js/vendor/`; the rest are served via CDN (see [.gitignore](.gitignore)).
 
 ---
 
-## What works now (v54 live — draft flow over the v53 English layer and the v52 base, 141 molecules, Snap-free viewer)
+## What works now (v55 live — tiered draft 3D over the v54 draft flow, v53 English layer and the v52 base, 141 molecules, Snap-free viewer)
 
 ### Chemistry engine
 - Greek IUPAC naming for alkanes/alkenes/alkynes, branched chains, halides, alcohols, aldehydes/ketones, carboxylic acids (incl. hydroxy/amino/oxo/keto), nitriles, amines, ethers (systematic + common names), esters (two-word names).
@@ -82,14 +82,14 @@ Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (o
 - v49: browser click-through pending for the acyclic-alkane parent-chain fix (new + existing alkanes), the explicit terminal-`1` locant change (`3-μεθυλο-1-βουτένιο`), the 73rd molecule + 3D SDF, the imported scenarios, the alkyl table on branch/locant components, and the enyne `-ιν-` rule tile.
 - v49: carbon-branch orientation compares locant sets only; alphabetical priority for carbon substituents (as already done for halogen/nitro) is not yet applied, so a future mixed ethyl/methyl alkane with tied locant sets could orient arbitrarily (not exercised by the current 141 molecules).
 - v50: browser click-through pending for the side text rails (left/right, wide/narrow fallback, menu steps, long notes, top↔side switching, 2D/3D refit), the no-molecule naming placeholder, and presentation naming-chrome behavior, plus the v49 items above. Also pending: the 7 alkynes added post-live (73 → 80 keys) and the skeletal `C`-label removal for any sp carbon — alkynes, enynes, yne-ketone/aldehyde, nitriles, allene (2D only; 3D framing deferred).
-- v52: the unified rich note editor (inline WYSIWYG, modal WYSIWYG + HTML source, lazy legacy-text upgrade), WYSIWYG selection mapping, staged Apply/Cancel, dirty-close confirm, and modal-only image/table/predefined inserts (UL/OL inline) are live. Headless Chrome smoke tests passed; Firefox, touch devices, and real-scenario click-through remain pending. The v51 safe rich-note renderer, rule-table components, the 136-molecule data set, and the native `MuSVG` Snap replacement remain live. The `MuSVG.parse()` OOM/XML crash is fixed; Chrome and Firefox automated matrices pass, with the two pre-existing skeletal JSmol failures (`butadiene_1_3`, `propadiene`) still open. The earlier jsdom suite (95 sanitizer + 38 scenario-integration checks) predates later changes and needs updating before reuse. Remaining manual coverage: rich-note editing in real scenarios (including the new lists, per-block size/alignment, image dialog, top-card column alignment, and side-rail behavior), 3D views and highlights for the 18 v51 + 38 v52 additions, the icon dropdown/skip icons, 2D/3D refit, the JSmol local/CDN loader, and jQuery 4; extending branch prefixes to amines/halides/mixed functional groups remains open.
+- v52: the unified rich note editor (inline WYSIWYG, modal WYSIWYG + HTML source, lazy legacy-text upgrade), WYSIWYG selection mapping, staged Apply/Cancel, dirty-close confirm, and modal-only image/table/predefined inserts (UL/OL inline) are live. Headless Chrome smoke tests passed; Firefox, touch devices, and real-scenario click-through remain pending. The v51 safe rich-note renderer, rule-table components, the 141-molecule data set, and the native `MuSVG` Snap replacement remain live. The `MuSVG.parse()` OOM/XML crash is fixed; Chrome and Firefox automated matrices pass, with the two pre-existing skeletal JSmol failures (`butadiene_1_3`, `propadiene`) still open. The earlier jsdom suite (95 sanitizer + 38 scenario-integration checks) predates later changes and needs updating before reuse. Remaining manual coverage: rich-note editing in real scenarios (including the new lists, per-block size/alignment, image dialog, top-card column alignment, and side-rail behavior), 3D views and highlights for the 18 v51 + 38 v52 additions, the icon dropdown/skip icons, 2D/3D refit, the JSmol local/CDN loader, and jQuery 4; extending branch prefixes to amines/halides/mixed functional groups remains open.
 - Stored scenarios: `Αλκάνια-Αιθάνιο-τεστ.scenario.json` is the default (7 steps: ethane walkthrough + alkane menu browsing + 3D alkane models; steps 5–7 place the note in a left rail with longer text), while the previous `Αλκάνια-Αιθάνιο.scenario.json` is retained on disk for explicit `?scenario=` links but is no longer preloaded; plus the imported `Αλκένια-Αιθένιο` (7) and `Αλκένια-Ονοματολογία_και_διακλαδώσεις` (22); wider scenario library and EPAL/Lyceum two-level notes still to be written.
 
 ---
 
 ## Four layers (LEARN-first)
 
-All layers reuse the same v54 engine (v52/v51 are previous runnable copies), embedded as a static app in Drupal:
+All layers reuse the same v55 engine (v54/v52/v51 are previous runnable copies), embedded as a static app in Drupal:
 
 | # | Layer | Contract | State |
 |---|---|---|---|
@@ -128,7 +128,7 @@ Out of scope for now: quiz SPA, participant logging, CSV export, server-side cla
 
 ## Documents
 
-- [CHANGELOG.md](docs/CHANGELOG.md) — authoritative history (v54 live); [STAGE2-AUTHORING-54.md](docs/STAGE2-AUTHORING-54.md) — draft flow + roadmap; [DATA-PHASE-PLAN.md](docs/DATA-PHASE-PLAN.md) — data-phase plan; [STUDENT-IMPORT.md](docs/STUDENT-IMPORT.md) — recurring `thesis-work` import procedure
+- [CHANGELOG.md](docs/CHANGELOG.md) — authoritative history (v55 live); [STAGE2-AUTHORING-54.md](docs/STAGE2-AUTHORING-54.md) — draft flow + roadmap; [DATA-PHASE-PLAN.md](docs/DATA-PHASE-PLAN.md) — data-phase plan; [STUDENT-IMPORT.md](docs/STUDENT-IMPORT.md) — recurring `thesis-work` import procedure
 - [didactic-scenario-plan.md](docs/didactic-scenario-plan.md) — scenario schema and authoring flow
 - [LAYERS-PLAN.md](docs/LAYERS-PLAN.md) — layer contracts, exercise types, research logging schema
 - [DEVELOPMENT-PLAN.md](docs/DEVELOPMENT-PLAN.md), [PROJECT-PLAN.md](docs/PROJECT-PLAN.md), [PROJECT-PLAN-GR.md](docs/PROJECT-PLAN-GR.md) — product/research plans (may lag the code)
@@ -140,8 +140,8 @@ Out of scope for now: quiz SPA, participant logging, CSV export, server-side cla
 
 ## Status summary
 
-- Baseline: **v54 live** (`index.html` → v54; molecule Edit/New drafts with engine + PubChem preview and per-molecule save, over the v53 full English `?lang=en` layer and the v52 base — unified inline/modal rich note editor with WYSIWYG + HTML source and staged Apply/Cancel, 141 molecules, Snap-free native `MuSVG`; default scenario `Αλκάνια-Αιθάνιο-τεστ`); v53/v52/v51/v50/v49/v48/v47/v46/v45/v44 runnable at root (`mulermoc-nom-53/52/51/50/49/48/47/46/45/44.html`), v43 frozen at tag `v43`, v42 frozen in repo2
-- Previous live: **v53** (`mulermoc-nom-53.html`; full English UI + molecule naming, per-step scenario language)
+- Baseline: **v55 live** (`index.html` → v55; tiered draft 3D — PubChem → JSmol-remote → local UFF minimize — with Accept on any tier, plus molecule Edit/New drafts with engine + PubChem preview and per-molecule save, over the v53 full English `?lang=en` layer and the v52 base — unified inline/modal rich note editor with WYSIWYG + HTML source and staged Apply/Cancel, 141 molecules, Snap-free native `MuSVG`; default scenario `Αλκάνια-Αιθάνιο-τεστ`); v54/v53/v52/v51/v50/v49/v48/v47/v46/v45/v44 runnable at root (`mulermoc-nom-54/53/52/51/50/49/48/47/46/45/44.html`), v43 frozen at tag `v43`, v42 frozen in repo2
+- Previous live: **v54** (`mulermoc-nom-54.html`; molecule edit/create draft flow, tier-2/3 3D groundwork)
 - Focus: **LEARN pilot (stored scenarios) + bounded EXPLORE-lite**
 - Near-term: **finish v52 manual coverage (rich note editor in real scenarios, Firefox/touch, 3D + highlights for the 18 v51 molecules, icon toolbar, 2D/3D refit, JSmol loader, jQuery 4); fix the two pre-existing skeletal JSmol failures; then generic branch prefixes beyond hydrocarbon/acyclic alcohol; v51/v50/v49 backlog verification; scenario library verification; bounded EXPLORE-lite (~15 mols + menu search)**
 - Rules: secondary explanatory layer; homologous series = database order

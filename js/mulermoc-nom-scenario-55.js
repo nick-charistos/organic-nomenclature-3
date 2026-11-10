@@ -2166,6 +2166,14 @@ function fScenarioRestoreChrome(viewers) {
       /* no DOM */
     }
   });
+  // Present-only width classes never survive a restore: any future
+  // restore-without-chrome path would otherwise strand the 900px cap.
+  try {
+    var _pc = document.getElementById("pageContainer");
+    if (_pc && _pc.classList) {
+      _pc.classList.remove("present-single-col", "present-single-menu", "present-single-viewer", "present-single-analysis", "present-wide-viewer");
+    }
+  } catch (ePc) { /* no DOM */ }
   var show2D = !viewers || viewers["2D"] !== false;
   var show3D = !viewers || viewers["3D"] !== false;
   // 2D pane + bar (mirrors fToggleViewer2D: SVG + radio bar; DIV wrapper stays).
@@ -4575,6 +4583,12 @@ function fScenarioPresentBegin(id, startIdx) {
     /* file:// */
   }
   fScenarioSetActive(scen.id);
+  // Draft minimize runs must not leak into presentation: halt the engine,
+  // close the blocking wait window and invalidate the in-flight run (same
+  // abort path as Cancel/Draw/teardown).
+  try { if (typeof fMolDraftMinWaitAbort === "function") fMolDraftMinWaitAbort(); } catch (eM) {}
+  try { if (typeof fMolDraftMinStopEngine === "function") fMolDraftMinStopEngine(); } catch (eM2) {}
+  try { if (typeof fMolDraftMinWaitClose === "function") fMolDraftMinWaitClose(); } catch (eM3) {}
   // in-place present (no reload: memory + file keeps steps in this page)
   // Pin-dock is authoring-only: undock first so presentation owns the stage.
   if (MuLERMoCScenario.pinned) fScenarioSetPinned(false);
@@ -5291,8 +5305,8 @@ function fScenarioRenderOne(scen) {
     try {
       collapseBtn.innerHTML = (window.MuLERIcons && window.MuLERIcons.maximize) || "▸";
     } catch (eIc) { collapseBtn.textContent = "▸"; }
-    collapseBtn.setAttribute("data-tooltip", "Collapse/expand step");
-    collapseBtn.setAttribute("aria-label", "Collapse/expand step");
+    collapseBtn.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("collapseStep") : "Collapse/expand step"));
+    collapseBtn.setAttribute("aria-label", ((typeof fMulerT === "function") ? fMulerT("collapseStep") : "Collapse/expand step"));
     collapseBtn.setAttribute("aria-expanded", "false");
     collapseBtn.onclick = function (ev) {
       if (ev && ev.preventDefault) ev.preventDefault();
@@ -5631,7 +5645,7 @@ function fScenarioRenderOne(scen) {
       ctlCheck.disabled = !viewerOn;
       if (!viewerOn) {
         label.classList.add("disabled");
-        label.setAttribute("data-tooltip", "Needs the " + kind + " viewer visible in this step (toggle [" + kind + "] before saving)");
+        label.setAttribute("data-tooltip", ((typeof fMulerPre === "function") ? fMulerPre("Χρειάζεται ορατό το viewer " + kind + " σε αυτό το βήμα (άναψέ το [" + kind + "] πριν την αποθήκευση)", "Needs the " + kind + " viewer visible in this step (toggle [" + kind + "] before saving)") : ("Needs the " + kind + " viewer visible in this step (toggle [" + kind + "] before saving)")));
       }
       ctlCheck.onchange = function () {
         st.show = st.show || {};
@@ -5650,7 +5664,7 @@ function fScenarioRenderOne(scen) {
     nameRow.className = "scShowRow scStepNameSettings";
     var namingLabel = document.createElement("label");
     namingLabel.className = "sshow";
-    namingLabel.setAttribute("data-tooltip", "Show naming in presentation");
+    namingLabel.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("showNamingTip") : "Show naming in presentation"));
     var namingCheck = document.createElement("input");
     namingCheck.type = "checkbox";
     namingCheck.checked = !(st.show && st.show.naming === false);
@@ -5660,7 +5674,7 @@ function fScenarioRenderOne(scen) {
     // Naming gear + panel.
     var nameCtlLabel = document.createElement("label");
     nameCtlLabel.className = "sshow";
-    nameCtlLabel.setAttribute("data-tooltip", "Show the naming settings gear + panel in presentation");
+    nameCtlLabel.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("nameSettingsTip") : "Show the naming settings gear + panel in presentation"));
     var nameCtlCheck = document.createElement("input");
     nameCtlCheck.type = "checkbox";
     nameCtlCheck.checked = !!(st.show && st.show.nameSettings === true);
@@ -5675,7 +5689,7 @@ function fScenarioRenderOne(scen) {
     // replays). Absent = allowed (legacy files); capture stores false.
     var nameClickLabel = document.createElement("label");
     nameClickLabel.className = "sshow";
-    nameClickLabel.setAttribute("data-tooltip", "Allow clicking the name boxes in presentation");
+    nameClickLabel.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("nameClickTip") : "Allow clicking the name boxes in presentation"));
     var nameClickCheck = document.createElement("input");
     nameClickCheck.type = "checkbox";
     nameClickCheck.checked = !!(st.show && st.show.nameClick === true);
@@ -5694,14 +5708,14 @@ function fScenarioRenderOne(scen) {
     // Molecule steps only — menu-only steps carry no naming.
     var nameEyeLabel = document.createElement("label");
     nameEyeLabel.className = "sshow";
-    nameEyeLabel.setAttribute("data-tooltip", "Show per-component eye toggles in presentation");
+    nameEyeLabel.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("nameEyeTip") : "Show per-component eye toggles in presentation"));
     var nameEyeCheck = document.createElement("input");
     nameEyeCheck.type = "checkbox";
     nameEyeCheck.checked = !!(st.show && st.show.nameEye === true);
     if (!st.selectedMol) {
       nameEyeCheck.disabled = true;
       nameEyeLabel.classList.add("disabled");
-      nameEyeLabel.setAttribute("data-tooltip", "Molecule steps only (this step carries no naming)");
+      nameEyeLabel.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("molOnlyNaming") : "Molecule steps only (this step carries no naming)"));
     }
     nameEyeCheck.onchange = function () {
       st.show = st.show || {};
@@ -5710,10 +5724,12 @@ function fScenarioRenderOne(scen) {
     nameEyeLabel.appendChild(nameEyeCheck);
     nameEyeLabel.appendChild(document.createTextNode(" " + ((typeof fMulerT === "function") ? fMulerT("compVisibility") : "Ορατότητα συνθετικών")));
     nameRow.appendChild(nameEyeLabel);
-    var _syncNameRow = function () {
+    var _syncNameRow = function (write) {
       var on = namingCheck.checked;
-      st.show = st.show || {};
-      st.show.naming = on;
+      if (write !== false) {
+        st.show = st.show || {};
+        st.show.naming = on;
+      }
       [[nameCtlCheck, nameCtlLabel, false], [nameClickCheck, nameClickLabel, false], [nameEyeCheck, nameEyeLabel, !st.selectedMol]].forEach(function (t) {
         var chk = t[0], lbl = t[1], locked = t[2];
         var dis = !on || locked;
@@ -5721,8 +5737,8 @@ function fScenarioRenderOne(scen) {
         if (lbl && lbl.classList) lbl.classList.toggle("disabled", dis);
       });
     };
-    namingCheck.onchange = _syncNameRow;
-    try { _syncNameRow(); st.show.naming = namingCheck.checked; } catch (eSync) {}
+    namingCheck.onchange = function () { _syncNameRow(true); };
+    try { _syncNameRow(false); } catch (eSync) {}
     bodyDiv.appendChild(nameRow);
     // Menu grouping (presentation only, menu-carrying steps only): which
     // menu views the step offers. Μόρια = flat list (default); Τάξεις/Σειρές
@@ -6134,14 +6150,16 @@ function fScenarioUpdateStep(scenId, idx) {
       }
     }
   } catch (eExp) {}
-  var msg = "Updated step " + fresh.n + ".";
+  var msg = ((typeof fMulerPre === "function") ? fMulerPre("Ενημερώθηκε το βήμα ", "Updated step ", fresh.n + ".") : ("Updated step " + fresh.n + "."));
   if (oldKind !== newKind) {
-    msg += newKind === "menu" ? " (now menu-only.)" : " (now molecule.)";
+    msg += (newKind === "menu")
+      ? ((typeof fMulerPre === "function") ? fMulerPre(" (τώρα χωρίς μόριο.)", " (now menu-only.)") : " (now menu-only.)")
+      : ((typeof fMulerPre === "function") ? fMulerPre(" (τώρα με μόριο.)", " (now molecule.)") : " (now molecule.)");
   }
   if (oldSub !== newSub) {
-    msg += fresh.menuSubset && fresh.menuSubset.length
-      ? " Menu: " + fresh.menuSubset.length + " molecules."
-      : " Menu cleared.";
+    msg += (fresh.menuSubset && fresh.menuSubset.length)
+      ? ((typeof fMulerPre === "function") ? fMulerPre(" Μενού: " + fresh.menuSubset.length + " μόρια.", " Menu: " + fresh.menuSubset.length + " molecules.") : (" Menu: " + fresh.menuSubset.length + " molecules."))
+      : ((typeof fMulerPre === "function") ? fMulerPre(" Το μενού καθαρίστηκε.", " Menu cleared.") : " Menu cleared.");
   }
   var extra = MuLERMoCScenario.lastCaptureNote;
   MuLERMoCScenario.lastCaptureNote = null;
