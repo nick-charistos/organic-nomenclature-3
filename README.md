@@ -59,12 +59,12 @@ Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (o
 
 ### Viewer and UI
 - 2D (JSME) and 3D (JSmol) views; condensed, expanded, skeletal and annotated-skeletal modes; `[2D][3D]` visibility toggles; PNG export.
-- **Fluid viewers (v48):** both viewers fit the viewer column via native `setSize` (container-derived heights, debounced `ResizeObserver`); a **single max-height** control and a **combined 2D+3D height** control for the two-viewer case (Auto | manual px) live in Ρυθμίσεις and are stored per scenario step.
+- **Fluid viewers (v48):** both viewers fit the viewer column via native `setSize` (container-derived heights, debounced `ResizeObserver`); a **single max-height** control and a **combined 2D+3D height** control for the two-viewer case (Auto | manual px) live in Ρυθμίσεις and are stored per scenario step. Heights never exceed viewer width (ratio ≥ 1) and run off a scroll-stable viewport on mobile; collapsing the menu rail shares its width viewer/naming.
 - **Authoring pin-dock (v48):** the scenario bar docks full-height beside the app (scoped horizontal scroll with edge cues); the pinned viewer width is adaptive (`clamp`, keeps its original width when the screen has room, eases to a 400px floor); viewer-column UI text scales fluidly via a container query.
 - **Presentation text rails + naming shell (v50, retained in v52 live):** each step can place its note **Πάνω** (default), **Αριστερά**, or **Δεξιά**; side modes render as a sticky, internally scrolling 300–420px fourth-column reading rail beside the app on screens ≥1200px, with automatic top fallback below that. Rails always use one column; the stored width/columns return when the step is placed back on top. The naming panel also keeps its title/gear shell available (with a no-molecule placeholder), while presentation `Name controls` still hides gear/panel/voice when unchecked.
 - **Ρυθμίσεις pass (v48):** the 2D/3D detail toggles (`Έγχρωμα Σύμβολα`, `Σύμβολα ατόμων`) are consolidated into the gear panel; the `Από δεδομένα` main-chain bullet is disabled when the molecule has no stored chain data.
-- Menu groups: homologous series (default sort by carbon count), chemical classes, rules, flat `Όλα τα μόρια`.
-- Name panel: IUPAC/COMMON toggle, per-component eye toggles (hide name parts), Greek TTS narration that follows visibility.
+- Menu groups: homologous series (default sort by carbon count), chemical classes, rules, flat `Όλα τα μόρια`; the menu column collapses to an icon rail (state persisted, never stored in steps).
+- Name panel: IUPAC/COMMON toggle, per-component eye toggles (hide name parts), Greek + English TTS narration (name, component explanations, rules) that follows visibility.
 - Tooltips share one navy skin (single copy in `css/jsme-nick-52.css`); scenario-bar/panel/step/toolbar buttons, type badge and drag handle converted from native `title`; all-Greek tooltip texts; geometry variants (button-panel bubbles above, save buttons left, `[2D]` left-aligned, edge buttons Save-left-aligned/Delete-right-aligned) for `overflow:hidden` parents.
 
 ### LEARN layer: didactic scenarios

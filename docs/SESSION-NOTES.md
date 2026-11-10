@@ -1,11 +1,8 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `2b267a6` (2026-11-10) — v55
-> sticky hidden comps (`?v=55.0`, `index.html` → v55). Tree clean
-> after this commit. Remaining: browser sweep (EN panel labels incl. bar,
-> 141 molecules, Present round-trips incl. single-col + naming-master + collapse/accordion + tooltips) + P3 blessing of Greek word forms,
-> after this commit. Remaining: browser sweep (EN panel labels incl. bar,
-> 141 molecules, Present round-trips incl. viewers-off viewerCol hide + naming-master on/off) + P3 blessing of Greek word forms,
+> **Resume pointer (cross-machine):** HEAD `aa910ea` (2026-11-10) — v55
+> collapsible menu rail + viewer/naming width share (`?v=55.0`, `index.html` → v55). Tree clean
+> after this commit. Remaining: browser sweep (EN panel + EN boxes incl. euphony/yne/comp9loc, narration voices both languages, menu rail + width share + tooltips, Present round-trips) + P3 blessing of Greek word forms,
 > completion-callback wait (spike), energy comparison for true convergence,
 > settings tabs (registry groups by row id when needed). Full record:
 > `docs/SESSION-NOTES.md` 2026-11-09/10 entries + `docs/CHANGELOG.md` [v55] +
@@ -2728,3 +2725,22 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 ## 2026-11-10 (cont.) — sticky hidden components across menu browsing (v55 working copy)
 
 * `fInitProps` no longer wipes `window.nameHiddenComps`: hiding follows the author across molecule switches (menu steps in Present/authoring + main-app browsing hide the same slot ids everywhere; unknown ids ignored, one eye-click restores). Fresh starts reset explicitly: cold boot (`[]`) and draft New entry (Edit keeps the live set — same template). Step contract unchanged: scenario apply overwrites with the stored set, Present entry/exit stash + restore, Save/Update/Accept capture the live set. No schema change.
+
+## 2026-11-10 (cont.) — draft 3D status helper + EN narration fixes (v55 working copy)
+
+* `fMolDraftSDF3DStatusHTML(d)` replaces the two copy-pasted tiered-3D blocks in `fMolDraftRenderPreview` (the no-3D fallback carried a literal `</div>` in its string and never closed the first row); tier-2 comments corrected to `write MOL`-only read-back. Owner scenario-drawer CSS polish accepted as-is.
+* `fWireENTTS` no longer hijacks `#narrateAnalysisToggle` in EN (it spoke the whole name and killed the flag flip via `stopPropagation`) — `#readNameBtn` only; EN scrape skips `.comp-hidden`; toggle tooltip via `narrateOn`/`narrateOff`.
+* Component-click explanations speak English in EN mode (`fSpeakMuler`/Zira when `lang==en`, `fSpeakGreek` otherwise); same guard on the `#readNameBtn` fallback. No English voice installed on the machine is the only unfixable case (then the Greek voice reads EN text) — verified owner machine has 4× en-US voices, so all paths are app-side.
+
+## 2026-11-10 (cont.) — EN box segmentation + tint retirement (v55 working copy)
+
+* Diene euphony vowel rides the stem (`[penta] [-1,3-]`, GR convention) with a vowel-guard; `yn`/`en` regain terminal `e` before locant-led di/tri-suffixes (`…-5-yne-2,7-dione`, mono `2-one`/`1-ol` untouched — propargyl pattern safe); `comp9loc` splits post-`stripLoc` digit-led suffixes (`2,7-dione` → `[-2,7-][dione]`); fusion loop looks past `comp9loc`; `engineEN` applies the same `infix2` fusion (boxes == engine, `[EN-CHECK]` green). 14-case fusion + 6-case split matrix simulated headless, all green.
+* Systematic-substituent mint tint retired (`.sysDiff` rule commented out, tooltips kept). Open: diene+mono-suffix `diyne-1-ol` vs `diyn-1-ol` (no dataset molecule exercises it — needs a chemistry call before touching `:323`).
+
+## 2026-11-10 (cont.) — viewer height bound + scroll stability (v55 working copy)
+
+* `fViewerHeights2D3D` clamps every emitted height to its viewer width (width/height ≥ 1 everywhere: auto, stored caps, Full); `fStableViewportH()` caches `innerHeight` (refresh on width change or >120px deltas) so mobile URL-bar slides stop recomputing heights mid-scroll and ping-ponging the column observer; settings panel `70vh` fallback + `70svh` override.
+
+## 2026-11-10 (cont.) — collapsible menuCol + width share (v55 working copy)
+
+* ☰ icon first in the menu title (template-owned, survives rebuilds; `scPickToggle` keeps absolute-left, collapse absolute-right, title centered); `#menuToggle` + `fToggleMenu` retired (two mechanisms would desync); `#menuCol.collapsed` = 40px rail (icon + vertical-rl MENU, portrait: full-width bar) persisted in `localStorage`, stashed/expanded/restored across Present; freed 190px split viewer +80 (cap 700) / naming +110 (width 460, 350 floor untouched), row total conserved, animated with reduced-motion guard; toggle language (darkBlue expanded) + darkEarth hover per title-bar convention; pick toggle truly hidden in rail via 3-id selector (specificity tie with later scenario stylesheet was the bug); collapse button added to all six shared tooltip lists (its bubble never rendered before).

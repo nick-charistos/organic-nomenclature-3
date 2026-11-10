@@ -506,7 +506,9 @@ Visibility rules:
   `fViewerHeights2D3D` skips the note-height subtraction only while a side rail
   is actually applied.
 * `#menuCol` is hidden wholesale in presentation so the remaining
-  columns center on the page; exit restores it. `#viewerCol` likewise hides
+  columns center on the page; exit restores it. Authoring-only collapse
+  (`#menuCol.collapsed` 40px rail, never stored in steps) is stashed on
+  Present entry — Present always runs expanded — and restored on Exit. `#viewerCol` likewise hides
   when both viewers are off, and `#analysisCol` hides when `show.naming` is
   off (rules hide with it — turn naming on if a step needs the rule panel).
   A lone visible column gets the shared 900px Present cap
