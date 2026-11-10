@@ -1,7 +1,9 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `73833ca` (2026-11-10) — v55
-> present content max conditional (`?v=55.0`, `index.html` → v55). Tree clean
+> **Resume pointer (cross-machine):** HEAD `4ed2fdd` (2026-11-10) — v55
+> drawer collapse accordion + tooltips + single-col + dev-banner hide (`?v=55.0`, `index.html` → v55). Tree clean
+> after this commit. Remaining: browser sweep (EN panel labels incl. bar,
+> 141 molecules, Present round-trips incl. single-col + naming-master + collapse/accordion + tooltips) + P3 blessing of Greek word forms,
 > after this commit. Remaining: browser sweep (EN panel labels incl. bar,
 > 141 molecules, Present round-trips incl. viewers-off viewerCol hide + naming-master on/off) + P3 blessing of Greek word forms,
 > completion-callback wait (spike), energy comparison for true convergence,
