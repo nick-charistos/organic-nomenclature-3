@@ -1680,6 +1680,26 @@ function fMolDraftVerdictCtrl(lang, verdict, autoNote) {
   } catch (eC) { return ""; }
 }
 
+// v55 tiered 3D status rows: source-labeled row on success (local flagged
+// provisional), fetching note while pending, all-miss note only at end.
+function fMolDraftSDF3DStatusHTML(d) {
+  try {
+    if (d && d.sdf3D && d.sdf3DSource) {
+      var _k = d.sdf3DSource === "pubchem" ? "draft3DPubchem" : (d.sdf3DSource === "remote" ? "draft3DRemote" : (d.sdf3DSource === "jsmol-unminimized" ? "draft3DUnmin" : "draft3DLocal"));
+      var _f = d.sdf3DSource === "pubchem" ? "3D: PubChem" : (d.sdf3DSource === "remote" ? "3D: remote (JSmol)" : (d.sdf3DSource === "jsmol-unminimized" ? "3D: unminimized (local — needs review)" : "3D: local minimize (provisional — needs review)"));
+      var out = "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT(_k, _f)) + "</div>";
+      if (d.sdf3DSource === "jsmol-unminimized") out += "<div class='draftOracleRow'><button type='button' class='viewerFullBtn draftMinBtn' onclick='fMolDraftManualMinimize()'>" + fMolDraftEsc(fMolDraftT("draftMinBtn", "Minimize 3D (local)")) + "</button></div>";
+      if (d.sdf3DSource === "jsmol-min") out += "<div class='draftOracleRow'><button type='button' class='viewerFullBtn draftMinBtn' onclick='fMolDraftManualMinimize()'>" + fMolDraftEsc(fMolDraftT("draftMinMore", "Minimize +100 (local)")) + "</button></div>";
+      return out;
+    }
+    if (d && !d.sdfDone) {
+      return "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("draft3DFetching", "Fetching 3D… (PubChem → remote → local)")) + "</div>";
+    }
+    return "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitNo3DAll", "No 3D model (PubChem/remote/local minimize) — 2D only.")) + "</div>"
+      + "<div class='draftOracleRow'><button type='button' class='viewerFullBtn draftMinBtn' onclick='fMolDraftManualMinimize()'>" + fMolDraftEsc(fMolDraftT("draftMinBtn", "Minimize 3D (local)")) + "</button></div>";
+  } catch (eS3) { return ""; }
+}
+
 function fMolDraftRenderPreview() {
   var d = window.MulerDraft;
   if (!d || !d.submitted) return;
@@ -1757,36 +1777,10 @@ function fMolDraftRenderPreview() {
         }
       } catch (eOCD) {}
       if (!iupac && !title) html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitNoRecord", "No PubChem record — engine only.")) + "</div>";
-      // v55 tiered 3D status: source-labeled row on success (local flagged
-      // provisional), fetching note while pending, all-miss note only at end.
-      try {
-        if (d.sdf3D && d.sdf3DSource) {
-          var _s3k = d.sdf3DSource === "pubchem" ? "draft3DPubchem" : (d.sdf3DSource === "remote" ? "draft3DRemote" : (d.sdf3DSource === "jsmol-unminimized" ? "draft3DUnmin" : "draft3DLocal"));
-          var _s3f = d.sdf3DSource === "pubchem" ? "3D: PubChem" : (d.sdf3DSource === "remote" ? "3D: remote (JSmol)" : (d.sdf3DSource === "jsmol-unminimized" ? "3D: unminimized (local — needs review)" : "3D: local minimize (provisional — needs review)"));
-          html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT(_s3k, _s3f)) + "</div>";
-          if (d.sdf3DSource === "jsmol-unminimized") html += "<div class='draftOracleRow'><button type='button' class='viewerFullBtn draftMinBtn' onclick='fMolDraftManualMinimize()'>" + fMolDraftEsc(fMolDraftT("draftMinBtn", "Minimize 3D (local)")) + "</button></div>";
-          if (d.sdf3DSource === "jsmol-min") html += "<div class='draftOracleRow'><button type='button' class='viewerFullBtn draftMinBtn' onclick='fMolDraftManualMinimize()'>" + fMolDraftEsc(fMolDraftT("draftMinMore", "Minimize +100 (local)")) + "</button></div>";
-        } else if (!d.sdfDone) {
-          html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("draft3DFetching", "Fetching 3D… (PubChem → remote → local)")) + "</div>";
-        } else {
-          html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitNo3DAll", "No 3D model (PubChem/remote/local minimize) — 2D only.</div>")) + " <div class='draftOracleRow'><button type='button' class='viewerFullBtn draftMinBtn' onclick='fMolDraftManualMinimize()'>" + fMolDraftEsc(fMolDraftT("draftMinBtn", "Minimize 3D (local)")) + "</button></div>";
-        }
-      } catch (eS3) {}
+      try { if (typeof fMolDraftSDF3DStatusHTML === "function") html += fMolDraftSDF3DStatusHTML(d) || ""; } catch (eS3) {}
     } else {
       html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitNoRecord", "No PubChem record — engine only.")) + "</div>";
-      try {
-        if (d.sdf3D && d.sdf3DSource) {
-          var _s3k2 = d.sdf3DSource === "pubchem" ? "draft3DPubchem" : (d.sdf3DSource === "remote" ? "draft3DRemote" : (d.sdf3DSource === "jsmol-unminimized" ? "draft3DUnmin" : "draft3DLocal"));
-          var _s3f2 = d.sdf3DSource === "pubchem" ? "3D: PubChem" : (d.sdf3DSource === "remote" ? "3D: remote (JSmol)" : (d.sdf3DSource === "jsmol-unminimized" ? "3D: unminimized (local — needs review)" : "3D: local minimize (provisional — needs review)"));
-          html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT(_s3k2, _s3f2)) + "</div>";
-          if (d.sdf3DSource === "jsmol-unminimized") html += "<div class='draftOracleRow'><button type='button' class='viewerFullBtn draftMinBtn' onclick='fMolDraftManualMinimize()'>" + fMolDraftEsc(fMolDraftT("draftMinBtn", "Minimize 3D (local)")) + "</button></div>";
-          if (d.sdf3DSource === "jsmol-min") html += "<div class='draftOracleRow'><button type='button' class='viewerFullBtn draftMinBtn' onclick='fMolDraftManualMinimize()'>" + fMolDraftEsc(fMolDraftT("draftMinMore", "Minimize +100 (local)")) + "</button></div>";
-        } else if (!d.sdfDone) {
-          html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("draft3DFetching", "Fetching 3D… (PubChem → remote → local)")) + "</div>";
-        } else {
-          html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitNo3DAll", "No 3D model (PubChem/remote/local minimize) — 2D only.</div>")) + " <div class='draftOracleRow'><button type='button' class='viewerFullBtn draftMinBtn' onclick='fMolDraftManualMinimize()'>" + fMolDraftEsc(fMolDraftT("draftMinBtn", "Minimize 3D (local)")) + "</button></div>";
-        }
-      } catch (eS32) {}
+      try { if (typeof fMolDraftSDF3DStatusHTML === "function") html += fMolDraftSDF3DStatusHTML(d) || ""; } catch (eS32) {}
     }
     html += "</div>";
     na.innerHTML = html;
@@ -2517,7 +2511,8 @@ function fMolDraftManualMinimize() {
 // itself through its configured server proxy (CDN jsmol.php, and verified
 // working with local JSmol files too) — no page-side fetch, hence no CORS
 // wall like the retired direct Cactus fetch. scriptWait blocks until the
-// remote model lands; the SDF text is read back via the shared battery.
+// remote model lands; the SDF text is read back via `write MOL`
+// (fMolDraftReadBackSDF, v55.8+).
 // Null on any gap (offline, unknown SMILES, JSmol dead).
 function fMolDraftRemote3DFromJSmol(smiles, expectHeavy, isCurrent) {
   try {
@@ -2551,7 +2546,7 @@ function fMolDraftRemote3DFromJSmol(smiles, expectHeavy, isCurrent) {
       try { _rl = String(r == null ? "" : r).length + " chars"; } catch (eRl) {}
       console.log("[SDF-3D] tier remote: load returned " + _rl);
     } catch (eLg) {}
-    // Shared read-back battery (molFile/show/fileContents/write MOL).
+    // Shared `write MOL` read-back (v55.8+: sole live-model serializer).
     try {
       if (typeof fMolDraftReadBackSDF === "function") return fMolDraftReadBackSDF(expectHeavy) || null;
     } catch (eRb) {}

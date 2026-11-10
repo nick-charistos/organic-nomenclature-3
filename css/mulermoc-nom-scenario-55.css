@@ -367,7 +367,7 @@
 }
 
 #scenarioPlayBarNextPrevContainer #scPos {
-   background:transparent;
+   background: transparent;
    padding: 3px 5px;
    border: 0px solid var(--darkBlue);
    border-radius: 4px;
@@ -492,8 +492,8 @@
    align-items: flex-end;
    margin: 10px 0;
    flex-wrap: wrap;
-   background: var(--veryLightGray);
-   padding: 20px 10px 10px 10px;
+   background: var(--bodyBg);
+   padding: 15px 10px 10px 10px;
    border-radius: 4px;
    border: 1px solid var(--darkBlue);
    opacity: 1;
@@ -501,8 +501,9 @@
 }
 
 .scenarioDrawer .srow.collapsed {
-     border-color: var(--lightBlue);
-     opacity: .8;
+   border-color: var(--lightBlue);
+   background: var(--veryLightGray);
+   opacity: .9;
 }
 
 /* Step row header/body: collapsed shows the head (number/title/buttons) only. */
@@ -526,10 +527,12 @@
    border-bottom-left-radius: 4px;
    background: transparent;
 }
+
 #scenarioAuthorBar .scenarioDrawer .srow .scIconBtn.scCollapse:hover {
    background: var(--darkBlue);
    color: #fff;
 }
+
 .scenarioDrawer .srow .srowBody {
    display: flex;
    gap: 5px;
@@ -543,6 +546,7 @@
    visibility: visible;
    transition: max-height .28s ease, opacity .22s ease, visibility 0s;
 }
+
 .scenarioDrawer .srow.collapsed .srowBody {
    max-height: 0;
    opacity: 0;
@@ -550,13 +554,16 @@
    pointer-events: none;
    transition: max-height .28s ease, opacity .22s ease, visibility 0s .28s;
 }
+
 /* Expanded rows let inner bubbles overflow the animated box instead of
    clipping them (collapse flips back to hidden instantly, which is moot
    since the body is gone). The slide + fade still read as animation. */
 .scenarioDrawer .srow:not(.collapsed) .srowBody {
    overflow: visible;
 }
+
 @media (prefers-reduced-motion: reduce) {
+
    .scenarioDrawer .srow .srowBody,
    .scenarioDrawer .srow.collapsed .srowBody {
       transition: none;
@@ -735,18 +742,17 @@
 .scenarioDrawer .scLangBadge {
 	font-size: .65rem;
 	font-weight: bold;
-	color: #fff;
-	background: var(--darkEarth);
+	color: var(--lightBlue);
+	/* background: var(--veryLightEarth); */
 	/* border: 1px solid var(--veryLightBlue); */
 	border-radius: 2px;
 	padding: 1px 2px;
 	white-space: nowrap;
 	font-family: "Roboto Condensed", sans-serif;
 	position: absolute;
-	top: -17px;
-	/* right: -3px; */
+	top: 3px;
+	left: -8px;
 }
-
 .scenarioDrawer .scStepNumberWrap {
    display: inline-flex;
    flex-direction: column;
@@ -827,6 +833,7 @@
    #scScenarioId {
       max-width: 34vw;
    }
+
    #scScenarioId .scScenarioIdAuthor,
    #scScenarioId .scScenarioIdSep {
       display: none;
@@ -1265,8 +1272,8 @@
 /* Step-row head buttons: centered-below bubbles clip at the drawer/panel
    edges, so anchor the outer buttons like scSave/scDelete and wrap long
    hints inside the drawer. Middle buttons keep centered geometry. */
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.scGo[data-tooltip]::after,
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.scPresentStep[data-tooltip]::after {
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scGo[data-tooltip]::after,
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scPresentStep[data-tooltip]::after {
    left: 0;
    right: auto;
    transform: none;
@@ -1277,16 +1284,18 @@
    line-height: 1.25;
    text-align: left;
 }
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.scGo[data-tooltip]::before,
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.scPresentStep[data-tooltip]::before {
+
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scGo[data-tooltip]::before,
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scPresentStep[data-tooltip]::before {
    left: 12px;
    right: auto;
    transform: none;
 }
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.scUp[data-tooltip]::after,
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.scDown[data-tooltip]::after,
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.scCollapse[data-tooltip]::after,
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.delete[data-tooltip]::after {
+
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scUp[data-tooltip]::after,
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scDown[data-tooltip]::after,
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scCollapse[data-tooltip]::after,
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.delete[data-tooltip]::after {
    left: auto;
    right: 0;
    transform: none;
@@ -1297,29 +1306,33 @@
    line-height: 1.25;
    text-align: left;
 }
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.scUp[data-tooltip]::before,
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.scDown[data-tooltip]::before,
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.scCollapse[data-tooltip]::before,
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.delete[data-tooltip]::before {
+
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scUp[data-tooltip]::before,
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scDown[data-tooltip]::before,
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scCollapse[data-tooltip]::before,
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.delete[data-tooltip]::before {
    left: auto;
    right: 12px;
    transform: none;
 }
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.scUpdate[data-tooltip]::after,
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.scDupe[data-tooltip]::after {
+
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scUpdate[data-tooltip]::after,
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scDupe[data-tooltip]::after {
    width: max-content;
    max-width: calc(100vw - 2rem);
    white-space: normal;
    overflow-wrap: anywhere;
    line-height: 1.25;
 }
+
 /* Last step row: head bubbles flip above so the drawer's scrollport
    doesn't clip them at the bottom. */
-#scenarioAuthorBar .scenarioDrawer .scSteps > .srow:last-child .srowHead > button[data-tooltip]::after {
+#scenarioAuthorBar .scenarioDrawer .scSteps>.srow:last-child .srowHead>button[data-tooltip]::after {
    top: auto;
    bottom: calc(100% + 10px);
 }
-#scenarioAuthorBar .scenarioDrawer .scSteps > .srow:last-child .srowHead > button[data-tooltip]::before {
+
+#scenarioAuthorBar .scenarioDrawer .scSteps>.srow:last-child .srowHead>button[data-tooltip]::before {
    top: auto;
    bottom: 100%;
    border-bottom-color: transparent;
@@ -1486,7 +1499,7 @@
    width: 100%;
 }
 
-#pageContainer.presenting #mainAppContainer > .mainApp3Columns {
+#pageContainer.presenting #mainAppContainer>.mainApp3Columns {
    flex: 1 0 auto;
    min-height: 0;
 }
@@ -1504,7 +1517,7 @@
    match this selector. Narrow spans (viewer-only / all-hidden) are restrained
    to the shared Present content max in JS; wide multi-column spans use the
    full measured width. */
-#pageContainer.presenting #authorLayout > #scStepText {
+#pageContainer.presenting #authorLayout>#scStepText {
    width: var(--scStepTextFitWidth, 100%);
    margin-left: var(--scStepTextFitLeft, auto);
    margin-right: auto;
@@ -1518,12 +1531,14 @@
 #pageContainer.presenting.present-wide-viewer #viewerCol {
    max-width: 900px;
 }
+
 #pageContainer.presenting.present-single-menu #menuCol {
    width: 100%;
    max-width: 900px;
    flex: 0 1 900px;
    min-width: 0;
 }
+
 #pageContainer.presenting.present-single-analysis #analysisCol {
    width: 100%;
    max-width: 900px;
@@ -2673,12 +2688,12 @@ body.scPinned #mainAppContainer:focus-visible {
    /* border-radius: 6px; */
 }
 
-.mu-note .note-embed > div:first-child {
- max-width: 400px;
+.mu-note .note-embed>div:first-child {
+   max-width: 400px;
 }
 
 .mu-note .note-embed .namingRuleTable {
-font-family: "Roboto Condensed", sans-serif; 
+   font-family: "Roboto Condensed", sans-serif;
    width: 100%;
    min-width: 280px;
 }
@@ -2878,18 +2893,18 @@ font-family: "Roboto Condensed", sans-serif;
 }
 
 .scNoteEditorClose {
-	appearance: none;
-	-webkit-appearance: none;
-	width: 30px;
-	height: 30px;
-	padding: 0;
-	font-size: 1rem;
-	line-height: 1;
-	color: var(--darkBlue);
-	background: var(--veryLightEarth);
-	border: 2px solid var(--veryLightBlue);
-	border-radius: 4px;
-	cursor: pointer;
+   appearance: none;
+   -webkit-appearance: none;
+   width: 30px;
+   height: 30px;
+   padding: 0;
+   font-size: 1rem;
+   line-height: 1;
+   color: var(--darkBlue);
+   background: var(--veryLightEarth);
+   border: 2px solid var(--veryLightBlue);
+   border-radius: 4px;
+   cursor: pointer;
    transition: all 0.2s;
 }
 
