@@ -2707,3 +2707,11 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 
 * Shared Present max 900px applies only to narrow cases: `fScenarioChrome` toggles `.present-wide-viewer` on `#pageContainer` when Present shows a viewer and menu is off or naming is off; CSS lifts `#viewerCol` 620px → 900px only then (`#pageContainer.presenting.present-wide-viewer #viewerCol`), text `max-width` stays 100%.
 * `fScenarioSyncStepTextWidth` clamps spans ≤900px to a centered 900px card and keeps wide multi-column spans at full measured width (text == columns as before); all-columns-hidden sets a centered 900px card instead of clearing to full width. Viewer-only steps keep viewer and text at the same 900px.
+
+## 2026-11-10 (cont.) — single-column 900px + drawer collapse/tooltips + dev-banner hide (v55 working copy)
+
+* Single-column Present max refined: `fScenarioChrome` counts visible Present columns and toggles `present-single-menu/viewer/analysis` (+ `present-wide-viewer` kept as the viewer-only alias); CSS gives any lone column `width:100%; max-width:900px; flex:0 1 900px` centered. Multi-column steps keep base widths; text clamp unchanged (narrow → 900px, wide → full span).
+* Present hides the dev banner: `#pageContainer.presenting #devNotice{display:none !important}` (whole bar incl. close; authoring untouched; viewer budget already skips hidden banners).
+* Step rows collapse (accordion): `.srow` renders `collapsed` with `.srowHead` (grip/number/title/buttons + `.scCollapse` toggle pinned absolute left of delete) + `.srowBody` (note/viewers/naming/groups); minimize/maximize icons added to `ui-icons.js` from `imgs/`; expanding a row collapses siblings; head-space/row-padding click and title focus-in expand (buttons/inputs/grip excluded); `Update` re-opens its row. No schema change (live-only).
+* Collapse animation: `.srowBody` `max-height .28s` + `opacity .22s` with delayed `visibility`; expanded bodies use `overflow:visible` so inner bubbles aren't clipped; `prefers-reduced-motion` disables it.
+* Drawer tooltips: srow head edge anchoring (Go/Present left, Up/Down/Collapse/delete right, Update/Dupe centered, last-row flips above) and `width:max-content` with caps so short hints hug content (`auto` + `anywhere` had collapsed to letter-wide stacks).

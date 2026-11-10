@@ -493,9 +493,74 @@
    margin: 10px 0;
    flex-wrap: wrap;
    background: var(--veryLightGray);
-   padding: 10px 10px;
+   padding: 20px 10px 10px 10px;
    border-radius: 4px;
-   border: 1px solid var(--lightBlue);
+   border: 1px solid var(--darkBlue);
+   opacity: 1;
+   transition: all .2s ease;
+}
+
+.scenarioDrawer .srow.collapsed {
+     border-color: var(--lightBlue);
+     opacity: .8;
+}
+
+/* Step row header/body: collapsed shows the head (number/title/buttons) only. */
+.scenarioDrawer .srow .srowHead {
+   display: flex;
+   gap: 5px;
+   align-items: flex-end;
+   flex-basis: 100%;
+   width: 100%;
+   /* padding-right: 52px; */
+}
+
+/* Collapse toggle: absolute corner pair with delete (delete at right:-1px,
+   collapse immediately left of it). Mirrors the delete corner language. */
+#scenarioAuthorBar .scenarioDrawer .srow .scIconBtn.scCollapse {
+   position: absolute;
+   right: 23px;
+   top: -1px;
+   border: 0;
+   border-radius: 0;
+   border-bottom-left-radius: 4px;
+   background: transparent;
+}
+#scenarioAuthorBar .scenarioDrawer .srow .scIconBtn.scCollapse:hover {
+   background: var(--darkBlue);
+   color: #fff;
+}
+.scenarioDrawer .srow .srowBody {
+   display: flex;
+   gap: 5px;
+   align-items: flex-end;
+   flex-wrap: wrap;
+   flex-basis: 100%;
+   width: 100%;
+   overflow: hidden;
+   max-height: 1200px;
+   opacity: 1;
+   visibility: visible;
+   transition: max-height .28s ease, opacity .22s ease, visibility 0s;
+}
+.scenarioDrawer .srow.collapsed .srowBody {
+   max-height: 0;
+   opacity: 0;
+   visibility: hidden;
+   pointer-events: none;
+   transition: max-height .28s ease, opacity .22s ease, visibility 0s .28s;
+}
+/* Expanded rows let inner bubbles overflow the animated box instead of
+   clipping them (collapse flips back to hidden instantly, which is moot
+   since the body is gone). The slide + fade still read as animation. */
+.scenarioDrawer .srow:not(.collapsed) .srowBody {
+   overflow: visible;
+}
+@media (prefers-reduced-motion: reduce) {
+   .scenarioDrawer .srow .srowBody,
+   .scenarioDrawer .srow.collapsed .srowBody {
+      transition: none;
+   }
 }
 
 /* Drag-reorder grip (authoring): dedicated ⠿ handle, desktop HTML5 DnD.
@@ -678,8 +743,8 @@
 	white-space: nowrap;
 	font-family: "Roboto Condensed", sans-serif;
 	position: absolute;
-	top: 1px;
-	right: -3px;
+	top: -17px;
+	/* right: -3px; */
 }
 
 .scenarioDrawer .scStepNumberWrap {
@@ -1197,13 +1262,77 @@
    transform: none;
 }
 
+/* Step-row head buttons: centered-below bubbles clip at the drawer/panel
+   edges, so anchor the outer buttons like scSave/scDelete and wrap long
+   hints inside the drawer. Middle buttons keep centered geometry. */
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.scGo[data-tooltip]::after,
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.scPresentStep[data-tooltip]::after {
+   left: 0;
+   right: auto;
+   transform: none;
+   width: max-content;
+   max-width: calc(100vw - 2rem);
+   white-space: normal;
+   overflow-wrap: anywhere;
+   line-height: 1.25;
+   text-align: left;
+}
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.scGo[data-tooltip]::before,
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.scPresentStep[data-tooltip]::before {
+   left: 12px;
+   right: auto;
+   transform: none;
+}
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.scUp[data-tooltip]::after,
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.scDown[data-tooltip]::after,
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.scCollapse[data-tooltip]::after,
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.delete[data-tooltip]::after {
+   left: auto;
+   right: 0;
+   transform: none;
+   width: max-content;
+   max-width: calc(100vw - 2rem);
+   white-space: normal;
+   overflow-wrap: anywhere;
+   line-height: 1.25;
+   text-align: left;
+}
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.scUp[data-tooltip]::before,
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.scDown[data-tooltip]::before,
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.scCollapse[data-tooltip]::before,
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.delete[data-tooltip]::before {
+   left: auto;
+   right: 12px;
+   transform: none;
+}
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.scUpdate[data-tooltip]::after,
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead > button.scDupe[data-tooltip]::after {
+   width: max-content;
+   max-width: calc(100vw - 2rem);
+   white-space: normal;
+   overflow-wrap: anywhere;
+   line-height: 1.25;
+}
+/* Last step row: head bubbles flip above so the drawer's scrollport
+   doesn't clip them at the bottom. */
+#scenarioAuthorBar .scenarioDrawer .scSteps > .srow:last-child .srowHead > button[data-tooltip]::after {
+   top: auto;
+   bottom: calc(100% + 10px);
+}
+#scenarioAuthorBar .scenarioDrawer .scSteps > .srow:last-child .srowHead > button[data-tooltip]::before {
+   top: auto;
+   bottom: 100%;
+   border-bottom-color: transparent;
+   border-top-color: var(--darkBlue);
+}
+
 /* Inline expand is the first note-toolbar control and the drawer/panel clips
    horizontally. Left-anchor its long bubble and let it wrap inside the row. */
 #scenarioAuthorBar .scenarioDrawer .scNoteToolbar button.scNoteExpandBtn[data-tooltip]::after {
    left: 0;
    right: auto;
    transform: none;
-   width: 320px;
+   width: max-content;
    max-width: calc(100vw - 2rem);
    white-space: normal;
    line-height: 1.25;
@@ -1240,7 +1369,7 @@
    left: 0;
    right: auto;
    transform: none;
-   width: 175px;
+   width: max-content;
    max-width: calc(100vw - 2rem);
    white-space: normal;
    overflow-wrap: anywhere;

@@ -4752,6 +4752,74 @@ function fScenarioBuildUi() {
       if (id !== MuLERMoCScenario.activeId) fScenarioSetActive(id);
       fScenarioOpenDrawer(id);
     });
+    // Collapsed step: clicking empty head space expands (accordion);
+    // buttons/inputs/labels/grip keep their own behavior.
+    $(document).on("click", ".scenarioPanel .srow.collapsed", function (e) {
+      if (e && e.target && e.target.closest &&
+        e.target.closest("button,input,textarea,select,label,a,.scDragHandle,[contenteditable]")) return;
+      var row = this;
+      if (!row || !row.classList || !row.classList.contains("collapsed") || !row.classList.contains("srow")) {
+        row = (e && e.target && e.target.closest) ? e.target.closest(".srow.collapsed") : null;
+      }
+      if (!row || !row.classList || !row.classList.contains("collapsed")) return;
+      try {
+        var _box = row.parentNode;
+        if (_box) {
+          var _rows = _box.querySelectorAll(".srow");
+          for (var _ri = 0; _ri < _rows.length; _ri++) {
+            if (_rows[_ri] !== row && _rows[_ri].classList.contains("collapsed") === false) {
+              _rows[_ri].classList.add("collapsed");
+              try {
+                var _tb = _rows[_ri].querySelector(".scCollapse");
+                if (_tb) {
+                  _tb.innerHTML = (window.MuLERIcons && window.MuLERIcons.maximize) || "▸";
+                  _tb.setAttribute("aria-expanded", "false");
+                }
+              } catch (eSync) {}
+            }
+          }
+        }
+      } catch (eAcc) {}
+      row.classList.remove("collapsed");
+      try {
+        var _btn = row.querySelector(".scCollapse");
+        if (_btn) {
+          _btn.innerHTML = (window.MuLERIcons && window.MuLERIcons.minimize) || "▾";
+          _btn.setAttribute("aria-expanded", "true");
+        }
+      } catch (eIc) {}
+    });
+    // Keyboard path: tabbing into a collapsed title expands the row.
+    $(document).on("focusin", ".scenarioPanel .srow.collapsed input.scStepTitle", function () {
+      var row = this.closest ? this.closest(".srow") : null;
+      if (!row || !row.classList || !row.classList.contains("collapsed")) return;
+      try {
+        var _box2 = row.parentNode;
+        if (_box2) {
+          var _rows2 = _box2.querySelectorAll(".srow");
+          for (var _rj = 0; _rj < _rows2.length; _rj++) {
+            if (_rows2[_rj] !== row && _rows2[_rj].classList.contains("collapsed") === false) {
+              _rows2[_rj].classList.add("collapsed");
+              try {
+                var _tb2 = _rows2[_rj].querySelector(".scCollapse");
+                if (_tb2) {
+                  _tb2.innerHTML = (window.MuLERIcons && window.MuLERIcons.maximize) || "▸";
+                  _tb2.setAttribute("aria-expanded", "false");
+                }
+              } catch (eSync2) {}
+            }
+          }
+        }
+      } catch (eAcc2) {}
+      row.classList.remove("collapsed");
+      try {
+        var _btn2 = row.querySelector(".scCollapse");
+        if (_btn2) {
+          _btn2.innerHTML = (window.MuLERIcons && window.MuLERIcons.minimize) || "▾";
+          _btn2.setAttribute("aria-expanded", "true");
+        }
+      } catch (eIc2) {}
+    });
     $(document).on("change", ".scenarioPanel .scenarioTitle", function () {
       var id = fScenarioPanelIdFromEl(this);
       var s = (id && fScenarioGet(id)) || fScenarioActive();
@@ -5136,7 +5204,7 @@ function fScenarioRenderOne(scen) {
   box.innerHTML = "";
   scen.steps.forEach(function (st, i) {
     var row = document.createElement("div");
-    row.className = "srow";
+    row.className = "srow collapsed";
     row.setAttribute("data-idx", String(i));
     row.setAttribute("draggable", "false");
     // Dedicated drag grip (span, not button, so it is never a step action).
@@ -5207,6 +5275,62 @@ function fScenarioRenderOne(scen) {
     titleInput.onchange = function () {
       st.title = titleInput.value;
     };
+    // Header/body structure: collapse shows head only (title + buttons).
+    var headDiv = document.createElement("div");
+    headDiv.className = "srowHead";
+    var bodyDiv = document.createElement("div");
+    bodyDiv.className = "srowBody";
+    (function () {
+      var _kids = [];
+      for (var _hi = 0; _hi < row.childNodes.length; _hi++) _kids.push(row.childNodes[_hi]);
+      for (var _hj = 0; _hj < _kids.length; _hj++) headDiv.appendChild(_kids[_hj]);
+    })();
+    var collapseBtn = document.createElement("button");
+    collapseBtn.type = "button";
+    collapseBtn.className = "scCollapse scIconBtn";
+    try {
+      collapseBtn.innerHTML = (window.MuLERIcons && window.MuLERIcons.maximize) || "▸";
+    } catch (eIc) { collapseBtn.textContent = "▸"; }
+    collapseBtn.setAttribute("data-tooltip", "Collapse/expand step");
+    collapseBtn.setAttribute("aria-label", "Collapse/expand step");
+    collapseBtn.setAttribute("aria-expanded", "false");
+    collapseBtn.onclick = function (ev) {
+      if (ev && ev.preventDefault) ev.preventDefault();
+      var _c = row.classList.toggle("collapsed");
+      if (!_c) {
+        try {
+          var _box = row.parentNode;
+          if (_box) {
+            var _rows = _box.querySelectorAll(".srow");
+            for (var _ri = 0; _ri < _rows.length; _ri++) {
+              if (_rows[_ri] !== row && _rows[_ri].classList.contains("collapsed") === false) {
+                _rows[_ri].classList.add("collapsed");
+                try {
+                  var _tb = _rows[_ri].querySelector(".scCollapse");
+                  if (_tb) {
+                    _tb.innerHTML = (window.MuLERIcons && window.MuLERIcons.maximize) || "▸";
+                    _tb.setAttribute("aria-expanded", "false");
+                  }
+                } catch (eSync) {}
+              }
+            }
+          }
+        } catch (eAcc) {}
+      }
+      try {
+        collapseBtn.innerHTML = _c
+          ? ((window.MuLERIcons && window.MuLERIcons.maximize) || "▸")
+          : ((window.MuLERIcons && window.MuLERIcons.minimize) || "▾");
+      } catch (eIc2) { collapseBtn.textContent = _c ? "▸" : "▾"; }
+      collapseBtn.setAttribute("aria-expanded", _c ? "false" : "true");
+    };
+    (function () {
+      var _del = headDiv.querySelector(".delete");
+      if (_del) headDiv.insertBefore(collapseBtn, _del);
+      else headDiv.appendChild(collapseBtn);
+    })();
+    row.appendChild(headDiv);
+    row.appendChild(bodyDiv);
     var noteInput = document.createElement("div");
     noteInput.className = "snote snoteRich";
     noteInput.setAttribute("data-placeholder", ((typeof fMulerT === "function") ? fMulerT("notePlaceholder") : "Γράψτε το κείμενο του βήματος…"));
@@ -5485,8 +5609,8 @@ function fScenarioRenderOne(scen) {
       noteBar.appendChild(wrap);
       paintPos();
     })();
-    row.appendChild(noteBar);
-    row.appendChild(noteInput);
+    bodyDiv.appendChild(noteBar);
+    bodyDiv.appendChild(noteInput);
     // No Text checkbox: heading + text show automatically iff the step
     // carries a title or note (see showTextOn); clear both for silence.
     // No Menu checkbox: the menu follows picks + selection (derived at
@@ -5518,7 +5642,7 @@ function fScenarioRenderOne(scen) {
       label.appendChild(document.createTextNode(" " + pair[0]));
       viewersRow.appendChild(label);
     });
-    row.appendChild(viewersRow);
+    bodyDiv.appendChild(viewersRow);
     // Naming row: master visibility switch first (default checked), then the
     // three naming checkboxes. Master off disables the rest (values kept, so
     // re-check restores the prior ticks).
@@ -5599,7 +5723,7 @@ function fScenarioRenderOne(scen) {
     };
     namingCheck.onchange = _syncNameRow;
     try { _syncNameRow(); st.show.naming = namingCheck.checked; } catch (eSync) {}
-    row.appendChild(nameRow);
+    bodyDiv.appendChild(nameRow);
     // Menu grouping (presentation only, menu-carrying steps only): which
     // menu views the step offers. Μόρια = flat list (default); Τάξεις/Σειρές
     // classify the picked subset. 2+ checked → grouping switcher in
@@ -5638,7 +5762,7 @@ function fScenarioRenderOne(scen) {
         gLabel.appendChild(document.createTextNode(" " + pair[0]));
         menuGroupsRow.appendChild(gLabel);
       });
-      row.appendChild(menuGroupsRow);
+      bodyDiv.appendChild(menuGroupsRow);
     }
     // Class-bound step actions (order-free): Go previews, Present jumps
     // straight into presentation at this step, the rest edit/reorder/delete.
@@ -5998,6 +6122,18 @@ function fScenarioUpdateStep(scenId, idx) {
   s.steps[idx] = fresh;
   fScenarioSyncLegacy();
   fScenarioRenderList(s.id);
+  try {
+    var _sel = '.scenarioPanel[data-scenario-id="' + String(s.id).replace(/"/g, "") + '"] .srow[data-idx="' + idx + '"]';
+    var _row = document.querySelector(_sel);
+    if (_row) {
+      _row.classList.remove("collapsed");
+      var _tb = _row.querySelector(".scCollapse");
+      if (_tb) {
+        try { _tb.innerHTML = (window.MuLERIcons && window.MuLERIcons.minimize) || "▾"; } catch (eIcE) { _tb.textContent = "▾"; }
+        _tb.setAttribute("aria-expanded", "true");
+      }
+    }
+  } catch (eExp) {}
   var msg = "Updated step " + fresh.n + ".";
   if (oldKind !== newKind) {
     msg += newKind === "menu" ? " (now menu-only.)" : " (now molecule.)";
