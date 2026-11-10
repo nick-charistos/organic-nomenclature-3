@@ -301,7 +301,10 @@ Visibility rules:
   molecule steps only; absent in legacy files = no toggles) seeds the
   master switch on step entry; while the naming settings gear is shown
   the master toggles the eyes live, otherwise eyes follow `show.nameEye`
-  directly. `Update` refreshes `hidden` from the live view and preserves
+  directly. The hidden set is sticky across molecule switches (menu steps
+  and main-app browsing hide the same slot ids everywhere; unknown ids are
+  ignored); fresh starts reset it (cold boot, draft New). `Update` refreshes
+  `hidden` from the live view and preserves
   `nameEye`; Present stashes / Exit restores the author's live hidden set
   + edit mode. Eye-hiding the highlighted box also repaints the 2D SVG
   so its highlight vanishes at once.

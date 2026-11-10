@@ -1139,6 +1139,10 @@ function fMolDraftEnter(mode) {
   window.MulerDraft = { mode: mode, sourceMol: sourceMol, variant: variant, had3D: had3D };
   try { window.MulerDraft._epoch = (window._MulerDraftEpoch = (window._MulerDraftEpoch || 0) + 1); } catch (eEp) { try { window.MulerDraft._epoch = Date.now(); } catch (eEp2) {} }
   try { window.MulerDraft._submitId = 0; window.MulerDraft.accepting = false; } catch (eSi) {}
+  // Fresh canvas on New (blank drawing, naming placeholder): clear any sticky
+  // hidden set so the preview starts fully visible. Edit keeps the live set
+  // (template is the visible variant the author was just looking at).
+  try { if (mode === "new" && typeof window !== "undefined") window.nameHiddenComps = []; } catch (eH) {}
   // Update-in-place only when an Edit redraws the SAME molecule (beautify).
   // Edit producing a different molecule always forks a new custom entry;
   // stored (141) templates are never overwritten (option a). Source identity
@@ -4732,10 +4736,12 @@ function fInitProps() {
   currNumberEl = 0;
   clearInterval(myNumberingTimeout);
   nameAnalysisMode = "none";
-  // New-molecule reset: component visibility never leaks across molecules
-  // (comp ids are slot-based, not molecule-based). Scenario steps re-assert
-  // their stored hidden set after fSelectMol returns.
-  window.nameHiddenComps = [];
+  // Sticky visibility: the hidden-comp set is NOT reset here (v55 working
+  // copy) — hiding follows the author across molecule switches (menu steps
+  // and main-app browsing hide the same slots everywhere). Fresh starts reset
+  // explicitly: cold boot (see init), draft New entry. Scenario applies
+  // overwrite with the stored step set; Present entry/exit stash + restore
+  // the author's live set.
   carbons = 0;
   ruleTableHighlight = null;
   // New-molecule reset: 2D zoom returns to default on every molecule load.
