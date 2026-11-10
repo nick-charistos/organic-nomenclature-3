@@ -1,8 +1,8 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `aa910ea` (2026-11-10) — v55
-> collapsible menu rail + viewer/naming width share (`?v=55.0`, `index.html` → v55). Tree clean
-> after this commit. Remaining: browser sweep (EN panel + EN boxes incl. euphony/yne/comp9loc, narration voices both languages, menu rail + width share + tooltips, Present round-trips) + P3 blessing of Greek word forms,
+> **Resume pointer (cross-machine):** HEAD `09be95d` (2026-11-10) — v55
+> explain-all overview table + tooltip skin (`?v=55.0`, `index.html` → v55). Tree clean
+> after this commit. Remaining: browser sweep (overview table both languages + row clicks, EN boxes, narration voices, menu rail, Present round-trips) + P3 blessing of Greek word forms,
 > completion-callback wait (spike), energy comparison for true convergence,
 > settings tabs (registry groups by row id when needed). Full record:
 > `docs/SESSION-NOTES.md` 2026-11-09/10 entries + `docs/CHANGELOG.md` [v55] +
@@ -2744,3 +2744,10 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 ## 2026-11-10 (cont.) — collapsible menuCol + width share (v55 working copy)
 
 * ☰ icon first in the menu title (template-owned, survives rebuilds; `scPickToggle` keeps absolute-left, collapse absolute-right, title centered); `#menuToggle` + `fToggleMenu` retired (two mechanisms would desync); `#menuCol.collapsed` = 40px rail (icon + vertical-rl MENU, portrait: full-width bar) persisted in `localStorage`, stashed/expanded/restored across Present; freed 190px split viewer +80 (cap 700) / naming +110 (width 460, 350 floor untouched), row total conserved, animated with reduced-motion guard; toggle language (darkBlue expanded) + darkEarth hover per title-bar convention; pick toggle truly hidden in rail via 3-id selector (specificity tie with later scenario stylesheet was the bug); collapse button added to all six shared tooltip lists (its bubble never rendered before).
+
+## 2026-11-10 (cont.) — explain-all overview table (v55 working copy)
+
+* `Επισκόπηση`/`Overview` toggle in the naming toolbar (list icon, `.active` language, live-only flag like eye-edit, never stored in steps): one row per visible name box with its explanation, GR + EN + sys variants uniformly, hidden comps skipped, `none` modes skipped.
+* Box id→mode switch extracted to global `fNameAnalysisModeForBoxId` (single source for clicks + table; click path verified equivalent incl. `numberingFlag=false` default); per-mode scrape drives `fExplainNameComp` with paints suppressed (quiet guards in `fHighlightFG/FG3D`, `fShowAnalysisNumbering`, `fColorFragmentBonds3D`, `fShowRule`; mode flags + rule-panel visibility restored; synchronous loop, no flash).
+* Row clicks delegate to the box click (identical highlight/select/narration incl. draft + hidden guards) then repaint from a keyed cache (molecule + lang + hidden + variants + box signature) — no rebuild per click; full rebuilds funnel through the `fShowNameAnalysis` tail hook (select/eye/variant). Toggle-off restores the single explanation with highlight repaint.
+* Owner styling accepted (full-length flat rows, divider chips, selected stem connector off). Toggle-button tooltip bubble never rendered (missing shared skin-list entry) — added to all six lists. Quiz-mode hook noted in code (`QUIZ-FUTURE`), not implemented; no read-all button per owner call.

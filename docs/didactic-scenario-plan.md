@@ -291,6 +291,11 @@ Visibility rules:
   no stored highlight; absent in legacy files = allowed).
   `show.audio` toggles narration buttons. Playback never
   auto-plays TTS.
+* Explain-all overview (live-only toggle, never stored): one row per visible
+  component with its explanation (same text as the click path, hidden comps
+  skipped); rows click through to the box (highlight/select/narration) so it
+  stays consistent under `nameClick` gating, and it renders read-only in
+  Present for the current molecule.
 * Per-component visibility: `styleName.hidden` lists hidden comp ids
   (e.g. `["comp5"]`); hidden boxes render a dash on a `lightBlue` fill,
   ignore clicks, and are skipped by narration and stored-highlight replay
