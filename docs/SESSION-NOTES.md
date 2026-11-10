@@ -1,9 +1,9 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `85ba7e5` (2026-11-10) — v55
-> drift fixes + present viewerCol hide (`?v=55.0`, `index.html` → v55). Tree clean
+> **Resume pointer (cross-machine):** HEAD `b768654` (2026-11-10) — v55
+> step drawer button groups (`?v=55.0`, `index.html` → v55). Tree clean
 > after this commit. Remaining: browser sweep (EN panel labels incl. bar,
-> 141 molecules, Present round-trips incl. viewers-off viewerCol hide) + P3 blessing of Greek word forms,
+> 141 molecules, Present round-trips incl. viewers-off viewerCol hide + naming-master on/off) + P3 blessing of Greek word forms,
 > completion-callback wait (spike), energy comparison for true convergence,
 > settings tabs (registry groups by row id when needed). Full record:
 > `docs/SESSION-NOTES.md` 2026-11-09/10 entries + `docs/CHANGELOG.md` [v55] +
