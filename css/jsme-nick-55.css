@@ -2782,7 +2782,7 @@ color: var(--veryLightEarth);
 }
 
 .menuCollapseBtn:hover {
-  background: var(--darkBlue);
+  background: var(--darkEarth);
   color: #fff;
 }
 
