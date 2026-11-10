@@ -2855,10 +2855,10 @@ color: var(--veryLightEarth);
   display: none;
 }
 
-/* Collapsed menu frees ~190px: the viewer grows into it (same 900px cap
-   language as present-wide-viewer). Animates with the rail. */
+/* Collapsed menu frees ~190px: the viewer grows into it (900 single-col
+   budget minus the 40px rail and the 10px flex gap = 850). Animates. */
 #menuCol.collapsed ~ #viewerCol {
-  max-width: 900px;
+  max-width: 850px;
 }
 
 #viewerCol {
