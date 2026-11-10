@@ -29,6 +29,7 @@ Forked from v54 (`mulermoc-nom-55.html` + `js/*-55.js` + `css/*-55.css`, `?v=55.
 - Step-budget drift fix: `MOLMIN_FURTHER_STEPS` 200 → 100 (`molview-55.js`) to match commit msg, CHANGELOG `=100`, and `draftMinMore` "+100" button; `MOLMIN_STEPS` stays 500 (console-proven), docs corrected from stale "300". `spt/init-3.spt` stays `minimizationCriterion 0.005`, docs corrected from stale "0.01".
 - PubChem tier now enforces heavy count: `fMolDraftFetchSDF3DTiered` validates with `expectHeavy` instead of `0` (same guard added to the legacy direct-PubChem fallback); `expectHeavy=0` still skips the check as before.
 - Present hides `#viewerCol` wholesale when both viewers are off (`fScenarioChrome`: `present && !show2D && !show3D`, same flex-recenter pattern as `menuCol`); authoring untouched. `fScenarioRestoreChrome` ids add `viewerCol` so Exit / authoring Go restores it. Text span/height helpers already skip hidden cols, `fResizeViewers` early-returns on zero width.
+- Step drawer rows grouped: `.scStepViewersSettings` (2D/3D `show.controls`) + `.scStepNameSettings` (master `show.naming` "Εμφάνιση ονομασίας"/"Show naming" default checked + `nameSettings`/`nameClick`/`nameEye`); master off disables the 3 children, values kept. `.scMenuGroupsRow` unchanged. `fScenarioUpdateStep` preserves `show.naming`; legacy/absent = true. No schema bump.
 
 ## [v54] (molecule edit/create draft flow; LIVE, `index.html` → v54)
 

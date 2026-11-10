@@ -273,6 +273,7 @@ var MULER_STRINGS = {
   settings2D: { gr: "2D ρυθμίσεις", en: "2D settings" },
   settings3D: { gr: "3D ρυθμίσεις", en: "3D settings" },
   namingSettingsLower: { gr: "Ρυθμίσεις ονομασίας", en: "Naming settings" },
+  showNaming: { gr: "Εμφάνιση ονομασίας", en: "Show naming" },
   nameInteract: { gr: "Διάδραση ονομασίας", en: "Name interaction" },
   menuGroupsTitle: { gr: "Ταξινομήσεις Μένου:", en: "Menu groupings:" },
   chSymbols: { gr: "Σύμβολα CH", en: "CH symbols" },

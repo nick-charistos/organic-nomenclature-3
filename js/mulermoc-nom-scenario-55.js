@@ -5431,8 +5431,8 @@ function fScenarioRenderOne(scen) {
     // capture/validate — 2+ picks show it, otherwise the step stands alone).
     // Viewer control bars (authored per step; enabled only when that step's
     // viewer is visible — viewers are set live via [2D][3D] before saving).
-    var showRow = document.createElement("div");
-    showRow.className = "scShowRow";
+    var viewersRow = document.createElement("div");
+    viewersRow.className = "scShowRow scStepViewersSettings";
     var _s23 = ((typeof fMulerIsEN === "function") && fMulerIsEN()) ? [["2D settings", "2D"], ["3D settings", "3D"]] : [["2D ρυθμίσεις", "2D"], ["3D ρυθμίσεις", "3D"]];
     _s23.forEach(function (pair) {
       var label = document.createElement("label");
@@ -5454,8 +5454,23 @@ function fScenarioRenderOne(scen) {
       };
       label.appendChild(ctlCheck);
       label.appendChild(document.createTextNode(" " + pair[0]));
-      showRow.appendChild(label);
+      viewersRow.appendChild(label);
     });
+    row.appendChild(viewersRow);
+    // Naming row: master visibility switch first (default checked), then the
+    // three naming checkboxes. Master off disables the rest (values kept, so
+    // re-check restores the prior ticks).
+    var nameRow = document.createElement("div");
+    nameRow.className = "scShowRow scStepNameSettings";
+    var namingLabel = document.createElement("label");
+    namingLabel.className = "sshow";
+    namingLabel.setAttribute("data-tooltip", "Show naming in presentation");
+    var namingCheck = document.createElement("input");
+    namingCheck.type = "checkbox";
+    namingCheck.checked = !(st.show && st.show.naming === false);
+    namingLabel.appendChild(namingCheck);
+    namingLabel.appendChild(document.createTextNode(" " + ((typeof fMulerT === "function") ? fMulerT("showNaming") : "Εμφάνιση ονομασίας")));
+    nameRow.appendChild(namingLabel);
     // Naming gear + panel.
     var nameCtlLabel = document.createElement("label");
     nameCtlLabel.className = "sshow";
@@ -5469,7 +5484,7 @@ function fScenarioRenderOne(scen) {
     };
     nameCtlLabel.appendChild(nameCtlCheck);
     nameCtlLabel.appendChild(document.createTextNode(" " + ((typeof fMulerT === "function") ? fMulerT("namingSettingsLower") : "Ρυθμίσεις ονομασίας")));
-    showRow.appendChild(nameCtlLabel);
+    nameRow.appendChild(nameCtlLabel);
     // Name-box interaction (user clicks only; stored highlight always
     // replays). Absent = allowed (legacy files); capture stores false.
     var nameClickLabel = document.createElement("label");
@@ -5484,7 +5499,7 @@ function fScenarioRenderOne(scen) {
     };
     nameClickLabel.appendChild(nameClickCheck);
     nameClickLabel.appendChild(document.createTextNode(" " + ((typeof fMulerT === "function") ? fMulerT("nameInteract") : "Διάδραση ονομασίας")));
-    showRow.appendChild(nameClickLabel);
+    nameRow.appendChild(nameClickLabel);
     // Per-component eye toggles in presentation (Ορατότητα συνθετικών):
     // checked → the master eye switch starts lit and the small eye buttons
     // above each name box stay live during presentation (visibility itself
@@ -5508,8 +5523,21 @@ function fScenarioRenderOne(scen) {
     };
     nameEyeLabel.appendChild(nameEyeCheck);
     nameEyeLabel.appendChild(document.createTextNode(" " + ((typeof fMulerT === "function") ? fMulerT("compVisibility") : "Ορατότητα συνθετικών")));
-    showRow.appendChild(nameEyeLabel);
-    row.appendChild(showRow);
+    nameRow.appendChild(nameEyeLabel);
+    var _syncNameRow = function () {
+      var on = namingCheck.checked;
+      st.show = st.show || {};
+      st.show.naming = on;
+      [[nameCtlCheck, nameCtlLabel, false], [nameClickCheck, nameClickLabel, false], [nameEyeCheck, nameEyeLabel, !st.selectedMol]].forEach(function (t) {
+        var chk = t[0], lbl = t[1], locked = t[2];
+        var dis = !on || locked;
+        chk.disabled = dis;
+        if (lbl && lbl.classList) lbl.classList.toggle("disabled", dis);
+      });
+    };
+    namingCheck.onchange = _syncNameRow;
+    try { _syncNameRow(); st.show.naming = namingCheck.checked; } catch (eSync) {}
+    row.appendChild(nameRow);
     // Menu grouping (presentation only, menu-carrying steps only): which
     // menu views the step offers. Μόρια = flat list (default); Τάξεις/Σειρές
     // classify the picked subset. 2+ checked → grouping switcher in
@@ -5863,8 +5891,8 @@ function fScenarioGo(i) {
 // ── per-step Update (authoring): Go → tweak live view → Update ───────────
 // Captures the current live view via fScenarioCapture() and overwrites the
 // stored view snapshot at scen.steps[idx]. Authored layer is preserved:
-// title, note, styleText.fontSizePx/textWidthPx/columns, and the 4 drawer chrome checkboxes
-// (show.controls.2D/3D, show.nameSettings, show.nameClick). Everything visual is refreshed:
+// title, note, styleText.fontSizePx/textWidthPx/columns, and the drawer chrome checkboxes
+// (show.controls.2D/3D, show.naming, show.nameSettings, show.nameClick, show.nameEye). Everything visual is refreshed:
 // selectedMol, mode2D, mainChainMode, etherNamingMode, nameAnalysisMode
 // (clicked name-box highlight), selectedRule, style2D (atom colors, color
 // mode, zigzag, zoom), styleName (box/cross/etherNaming/panelOpen), styleHighlight,
@@ -5901,6 +5929,7 @@ function fScenarioUpdateStep(scenId, idx) {
     ? { "2D": !!oldShow.controls["2D"], "3D": !!oldShow.controls["3D"] }
     : { "2D": false, "3D": false };
   fresh.show.nameSettings = oldShow.nameSettings === true;
+  fresh.show.naming = oldShow.naming !== false;
   fresh.show.nameClick = oldShow.nameClick === true;
   fresh.show.nameEye = oldShow.nameEye === true;
   fresh.menuGroups = fScenarioValidMenuGroups(old.menuGroups);

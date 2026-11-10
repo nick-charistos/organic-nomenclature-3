@@ -2689,3 +2689,11 @@ All `*55*`-only (`molview-55.js` + `scenario-55.js` + docs); naming engine untou
 * Drift fix: `MOLMIN_FURTHER_STEPS` 200 → 100 to match commit msg / CHANGELOG / `draftMinMore` "+100"; `MOLMIN_STEPS` stays 500 (console-proven `minimize steps 500` convergence). Docs corrected from stale "steps 300" / `minimizationCriterion 0.01` to tree truth 500 / `0.005` (`CHANGELOG.md`, this file's 2026-11-09 entry).
 * PubChem tier validates heavy count: `fMolDraftFetchSDF3DTiered` passes `expectHeavy` (was `0`, skipping the check); same guard on the legacy direct-PubChem fallback in `fMolDraftSubmit`. `expectHeavy=0` still skips as before.
 * Present hides `#viewerCol` when both viewers off: `fScenarioChrome` adds `fScenarioHide("viewerCol", present && !show2D && !show3D)` (flex-recenter like `menuCol`); authoring (`present=false`) untouched. `fScenarioRestoreChrome` ids add `viewerCol` so Exit / authoring Go restores it. Text span/height + `fResizeViewers` already tolerate hidden cols (offsetParent skip / zero-width early-return).
+
+## 2026-11-10 (cont.) — step drawer button groups (v55 working copy)
+
+All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` clean on both files.
+
+* Drawer `showRow` split into `.scShowRow.scStepViewersSettings` (2D/3D `show.controls`, viewer-off disable unchanged) + `.scShowRow.scStepNameSettings` (master `show.naming` first, then `nameSettings`/`nameClick`/`nameEye`); `.scMenuGroupsRow` untouched. Existing `.scShowRow` flex/tooltip/disabled CSS reused, no new rules.
+* New master `showNaming` key ("Εμφάνιση ονομασίας" / "Show naming"), default checked (absent/legacy = true via `fScenarioDefaults`); off disables the 3 naming children (`disabled` + `.disabled`, values kept so re-check restores ticks); `nameEye` keeps its molecule-gate. Present already hides the naming container on `show.naming===false`.
+* `fScenarioUpdateStep` preserves `show.naming`; capture already defaults `naming:true`. No schema bump (additive boolean).
