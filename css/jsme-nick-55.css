@@ -942,6 +942,7 @@ header {
 .scShowRow .sshow[data-tooltip]::after,
 .scMolBadge[data-tooltip]::after,
 .scDragHandle[data-tooltip]::after,
+.menuCollapseBtn[data-tooltip]::after,
 .langButtonClass[data-tooltip]::after {
   content: attr(data-tooltip);
   background: var(--darkBlue);
@@ -982,6 +983,7 @@ header {
 .scShowRow .sshow[data-tooltip]:hover::after,
 .scMolBadge[data-tooltip]:hover::after,
 .scDragHandle[data-tooltip]:hover::after,
+.menuCollapseBtn[data-tooltip]:hover::after,
 .langButtonClass[data-tooltip]:hover::after {
   opacity: 1;
   transition: opacity 0.15s ease 0.5s;
@@ -999,6 +1001,7 @@ header {
 .nameStyleExpand[data-tooltip]::after,
 .molInfoCopy[data-tooltip]::after,
 #narrateAnalysisToggle[data-tooltip]::after,
+.menuCollapseBtn[data-tooltip]::after,
 .langButtonClass[data-tooltip]::after {
   position: absolute;
   top: calc(100% + 10px);
@@ -1031,6 +1034,7 @@ header {
 .scShowRow .sshow[data-tooltip]::before,
 .scMolBadge[data-tooltip]::before,
 .scDragHandle[data-tooltip]::before,
+.menuCollapseBtn[data-tooltip]::before,
 .langButtonClass[data-tooltip]::before {
   content: "";
   position: absolute;
@@ -1062,6 +1066,7 @@ header {
 .scShowRow .sshow[data-tooltip]:hover::before,
 .scMolBadge[data-tooltip]:hover::before,
 .scDragHandle[data-tooltip]:hover::before,
+.menuCollapseBtn[data-tooltip]:hover::before,
 .langButtonClass[data-tooltip]:hover::before {
   opacity: 1;
   transition: opacity 0.15s ease 0.5s;
@@ -1079,6 +1084,7 @@ header {
 .nameStyleExpand[data-tooltip]::before,
 .molInfoCopy[data-tooltip]::before,
 #narrateAnalysisToggle[data-tooltip]::before,
+.menuCollapseBtn[data-tooltip]::before,
 .langButtonClass[data-tooltip]::before {
   top: 100%;
   left: 50%;
@@ -2799,17 +2805,63 @@ color: var(--veryLightEarth);
   transform: none;
 }
 
-/* Collapsed menu column: slim rail, title text + body hidden, icon stays. */
+/* Collapsible menu column: width animates rail <-> full. */
+#menuCol {
+  transition: width 0.25s ease;
+}
+
+/* Collapsed menu column: slim rail with the icon + vertical MENU text
+   (mirrors #scenarioAuthorTab: icon above, vertical-rl title below). */
 #menuCol.collapsed {
   width: 40px;
   min-width: 40px;
 }
 
-#menuCol.collapsed .menuTitleText,
+#menuCol.collapsed #nomeclature2Menu .panelTitle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 0;
+}
+
+#menuCol.collapsed #menuCollapseBtn {
+  position: relative;
+  left: auto;
+  right: auto;
+  top: auto;
+  transform: none;
+}
+
+#menuCol.collapsed .menuTitleText {
+  display: block;
+  writing-mode: vertical-rl;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+}
+
 #menuCol.collapsed #nomeclature2Menu .groupingMode,
 #menuCol.collapsed #nomeclature2Menu .menuNomeclature2Container,
-#menuCol.collapsed #scPickToggle {
+#menuCol.collapsed #nomeclature2Menu .panelTitle #scPickToggle {
   display: none;
+}
+
+/* Collapsed menu frees ~190px: the viewer grows into it (same 900px cap
+   language as present-wide-viewer). Animates with the rail. */
+#menuCol.collapsed ~ #viewerCol {
+  max-width: 900px;
+}
+
+#viewerCol {
+  transition: max-width 0.25s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #menuCol,
+  #viewerCol {
+    transition: none;
+  }
 }
 
 .mainApp3Columns {
@@ -3064,10 +3116,18 @@ color: var(--veryLightEarth);
   }
 
   /* Collapsed menu in the stacked portrait layout stays a full-width bar
-     (icon only); the old #menuToggle bar is retired. */
+     (icon + horizontal text); the old #menuToggle bar is retired. */
   #menuCol.collapsed {
     width: 100%;
     min-width: unset;
+  }
+  #menuCol.collapsed #nomeclature2Menu .panelTitle {
+    flex-direction: row;
+  }
+  #menuCol.collapsed .menuTitleText {
+    flex: 1;
+    text-align: center;
+    writing-mode: horizontal-tb;
   }
 
   #menuCol {
