@@ -2855,19 +2855,29 @@ color: var(--veryLightEarth);
   display: none;
 }
 
-/* Collapsed menu frees ~190px: the viewer grows into it (900 single-col
-   budget minus the 40px rail and the 10px flex gap = 850). Animates. */
+/* Collapsed menu frees 190px, split viewer +80 / naming +110 (naming
+   weighted — long names scale up into the width): row total is conserved,
+   so nothing recenters. Animates with the rail. */
 #menuCol.collapsed ~ #viewerCol {
-  max-width: 850px;
+  max-width: 700px;
+}
+
+#menuCol.collapsed ~ #analysisCol {
+  width: 460px;
 }
 
 #viewerCol {
   transition: max-width 0.25s ease;
 }
 
+#analysisCol {
+  transition: width 0.25s ease;
+}
+
 @media (prefers-reduced-motion: reduce) {
   #menuCol,
-  #viewerCol {
+  #viewerCol,
+  #analysisCol {
     transition: none;
   }
 }
