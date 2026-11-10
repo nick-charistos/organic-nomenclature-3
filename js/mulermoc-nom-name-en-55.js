@@ -328,9 +328,18 @@ function fPopulateEngineENFromGreek(key, variant) {
       } else if (!comp1No && !mid) {
         parent = stem + infix + infix2 + suffix; // C3 terminal: propene, propyne, propenal, propenoic acid (locant implied)
       } else {
+        // P-16.7.1(a): second infix regains terminal "e" before locant-led
+        // di/tri-suffixes (yne-2,7-dione); mono suffixes fuse bare (yn-1-ol).
+        var infix2U = infix2;
+        try {
+          if ((infix2 === "en" || infix2 === "yn") && typeof fFuseEnInfixSuffix === "function") {
+            var _f2 = fFuseEnInfixSuffix(infix2, suffix) || infix2;
+            if (_f2 !== infix2) infix2U = _f2;
+          }
+        } catch (eF2) { infix2U = infix2; }
         var ub = [comp1No, infix];
         if (mid) { ub.push(mid); }
-        if (infix2) { ub.push(infix2); }
+        if (infix2U) { ub.push(infix2U); }
         var tailU = suffix;
         if (suffix === "e" || suffix === "al" || suffix === "nitrile" || suffix === "amine") { tailU = suffix; }
         else if (/oic acid$/.test(suffix)) { tailU = suffix; }
@@ -399,10 +408,16 @@ function fPopulateEngineENFromGreek(key, variant) {
 // directly followed by a consonant-initial suffix box (no locant box
 // between) takes back its terminal "e" (ynedioic, enedial, ynedione);
 // vowel-initial suffixes (oic acid, al, ol, one, e, amine, oate) fuse bare,
-// and "an"/"diene"/"diyne" never change.
+// and "an"/"diene"/"diyne" never change. Locant-led di/tri-suffixes keep
+// the "e" too (yne-2,7-dione, ene-2,5-diol); mono suffixes (2-one, 1-ol)
+// and bare unsaturation locants (-5-) never trigger it.
 function fFuseEnInfixSuffix(infix, nextText) {
   try {
-    if ((infix === "en" || infix === "yn") && /^[b-df-hj-np-tv-z]/i.test(String(nextText == null ? "" : nextText).trim())) return infix + "e";
+    var t = String(nextText == null ? "" : nextText).trim();
+    if (infix === "en" || infix === "yn") {
+      if (/^[b-df-hj-np-tv-z]/i.test(t)) return infix + "e";
+      if (/^-?\d[\d,]*-(di|tri)(one|ol|al|oic)/i.test(t)) return infix + "e";
+    }
   } catch (e) { /* best-effort */ }
   return infix;
 }
@@ -547,9 +562,11 @@ function fNameENBoxes(variant) {
       }
     }
     // Parent boxes in EN systematic order (stem first).
+    // Euphony convention (mirrors GR): the connecting vowel rides on the
+    // stem box (penta), locants stay bare (-1,3-) — never pent + a-1,3-.
     if (diene) {
-      push("comp5", stem);
-      if (comp1No) push("comp4", "a-" + comp1No + "-");
+      push("comp5", stem + (/[aeiou]$/i.test(stem) ? "" : "a"));
+      if (comp1No) push("comp4", "-" + comp1No + "-");
       push("comp6", diMatch[1] + diMatch[2] + "e");
       if (mid) push("comp7", "-" + mid + "-");
       if (infix2) push("comp8", infix2);
@@ -573,13 +590,19 @@ function fNameENBoxes(variant) {
       if (suffix) push("comp9", suffix);
     }
     // Fused suffix locants (e.g. "-2,7-dione") get their own comp9loc box.
+    // stripLoc above already removed a leading dash, so the digit-led form
+    // ("2,7-dione") is the live one; the dash-led pattern stays defensively.
     var _cp = null;
     for (var _qi = 0; _qi < boxes.length; _qi++) {
       if (boxes[_qi][0] === "comp9") { _cp = _qi; break; }
     }
     if (_cp !== null) {
-      var _qm = String(boxes[_cp][1]).match(/^(-\d[\d,]*-)(.+)$/);
-      if (_qm && _qm[2]) { boxes[_cp] = ["comp9", _qm[2]]; boxes.splice(_cp, 0, ["comp9loc", _qm[1]]); }
+      var _qm = String(boxes[_cp][1]).match(/^(-\d[\d,]*-)(.+)$/) ||
+        String(boxes[_cp][1]).match(/^(\d[\d,]*-)(.+)$/);
+      if (_qm && _qm[2]) {
+        var _loc = _qm[1].charAt(0) === "-" ? _qm[1] : "-" + _qm[1];
+        boxes[_cp] = ["comp9", _qm[2]]; boxes.splice(_cp, 0, ["comp9loc", _loc]);
+      }
     }
     if (!isEster) {
       var _t10 = S(10);
@@ -590,13 +613,17 @@ function fNameENBoxes(variant) {
     }
     // P-16.7.1(a) elision at box seams: "yn"/"en" directly before a
     // consonant-initial suffix box regains its terminal "e"
-    // (ynedioic, enedial); vowel-initial suffixes fuse bare.
+    // (ynedioic, enedial); vowel-initial suffixes fuse bare. Locant-led
+    // di/tri-suffixes (yne-2,7-dione) fuse against locants+suffix combined.
     for (var _fi = 0; _fi + 1 < boxes.length; _fi++) {
       try {
         var _fb = boxes[_fi];
         if ((_fb[0] === "comp6" || _fb[0] === "comp8") && boxes[_fi + 1][0] === "comp9") {
           var _fused = (typeof fFuseEnInfixSuffix === "function") ? fFuseEnInfixSuffix(_fb[1], boxes[_fi + 1][1]) : _fb[1];
           if (_fused !== _fb[1]) boxes[_fi] = [_fb[0], _fused];
+        } else if ((_fb[0] === "comp6" || _fb[0] === "comp8") && boxes[_fi + 1][0] === "comp9loc" && _fi + 2 < boxes.length && boxes[_fi + 2][0] === "comp9") {
+          var _fused2 = (typeof fFuseEnInfixSuffix === "function") ? fFuseEnInfixSuffix(_fb[1], String(boxes[_fi + 1][1]) + String(boxes[_fi + 2][1])) : _fb[1];
+          if (_fused2 !== _fb[1]) boxes[_fi] = [_fb[0], _fused2];
         }
       } catch (eF) { /* best-effort */ }
     }
