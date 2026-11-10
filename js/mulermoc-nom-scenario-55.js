@@ -4077,14 +4077,26 @@ function fScenarioChrome(show) {
   // viewer column: hide wholesale in presentation when both viewers are off
   // (flex row recenters the rest, same as menuCol above).
   fScenarioHide("viewerCol", present && !show2D && !show3D);
-  // wide viewer: lift the 620px cap to the shared Present max only when a
-  // side column hides (menu or analysis/naming off); all-columns-visible
-  // keeps the base cap so text == columns as before.
+  // single column: any lone visible column gets the shared Present max
+  // (900px) and centers; multi-column steps keep base widths. Wide-viewer
+  // is the viewer-only alias.
   try {
-    var _wide = !!present && (!!show2D || !!show3D) && (!_menuOn || (show && show.naming === false));
+    var _analysisOn = !(show && show.naming === false);
+    var _viewerOn = !!(show2D || show3D);
+    var _nvis = 0;
+    if (_menuOn) _nvis++;
+    if (_viewerOn) _nvis++;
+    if (_analysisOn) _nvis++;
+    var _single = !!present && _nvis === 1;
     var _pcw = document.getElementById("pageContainer");
-    if (_pcw && _pcw.classList) _pcw.classList.toggle("present-wide-viewer", _wide);
-  } catch (eW) { /* wide-viewer best-effort */ }
+    if (_pcw && _pcw.classList) {
+      _pcw.classList.toggle("present-single-col", _single);
+      _pcw.classList.toggle("present-single-menu", _single && !!_menuOn);
+      _pcw.classList.toggle("present-single-viewer", _single && !!_viewerOn);
+      _pcw.classList.toggle("present-single-analysis", _single && !!_analysisOn);
+      _pcw.classList.toggle("present-wide-viewer", _single && !!_viewerOn);
+    }
+  } catch (eW) { /* single-col best-effort */ }
   // pick UI never appears in presentation (paint strips it on rebuilds too)
   if (present) {
     try {

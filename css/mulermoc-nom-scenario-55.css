@@ -1382,15 +1382,35 @@
    max-width: 100%;
 }
 
-/* Presentation viewer cap: base 620px stands when all columns show;
-   lifted to the shared Present content max only when a side column hides
-   (JS toggles .present-wide-viewer), so viewer and text card agree. */
+/* Presentation single column: any lone visible column gets the shared
+   Present content max (900px) and centers. Viewer-only keeps its lift via
+   .present-wide-viewer (== single-viewer alias); menu/analysis singles
+   override their fixed widths. Multi-column steps keep base widths. */
 #pageContainer.presenting.present-wide-viewer #viewerCol {
    max-width: 900px;
+}
+#pageContainer.presenting.present-single-menu #menuCol {
+   width: 100%;
+   max-width: 900px;
+   flex: 0 1 900px;
+   min-width: 0;
+}
+#pageContainer.presenting.present-single-analysis #analysisCol {
+   width: 100%;
+   max-width: 900px;
+   flex: 0 1 900px;
+   min-width: 0;
 }
 
 #pageContainer.presenting #creditsUs {
    margin-top: auto;
+}
+
+/* Dev/WIP banner never shows in presentation (authoring only). Hiding the
+   whole bar (not just the text) leaves no empty strip; viewer-height math
+   already skips it via offsetParent. */
+#pageContainer.presenting #devNotice {
+   display: none !important;
 }
 
 /* Presentation menu: taller flat pick list (author default 150px in jsme-nick-44.css). */
