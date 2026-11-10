@@ -868,6 +868,7 @@ header {
 .nameStyleCross,
 .nameStyleEye,
 .nameStyleExpand,
+.nameExplainAll,
 .readNameBtn {
   width: 19px;
   height: 19px;
@@ -898,6 +899,7 @@ header {
 .nameStyleBox.active,
 .nameStyleEye.active,
 .nameStyleExpand.active,
+.nameExplainAll.active,
 .narrateBtn.active {
   color: #fff;
   background-color: var(--darkBlue);
@@ -968,6 +970,7 @@ header {
 .nameStyleBox[data-tooltip]:hover::after,
 .nameStyleCross[data-tooltip]:hover::after,
 .nameStyleEye[data-tooltip]:hover::after,
+.nameExplainAll[data-tooltip]:hover::after,
 .nameStyleExpand[data-tooltip]:hover::after,
 .molInfoCopy[data-tooltip]:hover::after,
 #narrateAnalysisToggle[data-tooltip]:hover::after,
@@ -999,6 +1002,7 @@ header {
 .nameStyleCross[data-tooltip]::after,
 .nameStyleEye[data-tooltip]::after,
 .nameStyleExpand[data-tooltip]::after,
+.nameExplainAll[data-tooltip]::after,
 .molInfoCopy[data-tooltip]::after,
 #narrateAnalysisToggle[data-tooltip]::after,
 .menuCollapseBtn[data-tooltip]::after,
@@ -1020,6 +1024,7 @@ header {
 .nameStyleBox[data-tooltip]::before,
 .nameStyleCross[data-tooltip]::before,
 .nameStyleEye[data-tooltip]::before,
+.nameExplainAll[data-tooltip]::before,
 .nameStyleExpand[data-tooltip]::before,
 .molInfoCopy[data-tooltip]::before,
 #narrateAnalysisToggle[data-tooltip]::before,
@@ -1052,6 +1057,7 @@ header {
 .nameStyleBox[data-tooltip]:hover::before,
 .nameStyleCross[data-tooltip]:hover::before,
 .nameStyleEye[data-tooltip]:hover::before,
+.nameExplainAll[data-tooltip]:hover::before,
 .nameStyleExpand[data-tooltip]:hover::before,
 .molInfoCopy[data-tooltip]:hover::before,
 #narrateAnalysisToggle[data-tooltip]:hover::before,
@@ -1081,6 +1087,7 @@ header {
 .nameStyleBox[data-tooltip]::before,
 .nameStyleCross[data-tooltip]::before,
 .nameStyleEye[data-tooltip]::before,
+.nameExplainAll[data-tooltip]::before,
 .nameStyleExpand[data-tooltip]::before,
 .molInfoCopy[data-tooltip]::before,
 #narrateAnalysisToggle[data-tooltip]::before,
@@ -2194,6 +2201,61 @@ header {
   position: relative;
   border-radius: 5px;
 
+}
+
+
+/* Explain-all overview table (v55.x): one row per visible component —
+   mini chip (same box look) + its explanation. Rows click through to the
+   box (same highlight/select/narration); selected row mirrors the box. */
+.explainTable {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.explainRow {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 6px 8px;
+  background: #fff;
+  border: 1px solid var(--lightBlue);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.explainRow:hover {
+  border-color: var(--darkBlue);
+}
+
+.explainRow.selected {
+  outline: 2px solid var(--darkBlue);
+  outline-offset: -2px;
+}
+
+.explainChip {
+  flex: 0 0 auto;
+  color: var(--darkBlue);
+  background-color: var(--veryLightEarth);
+  border: 1px solid var(--darkEarth);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.explainCell {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.explainCell .explainText {
+  border: 0;
+  padding: 0;
+  font-size: 0.92rem;
 }
 
 .shadow1 {

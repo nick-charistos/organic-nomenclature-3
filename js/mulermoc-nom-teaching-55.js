@@ -876,6 +876,57 @@ function fMenuCollapseSet(on) {
   try { if (typeof fResizeViewers === "function") fResizeViewers(); } catch (eR) {}
 }
 
+// ── Box id → nameAnalysisMode (v55.x) ─────────────────────────────────────
+// Single source of truth for box clicks + the explain-all overview table;
+// keep the mapping here, not in both. Pure (reads globals, writes none).
+function fNameAnalysisModeForBoxId(boxId) {
+  var _bid = "";
+  try { _bid = boxId || ""; } catch (eBid) { _bid = ""; }
+  // Split branch-label pieces (slot 3, comp0bText): per-piece modes.
+  // comp3 keeps the slot-level mode while the slot is unfused.
+  var _bpxm = /^comp3(b|loc)(\d*)$/.exec(_bid);
+  if (_bpxm && fSplitBranchPiecesActive()) {
+    var _bk = _bpxm[2] === "" ? 2 : parseInt(_bpxm[2], 10) + 1;
+    return _bpxm[1] === "b" ? "compBranchSub" + _bk : "compBranchLoc" + _bk;
+  }
+  switch (_bid) {
+    case "comp0":
+      return "compNumber1";
+    case "comp1":
+      return "compSecondSub1";
+    case "comp2":
+      return "compNumber2";
+    case "comp3":
+      return fSplitBranchPiecesActive() ? "compBranchSub1" : "compSecondSub2";
+    case "comp4":
+      return "compBondPos";
+    case "comp5":
+      return "compCarbonsCount";
+    case "comp6":
+      return "compBondType";
+    case "comp7":
+      return "compEndNumber";
+    case "comp8":
+      return "compBondType2";
+    case "comp9":
+      return "compSuffix";
+    case "comp9loc":
+      return "compSuffixLocants";
+    case "comp10":
+      return nameExamples[selectedMol]?.classification?.chemicalClass === "esters"
+        ? "esterAlkyl"
+        : "commonAlkyl1";
+    case "comp11":
+      return nameExamples[selectedMol]?.classification?.chemicalClass === "esters"
+        ? "esterEster"
+        : "commonAlkyl2";
+    case "comp12":
+      return "commonEther";
+    default:
+      return "none";
+  }
+}
+
 // ── $(document).ready ─────────────────────────────────────────────────────
 
 $(document).ready(function () {
@@ -1338,70 +1389,9 @@ $(document).ready(function () {
       $(".nameCompBox").removeClass("selected");
       $(this).addClass("selected");
 
-      // Split branch-label pieces (slot 3, comp0bText): per-piece modes.
-      // comp3 keeps the slot-level mode while the slot is unfused.
-      var _bid = "";
-      try { _bid = $(this).attr("id") || ""; } catch (eBid) { _bid = ""; }
-      var _bpxm = /^comp3(b|loc)(\d*)$/.exec(_bid);
-      if (_bpxm && fSplitBranchPiecesActive()) {
-        var _bk = _bpxm[2] === "" ? 2 : parseInt(_bpxm[2], 10) + 1;
-        nameAnalysisMode = _bpxm[1] === "b" ? "compBranchSub" + _bk : "compBranchLoc" + _bk;
-      } else switch ($(this).attr("id")) {
-        case "comp0":
-          nameAnalysisMode = "compNumber1";
-          break;
-        case "comp1":
-          nameAnalysisMode = "compSecondSub1";
-          break;
-        case "comp2":
-          nameAnalysisMode = "compNumber2";
-          break;
-        case "comp3":
-          nameAnalysisMode = fSplitBranchPiecesActive() ? "compBranchSub1" : "compSecondSub2";
-          break;
-        case "comp4":
-          nameAnalysisMode = "compBondPos";
-          break;
-        case "comp5":
-          nameAnalysisMode = "compCarbonsCount";
-          break;
-        case "comp6":
-          nameAnalysisMode = "compBondType";
-          break;
-        case "comp7":
-          nameAnalysisMode = "compEndNumber";
-          break;
-        case "comp8":
-          nameAnalysisMode = "compBondType2";
-          break;
-        case "comp9":
-          nameAnalysisMode = "compSuffix";
-          break;
-        case "comp9loc":
-          // Split-off suffix locants (e.g. "-2,7-"): positions mode — the
-          // class sentence stays on the suffix box (comp9 → compSuffix).
-          nameAnalysisMode = "compSuffixLocants";
-          break;
-        case "comp10":
-          nameAnalysisMode =
-            nameExamples[selectedMol]?.classification?.chemicalClass === "esters"
-              ? "esterAlkyl"
-              : "commonAlkyl1";
-          break;
-        case "comp11":
-          nameAnalysisMode =
-            nameExamples[selectedMol]?.classification?.chemicalClass === "esters"
-              ? "esterEster"
-              : "commonAlkyl2";
-          break;
-        case "comp12":
-          nameAnalysisMode = "commonEther";
-          break;
-        default:
-          nameAnalysisMode = "none";
-          numberingFlag = false;
-          break;
-      }
+      // Box id → analysis mode (shared with the overview table).
+      try { nameAnalysisMode = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId($(this).attr("id")) : "none"; } catch (eMm) { nameAnalysisMode = "none"; }
+      if (nameAnalysisMode === "none") numberingFlag = false;
 
       fExplainNameComp();
       if (narrateAnalysisFlag) {
@@ -1418,6 +1408,38 @@ $(document).ready(function () {
       }
     }
     if (typeof fFitNameComponents === "function") fFitNameComponents();
+    // Overview table on: the click above wrote a single explanation +
+    // highlight — repaint the cached table (cheap, no rebuild).
+    try { if (window.nameExplainAll && typeof fNameExplainTableRender === "function") fNameExplainTableRender(); } catch (eER) {}
+  });
+
+  // Explain-all overview toggle (live-only aid like eye-edit; never stored
+  // in steps). Off restores the single explanation for the live selection.
+  $(document).on("click", "#nameExplainAllBtn", function () {
+    window.nameExplainAll = !window.nameExplainAll;
+    $(this).toggleClass("active", !!window.nameExplainAll);
+    var _tip = window.nameExplainAll ? "Μεμονωμένη εξήγηση" : "Επισκόπηση";
+    try { if (typeof fMulerT === "function") _tip = fMulerT(window.nameExplainAll ? "explainSingle" : "explainAll"); } catch (eT) {}
+    try { $(this).attr("data-tooltip", _tip).attr("aria-label", _tip); } catch (eA) {}
+    if (window.nameExplainAll) {
+      try { if (typeof fNameExplainTableShow === "function") fNameExplainTableShow(); } catch (eS) {}
+    } else {
+      try { if (typeof fExplainNameComp === "function") fExplainNameComp(); } catch (eS2) {}
+    }
+  });
+
+  // Overview row click: delegate to the box click (same highlight/select/
+  // narration incl. draft + hidden guards), then repaint the cached table.
+  $(document).on("click", "#nameAnalysisExplain .explainRow", function () {
+    var bid = null;
+    try { bid = $(this).attr("data-box") || null; } catch (eG) {}
+    if (!bid) return;
+    var box = null;
+    try { box = document.getElementById(bid); } catch (eD) {}
+    if (!box) return;
+    try { if (box.classList && box.classList.contains("comp-hidden")) return; } catch (eH) { return; }
+    try { box.click(); } catch (eC) { return; }
+    try { if (window.nameExplainAll && typeof fNameExplainTableRender === "function") fNameExplainTableRender(); } catch (eR) {}
   });
 
   // Supplemental reference remains independent of the selected component rule.

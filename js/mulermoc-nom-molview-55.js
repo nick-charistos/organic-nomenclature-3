@@ -264,6 +264,7 @@ const svgNameCrossOff = (window.MuLERIcons && window.MuLERIcons.nameCrossOff) ||
 const svgEye = (window.MuLERIcons && window.MuLERIcons.eye) || "";
 const svgEyeOff = (window.MuLERIcons && window.MuLERIcons.eyeOff) || "";
 const svgEyeState = (window.MuLERIcons && window.MuLERIcons.eyeState) || "";
+const svgNameExplainAll = (window.MuLERIcons && window.MuLERIcons.list) || "";
 const svgNameExpand = (window.MuLERIcons && window.MuLERIcons.nameExpand) || "";
 const svgMolInfo = (window.MuLERIcons && window.MuLERIcons.info) || "";
 const svgEditMol = (window.MuLERIcons && window.MuLERIcons.editMolecule) || "";
@@ -8161,6 +8162,8 @@ function fShowNameAnalysis() {
   // authoring aid; never stored in steps).
   const toggleNameStyleEye = svgEyeState;
   const eyeActiveClass = window.nameEyeEdit === true ? " active" : "";
+  // Explain-all overview toggle (live-only, like eye-edit).
+  const explainAllActiveClass = (typeof window !== "undefined" && window.nameExplainAll) ? " active" : "";
 
   const nameSettingClass = nameSettingsFlag ? "open" : "";
   const namesSettingsBtnActiveClass = nameSettingsFlag ? "active" : "";
@@ -8215,7 +8218,7 @@ function fShowNameAnalysis() {
   const _stepperHTML = (typeof fChainStepperHTML === "function") ? fChainStepperHTML() : "";
   const _buttonsHTML = (() => {
     const _tt = (k, gr) => { try { return (typeof fMulerT === "function") ? fMulerT(k) : gr; } catch (e) { return gr; } };
-    return `<button id='narrateAnalysisToggle' class='narrateBtn${narrateActiveClass}' data-tooltip='${toggleTitle}'>${toggleIcon}</button><button id='readNameBtn' class='readNameBtn' data-tooltip='${_tt("readName", "Εκφώνηση ονόματος")}' >${svgAudioDesc}</button><button id='nameStyleBoxToggle' class='nameStyleBox ${boxActiveClass}' data-tooltip='${boxTooltip}'>${toggleNameStyleBox}</button><button id='nameStyleCrossToggle' class='nameStyleCross ${crossActiveClass}' data-tooltip='${crossTooltip}'>${toggleNameStyleCross}</button><button id='nameStyleEyeToggle' class='nameStyleEye${eyeActiveClass}' data-tooltip='${_tt("compVisibility", "Ορατότητα συνθετικών")}'>${toggleNameStyleEye}</button><button id='nameExpandBtn' class='nameStyleExpand' data-tooltip='${_tt("fullName", "Πλήρες όνομα")}' aria-label='${_tt("fullName", "Πλήρες όνομα")}' hidden>${svgNameExpand}</button>`;
+    return `<button id='narrateAnalysisToggle' class='narrateBtn${narrateActiveClass}' data-tooltip='${toggleTitle}'>${toggleIcon}</button><button id='readNameBtn' class='readNameBtn' data-tooltip='${_tt("readName", "Εκφώνηση ονόματος")}' >${svgAudioDesc}</button><button id='nameStyleBoxToggle' class='nameStyleBox ${boxActiveClass}' data-tooltip='${boxTooltip}'>${toggleNameStyleBox}</button><button id='nameStyleCrossToggle' class='nameStyleCross ${crossActiveClass}' data-tooltip='${crossTooltip}'>${toggleNameStyleCross}</button><button id='nameStyleEyeToggle' class='nameStyleEye${eyeActiveClass}' data-tooltip='${_tt("compVisibility", "Ορατότητα συνθετικών")}'>${toggleNameStyleEye}</button><button id='nameExplainAllBtn' class='nameExplainAll${explainAllActiveClass}' data-tooltip='${(typeof window !== "undefined" && window.nameExplainAll) ? _tt("explainSingle", "Μεμονωμένη εξήγηση") : _tt("explainAll", "Επισκόπηση")}' aria-label='${(typeof window !== "undefined" && window.nameExplainAll) ? _tt("explainSingle", "Μεμονωμένη εξήγηση") : _tt("explainAll", "Επισκόπηση")}'>${svgNameExplainAll}</button><button id='nameExpandBtn' class='nameStyleExpand' data-tooltip='${_tt("fullName", "Πλήρες όνομα")}' aria-label='${_tt("fullName", "Πλήρες όνομα")}' hidden>${svgNameExpand}</button>`;
   })();
   var _panelInner = "";
   // One row per control set: buttons first, then naming radios, then stepper.
@@ -8685,6 +8688,10 @@ function fShowNameAnalysis() {
   // host height so Explain stays below the sheet (fFit is a no-op here).
   try { if (window.nameExpanded) fNameExpandReserve(); } catch (eR) { /* best-effort */ }
   try { if (window.nameExpanded) fNameExplainAnchor(); } catch (eA) { /* best-effort */ }
+  // Explain-all overview on: every rebuild path (molecule/variant/eye)
+  // funnels through here, so re-render the table from a fresh build. The
+  // single explain above already restored the live selection's paint.
+  try { if (typeof window !== "undefined" && window.nameExplainAll && typeof fNameExplainTableShow === "function") fNameExplainTableShow(); } catch (eEA) {}
 }
 
 // While open, viewport/column changes can alter the wrapped height:
@@ -9281,6 +9288,8 @@ function fSequentialKetoneNumberingTarget() {
     'isopropyl_4_dimethyl_3_6_octen_3_yn_7_dione_2_5'].includes(selectedMol);
 }
 function fShowAnalysisNumbering(time, overrideAtoms, overrideAtoms3D) {
+  // Overview-table builds (v55.x) scrape explanations with paints off.
+  if (typeof window !== "undefined" && window.__mulerExplainQuiet) return;
   if (fSequentialKetoneNumberingTarget() && !Array.isArray(overrideAtoms)) {
     currNumberEl = 0;
     document.querySelectorAll('#jsmeNomeclatureSVG text[id^="number"]').forEach(el => el.remove());
@@ -10057,9 +10066,121 @@ function fExplainNameComp() {
   try { if (window.nameExpanded) fNameExplainAnchor(); } catch (eA) { /* best-effort */ }
 }
 
+// ── Explain-all overview table (v55.x) ────────────────────────────────────
+// One row per visible name box (GR + EN + sys variants uniformly — rows are
+// scraped from the rendered boxes, so hidden comps are skipped like in
+// narration). Each mode runs through fExplainNameComp with paints suppressed
+// (quiet guards in the highlight/numbering/rule helpers); the panel HTML is
+// scraped per mode while globals + rule-panel visibility are restored, and
+// the synchronous loop never yields, so nothing flashes. Row clicks
+// delegate to the box click (same highlight/select/narration), then repaint
+// from cache — no rebuild per click.
+// QUIZ-FUTURE: blank the row bodies here for self-test mode.
+function fExplainAllKey() {
+  try {
+    var parts = [];
+    try { parts.push(typeof selectedMol !== "undefined" ? selectedMol : ""); } catch (eS) {}
+    try { parts.push((typeof fMulerLang === "function") ? fMulerLang() : "gr"); } catch (eL) {}
+    try { parts.push(Array.isArray(window.nameHiddenComps) ? window.nameHiddenComps.join(",") : ""); } catch (eH) {}
+    try { parts.push(typeof substNamingMode !== "undefined" ? substNamingMode : ""); } catch (eV) {}
+    try { parts.push(typeof etherNamingMode !== "undefined" ? etherNamingMode : ""); } catch (eE) {}
+    try {
+      var sig = [], _bx = document.querySelectorAll("#nameAnalysis .nameCompBox");
+      for (var i = 0; i < _bx.length; i++) sig.push((_bx[i].getAttribute("id") || "") + "=" + ((_bx[i].textContent || "").replace(/\s+/g, " ").trim()));
+      parts.push(sig.join("|"));
+    } catch (eB) {}
+    return parts.join(";");
+  } catch (eO) { return ""; }
+}
+function fNameExplainTableBuild() {
+  var rows = [];
+  try {
+    if (typeof selectedMol === "undefined" || !selectedMol) return rows;
+    var boxes = null;
+    try { boxes = document.querySelectorAll("#nameAnalysis .nameCompBox"); } catch (eQ) { boxes = null; }
+    if (!boxes || !boxes.length) return rows;
+    var prevMode = "none", prevNum = false, prevRule = false, prevRTC = null;
+    try { prevMode = (typeof nameAnalysisMode !== "undefined") ? nameAnalysisMode : "none"; } catch (eG) {}
+    try { prevNum = !!numberingFlag; } catch (eN) {}
+    try { prevRule = !!ruleFlag; } catch (eR) {}
+    try { prevRTC = (typeof $ !== "undefined") ? $("#ruleTheoryContainer").is(":visible") : null; } catch (eV) {}
+    try { window.__mulerExplainQuiet = true; } catch (eF) {}
+    try {
+      for (var bi = 0; bi < boxes.length; bi++) {
+        var box = boxes[bi], bid = "";
+        try { bid = box.getAttribute("id") || ""; } catch (eI) { bid = ""; }
+        if (!bid) continue;
+        try { if (box.classList && box.classList.contains("comp-hidden")) continue; } catch (eH) {}
+        var mode = null;
+        try { mode = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId(bid) : null; } catch (eM) { mode = null; }
+        if (!mode || mode === "none") continue;
+        var chip = "";
+        try { chip = (box.textContent || "").replace(/\s+/g, " ").trim(); } catch (eC) {}
+        if (!chip) continue;
+        try { nameAnalysisMode = mode; } catch (eS) {}
+        try { if (typeof fExplainNameComp === "function") fExplainNameComp(); } catch (eX) { continue; }
+        var html = "";
+        try { html = document.getElementById("nameAnalysisExplain").innerHTML || ""; } catch (eH2) {}
+        if (!html) continue;
+        rows.push({ id: bid, chip: chip, html: html });
+      }
+    } catch (eL) {}
+    try { window.__mulerExplainQuiet = false; } catch (eF2) {}
+    try { nameAnalysisMode = prevMode; } catch (eS2) {}
+    try { numberingFlag = !!prevNum; } catch (eN2) {}
+    try { ruleFlag = !!prevRule; } catch (eR2) {}
+    try {
+      if (typeof $ !== "undefined") {
+        if (prevRTC) $("#ruleTheoryContainer").show(); else $("#ruleTheoryContainer").hide();
+      }
+    } catch (eV2) {}
+  } catch (eO) {}
+  return rows;
+}
+function fNameExplainTableRender() {
+  // Cheap repaint from cache (row clicks); rebuilds only on cache miss.
+  try {
+    var key = "", cache = null;
+    try { key = (typeof fExplainAllKey === "function") ? fExplainAllKey() : ""; } catch (eK) {}
+    try { cache = window._explainAllCache || null; } catch (eC) {}
+    var rows = (cache && cache.key === key && Array.isArray(cache.rows)) ? cache.rows : null;
+    if (!rows) {
+      rows = (typeof fNameExplainTableBuild === "function") ? fNameExplainTableBuild() : [];
+      try { window._explainAllCache = { key: key, rows: rows }; } catch (eC2) {}
+    }
+    var na = null;
+    try { na = document.getElementById("nameAnalysisExplain"); } catch (eN) {}
+    if (!na) return;
+    if (!rows.length) {
+      try { if (typeof fExplainNameComp === "function") fExplainNameComp(); } catch (eF) {}
+      return;
+    }
+    var sel = null;
+    try { var _s = document.querySelector("#nameAnalysis .nameCompBox.selected"); if (_s) sel = _s.getAttribute("id"); } catch (eS) {}
+    var h = "<div class='explainTable'>";
+    for (var i = 0; i < rows.length; i++) {
+      var esc = String(rows[i].chip).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      h += "<div class='explainRow" + (rows[i].id === sel ? " selected" : "") + "' data-box='" + rows[i].id + "'><span class='explainChip'>" + esc + "</span><div class='explainCell'>" + rows[i].html + "</div></div>";
+    }
+    na.innerHTML = h + "</div>";
+  } catch (eO) {}
+}
+function fNameExplainTableShow() {
+  // Full build + render (toggle-on, molecule/variant/eye rebuilds).
+  try {
+    var key = "", rows = [];
+    try { key = (typeof fExplainAllKey === "function") ? fExplainAllKey() : ""; } catch (eK) {}
+    try { rows = (typeof fNameExplainTableBuild === "function") ? fNameExplainTableBuild() : []; } catch (eB) {}
+    try { window._explainAllCache = { key: key, rows: rows }; } catch (eC) {}
+    try { if (typeof fNameExplainTableRender === "function") fNameExplainTableRender(); } catch (eR) {}
+  } catch (eO) {}
+}
+
 // ── fShowRule ─────────────────────────────────────────────────────────────
 
 function fShowRule(theRule) {
+  // Overview-table builds (v55.x) scrape explanations with paints off.
+  if (typeof window !== "undefined" && window.__mulerExplainQuiet) return;
   let ruleText, ruleTable, ruleTitle, myStyle, myClass, myHTML;
   let alkylRows = null;
   let alkoxyRow = null;
@@ -11475,6 +11596,8 @@ function fHighlightAtomChain3D(chainAtoms3D, skipH, skipBonds, skipAtoms) {
 // their atom highlight — same pattern as the v42 ester triad fix, batched
 // into one script to avoid Jmol queue races.
 function fColorFragmentBonds3D(fragAtoms, includeH) {
+  // Overview-table builds (v55.x) scrape explanations with paints off.
+  if (typeof window !== "undefined" && window.__mulerExplainQuiet) return;
   if (!Array.isArray(fragAtoms) || fragAtoms.length === 0) return;
   if (typeof bondList3D === "undefined" || typeof Jmol === "undefined") return;
   const wantH = !!includeH && typeof allAtomsTypeList3D !== "undefined";
@@ -11501,6 +11624,8 @@ function fColorFragmentBonds3D(fragAtoms, includeH) {
 // ── fHighlightFG ──────────────────────────────────────────────────────────
 
 function fHighlightFG(FGno) {
+  // Overview-table builds (v55.x) scrape explanations with paints off.
+  if (typeof window !== "undefined" && window.__mulerExplainQuiet) return;
   // Algorithmic: reads functionalGroupObj computed by fDetectMolType.
   // No static nameExamples.functionalGroup* data used.
   if (nameAnalysisMode == "none") {
@@ -11929,6 +12054,8 @@ function fHighlightFG(FGno) {
 // ── fHighlightFG3D ────────────────────────────────────────────────────────
 
 function fHighlightFG3D(FGno) {
+  // Overview-table builds (v55.x) scrape explanations with paints off.
+  if (typeof window !== "undefined" && window.__mulerExplainQuiet) return;
   // Build atom list from computed functionalGroupObj3D (SDF 1-based indices).
   // FGno undefined  → all FG atoms (for suffix / single-FG display)
   // FGno 1 or 2     → atoms for the Nth functional group (for prefix position display)
