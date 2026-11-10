@@ -2786,6 +2786,14 @@ color: var(--veryLightEarth);
   color: #fff;
 }
 
+/* Toggle language (mirrors .settingsBtn.active): expanded menu = on
+   (darkBlue), collapsed rail = off (base veryLightEarth). Driven by the
+   #menuCol state — no .active sync needed, survives menu rebuilds. */
+#menuCol:not(.collapsed) #menuCollapseBtn {
+  background: var(--darkBlue);
+  color: #fff;
+}
+
 /* Edge-anchored tooltip bubble: a centered one would clip at the narrow rail. */
 #nomeclature2Menu .panelTitle > #menuCollapseBtn[data-tooltip]::after {
   left: auto;
