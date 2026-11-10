@@ -1,6 +1,6 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `c9aad64` (2026-11-10) — v55
+> **Resume pointer (cross-machine):** HEAD `85ba7e5` (2026-11-10) — v55
 > drift fixes + present viewerCol hide (`?v=55.0`, `index.html` → v55). Tree clean
 > after this commit. Remaining: browser sweep (EN panel labels incl. bar,
 > 141 molecules, Present round-trips incl. viewers-off viewerCol hide) + P3 blessing of Greek word forms,
