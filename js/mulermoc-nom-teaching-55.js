@@ -1430,7 +1430,13 @@ $(document).ready(function () {
 
   // Overview row click: delegate to the box click (same highlight/select/
   // narration incl. draft + hidden guards), then repaint the cached table.
+  // Locked Present steps gate boxes via CSS pointer-events — programmatic
+  // .click() bypasses that, so honor the lock here explicitly.
   $(document).on("click", "#nameAnalysisExplain .explainRow", function () {
+    try {
+      var _nc = document.getElementById("nameAnalysisContainer");
+      if (_nc && _nc.classList && _nc.classList.contains("locked")) return;
+    } catch (eL) { return; }
     var bid = null;
     try { bid = $(this).attr("data-box") || null; } catch (eG) {}
     if (!bid) return;
