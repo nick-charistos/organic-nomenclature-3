@@ -2752,22 +2752,62 @@ color: var(--veryLightEarth);
    Portrait phones get a "rotate device" prompt; a stacked fallback is
    shown underneath if dismissed. */
 
-/* Menu toggle — only shown in portrait fallback, hidden everywhere else */
-#menuToggle {
-  display: none;
-  width: 100%;
-  padding: 8px 12px;
-  font-size: 1rem;
-  color: #fff;
-  border: none;
+/* Menu collapse button — tree-lines icon at the left of the menu title.
+   Absolute (mirrored from .settingsBtn) so it never overlaps the centered
+   title text or the authoring-time scPickToggle appended at the right. */
+.menuCollapseBtn {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  font-size: 0.95rem;
+  line-height: 1;
+  color: var(--darkBlue);
+  background: var(--veryLightEarth);
+  border: 2px solid var(--veryLightBlue);
   border-radius: 4px;
   cursor: pointer;
-  margin-bottom: 6px;
+  z-index: 300;
+}
+
+.menuCollapseBtn:hover {
+  background: var(--darkBlue);
+  color: #fff;
+}
+
+/* Edge-anchored tooltip bubble: a centered one would clip at the narrow rail. */
+#nomeclature2Menu .panelTitle > #menuCollapseBtn[data-tooltip]::after {
+  left: 0;
+  right: auto;
+  transform: none;
+  width: max-content;
+  max-width: calc(100vw - 2rem);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
   text-align: left;
 }
 
-#menuToggle:hover {
-  background-color: var(--darkBlue);
+#nomeclature2Menu .panelTitle > #menuCollapseBtn[data-tooltip]::before {
+  left: 12px;
+  right: auto;
+  transform: none;
+}
+
+/* Collapsed menu column: slim rail, title text + body hidden, icon stays. */
+#menuCol.collapsed {
+  width: 40px;
+  min-width: 40px;
+}
+
+#menuCol.collapsed .menuTitleText,
+#menuCol.collapsed #nomeclature2Menu .groupingMode,
+#menuCol.collapsed #nomeclature2Menu .menuNomeclature2Container,
+#menuCol.collapsed #scPickToggle {
+  display: none;
 }
 
 .mainApp3Columns {
@@ -3021,12 +3061,11 @@ color: var(--veryLightEarth);
     display: flex;
   }
 
-  #menuToggle {
-    display: block;
-  }
-
-  #menuDrawer {
-    max-height: 0;
+  /* Collapsed menu in the stacked portrait layout stays a full-width bar
+     (icon only); the old #menuToggle bar is retired. */
+  #menuCol.collapsed {
+    width: 100%;
+    min-width: unset;
   }
 
   #menuCol {

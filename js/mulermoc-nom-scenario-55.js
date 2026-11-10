@@ -1397,7 +1397,22 @@ function fScenarioStashAuthorSettings() {
     viewerMaxHeight: (typeof viewerMaxH !== "undefined" ? viewerMaxH : null),
     viewerBothHeight: (typeof viewerBothH !== "undefined" ? viewerBothH : null),
     nameExpanded: !!window.nameExpanded,
+    menuCollapsed: (function () { try { var m = document.getElementById("menuCol"); return !!(m && m.classList && m.classList.contains("collapsed")); } catch (e) { return false; } })(),
   };
+  // Authoring-only chrome: a collapsed menu rail would strand menu-showing
+  // steps, so expand for the run (no localStorage write — the stash owns it).
+  try {
+    var _mc = document.getElementById("menuCol");
+    if (_mc && _mc.classList) _mc.classList.remove("collapsed");
+    var _mb = document.getElementById("menuCollapseBtn");
+    if (_mb) {
+      var _mt = "Σύμπτυξη μενού";
+      try { if (typeof fMulerT === "function") _mt = fMulerT("collapseMenu"); } catch (eMT) {}
+      _mb.setAttribute("data-tooltip", _mt);
+      _mb.setAttribute("aria-label", _mt);
+      _mb.setAttribute("aria-expanded", "true");
+    }
+  } catch (eMC) { /* menu expand best-effort */ }
 }
 
 function fScenarioRestoreAuthorSettings() {
@@ -1408,6 +1423,11 @@ function fScenarioRestoreAuthorSettings() {
   fScenarioSetCheck("highlightNumberingBondsCheck", a.numberingBonds !== false, "selectedCheck", "unselectedCheck");
   window.nameHiddenComps = Array.isArray(a.nameHidden) ? a.nameHidden.slice() : [];
   window.nameEyeEdit = a.nameEyeEdit === true;
+  // Author's menu-collapse rail comes back too (present entry expanded it).
+  try {
+    if (typeof fMenuCollapseSet === "function") fMenuCollapseSet(a.menuCollapsed === true);
+    else { var _mc2 = document.getElementById("menuCol"); if (_mc2 && _mc2.classList) _mc2.classList.toggle("collapsed", a.menuCollapsed === true); }
+  } catch (eMC2) { /* menu collapse best-effort */ }
   // Author's live 2D zoom comes back too (step applies overwrote it);
   // re-apply scale + re-render before the naming rebuild below.
   try {

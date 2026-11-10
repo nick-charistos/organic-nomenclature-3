@@ -559,7 +559,16 @@ function fInitNomeclatureMenu() {
     });
   }
 
-  let myHTML = `<div class='panelTitle'>${(typeof fMulerT === "function") ? fMulerT("examples") : "Μενού"}</div>
+  // Collapse icon lives first in the title (tree-lines, left); the title
+  // text follows in a span; the authoring-time scPickToggle appends last
+  // (right) in fScenarioPaintPickUi — the three never overlap. The button is
+  // rebuilt with every menu render, so its tooltip resolves the live
+  // #menuCol.collapsed state right here (no sync hook needed).
+  var _menuCollapsedNow = false;
+  try { var _mc0 = document.getElementById("menuCol"); _menuCollapsedNow = !!(_mc0 && _mc0.classList && _mc0.classList.contains("collapsed")); } catch (eMC0) {}
+  var _menuCollapseTip = _menuCollapsedNow ? "Ανάπτυξη μενού" : "Σύμπτυξη μενού";
+  try { if (typeof fMulerT === "function") _menuCollapseTip = fMulerT(_menuCollapsedNow ? "expandMenu" : "collapseMenu"); } catch (eMCT) {}
+  let myHTML = `<div class='panelTitle'><button id='menuCollapseBtn' type='button' class='menuCollapseBtn' data-tooltip='${_menuCollapseTip}' aria-label='${_menuCollapseTip}' aria-expanded='${_menuCollapsedNow ? "false" : "true"}'>☰</button><span class='menuTitleText'>${(typeof fMulerT === "function") ? fMulerT("examples") : "Μενού"}</span></div>
     <div class='groupingMode' role='group' aria-label='${(typeof fMulerT === "function") ? fMulerT("molGrouping") : "Ομαδοποίηση μορίων"}'>
     <div class='radioCheckContainer ${moleculeGroupingMode === "all" ? "selectedRadio" : "unselectedRadio"}' data-grouping-mode='all'>${(typeof fMulerT === "function") ? fMulerT("allMolecules") : "Όλα τα μόρια"}<span class='radioCheck'></span></div>
     <div class='radioCheckContainer ${moleculeGroupingMode === "chemclass" ? "selectedRadio" : "unselectedRadio"}' data-grouping-mode='chemclass'>${(typeof fMulerT === "function") ? fMulerT("chemClasses") : "Χημικές Τάξεις"}<span class='radioCheck'></span></div>
@@ -848,9 +857,36 @@ function getMolData() {
   $("#debug").html(str1);
 }
 
+// ── Collapsible menu column ─────────────────────────────────────────────
+// State lives only in #menuCol.collapsed (survives menu rebuilds — the
+// column itself is never rebuilt). Icon is a static ☰ (tooltip + aria flip);
+// localStorage persists across reloads; presentation stashes/restores it.
+function fMenuCollapseSet(on) {
+  try {
+    var mc = document.getElementById("menuCol");
+    if (mc && mc.classList) mc.classList.toggle("collapsed", !!on);
+  } catch (eC) {}
+  try { localStorage.setItem("mulerMenuCollapsed", on ? "1" : "0"); } catch (eS) {}
+  var tip = on ? "Ανάπτυξη μενού" : "Σύμπτυξη μενού";
+  try { if (typeof fMulerT === "function") tip = fMulerT(on ? "expandMenu" : "collapseMenu"); } catch (eT) {}
+  try {
+    var b = document.getElementById("menuCollapseBtn");
+    if (b) { b.setAttribute("data-tooltip", tip); b.setAttribute("aria-label", tip); b.setAttribute("aria-expanded", on ? "false" : "true"); }
+  } catch (eB) {}
+  try { if (typeof fResizeViewers === "function") fResizeViewers(); } catch (eR) {}
+}
+
 // ── $(document).ready ─────────────────────────────────────────────────────
 
 $(document).ready(function () {
+  // Menu collapse before the first menu build (the template resolves the
+  // live class for its tooltip, so order matters).
+  try {
+    var _mcBoot = null;
+    try { _mcBoot = localStorage.getItem("mulerMenuCollapsed"); } catch (eLS) {}
+    var _mcEl = document.getElementById("menuCol");
+    if (_mcEl && _mcEl.classList) _mcEl.classList.toggle("collapsed", _mcBoot === "1");
+  } catch (eMCB) {}
   fInitData();
   fInitNamingProps();
   fInitTheory();
@@ -1483,6 +1519,15 @@ $(document).ready(function () {
       }
     },
   );
+
+  $(document).on("click", "#menuCollapseBtn", function () {
+    var makeCollapsed = false;
+    try {
+      var mc = document.getElementById("menuCol");
+      makeCollapsed = !!(mc && mc.classList && !mc.classList.contains("collapsed"));
+    } catch (e) { makeCollapsed = false; }
+    if (typeof fMenuCollapseSet === "function") fMenuCollapseSet(makeCollapsed);
+  });
 
   $(document).on("click", ".groupingMode [data-grouping-mode]", function () {
     const selectedMode = $(this).data("grouping-mode");

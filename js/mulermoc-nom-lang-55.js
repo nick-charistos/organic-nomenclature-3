@@ -207,6 +207,8 @@ var MULER_STRINGS = {
   authorShort: { gr: "Συγγραφέας σεναρίου", en: "Scenario author" },
   ruleNarrate: { gr: "Ανάγνωση κανόνα", en: "Read rule aloud" },
   showHide: { gr: "Εμφάνιση/Απόκρυψη", en: "Show/hide" },
+  collapseMenu: { gr: "Σύμπτυξη μενού", en: "Collapse menu" },
+  expandMenu: { gr: "Ανάπτυξη μενού", en: "Expand menu" },
   commonName: { gr: "Κοινή", en: "Common" },
   etherNamingLabel: { gr: "Αιθέρες:", en: "Ethers:" },
   substNamingLabel: { gr: "Υποκαταστάτες:", en: "Substituents:" },
@@ -401,7 +403,6 @@ function fMulerPaintStaticChrome() {
     } catch (e) {}
   };
   set("#pageTitle", fMulerT("pageTitle"));
-  set("#menuToggle", fMulerT("menu"));
   set("#viewerCol .panelTitle > span", fMulerT("molecule"));
   set("#viewerSettingsPanel .settingTitle", fMulerT("settings"));
   // Settings labels translate via their data-lang keys (one per row — add,
