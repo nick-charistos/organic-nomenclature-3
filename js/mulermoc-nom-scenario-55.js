@@ -877,13 +877,52 @@ function fScenarioSyncStepTextWidth() {
   var span = fScenarioVisibleStepTextSpan();
   var hr = null;
   try { hr = host.getBoundingClientRect(); } catch (eB) { hr = null; }
-  if (!span || !hr || !(hr.width > 0)) {
+  if (!hr || !(hr.width > 0)) {
     fScenarioClearStepTextFit(p);
     return false;
   }
-  var left = Math.max(0, Math.round(span.left - hr.left));
+  // Shared Present content max: applied only to narrow spans (viewer-only)
+  // and the all-columns-hidden fallback; wide multi-column spans keep the
+  // full measured width so text == columns as before.
+  var _max = 900;
+  if (!span) {
+    var _w0 = Math.min(Math.round(hr.width), _max);
+    if (!(_w0 > 0)) {
+      fScenarioClearStepTextFit(p);
+      return false;
+    }
+    var _l0 = Math.max(0, Math.round((hr.width - _w0) / 2));
+    var _avail0 = Math.max(0, Math.round(hr.width - _l0));
+    _w0 = Math.min(_w0, _avail0);
+    if (!(_w0 > 0)) {
+      fScenarioClearStepTextFit(p);
+      return false;
+    }
+    var nextW0 = _w0 + "px";
+    var nextL0 = _l0 + "px";
+    var changed0 = false;
+    try {
+      if (p.style.getPropertyValue("--scStepTextFitWidth") !== nextW0) {
+        p.style.setProperty("--scStepTextFitWidth", nextW0);
+        changed0 = true;
+      }
+      if (p.style.getPropertyValue("--scStepTextFitLeft") !== nextL0) {
+        p.style.setProperty("--scStepTextFitLeft", nextL0);
+        changed0 = true;
+      }
+    } catch (eS) { /* no style */ }
+    return changed0;
+  }
+  var width, left;
+  if (Math.round(span.width) > _max) {
+    width = Math.round(span.width);
+    left = Math.max(0, Math.round(span.left - hr.left));
+  } else {
+    width = Math.min(Math.round(span.width), _max);
+    left = Math.max(0, Math.round(span.left - hr.left + (span.width - width) / 2));
+  }
   var avail = Math.max(0, Math.round(hr.width - left));
-  var width = Math.min(Math.round(span.width), avail);
+  width = Math.min(width, avail);
   if (!(width > 0)) {
     fScenarioClearStepTextFit(p);
     return false;
@@ -4038,6 +4077,14 @@ function fScenarioChrome(show) {
   // viewer column: hide wholesale in presentation when both viewers are off
   // (flex row recenters the rest, same as menuCol above).
   fScenarioHide("viewerCol", present && !show2D && !show3D);
+  // wide viewer: lift the 620px cap to the shared Present max only when a
+  // side column hides (menu or analysis/naming off); all-columns-visible
+  // keeps the base cap so text == columns as before.
+  try {
+    var _wide = !!present && (!!show2D || !!show3D) && (!_menuOn || (show && show.naming === false));
+    var _pcw = document.getElementById("pageContainer");
+    if (_pcw && _pcw.classList) _pcw.classList.toggle("present-wide-viewer", _wide);
+  } catch (eW) { /* wide-viewer best-effort */ }
   // pick UI never appears in presentation (paint strips it on rebuilds too)
   if (present) {
     try {

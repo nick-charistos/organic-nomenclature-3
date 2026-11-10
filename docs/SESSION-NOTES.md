@@ -2702,3 +2702,8 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 
 * `show.naming===false` in Present now hides `analysisCol` wholesale (`fScenarioApplyNamingChrome`, alongside the existing `nameAnalysisContainer` hide); authoring early-returns untouched. `fScenarioRestoreChrome` ids add `analysisCol` so Exit / authoring Go restores it. Naming-off also hides rules (same column) — turn naming on if a step needs `#ruleTheoryContainer`.
 * In-tree owner CSS kept as-is: `.mu-note .note-embed` flex-column centered (`css/mulermoc-nom-scenario-55.css`), `.mu-note .note-embed > div:first-child` max-width 400px.
+
+## 2026-11-10 (cont.) — present content max, conditional (v55 working copy)
+
+* Shared Present max 900px applies only to narrow cases: `fScenarioChrome` toggles `.present-wide-viewer` on `#pageContainer` when Present shows a viewer and menu is off or naming is off; CSS lifts `#viewerCol` 620px → 900px only then (`#pageContainer.presenting.present-wide-viewer #viewerCol`), text `max-width` stays 100%.
+* `fScenarioSyncStepTextWidth` clamps spans ≤900px to a centered 900px card and keeps wide multi-column spans at full measured width (text == columns as before); all-columns-hidden sets a centered 900px card instead of clearing to full width. Viewer-only steps keep viewer and text at the same 900px.

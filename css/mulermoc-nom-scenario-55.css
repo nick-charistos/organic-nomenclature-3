@@ -1372,12 +1372,21 @@
    union of the visible menu/viewer/analysis columns and sets these vars; the
    fallbacks keep the old full-width behavior if measurement is unavailable.
    The side-rail rules below move the card out of #authorLayout, so they never
-   match this selector. */
+   match this selector. Narrow spans (viewer-only / all-hidden) are restrained
+   to the shared Present content max in JS; wide multi-column spans use the
+   full measured width. */
 #pageContainer.presenting #authorLayout > #scStepText {
    width: var(--scStepTextFitWidth, 100%);
    margin-left: var(--scStepTextFitLeft, auto);
    margin-right: auto;
    max-width: 100%;
+}
+
+/* Presentation viewer cap: base 620px stands when all columns show;
+   lifted to the shared Present content max only when a side column hides
+   (JS toggles .present-wide-viewer), so viewer and text card agree. */
+#pageContainer.presenting.present-wide-viewer #viewerCol {
+   max-width: 900px;
 }
 
 #pageContainer.presenting #creditsUs {
