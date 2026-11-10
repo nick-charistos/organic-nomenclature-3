@@ -1,7 +1,7 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `3b51fa9` (2026-11-10) — v55
-> review + docs to v55 (`?v=55.0`, `index.html` → v55). Tree clean
+> **Resume pointer (cross-machine):** HEAD `2b267a6` (2026-11-10) — v55
+> sticky hidden comps (`?v=55.0`, `index.html` → v55). Tree clean
 > after this commit. Remaining: browser sweep (EN panel labels incl. bar,
 > 141 molecules, Present round-trips incl. single-col + naming-master + collapse/accordion + tooltips) + P3 blessing of Greek word forms,
 > after this commit. Remaining: browser sweep (EN panel labels incl. bar,
