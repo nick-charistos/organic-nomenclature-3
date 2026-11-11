@@ -1,11 +1,11 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `09be95d` (2026-11-10) — v55
-> explain-all overview table + tooltip skin (`?v=55.0`, `index.html` → v55). Tree clean
-> after this commit. Remaining: browser sweep (overview table both languages + row clicks, EN boxes, narration voices, menu rail, Present round-trips) + P3 blessing of Greek word forms,
+> **Resume pointer (cross-machine):** HEAD `da0319d` (2026-11-11) — v55
+> console silence (109 `console.*` commented-out, `MULER_DEBUG` kept) + CHANGELOG. Tree has one pre-existing owner tweak unstaged:
+> `css/jsme-nick-55.css` `.explainTable` `gap` 4px → 6px. Remaining: browser sweep (overview table both languages + row clicks, EN boxes, narration voices, menu rail, Present round-trips) + P3 blessing of Greek word forms,
 > completion-callback wait (spike), energy comparison for true convergence,
 > settings tabs (registry groups by row id when needed). Full record:
-> `docs/SESSION-NOTES.md` 2026-11-09/10 entries + `docs/CHANGELOG.md` [v55] +
+> `docs/SESSION-NOTES.md` 2026-11-09/10/11 entries + `docs/CHANGELOG.md` [v55] +
 > handoff `docs/SESSION-HANDOFF-2026-11-09-TIERED-3D.md`. Routine on the
 > other machine: pull first, hard-reload (Ctrl+Shift+R — `?v=55.0` unchanged),
 > then resume from `git log --oneline -5` + `git status`. OpenCode sessions
@@ -2751,3 +2751,9 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * Box id→mode switch extracted to global `fNameAnalysisModeForBoxId` (single source for clicks + table; click path verified equivalent incl. `numberingFlag=false` default); per-mode scrape drives `fExplainNameComp` with paints suppressed (quiet guards in `fHighlightFG/FG3D`, `fShowAnalysisNumbering`, `fColorFragmentBonds3D`, `fShowRule`; mode flags + rule-panel visibility restored; synchronous loop, no flash).
 * Row clicks delegate to the box click (identical highlight/select/narration incl. draft + hidden guards) then repaint from a keyed cache (molecule + lang + hidden + variants + box signature) — no rebuild per click; full rebuilds funnel through the `fShowNameAnalysis` tail hook (select/eye/variant). Toggle-off restores the single explanation with highlight repaint.
 * Owner styling accepted (full-length flat rows, divider chips, selected stem connector off). Toggle-button tooltip bubble never rendered (missing shared skin-list entry) — added to all six lists. Quiz-mode hook noted in code (`QUIZ-FUTURE`), not implemented; no read-all button per owner call.
+
+## 2026-11-11 — console silence (v55 working copy)
+
+* All 109 active `console.*` calls across the five v55 JS modules commented out, none deleted (owner request): standalone statements via `//` line comments (incl. multi-line + ASI-style `")` endings in core), mid-line calls via `/* … */` so surrounding `try`/`catch`/`return`/`if`/`for` survive (verified: skeletal `[C]`-echo + parser guards keep their `return null`).
+* Caught by `node --check`: three unbraced bodies where the console call *was* the body — `if (_skelSrc) console.log` (molview) and `for (…slice(0,20)) console.log` ×2 (name-en) — gained `{}` so no following line is swallowed (the `if` case was a hard syntax error, the `for` cases would have silently re-bodied the loop onto the next line).
+* Gated `fMulerDebugLog` (`window.MULER_DEBUG`) untouched — debug path still available; restore any call by uncommenting. `node --check` clean on all five files. Pre-existing owner working-tree tweak left alone: `css/jsme-nick-55.css` `.explainTable` `gap: 4px` → `6px` (unstaged, not mine).
