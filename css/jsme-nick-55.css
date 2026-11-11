@@ -2211,7 +2211,7 @@ header {
 .explainTable {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   /* max-height: 320px; */
   /* overflow-y: auto; */
   /* padding-right: 2px; */
@@ -2248,6 +2248,25 @@ outline: 2px solid var(--vibrantGreen);
 	font-weight: bold;
 	white-space: nowrap;
 	/* height: 100%; */
+}
+
+/* Eye-hidden components keep their overview row: the chip mirrors the
+   hidden name box (dash on hidden fill, no pointer), the explanation cell
+   stays informative. Row clicks on hidden boxes are already inert in JS. */
+.explainRow.row-hidden {
+  cursor: default;
+}
+
+.explainRow.row-hidden:hover {
+  border-color: var(--lightBlue);
+}
+
+.explainRow.row-hidden .explainChip {
+  background-color: var(--veryLightBlue);
+  border-right-color: var(--lightBlue);
+  color: #fff;
+  min-width: 1.2em;
+  text-align: center;
 }
 
 .explainCell {

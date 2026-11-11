@@ -10119,19 +10119,22 @@ function fNameExplainTableBuild() {
         var box = boxes[bi], bid = "";
         try { bid = box.getAttribute("id") || ""; } catch (eI) { bid = ""; }
         if (!bid) continue;
-        try { if (box.classList && box.classList.contains("comp-hidden")) continue; } catch (eH) {}
+        // Eye-hidden components keep their row instead of vanishing: the
+        // chip mirrors the hidden box (dash), the explanation cell stays.
+        var _rowHidden = false;
+        try { _rowHidden = !!(box.classList && box.classList.contains("comp-hidden")); } catch (eH) { _rowHidden = false; }
         var mode = null;
         try { mode = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId(bid) : null; } catch (eM) { mode = null; }
         if (!mode || mode === "none") continue;
-        var chip = "";
-        try { chip = (box.textContent || "").replace(/\s+/g, " ").trim(); } catch (eC) {}
+        var chip = _rowHidden ? "–" : "";
+        try { if (!_rowHidden) chip = (box.textContent || "").replace(/\s+/g, " ").trim(); } catch (eC) {}
         if (!chip) continue;
         try { nameAnalysisMode = mode; } catch (eS) {}
         try { if (typeof fExplainNameComp === "function") fExplainNameComp(); } catch (eX) { continue; }
         var html = "";
         try { html = document.getElementById("nameAnalysisExplain").innerHTML || ""; } catch (eH2) {}
         if (!html) continue;
-        rows.push({ id: bid, chip: chip, html: html });
+        rows.push({ id: bid, chip: chip, html: html, hidden: _rowHidden });
       }
     } catch (eL) {}
     try { window.__mulerExplainQuiet = false; } catch (eF2) {}
@@ -10169,7 +10172,7 @@ function fNameExplainTableRender() {
     var h = "<div class='explainTable'>";
     for (var i = 0; i < rows.length; i++) {
       var esc = String(rows[i].chip).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-      h += "<div class='explainRow" + (rows[i].id === sel ? " selected" : "") + "' data-box='" + rows[i].id + "'><span class='explainChip'>" + esc + "</span><div class='explainCell'>" + rows[i].html + "</div></div>";
+      h += "<div class='explainRow" + (rows[i].hidden ? " row-hidden" : "") + (rows[i].id === sel ? " selected" : "") + "' data-box='" + rows[i].id + "'><span class='explainChip'>" + esc + "</span><div class='explainCell'>" + rows[i].html + "</div></div>";
     }
     na.innerHTML = h + "</div>";
   } catch (eO) {}
