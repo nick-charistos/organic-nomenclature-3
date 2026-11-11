@@ -9982,7 +9982,8 @@ function fExplainNameComp() {
       // explicit alkyl guarantee; main-chain numbering bonds follow the
       // numbering-bonds setting instead.
       var _estFrag3D = fGetEsterGroupFragment3D() || [];
-      if (typeof bondList3D !== "undefined" && _estFrag3D.length > 0) {
+      // Overview-table builds (v55.x) scrape explanations with paints off.
+      if ((typeof window === "undefined" || !window.__mulerExplainQuiet) && typeof bondList3D !== "undefined" && _estFrag3D.length > 0) {
         for (var _eb = 0; _eb < bondList3D.length; _eb++) {
           if (!bondList3D[_eb]) continue;
           if (
@@ -10400,6 +10401,8 @@ function fMainChainKeySuffix() {
 // ── fHighLightMainChain ───────────────────────────────────────────────────
 
 function fHighLightMainChain() {
+  // Overview-table builds (v55.x) scrape explanations with paints off.
+  if (typeof window !== "undefined" && window.__mulerExplainQuiet) return;
   if (nameAnalysisMode == "none") {
     return;
   }
@@ -10432,6 +10435,8 @@ function fHighLightMainChain() {
 // so the numbering-bonds setting gates bonds independently of the atoms
 // setting; the caller decides. Sole numbering-path use (via compCarbonsCount).
 function fHighLightMainChainBonds() {
+  // Overview-table builds (v55.x) scrape explanations with paints off.
+  if (typeof window !== "undefined" && window.__mulerExplainQuiet) return;
   if (nameAnalysisMode == "none") {
     return;
   }
@@ -11523,6 +11528,8 @@ function fUpdateSubstNamingButton() {
 // mode only in practice — condensed/skeletal models carry no H atoms, so the
 // H scan is a no-op there (same pattern as fGetHydrocarbonBranchHighlight).
 function fHighlightAtomChain(chainAtoms, includeH, skipBonds, skipAtoms) {
+  // Overview-table builds (v55.x) scrape explanations with paints off.
+  if (typeof window !== "undefined" && window.__mulerExplainQuiet) return;
   if (!Array.isArray(chainAtoms) || chainAtoms.length === 0) return;
   let atomSet = chainAtoms.slice();
   if (includeH && typeof bondList !== "undefined" && typeof allAtomsTypeList !== "undefined") {
@@ -11560,6 +11567,8 @@ function fHighlightAtomChain(chainAtoms, includeH, skipBonds, skipAtoms) {
 }
 
 function fHighlightAtomChain3D(chainAtoms3D, skipH, skipBonds, skipAtoms) {
+  // Overview-table builds (v55.x) scrape explanations with paints off.
+  if (typeof window !== "undefined" && window.__mulerExplainQuiet) return;
   if (!Array.isArray(chainAtoms3D) || chainAtoms3D.length === 0) return;
   let arg = "select";
   for (let i = 0; i < chainAtoms3D.length; i++) {

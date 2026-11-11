@@ -50,6 +50,8 @@ Forked from v54 (`mulermoc-nom-55.html` + `js/*-55.js` + `css/*-55.css`, `?v=55.
 
 - Console silence (working tree, 2026-11-11): all 109 active `console.*` calls across the five v55 JS modules commented out, none deleted — standalone statements via `//` line comments (incl. multi-line + ASI-style endings), mid-line calls via `/* … */` so surrounding `try`/`catch`/`return`/`if`/`for` bodies stay intact; three unbraced bodies (molview `if`, name-en `for` ×2) gained `{}` so no following line is swallowed. Gated `fMulerDebugLog` (`window.MULER_DEBUG`) untouched — debug path still available. `node --check` clean on all five files; restore any call by uncommenting.
 
+- Overview-table scrape paints nothing (v55 working tree, 2026-11-11): toggling `Επισκόπηση`/`Overview` on scraped every row through `fExplainNameComp`, and five paint paths ignored the `__mulerExplainQuiet` flag — the last scraped row's highlight stuck on the 2D/3D viewers with no box selected. Added the same quiet early-return to `fHighlightAtomChain`, `fHighlightAtomChain3D`, `fHighLightMainChain`, `fHighLightMainChainBonds`, and gated the `esterEster` direct `fJSmolScript` bond loop; pre-toggle viewer state now simply stays, toggle-off repaint unchanged.
+
 ## [v54] (molecule edit/create draft flow; LIVE, `index.html` → v54)
 
 New parallel file set `mulermoc-nom-54.html` + `js/*-54.js` + `css/*-54.css`, forked from v53. v54 went live 2026-11-04 (was authoring-only before).
