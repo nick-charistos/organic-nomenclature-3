@@ -1,7 +1,7 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `da0319d` (2026-11-11) — v55
-> console silence (109 `console.*` commented-out, `MULER_DEBUG` kept) + CHANGELOG. Tree has one pre-existing owner tweak unstaged:
+> **Resume pointer (cross-machine):** HEAD `935fbf2` (2026-11-11) — v55
+> overview scrape paints nothing (quiet guards on chain/main-chain/ester-3D) + CHANGELOG. Tree has one pre-existing owner tweak unstaged:
 > `css/jsme-nick-55.css` `.explainTable` `gap` 4px → 6px. Remaining: browser sweep (overview table both languages + row clicks, EN boxes, narration voices, menu rail, Present round-trips) + P3 blessing of Greek word forms,
 > completion-callback wait (spike), energy comparison for true convergence,
 > settings tabs (registry groups by row id when needed). Full record:
@@ -2757,3 +2757,8 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * All 109 active `console.*` calls across the five v55 JS modules commented out, none deleted (owner request): standalone statements via `//` line comments (incl. multi-line + ASI-style `")` endings in core), mid-line calls via `/* … */` so surrounding `try`/`catch`/`return`/`if`/`for` survive (verified: skeletal `[C]`-echo + parser guards keep their `return null`).
 * Caught by `node --check`: three unbraced bodies where the console call *was* the body — `if (_skelSrc) console.log` (molview) and `for (…slice(0,20)) console.log` ×2 (name-en) — gained `{}` so no following line is swallowed (the `if` case was a hard syntax error, the `for` cases would have silently re-bodied the loop onto the next line).
 * Gated `fMulerDebugLog` (`window.MULER_DEBUG`) untouched — debug path still available; restore any call by uncommenting. `node --check` clean on all five files. Pre-existing owner working-tree tweak left alone: `css/jsme-nick-55.css` `.explainTable` `gap: 4px` → `6px` (unstaged, not mine).
+
+## 2026-11-11 — overview scrape paints nothing (v55 working copy)
+
+* Toggling `Επισκόπηση`/`Overview` on left the last scraped row's highlight on the 2D/3D viewers with no box selected: `fNameExplainTableBuild` scrapes every row through `fExplainNameComp` with `__mulerExplainQuiet` set, but `fHighlightAtomChain`, `fHighlightAtomChain3D`, `fHighLightMainChain`, `fHighLightMainChainBonds` ignored the flag (plus the `esterEster` direct `fJSmolScript` bond loop) — `compCarbonsCount` alone triggers it on nearly every molecule.
+* Fix: same quiet early-return in all four functions + site guard on the ester loop; pre-toggle viewer state now stays, toggle-off repaint unchanged. `node --check` clean.
