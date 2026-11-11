@@ -380,7 +380,7 @@ function fApplyMulerLangPilot() {
   if (fMulerLang() !== "en") return;
   try { fMulerPaintStaticChrome(); } catch (e) {}
   if (typeof MutationObserver !== "undefined") fMulerObserveTooltips();
-  console.log("[LANG] applied EN (strings + tooltips/aria observer), lang=en");
+  // console.log("[LANG] applied EN (strings + tooltips/aria observer), lang=en");
 }
 
 // Static chrome painter — idempotent, language-agnostic (fMulerT resolves

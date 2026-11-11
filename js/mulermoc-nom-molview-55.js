@@ -392,7 +392,7 @@ function jsmeOnLoad() {
     try { jsmeEditDraftApplet.setMolecularAreaLineWidth(0.6); } catch (eL2) {}
     try { jsmeEditDraftApplet.setBackGroundColorPalette(bgAtom); } catch (eP2) {}
   } catch (eDraft) {
-    try { console.warn("[draft] edit applet unavailable", eDraft); } catch (eL3) {}
+    try { /* console.warn("[draft] edit applet unavailable", eDraft); */ } catch (eL3) {}
     try { jsmeEditDraftApplet = null; } catch (eN) {}
   }
 
@@ -560,7 +560,7 @@ function fInitViewerSettingsBtn() {
       try { if (typeof fMolDraftSyncButtons === "function") fMolDraftSyncButtons(); } catch (eDs) { /* boot state best-effort */ }
     } catch (e) {
       // defensive - don't throw in init
-      console.warn("viewerSettings init failed", e);
+      // console.warn("viewerSettings init failed", e);
     }
   }
   insert();
@@ -1882,7 +1882,7 @@ function fMolDraftReadBackSDF(expectHeavy) {
   } catch (eV) { ok = false; }
   try {
     var _zs = (zs < 0) ? "n/a" : (zs.toFixed ? zs.toFixed(3) : String(zs));
-    console.log("[SDF-3D] read-back writeMOL: " + len + " chars, heavy=" + h + ", zspread=" + _zs + ", valid=" + ok);
+    // console.log("[SDF-3D] read-back writeMOL: " + len + " chars, heavy=" + h + ", zspread=" + _zs + ", valid=" + ok);
   } catch (eLg) {}
   return ok ? t : null;
 }
@@ -1915,7 +1915,7 @@ function fMolDraftMovedEnough(beforeMol, afterSDF) {
   try {
     if (typeof fMolDraftMeanDisplacement !== "function") return false;
     var mean = fMolDraftMeanDisplacement(beforeMol, afterSDF);
-    try { console.log("[SDF-3D] tier local-min: mean heavy displacement = " + (mean >= 0 ? mean.toFixed(3) : "?") + " A"); } catch (eL) {}
+    try { /* console.log("[SDF-3D] tier local-min: mean heavy displacement = " + (mean >= 0 ? mean.toFixed(3) : "?") + " A"); */ } catch (eL) {}
     return mean >= 0.05;
   } catch (e) { return false; }
 }
@@ -1985,11 +1985,11 @@ function fMolDraftUntangle2D(molText, minSep) {
       var chk = fParseMolV2000(out) || null, chkH = 0;
       if (chk && chk.atoms) for (var k = 0; k < chk.atoms.length; k++) { var ce = String(chk.atoms[k].el || ""); if (ce && ce !== "H" && ce !== "h") chkH++; }
       if (!chk || chkH !== refH) {
-        try { console.log("[SDF-3D] tier local-min: untangle failed self-verify — using input"); } catch (eLgV) {}
+        try { /* console.log("[SDF-3D] tier local-min: untangle failed self-verify — using input"); */ } catch (eLgV) {}
         return molText;
       }
     } catch (eV) { return molText; }
-    try { console.log("[SDF-3D] tier local-min: 2D untangle fixed " + fixed + " overlaps (minSep " + MS + ")"); } catch (eL) {}
+    try { /* console.log("[SDF-3D] tier local-min: 2D untangle fixed " + fixed + " overlaps (minSep " + MS + ")"); */ } catch (eL) {}
     return out;
   } catch (e) { return molText; }
 }
@@ -2029,11 +2029,11 @@ function fMolDraftJiggleZ(molText, amp) {
       var chk = fParseMolV2000(out) || null, chkH = 0;
       if (chk && chk.atoms) for (var k = 0; k < chk.atoms.length; k++) { var ce = String(chk.atoms[k].el || ""); if (ce && ce !== "H" && ce !== "h") chkH++; }
       if (!chk || (refH && chkH !== refH)) {
-        try { console.log("[SDF-3D] tier local-min: jiggle failed self-verify — using un-jiggled input"); } catch (eLgV) {}
+        try { /* console.log("[SDF-3D] tier local-min: jiggle failed self-verify — using un-jiggled input"); */ } catch (eLgV) {}
         return molText;
       }
     } catch (eV) { return molText; }
-    try { console.log("[SDF-3D] tier local-min: z-jiggle ±" + A + " A on " + nA + " atoms"); } catch (eL) {}
+    try { /* console.log("[SDF-3D] tier local-min: z-jiggle ±" + A + " A on " + nA + " atoms"); */ } catch (eL) {}
     return out;
   } catch (e) { return molText; }
 }
@@ -2087,7 +2087,7 @@ function fMolDraftLocal3DRelaxFF(expectHeavy, ffName, steps, skipGate) {
     } catch (eM) { return null; }
     var _waitS = MOLMIN_WAIT_S;
     try { if (typeof fMolDraftMinWaitSecs === "function") _waitS = fMolDraftMinWaitSecs(expectHeavy) || MOLMIN_WAIT_S; } catch (eWs) {}
-    try { console.log("[SDF-3D] tier local-min: " + ffName + " minimize fired — single read-back in " + _waitS + " s, no scripts meanwhile"); } catch (eLgF) {}
+    try { /* console.log("[SDF-3D] tier local-min: " + ffName + " minimize fired — single read-back in " + _waitS + " s, no scripts meanwhile"); */ } catch (eLgF) {}
     try { await new Promise(function (res) { try { setTimeout(res, _waitS * 1000); } catch (eT) { try { res(); } catch (eR) {} } }); } catch (eW) {}
     var cand = null;
     try { if (typeof fMolDraftReadBackSDF === "function") cand = fMolDraftReadBackSDF(expectHeavy) || null; } catch (eRb) { cand = null; }
@@ -2098,7 +2098,7 @@ function fMolDraftLocal3DRelaxFF(expectHeavy, ffName, steps, skipGate) {
     try { _ok = !!(cand && (_noGate || moved)); } catch (eOk) { _ok = false; }
     try {
       var _dl = (typeof _disp === "number" && isFinite(_disp) && _disp >= 0) ? (" disp=" + _disp.toFixed(3) + " A") : "";
-      console.log("[SDF-3D] tier local-min: " + ffName + " (" + _st + " steps) candidate" + _dl + (_ok ? ((_noGate && !moved) ? " — accepted (further, no gate)" : " — moved, accepted") : " — unmoved, rejected"));
+      // console.log("[SDF-3D] tier local-min: " + ffName + " (" + _st + " steps) candidate" + _dl + (_ok ? ((_noGate && !moved) ? " — accepted (further, no gate)" : " — moved, accepted") : " — unmoved, rejected"));
     } catch (eLgC) {}
     if (_ok) {
       try { if (typeof fJSmolScript === "function") fJSmolScript(jmolAppletNomeclature, "select all; center selected;"); } catch (eC) {}
@@ -2116,7 +2116,7 @@ function fMolDraftLocal3DRelaxBoth(expectHeavy, steps, skipGate) {
     var _m = null;
     try { if (typeof fMolDraftLocal3DRelaxFF === "function") _m = await fMolDraftLocal3DRelaxFF(expectHeavy, "MMFF", steps, skipGate) || null; } catch (eM) { _m = null; }
     if (_m) return _m;
-    try { console.log("[SDF-3D] tier local-min: MMFF round yielded nothing — retrying UFF"); } catch (eLgR) {}
+    try { /* console.log("[SDF-3D] tier local-min: MMFF round yielded nothing — retrying UFF"); */ } catch (eLgR) {}
     var _u = null;
     try { if (typeof fMolDraftLocal3DRelaxFF === "function") _u = await fMolDraftLocal3DRelaxFF(expectHeavy, "UFF", steps, skipGate) || null; } catch (eU) { _u = null; }
     return _u;
@@ -2141,7 +2141,7 @@ function fMolDraftLocal3DPrepare(molText, expectHeavy) {
         else return null;
       } catch (eS) { return null; }
       if (r === null) return null; // wrapper fail-closed (JSmol not live)
-      try { console.log("[SDF-3D] tier local-min: " + label + " reply: " + String(r || "").slice(0, 2000)); } catch (eLg) {}
+      try { /* console.log("[SDF-3D] tier local-min: " + label + " reply: " + String(r || "").slice(0, 2000)); */ } catch (eLg) {}
       return r;
     };
     if (_step("zap;", "zap") === null) return { ok: false };
@@ -2167,7 +2167,7 @@ function fMolDraftLocal3DPrepare(molText, expectHeavy) {
           }
         } catch (eLp) { _lok = false; }
       } catch (eLv) { _lok = false; }
-      try { console.log("[SDF-3D] tier local-min: load-verify heavy=" + _lh + " (expect " + expectHeavy + "), matches-loaded=" + (_lm >= 0 ? _lm.toFixed(3) : "?")); } catch (eLgV) {}
+      try { /* console.log("[SDF-3D] tier local-min: load-verify heavy=" + _lh + " (expect " + expectHeavy + "), matches-loaded=" + (_lm >= 0 ? _lm.toFixed(3) : "?")); */ } catch (eLgV) {}
       if (!_lok) return { ok: false };
     }
     if (_step("select all; calculate hydrogens;", "add-H") === null) return { ok: false };
@@ -2205,7 +2205,7 @@ function fMolDraftLocal3DReloadMinimized(sdfText, expectHeavy) {
         if (pp && pp.atoms) for (var i = 0; i < pp.atoms.length; i++) { var el = String(pp.atoms[i].el || ""); if (el && el !== "H" && el !== "h") lc++; }
       }
     } catch (eP) { lc = 0; }
-    try { console.log("[SDF-3D] tier local-min: further reload echo " + ll + " chars, live-model heavy=" + lc + " (expect " + expectHeavy + ")"); } catch (eLg) {}
+    try { /* console.log("[SDF-3D] tier local-min: further reload echo " + ll + " chars, live-model heavy=" + lc + " (expect " + expectHeavy + ")"); */ } catch (eLg) {}
     return lc === expectHeavy && expectHeavy > 0;
   } catch (e) { return false; }
 }
@@ -2230,7 +2230,7 @@ function fMolDraftLocal3DFromMol(molText, expectHeavy, skipPrepare, steps, skipG
           var _lpp2 = fParseMolV2000(_lv);
           if (_lpp2 && _lpp2.atoms) for (var _li2 = 0; _li2 < _lpp2.atoms.length; _li2++) { var _le2 = String(_lpp2.atoms[_li2].el || ""); if (_le2 && _le2 !== "H" && _le2 !== "h") _lc2++; }
         }
-        try { console.log("[SDF-3D] tier local-min: repeat press, live echo " + _ll2 + " chars, live-model heavy=" + _lc2 + " (expect " + expectHeavy + ")"); } catch (eLgL2) {}
+        try { /* console.log("[SDF-3D] tier local-min: repeat press, live echo " + _ll2 + " chars, live-model heavy=" + _lc2 + " (expect " + expectHeavy + ")"); */ } catch (eLgL2) {}
         if (_lc2 !== expectHeavy) return { sdf: null, prepared: false };
       } catch (eLv2) { return { sdf: null, prepared: false }; }
     }
@@ -2545,7 +2545,7 @@ function fMolDraftRemote3DFromJSmol(smiles, expectHeavy, isCurrent) {
     try {
       var _rl = "?";
       try { _rl = String(r == null ? "" : r).length + " chars"; } catch (eRl) {}
-      console.log("[SDF-3D] tier remote: load returned " + _rl);
+      // console.log("[SDF-3D] tier remote: load returned " + _rl);
     } catch (eLg) {}
     // Shared `write MOL` read-back (v55.8+: sole live-model serializer).
     try {
@@ -2572,7 +2572,7 @@ async function fMolDraftFetchSDF3DTiered(smiles, molText, expectHeavy, isCurrent
         if (typeof fMolDraftValidSDF3D === "function" && !fMolDraftValidSDF3D(sdf, expectHeavy)) sdf = null;
         else return { sdf: sdf, source: "pubchem" };
       } else sdf = null;
-      try { console.log("[SDF-3D] tier pubchem: " + (sdf ? sdf.length + " chars" : "miss")); } catch (eLgP) {}
+      try { /* console.log("[SDF-3D] tier pubchem: " + (sdf ? sdf.length + " chars" : "miss")); */ } catch (eLgP) {}
     } catch (eT1) { sdf = null; }
   }
   if (!offline) {
@@ -2584,12 +2584,12 @@ async function fMolDraftFetchSDF3DTiered(smiles, molText, expectHeavy, isCurrent
       var _skipR = false;
       try { _skipR = !!(typeof window !== "undefined" && window.MULER_SKIP_REMOTE3D); } catch (eSk) {}
       if (_skipR) {
-        try { console.log("[SDF-3D] tier remote: skipped (MULER_SKIP_REMOTE3D test hook)"); } catch (eLgS) {}
+        try { /* console.log("[SDF-3D] tier remote: skipped (MULER_SKIP_REMOTE3D test hook)"); */ } catch (eLgS) {}
       } else if (typeof fMolDraftRemote3DFromJSmol === "function") {
         try { rem = fMolDraftRemote3DFromJSmol(smiles, expectHeavy, isCurrent) || null; } catch (eC) { rem = null; }
       }
       if (rem && (!isCurrent || isCurrent())) return { sdf: rem, source: "remote" };
-      if (!_skipR) { try { console.log("[SDF-3D] tier remote: " + (rem ? rem.length + " chars" : "miss")); } catch (eLgR) {} }
+      if (!_skipR) { try { /* console.log("[SDF-3D] tier remote: " + (rem ? rem.length + " chars" : "miss")); */ } catch (eLgR) {} }
       sdf = null;
     } catch (eT2) { sdf = null; }
   }
@@ -2617,7 +2617,7 @@ async function fMolDraftFetchSDF3DTiered(smiles, molText, expectHeavy, isCurrent
       try { if (typeof fMolDraftMinWaitClose === "function") fMolDraftMinWaitClose(); } catch (eWc) {}
       var loc = (_lr && _lr.sdf) || null;
       if (loc && (!isCurrent || isCurrent())) return { sdf: loc, source: "jsmol-min" };
-      try { console.log("[SDF-3D] tier local-min: " + (loc ? loc.length + " chars" : "miss")); } catch (eLgL) {}
+      try { /* console.log("[SDF-3D] tier local-min: " + (loc ? loc.length + " chars" : "miss")); */ } catch (eLgL) {}
     }
   } catch (eT3) { try { if (typeof fMolDraftMinWaitClose === "function") fMolDraftMinWaitClose(); } catch (eWc2) {} }
   return { sdf: null, source: null };
@@ -2920,7 +2920,7 @@ async function fMolDraftSubmit() {
           try {
             var _op = (oc && oc.name) || "", _oe = window.MulerDraft.engineEN || "";
             var _ov = (typeof fMatchENvsOC === "function") ? fMatchENvsOC(_oe, _op) : "missing";
-            console.log("[EN-CHECK-OC] draft: predicted=\"" + _oe + "\" openclatura=\"" + _op + "\" verdict=" + _ov);
+            // console.log("[EN-CHECK-OC] draft: predicted=\"" + _oe + "\" openclatura=\"" + _op + "\" verdict=" + _ov);
           } catch (eOCl) {}
           fMolDraftRenderPreview();
         } catch (eOCr) {}
@@ -2929,7 +2929,7 @@ async function fMolDraftSubmit() {
           if (!window.MulerDraft || window.MulerDraft._submitId !== _mySid || window.MulerDraft._epoch !== _myEpoch || window.MulerDraft.smiles !== submittingSmiles) return;
           window.MulerDraft.openclatura = null;
           try { window.MulerDraft.openclaturaErr = true; } catch (eOCe2) {}
-          try { console.warn("[OC] draft fetch failed", eOC); } catch (eL) {}
+          try { /* console.warn("[OC] draft fetch failed", eOC); */ } catch (eL) {}
           fMolDraftRenderPreview();
         } catch (eOCr2) {}
       });
@@ -3030,7 +3030,7 @@ function fMolDraftShowFlat3D() {
     try { if (typeof fSetMolVis3D === "function") fSetMolVis3D(); } catch (eVs) {}
     try { if (typeof rotate3D === "function") rotate3D(); } catch (eR) {}
     try { if (typeof fResizeViewers === "function") fResizeViewers(); } catch (eRz) {}
-    try { console.log("[SDF-3D] flat drawing shown in 3D viewer — manual minimize available"); } catch (eLg) {}
+    try { /* console.log("[SDF-3D] flat drawing shown in 3D viewer — manual minimize available"); */ } catch (eLg) {}
   } catch (eF) {}
 }
 
@@ -3180,7 +3180,7 @@ function fMolDraftDownloadSingle(rec) {  // One molecule per file (Accept auto-s
       return !!fScenarioSaveBlobDownload(fMolDraftFileSlug(rec), new Blob([header], { type: "text/javascript" }));
     }
   } catch (eD) {
-    try { console.warn("[draft] custom file download failed", eD); } catch (eL) {}
+    try { /* console.warn("[draft] custom file download failed", eD); */ } catch (eL) {}
   }
   return false;
 }
@@ -3218,7 +3218,7 @@ function fMolDraftDownloadBundle(recs) {
       return !!fScenarioSaveBlobDownload(filename, new Blob([header + body], { type: "text/javascript" }));
     }
   } catch (eB) {
-    try { console.warn("[draft] custom bundle download failed", eB); } catch (eL) {}
+    try { /* console.warn("[draft] custom bundle download failed", eB); */ } catch (eL) {}
   }
   return false;
 }
@@ -3245,7 +3245,7 @@ function fMolDraftSaveAllCustom() {
   if (recs.length && fMolDraftDownloadBundle(recs)) {
     fMolDraftToast(recs.length + " " + fMolDraftT("customSaveAllBundleDone", "molecules saved in one bundle file — place it next to the data file."));
   } else {
-    try { console.warn("[draft] save-all bundle failed for " + keys.length + " molecules"); } catch (eW) {}
+    try { /* console.warn("[draft] save-all bundle failed for " + keys.length + " molecules"); */ } catch (eW) {}
     fMolDraftToast(fMolDraftT("customSaveAllFail", "Save failed — see console."));
   }
 }
@@ -3437,8 +3437,8 @@ async function fMolDraftAccept() {
       // element-identity checks expect "C". Fail closed: if any "[C]"
       // survives the replace, reject the rung (never store contaminated MOL).
       try { cand = String(cand).replace(/\[C\]/g, "C  "); } catch (eBr) { return null; }
-      try { if (/\[C\]/.test(cand)) { try { console.warn("[draft] skeletal: " + src + " rejected ([C] echo survived strip)"); } catch (eBr2) {} return null; } } catch (eBr3) { return null; }
-      if (typeof fParseMolV2000 !== "function") { try { console.warn("[draft] skeletal: " + src + " skipped (no parser)"); } catch (eP0) {} return null; }
+      try { if (/\[C\]/.test(cand)) { try { /* console.warn("[draft] skeletal: " + src + " rejected ([C] echo survived strip)"); */ } catch (eBr2) {} return null; } } catch (eBr3) { return null; }
+      if (typeof fParseMolV2000 !== "function") { try { /* console.warn("[draft] skeletal: " + src + " skipped (no parser)"); */ } catch (eP0) {} return null; }
       var _pa = fParseMolV2000(drawnMol), _pb = fParseMolV2000(cand);
       var _ha = 0, _hb = 0, _qi, _zero = true;
       if (_pa && _pb) {
@@ -3450,13 +3450,13 @@ async function fMolDraftAccept() {
         }
       }
       if (!_ha || _ha !== _hb || _zero) {
-        try { console.warn("[draft] skeletal: " + src + " rejected (heavy " + _ha + " vs " + _hb + ", zeroCoords " + _zero + ")"); } catch (eRj) {}
+        try { /* console.warn("[draft] skeletal: " + src + " rejected (heavy " + _ha + " vs " + _hb + ", zeroCoords " + _zero + ")"); */ } catch (eRj) {}
         return null;
       }
       try {
-        if (_sigOf(drawnMol) === _sigOf(cand)) { try { console.warn("[draft] skeletal: " + src + " unchanged geometry, discarding"); } catch (eUg2) {} return null; }
+        if (_sigOf(drawnMol) === _sigOf(cand)) { try { /* console.warn("[draft] skeletal: " + src + " unchanged geometry, discarding"); */ } catch (eUg2) {} return null; }
       } catch (eSg3) { return null; }
-      try { console.log("[draft] skeletal: " + src + " accepted " + _sigOf(cand)); } catch (eA0) {}
+      try { /* console.log("[draft] skeletal: " + src + " accepted " + _sigOf(cand)); */ } catch (eA0) {}
       return cand;
     } catch (eA) { return null; }
   };
@@ -3466,7 +3466,7 @@ async function fMolDraftAccept() {
         var _d1 = null;
         try { _d1 = await fMolDraftDepictSmiles(jsmeNomeclatureApplet, _depictSmi, d.molText, _expectHeavy) || null; } catch (eD1) { _d1 = null; }
         if (!window.MulerDraft || window.MulerDraft !== d || d._epoch !== _myEpochA || d._submitId !== _mySidA) { try { d.accepting = false; } catch (eAb1) {} return; } // Cancel during depict poll
-        try { console.log("[draft] skeletal: display rung(" + _depictSrc + ") " + (!_d1 ? "null" : (_d1 !== d.molText ? "won " + _sigOf(_d1) : "unchanged"))); } catch (eL2) {}
+        try { /* console.log("[draft] skeletal: display rung(" + _depictSrc + ") " + (!_d1 ? "null" : (_d1 !== d.molText ? "won " + _sigOf(_d1) : "unchanged"))); */ } catch (eL2) {}
         if (_d1 && _d1 !== d.molText) {
           var _a1 = null;
           try { _a1 = _acceptSkel(_d1, "display(" + _depictSrc + ")", d.molText) || null; } catch (eA1) { _a1 = null; }
@@ -3477,16 +3477,16 @@ async function fMolDraftAccept() {
         var _d2 = null;
         try { _d2 = await fMolDraftDepictSmiles(jsmeEditDraftApplet, _depictSmi, d.molText, _expectHeavy) || null; } catch (eD2) { _d2 = null; }
         if (!window.MulerDraft || window.MulerDraft !== d || d._epoch !== _myEpochA || d._submitId !== _mySidA) { try { d.accepting = false; } catch (eAb2) {} return; } // Cancel during depict poll
-        try { console.log("[draft] skeletal: edit rung(" + _depictSrc + ") " + (!_d2 ? "null" : (_d2 !== d.molText ? "won " + _sigOf(_d2) : "unchanged"))); } catch (eL3) {}
+        try { /* console.log("[draft] skeletal: edit rung(" + _depictSrc + ") " + (!_d2 ? "null" : (_d2 !== d.molText ? "won " + _sigOf(_d2) : "unchanged"))); */ } catch (eL3) {}
         if (_d2 && _d2 !== d.molText) {
           var _a2 = null;
           try { _a2 = _acceptSkel(_d2, "edit(" + _depictSrc + ")", d.molText) || null; } catch (eA2) { _a2 = null; }
           if (_a2) { _skel = _a2; _skelSrc = "edit"; }
         }
       }
-      if (!_skel) { try { console.warn("[draft] skeletal: JSME rungs missed, trying built-in"); } catch (eL4) {} }
+      if (!_skel) { try { /* console.warn("[draft] skeletal: JSME rungs missed, trying built-in"); */ } catch (eL4) {} }
     } else {
-      try { console.warn("[draft] skeletal: depict helper missing"); } catch (eL5) {}
+      try { /* console.warn("[draft] skeletal: depict helper missing"); */ } catch (eL5) {}
     }
     if (!_skel && typeof fZigzagMol === "function") {
       var _zb = null;
@@ -3495,11 +3495,11 @@ async function fMolDraftAccept() {
         var _zbA = null;
         try { _zbA = _acceptSkel(_zb, "builtin", d.molText) || null; } catch (eZa) { _zbA = null; }
         if (_zbA) { _skel = _zbA; _skelSrc = "builtin"; }
-        else { try { console.warn("[draft] skeletal: built-in zigzag failed"); } catch (eL1) {} }
+        else { try { /* console.warn("[draft] skeletal: built-in zigzag failed"); */ } catch (eL1) {} }
       }
-      else { try { console.warn("[draft] skeletal: built-in zigzag failed"); } catch (eL1b) {} }
+      else { try { /* console.warn("[draft] skeletal: built-in zigzag failed"); */ } catch (eL1b) {} }
     } else if (!_skel) {
-      try { console.warn("[draft] skeletal: builtin helper missing"); } catch (eL0b) {}
+      try { /* console.warn("[draft] skeletal: builtin helper missing"); */ } catch (eL0b) {}
     }
   } catch (eSk) { _skel = null; }
   try {
@@ -3515,7 +3515,7 @@ async function fMolDraftAccept() {
         }
       }
       if (!_ha || _ha !== _hb || _zero) {
-        try { console.warn("[draft] skeletal: validation failed (heavy " + _ha + " vs " + _hb + ", zeroCoords " + _zero + ", src " + _skelSrc + ")"); } catch (eLv) {}
+        try { /* console.warn("[draft] skeletal: validation failed (heavy " + _ha + " vs " + _hb + ", zeroCoords " + _zero + ", src " + _skelSrc + ")"); */ } catch (eLv) {}
         _skel = null; _skelSrc = "";
       } else {
         // Coordinate-level change check: the string !== above catches
@@ -3523,14 +3523,14 @@ async function fMolDraftAccept() {
         // pass as a fresh zigzag.
         try {
           if (_sigOf(d.molText) === _sigOf(_skel)) {
-            try { console.warn("[draft] skeletal: unchanged geometry (" + _skelSrc + "), discarding"); } catch (eUg) {}
+            try { /* console.warn("[draft] skeletal: unchanged geometry (" + _skelSrc + "), discarding"); */ } catch (eUg) {}
             _skel = null; _skelSrc = "";
           }
         } catch (eSg2) {}
       }
     }
   } catch (eSv) { _skel = null; _skelSrc = ""; }
-  try { if (_skelSrc) console.log("[draft] skeletal from " + _skelSrc); } catch (eLg) {}
+  try { if (_skelSrc) { /* console.log("[draft] skeletal from " + _skelSrc); */ } } catch (eLg) {}
   var molC = null, molE = null, molS = null;
   // Fork ⇒ full generation (New always + Edit-different): the result is a new
   // molecule, so all three slots derive canonically and drawnVariant is
@@ -3543,30 +3543,30 @@ async function fMolDraftAccept() {
       molE = d.molText;
       molC = (typeof fStripHydrogensMol === "function") ? (fStripHydrogensMol(d.molText) || d.molText) : d.molText;
       molS = _skel || molC;
-      if (!_skel) { try { console.warn("[draft] skeletal fallback: drawn geometry"); } catch (eW1) {} }
+      if (!_skel) { try { /* console.warn("[draft] skeletal fallback: drawn geometry"); */ } catch (eW1) {} }
     } else if (drawnVariant === "expanded" && isFork) {
       // Edit-expanded fork: same full generation as New (linearize → top-up),
       // never the hand geometry verbatim.
       var _linE = (typeof fLinearizeMol === "function") ? fLinearizeMol(d.molText, _chainLive) : null;
-      if (!_linE) { try { console.warn("[draft] linearizer failed, condensed = drawn geometry"); } catch (eW1b) {} }
+      if (!_linE) { try { /* console.warn("[draft] linearizer failed, condensed = drawn geometry"); */ } catch (eW1b) {} }
       molC = _linE || d.molText;
       if (typeof fStripHydrogensMol === "function") {
         try { molC = (fStripHydrogensMol(molC) || molC); } catch (eStE) {}
       }
       molE = (typeof fGenExpandedMol === "function") ? (fGenExpandedMol(molC) || null) : null;
-      if (!molE) { try { console.warn("[draft] expanded generation failed — mode disabled"); } catch (eW1c) {} }
+      if (!molE) { try { /* console.warn("[draft] expanded generation failed — mode disabled"); */ } catch (eW1c) {} }
       molS = _skel || molC;
-      if (!_skel) { try { console.warn("[draft] skeletal fallback: drawn geometry"); } catch (eW1d) {} }
+      if (!_skel) { try { /* console.warn("[draft] skeletal fallback: drawn geometry"); */ } catch (eW1d) {} }
     } else if (drawnVariant === "skeletal" || drawnVariant === "condensedZigZag") {
       // Skeletal is always the ladder zigzag (see above) — the drawn MOL here
       // is layout-agnostic input, often already linearized by Beautify.
       molS = _skel || d.molText;
-      if (!_skel) { try { console.warn("[draft] skeletal fallback: drawn geometry"); } catch (eW2b) {} }
+      if (!_skel) { try { /* console.warn("[draft] skeletal fallback: drawn geometry"); */ } catch (eW2b) {} }
       var _lin = (typeof fLinearizeMol === "function") ? fLinearizeMol(d.molText, _chainLive) : null;
-      if (!_lin) { try { console.warn("[draft] linearizer failed, condensed = drawn geometry"); } catch (eW2) {} }
+      if (!_lin) { try { /* console.warn("[draft] linearizer failed, condensed = drawn geometry"); */ } catch (eW2) {} }
       molC = _lin || d.molText;
       molE = (typeof fGenExpandedMol === "function") ? (fGenExpandedMol(molC) || null) : null;
-      if (!molE) { try { console.warn("[draft] expanded generation failed — mode disabled"); } catch (eW3) {} }
+      if (!molE) { try { /* console.warn("[draft] expanded generation failed — mode disabled"); */ } catch (eW3) {} }
     } else {
       // Condensed slot must stay heavy-only: the overlay adds implicit H
       // itself, so any hand-drawn explicit H would double-render. Strip
@@ -3582,9 +3582,9 @@ async function fMolDraftAccept() {
         try { molC = isFork ? (fStripHydrogensMol(molC) || molC) : (fStripHydrogensMol(d.molText) || d.molText); } catch (eSt) {}
       }
       molE = (typeof fGenExpandedMol === "function") ? (fGenExpandedMol(molC) || null) : null;
-      if (!molE) { try { console.warn("[draft] expanded generation failed — mode disabled"); } catch (eW4) {} }
+      if (!molE) { try { /* console.warn("[draft] expanded generation failed — mode disabled"); */ } catch (eW4) {} }
       molS = _skel || molC;
-      if (!_skel) { try { console.warn("[draft] skeletal fallback: drawn geometry"); } catch (eW5) {} }
+      if (!_skel) { try { /* console.warn("[draft] skeletal fallback: drawn geometry"); */ } catch (eW5) {} }
     }
   } catch (eDv) { molC = d.molText; molE = null; molS = d.molText; }
   if (!molC) molC = d.molText;
@@ -3592,8 +3592,8 @@ async function fMolDraftAccept() {
   // One-line slot geometry receipt (Y-inclusive: straight vs zigzag layouts
   // share x-projections, so x-only sums cannot tell them apart).
   try {
-    console.log("[draft] slots variant=" + drawnVariant + " skelSrc=" + (_skelSrc || "-") +
-      " C:[" + _sigOf(molC) + "] E:[" + _sigOf(molE) + "] S:[" + _sigOf(molS) + "] draw:[" + _sigOf(d.molText) + "]");
+    // console.log("[draft] slots variant=" + drawnVariant + " skelSrc=" + (_skelSrc || "-") +
+      // " C:[" + _sigOf(molC) + "] E:[" + _sigOf(molE) + "] S:[" + _sigOf(molS) + "] draw:[" + _sigOf(d.molText) + "]");
   } catch (eLg2) {}
   // Stray-H guard (H32 class): verbatim slots keep hand geometry including
   // hand errors — an H a full bond length off its parent would be stored
@@ -3609,7 +3609,7 @@ async function fMolDraftAccept() {
       var _sm = "", _sy = "";
       try { _sm = fMolDraftT("draftStrayH", "Some H sit far from their atoms"); } catch (eSm) { _sm = "Stray H?"; }
       try { _sy = fMolDraftT("draftStrayKeep", "Keep anyway"); } catch (eSy2) { _sy = "Keep anyway"; }
-      try { console.warn("[draft] stray H: " + _strays.length + " over 1.5x H scale (" + _strays.slice(0, 4).map(function (s) { return "H" + s.h + "/C" + s.parent + "x" + s.ratio; }).join(", ") + ")"); } catch (eLw) {}
+      try { /* console.warn("[draft] stray H: " + _strays.length + " over 1.5x H scale (" + _strays.slice(0, 4).map(function (s) { return "H" + s.h + "/C" + s.parent + "x" + s.ratio; }).join(", ") + ")"); */ } catch (eLw) {}
       if (typeof fScenarioConfirm === "function") {
         try { fScenarioConfirm(_sm + " (" + _strays.length + ")", function () { try { if (window.MulerDraft !== d || d._epoch !== _myEpochA || d._submitId !== _mySidA) return; d._strayConfirmed = true; d.accepting = false; } catch (eFc) {} try { fMolDraftAccept(); } catch (eFa) {} }, _sy); } catch (eSc2) { try { d.accepting = false; } catch (eAb3) {} }
         return;
@@ -3662,11 +3662,11 @@ async function fMolDraftAccept() {
       for (ri = 0; ri < MAX; ri++) {
         try { out = applet.molFile() || ""; } catch (eM) { out = ""; }
         if (_good(out)) {
-          if (ri > 0) { try { console.log("[draft] skeletal: depict settled after " + (ri + 1) + " reads"); } catch (eLg) {} }
+          if (ri > 0) { try { /* console.log("[draft] skeletal: depict settled after " + (ri + 1) + " reads"); */ } catch (eLg) {} }
           break;
         }
         if (ri === 0) { try { if (typeof applet.repaint === "function") applet.repaint(); } catch (eRp2) {} }
-        else { try { console.log("[draft] skeletal: depict read " + (ri + 1) + " not stable yet"); } catch (eLg2) {} }
+        else { try { /* console.log("[draft] skeletal: depict read " + (ri + 1) + " not stable yet"); */ } catch (eLg2) {} }
         if (ri < MAX - 1) await _sleep(GAP);
       }
       if (!_good(out)) out = "";
@@ -4667,7 +4667,7 @@ function fSelectMol() {
   try {
     fShowNameAnalysis();
   } catch (eNA) {
-    try { console.error("[COLD-BOOT] fShowNameAnalysis failed for " + selectedMol, eNA); } catch (eL) { /* console unavailable */ }
+    try { /* console.error("[COLD-BOOT] fShowNameAnalysis failed for " + selectedMol, eNA); */ } catch (eL) { /* console unavailable */ }
   }
 
   getMolData();
@@ -4716,11 +4716,11 @@ function fDeselectMol() {
   myMol2D = null;
   if (jsmeNomeclatureApplet) jsmeNomeclatureApplet.reset();
   if (jsmeNomeclatureAppletORGNL) jsmeNomeclatureAppletORGNL.reset();
-  try { fUpdateSVG(); } catch (eU) { try { console.error("[COLD-BOOT] fUpdateSVG failed in fDeselectMol", eU); } catch (eL) {} }
+  try { fUpdateSVG(); } catch (eU) { try { /* console.error("[COLD-BOOT] fUpdateSVG failed in fDeselectMol", eU); */ } catch (eL) {} }
 
   $("#molName").html("");
   nameComponentsList = [];
-  try { fShowNameAnalysis(); } catch (eNA2) { try { console.error("[COLD-BOOT] fShowNameAnalysis failed in fDeselectMol", eNA2); } catch (eL2) {} }
+  try { fShowNameAnalysis(); } catch (eNA2) { try { /* console.error("[COLD-BOOT] fShowNameAnalysis failed in fDeselectMol", eNA2); */ } catch (eL2) {} }
   fUpdateDiagr2DButton();
   fUpdateChainModeButton();
   try { if (typeof fMolDraftSyncButtons === "function") fMolDraftSyncButtons(); } catch (eDs) {}
@@ -4855,19 +4855,19 @@ function fLoadMol2D() {
     fDetectMolType();
     nameExamples[selectedMol].classification = fGetMoleculeClassification();
   } catch (eAn) {
-    try { console.error("[COLD-BOOT] analysis failed for " + selectedMol + " — naming cleared, not guessed", eAn); } catch (eL) { /* console unavailable */ }
+    try { /* console.error("[COLD-BOOT] analysis failed for " + selectedMol + " — naming cleared, not guessed", eAn); */ } catch (eL) { /* console unavailable */ }
     try { nameComponentsList = []; currentMolName = ""; } catch (eC) { /* best-effort */ }
   }
   try {
     fGuessName();
   } catch (eGn) {
-    try { console.error("[COLD-BOOT] fGuessName failed for " + selectedMol + " — naming cleared, not guessed", eGn); } catch (eL2) { /* console unavailable */ }
+    try { /* console.error("[COLD-BOOT] fGuessName failed for " + selectedMol + " — naming cleared, not guessed", eGn); */ } catch (eL2) { /* console unavailable */ }
     try { nameComponentsList = []; currentMolName = ""; } catch (eC2) { /* best-effort */ }
   }
   try {
     fUpdateSVG();
   } catch (eSvg) {
-    try { console.error("[COLD-BOOT] fUpdateSVG failed for " + selectedMol + " — overlay skipped, naming continues", eSvg); } catch (eL3) { /* console unavailable */ }
+    try { /* console.error("[COLD-BOOT] fUpdateSVG failed for " + selectedMol + " — overlay skipped, naming continues", eSvg); */ } catch (eL3) { /* console unavailable */ }
   }
   // Fresh pools were just built by fCalcMainChain — refresh the stepper UI.
   try { if (typeof fRenderChainStepper === "function") fRenderChainStepper(); } catch (eStep) { /* stepper unavailable */ }
@@ -7023,7 +7023,7 @@ function fLoadMol3D() {
     if ((typeof Jmol === "undefined" || !Jmol) && !window.__mulerJSmolToasted) {
       window.__mulerJSmolToasted = true;
       try { if (typeof fScenarioToast === "function") fScenarioToast("3D unavailable (JSmol failed to load) — 2D continues to work."); } catch (eT) {}
-      try { console.warn("[JSmol] library failed to load; 3D disabled for this session."); } catch (eC) {}
+      try { /* console.warn("[JSmol] library failed to load; 3D disabled for this session."); */ } catch (eC) {}
     }
   } catch (eW) { /* best-effort */ }
 
@@ -7127,7 +7127,7 @@ function fFetchAndParse3D() {
       }
     })
     .catch(function (e) {
-      console.warn("[3D parse failed]", url, e);
+      // console.warn("[3D parse failed]", url, e);
     });
 }
 
@@ -7347,7 +7347,7 @@ window.fSave2DPng = function () {
     fDrawNameBoxes(ctx, nameBoxes, width, molHeight);
     canvas.toBlob(function (blob) {
       if (!blob) {
-        console.error("2D PNG: toBlob returned null");
+        // console.error("2D PNG: toBlob returned null");
         return;
       }
       let a = document.createElement("a");
@@ -7362,9 +7362,9 @@ window.fSave2DPng = function () {
     });
   };
   img.onerror = function () {
-    console.error("[2D PNG] SVG failed to load. SVG content:");
-    console.error(svgData.slice(0, 4000));
-    console.error("[2D PNG] Debug flags:", svgDebugFlags);
+    // console.error("[2D PNG] SVG failed to load. SVG content:");
+    // console.error(svgData.slice(0, 4000));
+    // console.error("[2D PNG] Debug flags:", svgDebugFlags);
   };
 
   let svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
@@ -7742,7 +7742,7 @@ function fMulerApplyVerdict(key, fetched, engOverride) {
             var _ctip = "Common name matches PubChem — systematic form differs by school convention";
             try { if (typeof fMulerT === "function") _ctip = fMulerT("commonMatchTip"); } catch (eT2) { /* fallback above */ }
             try { cont.setAttribute("title", _ctip); } catch (eA2) { /* best-effort */ }
-            try { console.log("[EN-CHECK] " + key + ": common name matches PubChem title — plain (systematic mismatch kept for review)"); } catch (eL) {}
+            try { /* console.log("[EN-CHECK] " + key + ": common name matches PubChem title — plain (systematic mismatch kept for review)"); */ } catch (eL) {}
             return "common";
           }
         }
@@ -7792,7 +7792,7 @@ function fMulerENFetchDone(key) {
       if (typeof nameExamples !== "undefined" && nameExamples[key] && nameExamples[key].engineMatchVia) via = " via " + nameExamples[key].engineMatchVia;
       else if (typeof fMatchEngineEN === "function") { var _r = fMatchEngineEN(key, _dsp); if (_r && _r.via) via = " via " + _r.via; }
     } catch (eV) {}
-    console.log("[EN-CHECK] " + key + ": predicted=\"" + predicted + "\" displayed=\"" + displayed + "\" verdict=" + (st || "plain") + via);
+    // console.log("[EN-CHECK] " + key + ": predicted=\"" + predicted + "\" displayed=\"" + displayed + "\" verdict=" + (st || "plain") + via);
   } catch (e) { /* best-effort */ }
 }
 
@@ -7888,7 +7888,7 @@ function fMulerOCFetchDone(key) {
     try {
       if (typeof nameExamples !== "undefined" && nameExamples[key]) oc = nameExamples[key].openclaturaEN || "";
     } catch (eO) {}
-    console.log("[EN-CHECK-OC] " + key + ": predicted=\"" + predicted + "\" openclatura=\"" + oc + "\" verdict=" + (ost || "plain"));
+    // console.log("[EN-CHECK-OC] " + key + ": predicted=\"" + predicted + "\" openclatura=\"" + oc + "\" verdict=" + (ost || "plain"));
   } catch (e) { /* best-effort */ }
 }
 
@@ -13298,10 +13298,10 @@ function fResizeViewers() {
         var _s3 = document.getElementById("nomeclature3D");
         _vis3 = !!(_s3 && _s3.offsetParent !== null);
       } catch (eVis) { /* visibility check unavailable */ }
-      console.info("[resize] vh2=" + vh.h2 + " vh3=" + vh.h3 +
-        " fallback2D=" + (!(vh.h2 > 0)) + " fallback3D=" + (!(vh.h3 > 0)) +
-        " applied2D=" + aw + "x" + svgH + " visible2D=" + _vis2 +
-        " visible3D=" + _vis3);
+      // console.info("[resize] vh2=" + vh.h2 + " vh3=" + vh.h3 +
+        // " fallback2D=" + (!(vh.h2 > 0)) + " fallback3D=" + (!(vh.h3 > 0)) +
+        // " applied2D=" + aw + "x" + svgH + " visible2D=" + _vis2 +
+        // " visible3D=" + _vis3);
     }
   } catch (eDbg) { /* diagnostics unavailable */ }
   var svg = document.getElementById("jsmeNomeclatureSVG");
@@ -13447,8 +13447,8 @@ var _resizeSentOn3DReady = false;
           var _named = false;
           try { _named = !!document.querySelector("#nameAnalysis .nameCompContainer .nameCompBox"); } catch (eNb) { /* best-effort */ }
           if (!_named && !_presenting && typeof fSelectMol === "function") {
-            try { console.warn("[COLD-BOOT] naming missing at 3D-ready; re-running full select for " + _sel); } catch (eW2) { /* best-effort */ }
-            try { fSelectMol(); } catch (eFs) { try { console.error("[COLD-BOOT] resend reselect failed for " + _sel, eFs); } catch (eL) {} }
+            try { /* console.warn("[COLD-BOOT] naming missing at 3D-ready; re-running full select for " + _sel); */ } catch (eW2) { /* best-effort */ }
+            try { fSelectMol(); } catch (eFs) { try { /* console.error("[COLD-BOOT] resend reselect failed for " + _sel, eFs); */ } catch (eL) {} }
           } else {
             try { if (typeof fLoadMol3D === "function") fLoadMol3D(); } catch (eL) { /* best-effort */ }
             try { if (typeof showAtomSymbols3D === "function") showAtomSymbols3D(); } catch (eA) { /* best-effort */ }

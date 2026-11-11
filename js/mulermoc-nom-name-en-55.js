@@ -389,10 +389,10 @@ function fPopulateEngineENFromGreek(key, variant) {
         }
       }
     } catch (e) {}
-    console.log("[ENGINE-EN" + (sys ? "-SYS" : "") + "] " + k + " -> " + out + (delegated ? " [oracle-delegated]" : ""));
+    // console.log("[ENGINE-EN" + (sys ? "-SYS" : "") + "] " + k + " -> " + out + (delegated ? " [oracle-delegated]" : ""));
     return out;
   } catch (e) {
-    console.warn("[ENGINE-EN] failed", e);
+    // console.warn("[ENGINE-EN] failed", e);
     return null;
   }
 }
@@ -969,8 +969,8 @@ function fValidateENAgainstOracle() {
     else if (r.status === "title") { out.match++; out.viaTitle = (out.viaTitle || 0) + 1; e.engineMatchVia = "title"; }
     else out.mismatch.push({ key: k, engine: e.engineEN, oracle: e.systematicEN || e.iupacEN });
   }
-  console.log("[EN-VALIDATE] checked=" + out.checked + " match=" + out.match + " mismatch=" + out.mismatch.length + " missing=" + out.missing);
-  for (const m of out.mismatch.slice(0, 20)) console.log("[EN-MISMATCH] " + m.key + ": engine=\"" + m.engine + "\" oracle=\"" + m.oracle + "\"");
+  // console.log("[EN-VALIDATE] checked=" + out.checked + " match=" + out.match + " mismatch=" + out.mismatch.length + " missing=" + out.missing);
+  for (const m of out.mismatch.slice(0, 20)) { /* console.log("[EN-MISMATCH] " + m.key + ": engine=\"" + m.engine + "\" oracle=\"" + m.oracle + "\""); */ }
   return out;
 }
 // Second-oracle verdict (OpenClatura, Phase 2): pure string compare of the
@@ -1013,7 +1013,7 @@ function fValidateENAgainstOC() {
     if (r.status === "match") out.match++;
     else out.mismatch.push({ key: k, engine: r.engine, oracle: r.oracle });
   }
-  console.log("[EN-VALIDATE-OC] checked=" + out.checked + " match=" + out.match + " mismatch=" + out.mismatch.length + " missing=" + out.missing);
-  for (const m of out.mismatch.slice(0, 20)) console.log("[EN-MISMATCH-OC] " + m.key + ": engine=\"" + m.engine + "\" openclatura=\"" + m.oracle + "\"");
+  // console.log("[EN-VALIDATE-OC] checked=" + out.checked + " match=" + out.match + " mismatch=" + out.mismatch.length + " missing=" + out.missing);
+  for (const m of out.mismatch.slice(0, 20)) { /* console.log("[EN-MISMATCH-OC] " + m.key + ": engine=\"" + m.engine + "\" openclatura=\"" + m.oracle + "\""); */ }
   return out;
 }

@@ -199,7 +199,7 @@ function fAnalyseStructure() {
     atomTypeObj = {}
     atomTypes = []
     if (!jsmeNomeclatureApplet) {
-        console.error("jsmeNomeclatureApplet is not initialized.");
+        // console.error("jsmeNomeclatureApplet is not initialized.");
         return;
     }
     atomsCount = jsmeNomeclatureApplet.totalNumberOfAtoms();
@@ -1159,7 +1159,7 @@ function fCalcMainChain() {
     if (terminals.length === 0) {
         // Cyclic C-skeleton: out of scope (engine is acyclic-only). Same
         // deterministic fallback as the null-path case below, flagged in console.
-        console.warn("fCalcMainChain: cyclic molecule, acyclic naming applied as fallback")
+        // console.warn("fCalcMainChain: cyclic molecule, acyclic naming applied as fallback")
         mainChainAtomsList = carbAtoms.map(function(c) { return c + 1 })
         mainChainPool = [{ chain: mainChainAtomsList.slice(), len: mainChainAtomsList.length, fg: null, fgCover: 0, anchors: 0, multi: 0, dbl: 0 }]
         mainChainPoolIdx = 0
@@ -1548,8 +1548,8 @@ function fValidateMainChain() {
 
     // Check 1: chain length
     if (calc.length !== stored.length) {
-        console.warn('[fCalcMainChain] LENGTH MISMATCH  "' + selectedMol + '"' +
-            '  calc=[' + calc + ']  stored=[' + stored + ']')
+        // console.warn('[fCalcMainChain] LENGTH MISMATCH  "' + selectedMol + '"' +
+            // '  calc=[' + calc + ']  stored=[' + stored + ']')
         return
     }
 
@@ -1565,8 +1565,8 @@ function fValidateMainChain() {
         for (let i = 0; i < ck.length; i++) { if (!storedSet[ck[i]]) { sameAtoms = false; break } }
     }
     if (!sameAtoms) {
-        console.warn('[fCalcMainChain] ATOM MISMATCH  "' + selectedMol + '"' +
-            '  calc=[' + calc + ']  stored=[' + stored + ']')
+        // console.warn('[fCalcMainChain] ATOM MISMATCH  "' + selectedMol + '"' +
+            // '  calc=[' + calc + ']  stored=[' + stored + ']')
         return
     }
 
@@ -1603,12 +1603,12 @@ function fValidateMainChain() {
         if (_locants(calc) === _locants(stored)) {
             // console.log('[fCalcMainChain] \u2713  "' + selectedMol + '"  [' + calc + ']  (equivalent direction)')
         } else {
-            console.warn('[fCalcMainChain] DIRECTION MISMATCH  "' + selectedMol + '"' +
-                '  calc=[' + calc + ']  (reversed would match)  stored=[' + stored + ']')
+            // console.warn('[fCalcMainChain] DIRECTION MISMATCH  "' + selectedMol + '"' +
+                // '  calc=[' + calc + ']  (reversed would match)  stored=[' + stored + ']')
         }
     } else {
-        console.warn('[fCalcMainChain] ORDER MISMATCH  "' + selectedMol + '"' +
-            '  calc=[' + calc + ']  stored=[' + stored + ']')
+        // console.warn('[fCalcMainChain] ORDER MISMATCH  "' + selectedMol + '"' +
+            // '  calc=[' + calc + ']  stored=[' + stored + ']')
     }
 }
 
@@ -1770,7 +1770,7 @@ function fCalcMainChain3D() {
     const terminals3D = carbAtoms3D.filter(function(c) { return cAdj3D[c].length <= 1 })
     if (terminals3D.length === 0) {
         // Cyclic C-skeleton: out of scope (engine is acyclic-only, mirrors 2D).
-        console.warn("fCalcMainChain3D: cyclic molecule, acyclic naming applied as fallback")
+        // console.warn("fCalcMainChain3D: cyclic molecule, acyclic naming applied as fallback")
         mainChainAtoms3D = carbAtoms3D.map(function(c) { return c + 1 })
         mainChainPool3D = [{ chain: mainChainAtoms3D.slice(), len: mainChainAtoms3D.length, fg: null, fgCover: 0, anchors: 0, multi: 0, dbl: 0 }]
         mainChainPool3DKey = (typeof selectedMol !== "undefined" ? selectedMol : null)
@@ -1987,8 +1987,8 @@ function fValidateMainChain3D() {
     const calc3D = mainChainAtoms3D
 
     if (calc3D.length !== stored3D.length) {
-        console.warn('[fCalcMainChain3D] LENGTH MISMATCH  "' + selectedMol + '"' +
-            '  calc=[' + calc3D + ']  stored=[' + stored3D + ']')
+        // console.warn('[fCalcMainChain3D] LENGTH MISMATCH  "' + selectedMol + '"' +
+            // '  calc=[' + calc3D + ']  stored=[' + stored3D + ']')
         return
     }
 
@@ -2003,8 +2003,8 @@ function fValidateMainChain3D() {
         for (let i = 0; i < ck3D.length; i++) { if (!storedSet3D[ck3D[i]]) { sameAtoms3D = false; break } }
     }
     if (!sameAtoms3D) {
-        console.warn('[fCalcMainChain3D] ATOM MISMATCH  "' + selectedMol + '"' +
-            '  calc=[' + calc3D + ']  stored=[' + stored3D + ']')
+        // console.warn('[fCalcMainChain3D] ATOM MISMATCH  "' + selectedMol + '"' +
+            // '  calc=[' + calc3D + ']  stored=[' + stored3D + ']')
         return
     }
 
@@ -2037,12 +2037,12 @@ function fValidateMainChain3D() {
         if (_locants3D(calc3D) === _locants3D(stored3D)) {
             // console.log('[fCalcMainChain3D] \u2713  "' + selectedMol + '"  [' + calc3D + ']  (equivalent direction)')
         } else {
-            console.warn('[fCalcMainChain3D] DIRECTION MISMATCH  "' + selectedMol + '"' +
-                '  calc=[' + calc3D + ']  (reversed would match)  stored=[' + stored3D + ']')
+            // console.warn('[fCalcMainChain3D] DIRECTION MISMATCH  "' + selectedMol + '"' +
+                // '  calc=[' + calc3D + ']  (reversed would match)  stored=[' + stored3D + ']')
         }
     } else {
-        console.warn('[fCalcMainChain3D] ORDER MISMATCH  "' + selectedMol + '"' +
-            '  calc=[' + calc3D + ']  stored=[' + stored3D + ']')
+        // console.warn('[fCalcMainChain3D] ORDER MISMATCH  "' + selectedMol + '"' +
+            // '  calc=[' + calc3D + ']  stored=[' + stored3D + ']')
     }
 }
 
@@ -2670,7 +2670,7 @@ function fTranslateChain2D3D(chain) {
                 // keep stepping), but single/double identity is unchecked
                 // (keto/enol-class mismatch possible). Logged so REVIEW can
                 // tell strict maps from fallback ones.
-                try { console.warn("[map2D3D] strict build failed for " + selectedMol + ", trying order-ignorant fallback"); } catch (eW) {}
+                try { /* console.warn("[map2D3D] strict build failed for " + selectedMol + ", trying order-ignorant fallback"); */ } catch (eW) {}
                 M = fBuildHeavyMap2D3D(true);
             }
             try { molAtomMap2D3D = M; molAtomMapKey = selectedMol } catch (eS) {}

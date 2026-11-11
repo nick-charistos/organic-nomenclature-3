@@ -243,7 +243,7 @@ async function fFetchIUPAC_EN(smiles, opts) {
       try {
         result = await fFetchIUPAC_EN_CIR(smiles);
       } catch (eCir2) {
-        console.warn("[IUPAC-EN] lookup failed SMILES=" + smiles, ePub, eCir2);
+        // console.warn("[IUPAC-EN] lookup failed SMILES=" + smiles, ePub, eCir2);
         return { source: "none", cid: null, iupac: null, title: null, systematic: null, synonyms: [], lastErr: String((ePub && ePub.message) || ePub) + " / " + String((eCir2 && eCir2.message) || eCir2) };
       }
     }
@@ -265,18 +265,18 @@ async function fFetchIUPAC_EN(smiles, opts) {
   // Canonical SMILES rides along from the PUG payload (no extra request);
   // consumers (skeletal depict input, info panel) read it off the hit.
   try { result.canonicalSmiles = result.canonicalSmiles || null; } catch (eC) {}
-  console.log(
-    "[IUPAC-EN] SMILES=" +
-      smiles +
-      " -> retained=\"" +
-      result.iupac +
-      "\" systematic=\"" +
-      systematic +
-      "\" (via " +
-      result.source +
-      (result.cid ? ", CID " + result.cid : "") +
-      ")"
-  );
+  // console.log(
+    // "[IUPAC-EN] SMILES=" +
+      // smiles +
+      // " -> retained=\"" +
+      // result.iupac +
+      // "\" systematic=\"" +
+      // systematic +
+      // "\" (via " +
+      // result.source +
+      // (result.cid ? ", CID " + result.cid : "") +
+      // ")"
+  // );
   return result;
 }
 
@@ -294,14 +294,14 @@ async function fFetchSDF3D_PubChem(smilesOrCid, opts) {
   const url = base + "/SDF?record_type=3d";
   const res = await fetch(url, { headers: { Accept: "chemical/x-mdl-sdfile" } });
   if (res.status === 404) {
-    console.log("[SDF-3D] no 3D conformer for " + smilesOrCid);
+    // console.log("[SDF-3D] no 3D conformer for " + smilesOrCid);
     return null;
   }
   if (!res.ok) throw new Error("PubChem SDF " + res.status);
   const sdf = await res.text();
-  console.log(
-    "[SDF-3D] fetched " + (sdf ? sdf.length : 0) + " chars for " + smilesOrCid
-  );
+  // console.log(
+    // "[SDF-3D] fetched " + (sdf ? sdf.length : 0) + " chars for " + smilesOrCid
+  // );
   return sdf || null;
 }
 
@@ -323,12 +323,12 @@ function fSleepMs(ms) {
 async function fEnrichMolWithIUPAC(key, opts) {
   const o = opts || {};
   if (typeof nameExamples === "undefined" || !nameExamples[key]) {
-    console.warn("[IUPAC-EN] unknown molecule key: " + key);
+    // console.warn("[IUPAC-EN] unknown molecule key: " + key);
     return null;
   }
   const entry = nameExamples[key];
   if (!entry.smiles) {
-    console.warn("[IUPAC-EN] no SMILES cached for " + key + " (open v53 once first)");
+    // console.warn("[IUPAC-EN] no SMILES cached for " + key + " (open v53 once first)");
     return null;
   }
   const hit = await fFetchIUPAC_EN(entry.smiles);
@@ -348,15 +348,15 @@ async function fEnrichMolWithIUPAC(key, opts) {
     try {
       entry.sdf3D = await fFetchSDF3D_PubChem(entry.smiles);
     } catch (e) {
-      console.warn("[SDF-3D] failed for " + key, e);
+      // console.warn("[SDF-3D] failed for " + key, e);
       entry.sdf3D = entry.sdf3D || null;
     }
   }
-  console.log(
-    "[IUPAC-EN] " + key + ": SMILES=" + entry.smiles + " retained=\"" +
-      entry.iupacPubchem + "\" systematic=\"" + entry.systematicEN + "\"" +
-      (entry.needsHumanCheck ? " [NEEDS-HUMAN-CHECK]" : "")
-  );
+  // console.log(
+    // "[IUPAC-EN] " + key + ": SMILES=" + entry.smiles + " retained=\"" +
+      // entry.iupacPubchem + "\" systematic=\"" + entry.systematicEN + "\"" +
+      // (entry.needsHumanCheck ? " [NEEDS-HUMAN-CHECK]" : "")
+  // );
   return entry;
 }
 
@@ -368,7 +368,7 @@ async function fEnrichAllWithPubChem(opts) {
   const onlyMissing = o.onlyMissing !== false;
   const fetchSDF3D = !!o.fetchSDF3D;
   if (typeof nameExamples === "undefined") {
-    console.warn("[IUPAC-EN] nameExamples not loaded yet");
+    // console.warn("[IUPAC-EN] nameExamples not loaded yet");
     return { done: 0, failed: 0 };
   }
   const keys = Object.keys(nameExamples).slice(0, limit);
@@ -390,13 +390,13 @@ async function fEnrichAllWithPubChem(opts) {
       done++;
     } catch (err) {
       failed++;
-      console.warn("[IUPAC-EN] failed " + k, err);
+      // console.warn("[IUPAC-EN] failed " + k, err);
     }
     await fSleepMs(delayMs);
   }
-  console.log(
-    "[IUPAC-EN] batch done=" + done + " failed=" + failed + " skipped=" + skipped
-  );
+  // console.log(
+    // "[IUPAC-EN] batch done=" + done + " failed=" + failed + " skipped=" + skipped
+  // );
   return { done: done, failed: failed, skipped: skipped };
 }
 
@@ -417,10 +417,10 @@ async function fEnrichFromJSME(opts) {
         smiles = jsmeNomeclatureApplet.smiles();
     }
   } catch (e) {
-    console.warn("[IUPAC-EN] JSME getSmiles failed", e);
+    // console.warn("[IUPAC-EN] JSME getSmiles failed", e);
   }
   if (!smiles) {
-    console.warn("[IUPAC-EN] no SMILES from JSME drawing");
+    // console.warn("[IUPAC-EN] no SMILES from JSME drawing");
     return { smiles: null, iupac: null, systematic: null, sdf3D: null };
   }
   const hit = await fFetchIUPAC_EN(smiles);
@@ -429,7 +429,7 @@ async function fEnrichFromJSME(opts) {
     try {
       sdf3D = await fFetchSDF3D_PubChem(smiles);
     } catch (e) {
-      console.warn("[SDF-3D] JSME fetch failed", e);
+      // console.warn("[SDF-3D] JSME fetch failed", e);
     }
   }
   return { smiles: smiles, iupac: hit.iupacPubchem || hit.iupac, systematic: hit.systematic, cid: hit.cid, sdf3D: sdf3D };
@@ -471,7 +471,7 @@ function fLogMolSelectWithOC(key) {
       try { if (typeof fMulerOCFetchDone === "function") fMulerOCFetchDone(key); } catch (eOC) {}
     })
     .catch(function (err) {
-      try { console.warn("[OC] select-fetch failed " + key, err); } catch (eL) {}
+      try { /* console.warn("[OC] select-fetch failed " + key, err); */ } catch (eL) {}
       // Distinguish genuine no-answer (unnameable/4xx payload → quiet amber)
       // from transport errors (timeout/network → lavender error state).
       var _noAns = false;
@@ -494,15 +494,15 @@ function fLogMolSelectWithIUPAC(key) {
   }
   const smiles = (entry && entry.smiles) || null;
   const cached = (entry && (entry.systematicEN || entry.iupacEN)) || null;
-  console.log(
-    "[SELECT] mol=" +
-      key +
-      " SMILES=" +
-      (smiles || "n/a") +
-      " SYSTEMATIC_EN=" +
-      (cached || "fetching…") +
-      (entry && entry.iupacPubchem ? " (retained=\"" + entry.iupacPubchem + "\")" : "")
-  );
+  // console.log(
+    // "[SELECT] mol=" +
+      // key +
+      // " SMILES=" +
+      // (smiles || "n/a") +
+      // " SYSTEMATIC_EN=" +
+      // (cached || "fetching…") +
+      // (entry && entry.iupacPubchem ? " (retained=\"" + entry.iupacPubchem + "\")" : "")
+  // );
   if (typeof window !== "undefined" && window.MULER_QUIET_FETCH) return;
   if (!smiles || cached || __mulerIupacPending[key]) return;
   __mulerIupacPending[key] = true;
@@ -532,17 +532,17 @@ function fLogMolSelectWithIUPAC(key) {
       } catch (eStore) {
         /* cache best-effort */
       }
-      console.log(
-        "[IUPAC-EN] " + key + ": SMILES=" + smiles + " retained=\"" +
-          hit.iupacPubchem + "\" systematic=\"" + hit.systematic + "\"" +
-          (entry && entry.needsHumanCheck ? " [NEEDS-HUMAN-CHECK]" : "")
-      );
+      // console.log(
+        // "[IUPAC-EN] " + key + ": SMILES=" + smiles + " retained=\"" +
+          // hit.iupacPubchem + "\" systematic=\"" + hit.systematic + "\"" +
+          // (entry && entry.needsHumanCheck ? " [NEEDS-HUMAN-CHECK]" : "")
+      // );
       try { if (typeof fMulerENFetchDone === "function") fMulerENFetchDone(key); } catch (eH) {}
       try { if (typeof fMulerMolInfoRefresh === "function") fMulerMolInfoRefresh(key); } catch (eMI) {}
       try { if (typeof fMulerOCFetchDone === "function") fMulerOCFetchDone(key); } catch (eOC) {}
     })
     .catch(function (err) {
-      console.warn("[IUPAC-EN] select-fetch failed " + key, err);
+      // console.warn("[IUPAC-EN] select-fetch failed " + key, err);
       try { if (entry) { entry.iupacFetchDone = true; entry.iupacFetchError = true; } } catch (eF) {}
       try { if (typeof fMulerENFetchDone === "function") fMulerENFetchDone(key); } catch (eH2) {}
       try { if (typeof fMulerMolInfoRefresh === "function") fMulerMolInfoRefresh(key); } catch (eMI2) {}
