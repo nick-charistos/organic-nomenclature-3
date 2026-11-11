@@ -8641,8 +8641,10 @@ function fShowNameAnalysis() {
   // components are visible, restored on reveal (toggle, so both directions
   // work; the presentation lock logic re-asserts afterwards).
   try {
+    var _allBoxesFx3 = document.querySelectorAll(".nameCompContainer .nameCompBox");
     var _visBoxes = document.querySelectorAll(".nameCompContainer .nameCompBox:not(.comp-hidden)");
-    $("#nameAnalysisExplain").toggle(_visBoxes.length > 0);
+    var _tableOnFx3 = (typeof window !== "undefined" && !!window.nameExplainAll);
+    $("#nameAnalysisExplain").toggle((_tableOnFx3 && _allBoxesFx3.length > 0) || _visBoxes.length > 0); // table on: all-hidden still shows (dashed chips)
   } catch (e) {
     /* DOM unavailable */
   }

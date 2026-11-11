@@ -3989,15 +3989,20 @@ function fScenarioApplyNamingChrome(show) {
       /* naming DOM unavailable */
     }
     // Clear a leaked hide, but honor fix 3: zero visible boxes keeps the
-    // line hidden (a hint pointing at dashes is dead). Runs after the
-    // render-path toggle on every authoring rebuild, same verdict.
+    // line hidden — unless the overview table is on with boxes to tabulate
+    // (all-hidden rows stay visible with dashed chips; a single hint
+    // pointing at dashes is still dead). Runs after the render-path toggle
+    // on every authoring rebuild, same verdict.
     var _authNoVis = false;
+    var _authNoBox = true;
     try {
       _authNoVis = document.querySelectorAll(".nameCompContainer .nameCompBox:not(.comp-hidden)").length === 0;
+      _authNoBox = document.querySelectorAll(".nameCompContainer .nameCompBox").length === 0;
     } catch (e) {
       /* DOM unavailable */
     }
-    fScenarioHide("nameAnalysisExplain", _authNoVis);
+    var _authTableOn = (typeof window !== "undefined" && !!window.nameExplainAll);
+    fScenarioHide("nameAnalysisExplain", _authNoVis && (!_authTableOn || _authNoBox));
     return;
   }
   try {
@@ -4024,18 +4029,26 @@ function fScenarioApplyNamingChrome(show) {
     var _lockHasHl = !!(_st && _st.nameAnalysisMode &&
       fScenarioNormMode(_st.nameAnalysisMode) !== "none" && _st.selectedMol);
     // Fix 3: zero visible components hides the line even when the lock
-    // logic above would keep it (a hint pointing at dashes is dead).
+    // logic above would keep it (a hint pointing at dashes is dead) —
+    // unless the overview table is on with boxes to tabulate (all-hidden
+    // rows stay visible with dashed chips). Lock/menu-only hides below
+    // still win.
     var _visBoxCount = 0;
+    var _allBoxCount = 0;
     try {
       _visBoxCount = document.querySelectorAll(
         ".nameCompContainer .nameCompBox:not(.comp-hidden)",
       ).length;
+      _allBoxCount = document.querySelectorAll(
+        ".nameCompContainer .nameCompBox",
+      ).length;
     } catch (e) {
       /* DOM unavailable */
     }
+    var _presTableOn = (typeof window !== "undefined" && !!window.nameExplainAll);
     fScenarioHide(
       "nameAnalysisExplain",
-      (locked && !_lockHasHl) || _visBoxCount === 0,
+      (locked && !_lockHasHl) || (_visBoxCount === 0 && (!_presTableOn || _allBoxCount === 0)),
     );
     // Menu-only steps show the hint only after a free-browse selection has
     // actually rendered name boxes (no molecule means no clickable target).
