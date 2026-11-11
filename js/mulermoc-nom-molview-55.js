@@ -12768,6 +12768,8 @@ function fShowNumberingBonds() {
 }
 
 function fHighlightMultiBonds(bondCompPos) {
+  // Overview-table builds (v55.x) scrape explanations with paints off.
+  if (typeof window !== "undefined" && window.__mulerExplainQuiet) return;
   let bondType, bondID;
   if (nameAnalysisMode == "none") {
     return;
@@ -12838,6 +12840,8 @@ function fHighlightMultiBonds(bondCompPos) {
 // ── fHighlightMultiBonds3D ────────────────────────────────────────────────
 
 function fHighlightMultiBonds3D(bondCompPos) {
+  // Overview-table builds (v55.x) scrape explanations with paints off.
+  if (typeof window !== "undefined" && window.__mulerExplainQuiet) return;
   // Uses SDF-derived *3D globals directly — no 2D-position-3D mapping needed.
 
   if (multiBondListCC3D.length === 0) {
@@ -12925,6 +12929,8 @@ function fHighlightMultiBonds3D(bondCompPos) {
 // ── fHighlightSingleBondsCC ───────────────────────────────────────────────
 
 function fHighlightSingleBondsCC(atomSetOrNull) {
+  // Overview-table builds (v55.x) scrape explanations with paints off.
+  if (typeof window !== "undefined" && window.__mulerExplainQuiet) return;
   if (nameAnalysisMode === "none") {
     return;
   }
@@ -12967,6 +12973,8 @@ function fHighlightSingleBondsCC(atomSetOrNull) {
 // ── fHighlightSingleBondsCC3D ─────────────────────────────────────────────
 
 function fHighlightSingleBondsCC3D(atomSetOrNull) {
+  // Overview-table builds (v55.x) scrape explanations with paints off.
+  if (typeof window !== "undefined" && window.__mulerExplainQuiet) return;
   if (!bondList3D || bondList3D.length === 0) {
     return;
   }
