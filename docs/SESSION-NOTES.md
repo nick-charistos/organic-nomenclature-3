@@ -1,7 +1,7 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `d4e5848` (2026-11-11) — v55
-> overview bond-painter quiet guards (`fHighlightMultiBonds[3D]`, `fHighlightSingleBondsCC[3D]`) + CHANGELOG. Tree has one pre-existing owner tweak unstaged:
+> **Resume pointer (cross-machine):** HEAD `7960808` (2026-11-11) — v55
+> sticky component selection across molecules (mode survives select; scenario seeds step mode) + CHANGELOG. Tree has one pre-existing owner tweak unstaged:
 > `css/jsme-nick-55.css` `.explainTable` `gap` 4px → 6px. Remaining: browser sweep (overview table both languages + row clicks, EN boxes, narration voices, menu rail, Present round-trips) + P3 blessing of Greek word forms,
 > completion-callback wait (spike), energy comparison for true convergence,
 > settings tabs (registry groups by row id when needed). Full record:
@@ -2766,3 +2766,8 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 ## 2026-11-11 — overview scrape, second leak family (v55 working copy)
 
 * Bond painters also ignored the quiet flag — `fHighlightMultiBonds[3D]` (every αν/εν/ιν row) and `fHighlightSingleBondsCC[3D]` (ester-acid rows) — so alkenes/alkynes/esters still highlighted with nothing selected after the first fix. Same quiet early-return in all four; full audit of the `fExplainNameComp` body confirms no other paint path remains. `node --check` clean.
+
+## 2026-11-11 — sticky component selection (v55 working copy)
+
+* Selecting a component keeps it selected across molecule switches when the new molecule has the same component: `fInitProps` no longer resets `nameAnalysisMode`, so the existing mode→box restore in `fShowNameAnalysis` fires on select (falls back to `"none"` when the box is absent/hidden). Explicit reset added in `fDeselectMol`.
+* Scenario safety: apply seeds the step's stored mode before `fSelectMol`, so steps never inherit the author's live selection; the stored-highlight replay drops a pre-restored `.selected` first so the triggered click can't toggle OFF (clicking a selected box deselects) and always repaints both viewers. `node --check` clean on molview + scenario.
