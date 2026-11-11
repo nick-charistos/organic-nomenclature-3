@@ -1,7 +1,7 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `935fbf2` (2026-11-11) — v55
-> overview scrape paints nothing (quiet guards on chain/main-chain/ester-3D) + CHANGELOG. Tree has one pre-existing owner tweak unstaged:
+> **Resume pointer (cross-machine):** HEAD `d4e5848` (2026-11-11) — v55
+> overview bond-painter quiet guards (`fHighlightMultiBonds[3D]`, `fHighlightSingleBondsCC[3D]`) + CHANGELOG. Tree has one pre-existing owner tweak unstaged:
 > `css/jsme-nick-55.css` `.explainTable` `gap` 4px → 6px. Remaining: browser sweep (overview table both languages + row clicks, EN boxes, narration voices, menu rail, Present round-trips) + P3 blessing of Greek word forms,
 > completion-callback wait (spike), energy comparison for true convergence,
 > settings tabs (registry groups by row id when needed). Full record:
@@ -2762,3 +2762,7 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 
 * Toggling `Επισκόπηση`/`Overview` on left the last scraped row's highlight on the 2D/3D viewers with no box selected: `fNameExplainTableBuild` scrapes every row through `fExplainNameComp` with `__mulerExplainQuiet` set, but `fHighlightAtomChain`, `fHighlightAtomChain3D`, `fHighLightMainChain`, `fHighLightMainChainBonds` ignored the flag (plus the `esterEster` direct `fJSmolScript` bond loop) — `compCarbonsCount` alone triggers it on nearly every molecule.
 * Fix: same quiet early-return in all four functions + site guard on the ester loop; pre-toggle viewer state now stays, toggle-off repaint unchanged. `node --check` clean.
+
+## 2026-11-11 — overview scrape, second leak family (v55 working copy)
+
+* Bond painters also ignored the quiet flag — `fHighlightMultiBonds[3D]` (every αν/εν/ιν row) and `fHighlightSingleBondsCC[3D]` (ester-acid rows) — so alkenes/alkynes/esters still highlighted with nothing selected after the first fix. Same quiet early-return in all four; full audit of the `fExplainNameComp` body confirms no other paint path remains. `node --check` clean.
