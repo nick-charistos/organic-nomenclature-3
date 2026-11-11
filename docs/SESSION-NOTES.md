@@ -1,7 +1,7 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `b6a0835` (2026-11-11) — v55
-> all-hidden table stays visible (Fix-3 verdicts honor table-on) + CHANGELOG. Still unstaged (yours): `lang-55.js` + `teaching-55.js` toggle rename. Remaining: browser sweep
+> **Resume pointer (cross-machine):** HEAD `b247b98` (2026-11-11) — v55
+> overview toggle relabel (Explain naming) + docs; tree clean. Remaining: browser sweep
 > `css/jsme-nick-55.css` `.explainTable` `gap` 4px → 6px. Remaining: browser sweep (overview table both languages + row clicks, EN boxes, narration voices, menu rail, Present round-trips) + P3 blessing of Greek word forms,
 > completion-callback wait (spike), energy comparison for true convergence,
 > settings tabs (registry groups by row id when needed). Full record:
