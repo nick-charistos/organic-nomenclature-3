@@ -2226,15 +2226,17 @@ header {
   border: 1px solid var(--lightBlue);
   border-radius: 2px;
   cursor: pointer;
+  transition: all 0.2s;
+  outline: 0;
 }
 
 .explainRow:hover {
-  border-color: var(--darkBlue);
+  border-color: var(--vibrantGreen);
 }
 
 .explainRow.selected {
-outline: 2px solid var(--vibrantGreen);
-  outline-offset: -1px;
+outline: 3px solid var(--vibrantGreen);
+  outline-offset: -2px;
   border-color: var(--vibrantGreen);
 }
 
