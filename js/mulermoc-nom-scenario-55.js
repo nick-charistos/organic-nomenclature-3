@@ -594,7 +594,7 @@ function fScenarioCapture() {
       hidden: Array.isArray(window.nameHiddenComps) ? window.nameHiddenComps.slice() : [],
     },
     styleHighlight: {
-      bondAtoms: fScenarioCheck("bondAtomsCheck", false),
+      bondAtoms: fScenarioCheck("bondAtomsCheck", true),
       numberingAtoms: fScenarioCheck("highlightNumberingCheck", true),
       numberingBonds: fScenarioCheck("highlightNumberingBondsCheck", true),
     },
@@ -1077,7 +1077,7 @@ function fScenarioDefaults(step, i) {
     selectedRule: null,
     style2D: { atomColors: false, colorMode: "atom", zigzag: false, zoom: 2.0 },
     styleName: { box: true, cross: false, etherNaming: "iupac", panelOpen: true, hidden: [] },
-    styleHighlight: { bondAtoms: false, numberingAtoms: true, numberingBonds: true },
+    styleHighlight: { bondAtoms: true, numberingAtoms: true, numberingBonds: true },
     styleText: { fontSizePx: null, textWidthPx: null, columns: null, position: null },
     audio: { narrate: false },
     menuSubset: [],
@@ -1388,7 +1388,7 @@ function fScenarioCheck(id, fallback) {
 // can restore the author's working settings instead of the step's values.
 function fScenarioStashAuthorSettings() {
   MuLERMoCScenario.authorSettings = {
-    bondAtoms: fScenarioCheck("bondAtomsCheck", false),
+    bondAtoms: fScenarioCheck("bondAtomsCheck", true),
     numberingAtoms: fScenarioCheck("highlightNumberingCheck", true),
     numberingBonds: fScenarioCheck("highlightNumberingBondsCheck", true),
     nameHidden: Array.isArray(window.nameHiddenComps) ? window.nameHiddenComps.slice() : [],
@@ -5139,7 +5139,7 @@ function fScenarioBuildPanels() {
       "<div class='scenarioMeta'>" +
       "<label class='scenarioAuthorLabel' for=''>Author:</label>" +
       "<input type='text' class='scenarioAuthor' value='' placeholder='Unknown' " +
-      "data-tooltip='" + ((typeof fMulerT === "function") ? fMulerT("scenarioAuthor") : "Συγγραφέας σεναρίου (προαιρετικό)") + "' aria-label='" + ((typeof fMulerT === "function") ? fMulerT("authorShort") : "Συγγραφέας σεναρίου") + "'>" +
+      "aria-label='" + ((typeof fMulerT === "function") ? fMulerT("authorShort") : "Συγγραφέας σεναρίου") + "'>" +
       "</div>" +
       "<div class='scenarioButtonPanel'>" +
       "<button class='scSave' data-tooltip='" + ((typeof fMulerT === "function") ? fMulerT("addStep") : "Αποθήκευση προβολής ως βήμα") + "'>Add step</button>" +

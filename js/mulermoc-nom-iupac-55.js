@@ -280,8 +280,10 @@ async function fFetchIUPAC_EN(smiles, opts) {
   return result;
 }
 
-// 3D SDF for the future SMILES-only import path. PubChem returns 404 when
+// 3D SDF via PubChem PUG (`record_type=3d`). PubChem returns 404 when
 // a compound has no 3D conformer — callers must treat null as "no 3D".
+// Draft-preview role is tier-1b fallback behind JSmol `load :` (same PubChem
+// data, preferred — no page CORS); enrichment/batch paths use it directly.
 async function fFetchSDF3D_PubChem(smilesOrCid, opts) {
   const o = opts || {};
   const by = o.by === "cid" ? "cid" : "smiles";
@@ -306,9 +308,14 @@ async function fFetchSDF3D_PubChem(smilesOrCid, opts) {
 }
 
 // (v55.1) Direct Cactus SDF fetch retired: cactus.nci.nih.gov sends no CORS
-// headers, so browser fetch always dies here. Tier-2 remote 3D now goes via
-// JSmol `load $SMILES` (applet proxy-routed, no page-side fetch) in
-// fMolDraftRemote3DFromJSmol (molview-55.js).
+// headers, so browser fetch always dies here. Remote 3D now goes via JSmol
+// (applet proxy-routed, no page-side fetch): tier-1 PubChem `load :cid:` /
+// `load :smiles:` in fMolDraftPubChem3DFromJSmol, tier-2 NCI/Cactus
+// `load $SMILES` in fMolDraftRemote3DFromJSmol (molview-55.js). This
+// page-side PUG fetch remains as the tier-1b fallback (applet-dead /
+// proxy-blocked cases) and for the non-interactive enrichment paths
+// (fEnrichMolWithIUPAC / fEnrichAllWithPubChem / fEnrichFromJSME) where no
+// applet load is suitable.
 
 function fSleepMs(ms) {
   return new Promise(function (r) {

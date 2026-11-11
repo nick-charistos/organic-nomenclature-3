@@ -944,9 +944,15 @@ header {
 .scShowRow .sshow[data-tooltip]::after,
 .scMolBadge[data-tooltip]::after,
 .scDragHandle[data-tooltip]::after,
+.scLangBadge[data-tooltip]::after,
 .menuCollapseBtn[data-tooltip]::after,
 .nameExplainAll[data-tooltip]::after,
-.langButtonClass[data-tooltip]::after {
+.langButtonClass[data-tooltip]::after,
+.draftVBtn[data-tooltip]::after,
+.ruleTheoryToggleBtn[data-tooltip]::after,
+#devNoticeClose[data-tooltip]::after,
+#scScrollLeft[data-tooltip]::after,
+#scScrollRight[data-tooltip]::after {
   content: attr(data-tooltip);
   background: var(--darkBlue);
   color: #fff;
@@ -987,7 +993,13 @@ header {
 .scShowRow .sshow[data-tooltip]:hover::after,
 .scMolBadge[data-tooltip]:hover::after,
 .scDragHandle[data-tooltip]:hover::after,
+.scLangBadge[data-tooltip]:hover::after,
 .menuCollapseBtn[data-tooltip]:hover::after,
+.draftVBtn[data-tooltip]:hover::after,
+.ruleTheoryToggleBtn[data-tooltip]:hover::after,
+#devNoticeClose[data-tooltip]:hover::after,
+#scScrollLeft[data-tooltip]:hover::after,
+#scScrollRight[data-tooltip]:hover::after,
 .langButtonClass[data-tooltip]:hover::after {
   opacity: 1;
   transition: opacity 0.15s ease 0.5s;
@@ -1007,12 +1019,22 @@ header {
 .molInfoCopy[data-tooltip]::after,
 #narrateAnalysisToggle[data-tooltip]::after,
 .menuCollapseBtn[data-tooltip]::after,
-.langButtonClass[data-tooltip]::after {
+.langButtonClass[data-tooltip]::after,
+.draftVBtn[data-tooltip]::after,
+.ruleTheoryToggleBtn[data-tooltip]::after,
+#devNoticeClose[data-tooltip]::after,
+.scLangBadge[data-tooltip]::after {
   position: absolute;
   top: calc(100% + 10px);
   left: 50%;
   transform: translateX(-50%);
   z-index: 200;
+}
+
+/* Static buttons need a positioned anchor for the centered bubble above. */
+.draftVBtn[data-tooltip],
+#devNoticeClose[data-tooltip] {
+  position: relative;
 }
 
 /* Shared tooltip arrow base (single copy): transparent 6px triangle;
@@ -1040,8 +1062,14 @@ header {
 .scShowRow .sshow[data-tooltip]::before,
 .scMolBadge[data-tooltip]::before,
 .scDragHandle[data-tooltip]::before,
+.scLangBadge[data-tooltip]::before,
 .menuCollapseBtn[data-tooltip]::before,
-.langButtonClass[data-tooltip]::before {
+.langButtonClass[data-tooltip]::before,
+.draftVBtn[data-tooltip]::before,
+.ruleTheoryToggleBtn[data-tooltip]::before,
+#devNoticeClose[data-tooltip]::before,
+#scScrollLeft[data-tooltip]::before,
+#scScrollRight[data-tooltip]::before {
   content: "";
   position: absolute;
   border: 6px solid transparent;
@@ -1073,7 +1101,13 @@ header {
 .scShowRow .sshow[data-tooltip]:hover::before,
 .scMolBadge[data-tooltip]:hover::before,
 .scDragHandle[data-tooltip]:hover::before,
+.scLangBadge[data-tooltip]:hover::before,
 .menuCollapseBtn[data-tooltip]:hover::before,
+.draftVBtn[data-tooltip]:hover::before,
+.ruleTheoryToggleBtn[data-tooltip]:hover::before,
+#devNoticeClose[data-tooltip]:hover::before,
+#scScrollLeft[data-tooltip]:hover::before,
+#scScrollRight[data-tooltip]:hover::before,
 .langButtonClass[data-tooltip]:hover::before {
   opacity: 1;
   transition: opacity 0.15s ease 0.5s;
@@ -1093,7 +1127,11 @@ header {
 .molInfoCopy[data-tooltip]::before,
 #narrateAnalysisToggle[data-tooltip]::before,
 .menuCollapseBtn[data-tooltip]::before,
-.langButtonClass[data-tooltip]::before {
+.langButtonClass[data-tooltip]::before,
+.draftVBtn[data-tooltip]::before,
+.ruleTheoryToggleBtn[data-tooltip]::before,
+#devNoticeClose[data-tooltip]::before,
+.scLangBadge[data-tooltip]::before {
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
@@ -2760,6 +2798,20 @@ color: var(--veryLightEarth);
   border-color: #3a2c00;
 }
 
+/* Banner close sits at the banner's right edge — a centered bubble would
+   spill past the viewport, so anchor it right (skin: shared rule). */
+#devNoticeClose[data-tooltip]::after {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+#devNoticeClose[data-tooltip]::before {
+  left: auto;
+  right: 12px;
+  transform: none;
+}
+
 .creditsContainer a {
 	color: inherit;
 	text-decoration: none;
@@ -2881,8 +2933,10 @@ color: var(--veryLightEarth);
   color: #fff;
 }
 
-/* Edge-anchored tooltip bubble: a centered one would clip at the narrow rail. */
-#nomeclature2Menu .panelTitle > #menuCollapseBtn[data-tooltip]::after {
+/* Edge-anchored tooltip bubble (expanded menu): a centered one would clip
+   past the title's right edge, so anchor it right. Collapsed-rail geometry
+   is separate below (the rail sits at the viewport's left edge). */
+#menuCol:not(.collapsed) #nomeclature2Menu .panelTitle > #menuCollapseBtn[data-tooltip]::after {
   left: auto;
   right: 0;
   transform: none;
@@ -2894,7 +2948,7 @@ color: var(--veryLightEarth);
   text-align: left;
 }
 
-#nomeclature2Menu .panelTitle > #menuCollapseBtn[data-tooltip]::before {
+#menuCol:not(.collapsed) #nomeclature2Menu .panelTitle > #menuCollapseBtn[data-tooltip]::before {
   left: auto;
   right: 12px;
   transform: none;
@@ -2918,6 +2972,7 @@ color: var(--veryLightEarth);
   align-items: center;
   gap: 6px;
   padding: 10px 0;
+  cursor: pointer;
 }
 
 #menuCol.collapsed #menuCollapseBtn {
@@ -2925,6 +2980,29 @@ color: var(--veryLightEarth);
   left: auto;
   right: auto;
   top: auto;
+  transform: none;
+}
+
+/* Collapsed rail sits at the viewport's left edge: the expanded right-anchor
+   would spill past it, so open the bubble below + left-anchored (extends
+   right into the app, where there is room). The rail's own overflow clips
+   are lifted in the collapsed state (its scroll content is display:none
+   there, so nothing needs clipping) or the 110px bubble would be cut at
+   the 40px rail. */
+#menuCol.collapsed #menuDrawer,
+#menuCol.collapsed #nomeclature2Menu {
+  overflow: visible;
+}
+
+#menuCol.collapsed #nomeclature2Menu .panelTitle > #menuCollapseBtn[data-tooltip]::after {
+  left: 0;
+  right: auto;
+  transform: none;
+}
+
+#menuCol.collapsed #nomeclature2Menu .panelTitle > #menuCollapseBtn[data-tooltip]::before {
+  left: 12px;
+  right: auto;
   transform: none;
 }
 

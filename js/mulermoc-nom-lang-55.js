@@ -60,7 +60,7 @@ var MULER_STRINGS = {
   draftUpdate: { gr: "Ενημέρωση", en: "Update" },
   draftDraw: { gr: "Επεξεργασία", en: "Edit" },
   draftBeautify: { gr: "Γραμμικοποίηση", en: "Linearize" },
-  autoLinearize: { gr: "Αυτόματη γραμμικοποίηση:", en: "Auto-linearize:" },
+  autoLinearize: { gr: "Αυτόματη γραμμικοποίηση νέων μορίων:", en: "Auto-linearize new molecules:" },
   draftPreview: { gr: "Προεπισκόπηση", en: "Preview" },
   draftPreviewTitle: { gr: "Πρόβλεψη Ονομασίας", en: "Name Prediction" },
   draftCorrect: { gr: "Σωστό", en: "Correct" },
@@ -84,7 +84,7 @@ var MULER_STRINGS = {
   acceptWaitFetch: { gr: "Ανάκτηση 3D σε εξέλιξη — περίμενε λίγο.", en: "Still fetching 3D — wait a moment." },
   acceptNeedsPubChem3D: { gr: "Αποδοχή μόνο με εγγραφή PubChem + 3D — θα επανέλθουμε με το RDKit.", en: "Acceptance requires a PubChem record with 3D — coming back with RDKit." },
   acceptNeeds3D: { gr: "Αποδοχή μόνο με τρισδιάστατο μοντέλο — περίμενε να ολοκληρωθεί η ανάκτηση 3D.", en: "Acceptance requires a 3D model — wait for the 3D fetch to finish." },
-  submitNo3DAll: { gr: "Χωρίς τρισδιάστατο μοντέλο (PubChem/απομακρυσμένα/τοπική ελαχιστοποίηση) — μόνο 2D.", en: "No 3D model (PubChem/remote/local minimize) — 2D only." },
+  submitNo3DAll: { gr: "Χωρίς τρισδιάστατο μοντέλο (PubChem/Cactus/τοπική ελαχιστοποίηση) — μόνο 2D.", en: "No 3D model (PubChem/Cactus/local minimize) — 2D only." },
   draft3DSource: { gr: "3D:", en: "3D:" },
   draftMinBtn: { gr: "Ελαχιστοποίηση 3D (τοπική)", en: "Minimize 3D (local)" },
   draftMinMore: { gr: "Ελαχιστοποίηση +100 (τοπική)", en: "Minimize +100 (local)" },
@@ -94,9 +94,11 @@ var MULER_STRINGS = {
   draft3DUnmin: { gr: "3D: μη βελτιστοποιημένο (τοπικό — θέλει έλεγχο)", en: "3D: unminimized (local — needs review)" },
   draftMinDone: { gr: "Τρισδιάστατο μοντέλο ελαχιστοποιημένο τοπικά — έλεγξέ το και πάτα Αποδοχή.", en: "3D minimized locally — review the model, then Accept." },
   draft3DPubchem: { gr: "3D: PubChem", en: "3D: PubChem" },
-  draft3DRemote: { gr: "3D: απομακρυσμένη δημιουργία (JSmol)", en: "3D: remote-built (JSmol)" },
+  draft3DPubchemJsmol: { gr: "3D: PubChem μέσω JSmol", en: "3D: PubChem via JSmol" },
+  draft3DPubchemFetch: { gr: "3D: PubChem με απευθείας ανάκτηση", en: "3D: PubChem via fetch" },
+  draft3DRemote: { gr: "3D: Cactus (JSmol)", en: "3D: Cactus (JSmol)" },
   draft3DLocal: { gr: "3D: τοπική ελαχιστοποίηση (προσωρινό — θέλει έλεγχο)", en: "3D: local minimize (provisional — needs review)" },
-  draft3DFetching: { gr: "Ανάκτηση 3D… (PubChem → απομακρυσμένα → τοπικά)", en: "Fetching 3D… (PubChem → remote → local)" },
+  draft3DFetching: { gr: "Ανάκτηση 3D… (PubChem → Cactus → τοπικά)", en: "Fetching 3D… (PubChem → Cactus → local)" },
   draftIUPACRow: { gr: "IUPAC (PubChem)", en: "IUPAC (PubChem)" },
   draftCommonRow: { gr: "Κοινή (PubChem)", en: "Common (PubChem)" },
   draftSysRow: { gr: "Συστηματική", en: "Systematic" },
@@ -142,7 +144,8 @@ var MULER_STRINGS = {
   downloadScenario: { gr: "Λήψη σεναρίου (JSON)", en: "Download scenario (JSON)" },
   uploadScenario: { gr: "Φόρτωση σεναρίου (JSON)", en: "Load scenario (JSON)" },
   newScenario: { gr: "Νέο κενό σενάριο", en: "New blank scenario" },
-  scenarioAuthor: { gr: "Συγγραφέας σεναρίου (προαιρετικό)", en: "Scenario author (optional)" },
+  // scenarioAuthor retired: the author <input> cannot render ::before/::after
+  // bubbles; aria-label + placeholder carry the meaning (no setTip call).
   prevStep: { gr: "Προηγούμενο βήμα", en: "Previous step" },
   nextStep: { gr: "Επόμενο βήμα", en: "Next step" },
   moveUp: { gr: "Επάνω", en: "Move up" },
@@ -495,7 +498,8 @@ function fMulerPaintStaticChrome() {
   setTip(".scExport", fMulerT("downloadScenario"));
   setTip(".scImport", fMulerT("uploadScenario"));
   setTip(".scNew", fMulerT("newScenario"));
-  setTip(".scenarioAuthor", fMulerT("scenarioAuthor"));
+  // (no .scenarioAuthor tooltip: <input> elements cannot render ::before/::after
+  // bubbles; its aria-label + placeholder carry the meaning instead)
   setTip("#chainPrevBtn", fMulerT("prevChain"));
   setTip("#chainNextBtn", fMulerT("nextChain"));
   // Footer credits are language-dependent (team/program/department lines).

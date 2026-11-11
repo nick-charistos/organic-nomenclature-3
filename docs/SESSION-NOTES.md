@@ -2775,3 +2775,24 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 
 * Selecting a component keeps it selected across molecule switches when the new molecule has the same component: `fInitProps` no longer resets `nameAnalysisMode`, so the existing mode→box restore in `fShowNameAnalysis` fires on select (falls back to `"none"` when the box is absent/hidden). Explicit reset added in `fDeselectMol`.
 * Scenario safety: apply seeds the step's stored mode before `fSelectMol`, so steps never inherit the author's live selection; the stored-highlight replay drops a pre-restored `.selected` first so the triggered click can't toggle OFF (clicking a selected box deselects) and always repaints both viewers. `node --check` clean on molview + scenario.
+
+## 2026-11-11 — draft 3D PubChem tier via JSmol `load :` (v55 working tree)
+
+* `$SMILES` resolves via NCI/CADD Cactus (generates 3D, not a PubChem lookup), so tier-1 is now `fMolDraftPubChem3DFromJSmol` (`load ":cid:"` preferred when the PUG hit carries a CID, else `load ":smiles:"` canonical-first) — applet proxy-routed, no page CORS. Page-side PUG fetch stays as tier-1b fallback (applet-dead/proxy-blocked/headless); `$SMILES` stays tier-2 (Cactus), local minimize unchanged.
+* Shared zap→load→`write MOL` core factored into `fMolDraftJSmolLoadAndReadBack` (both remote tiers); `MULER_SKIP_REMOTE3D` now skips all three network tiers; provenance split `pubchem-jsmol`/`pubchem-fetch` (legacy `pubchem` still renders generic); labels/toasts say Cactus. `node --check` clean; live dual-mode (`?libs=`) + novel-SMILES verification pending.
+
+## 2026-11-11 — collapsed rail expands on title click (v55 working tree)
+
+* Clicking the collapsed rail's `.panelTitle` expands via `fMenuCollapseSet(false)` — expand-only; button `stopPropagation` + target guard against double-toggle; `cursor: pointer` on the collapsed title. Keyboard stays on the button alone (owner choice). Verified live in headless Chrome (rail expands, no errors).
+
+## 2026-11-11 — tooltip audit + fixes (v55 working tree, headless Chrome)
+
+* New scratch harness (outside the repo): Playwright driving installed Chrome over a local no-cache server; `audit.js` reconstructs every bubble from authored CSS rules + canvas-measured text and checks containment in all `overflow` ancestors + viewport (GR/EN × 1500/1100px, drawer open, row expanded, align menu + big-note modal open, collapsed rail) — 0 spills on the final tree.
+* Revived dead tooltips (attribute set, zero skin selectors): `.draftVBtn`, `.ruleTheoryToggleBtn`, `#devNoticeClose`, `#scScrollLeft/Right`, `.scLangBadge` added to all six shared tooltip lists; `.scenarioAuthor` input tooltip dropped instead (inputs cannot render `::before/::after`; `setTip` call + orphaned lang key retired).
+* Clip fixes, all re-verified to zero: `devNoticeClose`/`scPin`/`scCloseBar` right-anchored; `scDragHandle` left-anchored; `scUpdate`/`scDupe` into the right-anchored head group; `sshow` row-relative (`.scShowRow` positioned, `max-width: 100%`); collapsed `menuCollapseBtn` per-state geometry + rail overflow lifted while collapsed; modal first-button left-anchored. Braces balanced, `git diff --check` clean. Open: `scScroll` pinned scrolled state, Present-mode bubbles.
+
+## 2026-11-11 — bond-atoms default on + chain-mode row hidden (v55 working tree)
+
+* `#bondAtomsCheck` ships `selectedCheck`; step-capture/stash fallbacks + new-step template `styleHighlight.bondAtoms` flipped to `true` (legacy steps keep stored `false`). Verified live (`fShowBondAtoms() === true`).
+* `#radioChainMode` commented out of settings (restore note inline); engine `data` path, step capture/apply, sync and lang key kept; default stays algorithmic. Verified live (row absent, sync safe, zero page errors).
+* Included as-is: parallel owner tweaks — `<title>` → `Ονοματολογία Οργανικών Ενώσεων`, auto-linearize label → `Αυτόματη γραμμικοποίηση νέων μορίων:` (HTML + GR/EN), `.scLangBadge` `position: absolute !important`.

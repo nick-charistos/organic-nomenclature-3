@@ -16,7 +16,7 @@
     gtag("config", "G-1V8NWYY46Y");
   </script>
 
-  <title>Κανόνες Ονοματολογίας Οργανικών Ενώσεων</title>
+<title>Ονοματολογία Οργανικών Ενώσεων</title>
 
   <link rel="stylesheet" href="css/jsme-nick-55.css?v=55.0" />
   <link rel="stylesheet" href="css/mulermoc-nom-scenario-55.css?v=55.0" />
@@ -100,6 +100,10 @@
 
               <div id="viewerSettingsPanel">
                 <div class="settingTitle">Ρυθμίσεις</div>
+                <!-- radioChainMode retired 2026-11-11 (v55): chain-mode row hidden from settings;
+                     engine still honors mainChainMode ('data' path intact), steps still capture/apply it,
+                     default stays algorithmic. Restore this block to bring the UI back. -->
+                <!--
                 <div id="radioChainMode" class="settingRow">
                   <div class="settingLabel" data-lang="chainCalc">Υπολογισμός κύριας αλυσίδας:</div>
                   <div class="radioGroupContainer HFlex" style="align-items: center; gap: 0">
@@ -111,6 +115,7 @@
                     </div>
                   </div>
                 </div>
+                -->
                 <div id="originalJSME" class="settingRow">
                   <div class="settingLabel" data-lang="showOrig2D">
                     Σχεδίαση και προσθήκη μορίων:
@@ -122,7 +127,7 @@
 
                 <div id="autoLinearize" class="settingRow">
                   <div class="settingLabel" id="autoLinearizeLabel" data-lang="autoLinearize">
-                    Αυτόματη γραμμικοποίηση:
+                    Αυτόματη γραμμικοποίηση νέων μορίων:
                   </div>
                   <div id="autoLinearizeCheck" class="checkBoxContainer selectedCheck">
                     &nbsp;<span class="checkBox"></span>
@@ -149,7 +154,7 @@
                   <div class="settingLabel" data-lang="hlBondAtoms">
                     Επισήμανση ατόμων δεσμών:
                   </div>
-                  <div id="bondAtomsCheck" class="checkBoxContainer unselectedCheck">
+                  <div id="bondAtomsCheck" class="checkBoxContainer selectedCheck">
                     &nbsp;<span class="checkBox"></span>
                   </div>
                 </div>

@@ -1548,13 +1548,29 @@ $(document).ready(function () {
     },
   );
 
-  $(document).on("click", "#menuCollapseBtn", function () {
+  $(document).on("click", "#menuCollapseBtn", function (e) {
+    try { if (e && e.stopPropagation) e.stopPropagation(); } catch (eS) {}
     var makeCollapsed = false;
     try {
       var mc = document.getElementById("menuCol");
       makeCollapsed = !!(mc && mc.classList && !mc.classList.contains("collapsed"));
     } catch (e) { makeCollapsed = false; }
     if (typeof fMenuCollapseSet === "function") fMenuCollapseSet(makeCollapsed);
+  });
+
+  // Collapsed rail convenience: clicking the rail title (vertical MENU text)
+  // expands the menu — expand-only, never collapses. The button above owns
+  // both directions (and stops propagation so its click never double-fires
+  // here); keyboard behavior stays on the button alone by owner choice.
+  $(document).on("click", "#nomeclature2Menu .panelTitle", function (e) {
+    try {
+      if (e && e.target && e.target.closest && e.target.closest("#menuCollapseBtn")) return;
+    } catch (eT) {}
+    var mc = null;
+    try { mc = document.getElementById("menuCol"); } catch (eM) { mc = null; }
+    if (mc && mc.classList && mc.classList.contains("collapsed")) {
+      if (typeof fMenuCollapseSet === "function") fMenuCollapseSet(false);
+    }
   });
 
   $(document).on("click", ".groupingMode [data-grouping-mode]", function () {

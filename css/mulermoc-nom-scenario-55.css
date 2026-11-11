@@ -689,6 +689,9 @@
    gap: 4px 14px;
    flex-basis: 100%;
    width: 100%;
+   /* positioned: sshow tooltip bubbles anchor to the full row (left: 0 +
+      max-width: 100% always fits), never to the narrow inline label */
+   position: relative;
 }
 
 .scenarioDrawer .sshow {
@@ -749,7 +752,7 @@
 	padding: 1px 2px;
 	white-space: nowrap;
 	font-family: "Roboto Condensed", sans-serif;
-	position: absolute;
+	position: absolute !important;
 	top: 3px;
 	left: -8px;
 }
@@ -1173,13 +1176,15 @@
 /* Styled bubbles for scenario bar/panel/step/toolbar buttons, type badge
    and drag handle (skin: shared rule in css/jsme-nick-45.css). Below-centered
    like the main app; #scenarioAuthorBar/#scenarioPlayBar buttons and the
-   badge/handle gain position:relative as the ::after anchor (no visual change). */
+   badge/handle gain position:relative as the ::after anchor (no visual change).
+   sshow bubbles instead anchor to the positioned .scShowRow (row-relative
+   geometry below), so long hints always fit the row width. */
 #scenarioPlayBarTitle button[data-tooltip],
 #scenarioPlayBar button[data-tooltip],
 .scenarioPanel button[data-tooltip],
 .scNoteFontSizeWrap[data-tooltip],
-.scShowRow .sshow[data-tooltip],
 .scMolBadge[data-tooltip],
+.scLangBadge[data-tooltip],
 .scDragHandle[data-tooltip] {
    position: relative;
 }
@@ -1190,6 +1195,7 @@
 .scNoteFontSizeWrap[data-tooltip]::after,
 .scShowRow .sshow[data-tooltip]::after,
 .scMolBadge[data-tooltip]::after,
+.scLangBadge[data-tooltip]::after,
 .scDragHandle[data-tooltip]::after {
    position: absolute;
    top: calc(100% + 10px);
@@ -1204,6 +1210,7 @@
 .scNoteFontSizeWrap[data-tooltip]::before,
 .scShowRow .sshow[data-tooltip]::before,
 .scMolBadge[data-tooltip]::before,
+.scLangBadge[data-tooltip]::before,
 .scDragHandle[data-tooltip]::before {
    top: 100%;
    left: 50%;
@@ -1229,6 +1236,23 @@
    transform: translateX(-50%);
    border-bottom-color: transparent;
    border-top-color: var(--darkBlue);
+}
+
+/* Title-bar right edge: pin + close sit at the bar's right end, so centered
+   bubbles would spill past the viewport — anchor them right (like scDelete).
+   Vertical placement stays below (title-bar default). */
+#scenarioAuthorBar #scenarioPlayBarTitle button#scPin[data-tooltip]::after,
+#scenarioAuthorBar #scenarioPlayBarTitle button#scCloseBar[data-tooltip]::after {
+   left: auto;
+   right: 0;
+   transform: none;
+}
+
+#scenarioAuthorBar #scenarioPlayBarTitle button#scPin[data-tooltip]::before,
+#scenarioAuthorBar #scenarioPlayBarTitle button#scCloseBar[data-tooltip]::before {
+   left: auto;
+   right: 12px;
+   transform: none;
 }
 
 /* Edge buttons: centered bubbles would spill past the panel's side edges
@@ -1295,6 +1319,8 @@
 #scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scUp[data-tooltip]::after,
 #scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scDown[data-tooltip]::after,
 #scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scCollapse[data-tooltip]::after,
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scUpdate[data-tooltip]::after,
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scDupe[data-tooltip]::after,
 #scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.delete[data-tooltip]::after {
    left: auto;
    right: 0;
@@ -1310,6 +1336,8 @@
 #scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scUp[data-tooltip]::before,
 #scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scDown[data-tooltip]::before,
 #scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scCollapse[data-tooltip]::before,
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scUpdate[data-tooltip]::before,
+#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scDupe[data-tooltip]::before,
 #scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.delete[data-tooltip]::before {
    left: auto;
    right: 12px;
@@ -1323,6 +1351,35 @@
    white-space: normal;
    overflow-wrap: anywhere;
    line-height: 1.25;
+}
+
+/* Language badges sit at the row's left edge: a centered bubble would spill
+   past the drawer's left edge, so anchor them left (like the pick toggle). */
+#scenarioAuthorBar .scenarioDrawer .scLangBadge[data-tooltip]::after {
+   left: 0;
+   right: auto;
+   transform: none;
+}
+
+#scenarioAuthorBar .scenarioDrawer .scLangBadge[data-tooltip]::before {
+   left: 12px;
+   right: auto;
+   transform: none;
+}
+
+/* Row drag handle sits at the row's left edge: a centered bubble would spill
+   past the drawer's left edge, so anchor it left (extends right into the
+   row, where there is always room). */
+#scenarioAuthorBar .scenarioDrawer .scDragHandle[data-tooltip]::after {
+   left: 0;
+   right: auto;
+   transform: none;
+}
+
+#scenarioAuthorBar .scenarioDrawer .scDragHandle[data-tooltip]::before {
+   left: 12px;
+   right: auto;
+   transform: none;
 }
 
 /* Last step row: head bubbles flip above so the drawer's scrollport
@@ -1376,14 +1433,15 @@
    transform: none;
 }
 
-/* Step-row show toggles: left-anchor and wrap the long English hints so the
-   dark bubbles stay inside the drawer instead of clipping at the edges. */
+/* Step-row show toggles: row-relative bubbles (anchored to the positioned
+   .scShowRow, left: 0 + max-width: 100% of the row, wrapped) so even the
+   longest hints stay inside the drawer whatever label they belong to. */
 #scenarioAuthorBar .scenarioDrawer .scShowRow .sshow[data-tooltip]::after {
    left: 0;
    right: auto;
    transform: none;
    width: max-content;
-   max-width: calc(100vw - 2rem);
+   max-width: 100%;
    white-space: normal;
    overflow-wrap: anywhere;
    line-height: 1.25;
@@ -1426,6 +1484,26 @@
 }
 
 .scNoteEditorToolbar button.scNoteSourceBtn[data-tooltip]::before {
+   left: 12px;
+   right: auto;
+   transform: none;
+}
+
+/* First text button sits 12px from the modal's left edge (B inside the
+   toolbar's inner group, right after the icon-only source toggle): a centered
+   bubble would spill past it, so anchor it left like the drawer's expand
+   button (extends right, where the whole toolbar row has room). */
+.scNoteEditorToolbar>div.scNoteToolbar>button[data-tooltip]:first-child::after,
+.scNoteEditorToolbar>button.scNoteSourceBtn + button[data-tooltip]::after,
+.scNoteEditorToolbar>button:first-child[data-tooltip]::after {
+   left: 0;
+   right: auto;
+   transform: none;
+}
+
+.scNoteEditorToolbar>div.scNoteToolbar>button[data-tooltip]:first-child::before,
+.scNoteEditorToolbar>button.scNoteSourceBtn + button[data-tooltip]::before,
+.scNoteEditorToolbar>button:first-child[data-tooltip]::before {
    left: 12px;
    right: auto;
    transform: none;
@@ -2361,6 +2439,48 @@ body.scPinned #mainAppContainer.scCanScroll~#scScrollRight {
 
 #scScrollRight {
    right: 488px;
+}
+
+/* Viewport-edge scroll buttons: a centered bubble would spill past the
+   window edge, so anchor below + to the near edge (skin: shared rule). */
+#scScrollLeft[data-tooltip]::after,
+#scScrollRight[data-tooltip]::after {
+   position: absolute;
+   top: calc(100% + 10px);
+   bottom: auto;
+   transform: none;
+   z-index: 200;
+   white-space: nowrap;
+}
+
+#scScrollLeft[data-tooltip]::after {
+   left: 0;
+   right: auto;
+}
+
+#scScrollRight[data-tooltip]::after {
+   left: auto;
+   right: 0;
+}
+
+#scScrollLeft[data-tooltip]::before,
+#scScrollRight[data-tooltip]::before {
+   position: absolute;
+   top: 100%;
+   bottom: auto;
+   transform: none;
+   border-bottom-color: var(--darkBlue);
+   z-index: 200;
+}
+
+#scScrollLeft[data-tooltip]::before {
+   left: 12px;
+   right: auto;
+}
+
+#scScrollRight[data-tooltip]::before {
+   left: auto;
+   right: 12px;
 }
 
 #scScrollLeft svg,
