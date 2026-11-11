@@ -1880,6 +1880,11 @@ function fScenarioClickNameBox(step, token) {
   } catch (e) {
     /* DOM unavailable */
   }
+  // The seeded select may have already restored this box (.selected + paint);
+  // a plain trigger would toggle it OFF (click handler deselects selected
+  // boxes). Drop the class first so the click always takes the select branch
+  // and repaints both viewers — 3D may not have been ready at restore time.
+  try { if (box.classList) box.classList.remove("selected"); } catch (eS) {}
   $(box).trigger("click");
   if (fScenarioNormMode(nameAnalysisMode) !== fScenarioNormMode(step.nameAnalysisMode)) {
     nameAnalysisMode = "none";
@@ -1979,6 +1984,11 @@ function fScenarioApply(step) {
   fScenarioSetCheck("highlightNumberingCheck", _sh.numberingAtoms !== false, "selectedCheck", "unselectedCheck");
   fScenarioSetCheck("highlightNumberingBondsCheck", _sh.numberingBonds !== false, "selectedCheck", "unselectedCheck");
   if (typeof step.selectedRule === "number") selectedRule = step.selectedRule;
+  // Selection follows the step, not the author's live mode: seed the step's
+  // stored mode before the load so fShowNameAnalysis restores it (or "none")
+  // instead of inheriting the author's selection. Sticky selection across
+  // plain menu browsing is untouched (that path never comes through here).
+  try { nameAnalysisMode = fScenarioNormMode(step.nameAnalysisMode); } catch (eM) { try { nameAnalysisMode = "none"; } catch (eM2) {} }
   // S2: per-step token — every async follow-up below aborts when a newer
   // step takes over (rapid Prev/Next, hash jumps).
   var token = ++MuLERMoCScenario.applyToken;

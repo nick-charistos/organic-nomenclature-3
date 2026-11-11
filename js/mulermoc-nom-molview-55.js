@@ -4698,6 +4698,9 @@ function fSelectMol() {
 
 function fDeselectMol() {
   fInitProps();
+  // Deselect clears the selection (fInitProps no longer resets the mode —
+  // sticky selection across molecule switches lives there).
+  try { nameAnalysisMode = "none"; } catch (eM) {}
   fClearHighlights();
 
   selectedMol = null;
@@ -4731,7 +4734,12 @@ function fDeselectMol() {
 function fInitProps() {
   currNumberEl = 0;
   clearInterval(myNumberingTimeout);
-  nameAnalysisMode = "none";
+  // Sticky selection: nameAnalysisMode is NOT reset here — selecting another
+  // molecule keeps the component selected when the new molecule has the same
+  // component (fShowNameAnalysis restores .selected + highlight from the
+  // mode, or falls back to "none" when the box is absent/hidden). Explicit
+  // resets live where clearing is intended: fDeselectMol, scenario apply
+  // (step's stored mode), draft flows that rebuild naming from scratch.
   // Sticky visibility: the hidden-comp set is NOT reset here (v55 working
   // copy) — hiding follows the author across molecule switches (menu steps
   // and main-app browsing hide the same slots everywhere). Fresh starts reset
