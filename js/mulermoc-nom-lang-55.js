@@ -35,7 +35,7 @@ var MULER_STRINGS = {
   splitComps: { gr: "Διαχωρισμένα συνθετικά", en: "Split components" },
   joinedComps: { gr: "Ενωμένα συνθετικά", en: "Joined components" },
   compVisibility: { gr: "Ορατότητα συνθετικών", en: "Component visibility" },
-  explainAll: { gr: "Επισκόπηση", en: "Overview" },
+  explainAll: { gr: "Εξήγηση ονομασίας", en: "Explain naming" },
   explainSingle: { gr: "Μεμονωμένη εξήγηση", en: "Single explanation" },
   showComp: { gr: "Εμφάνιση συνθετικού", en: "Show component" },
   hideComp: { gr: "Απόκρυψη συνθετικού", en: "Hide component" },

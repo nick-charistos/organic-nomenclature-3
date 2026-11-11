@@ -1418,7 +1418,7 @@ $(document).ready(function () {
   $(document).on("click", "#nameExplainAllBtn", function () {
     window.nameExplainAll = !window.nameExplainAll;
     $(this).toggleClass("active", !!window.nameExplainAll);
-    var _tip = window.nameExplainAll ? "Μεμονωμένη εξήγηση" : "Επισκόπηση";
+    var _tip = window.nameExplainAll ? "Μεμονωμένη εξήγηση" : "Εξήγηση ονομασίας";
     try { if (typeof fMulerT === "function") _tip = fMulerT(window.nameExplainAll ? "explainSingle" : "explainAll"); } catch (eT) {}
     try { $(this).attr("data-tooltip", _tip).attr("aria-label", _tip); } catch (eA) {}
     if (window.nameExplainAll) {
