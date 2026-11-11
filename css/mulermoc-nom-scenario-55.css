@@ -858,7 +858,7 @@
    left: 50%;
    transform: translateX(-50%);
    z-index: 600;
-   background: #323232;
+   background: var(--redAlert);
    color: #fff;
    padding: 8px 14px;
    border-radius: 6px;
