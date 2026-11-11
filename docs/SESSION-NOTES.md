@@ -1,7 +1,7 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `7960808` (2026-11-11) — v55
-> sticky component selection across molecules (mode survives select; scenario seeds step mode) + CHANGELOG. Tree has one pre-existing owner tweak unstaged:
+> **Resume pointer (cross-machine):** HEAD `bc63433` (2026-11-11) — v55
+> hidden overview rows stay with dashed chip + CHANGELOG. Note: this batch also swept in your `css` gap 4px→6px tweak (same file). Still unstaged (yours): `lang-55.js` + `teaching-55.js` toggle rename. Remaining: browser sweep
 > `css/jsme-nick-55.css` `.explainTable` `gap` 4px → 6px. Remaining: browser sweep (overview table both languages + row clicks, EN boxes, narration voices, menu rail, Present round-trips) + P3 blessing of Greek word forms,
 > completion-callback wait (spike), energy comparison for true convergence,
 > settings tabs (registry groups by row id when needed). Full record:
