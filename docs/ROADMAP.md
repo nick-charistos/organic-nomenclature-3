@@ -1,8 +1,9 @@
-# Roadmap — next development (v55 working tree, 2026-11-12)
+# Roadmap — next development (v55 working tree, 2026-11-12; v56 implements it)
 
-Two workstreams, ordered by dependency. Status: planned, not started.
-Harness (`muler-harness`, Playwright + installed Chrome) is the verification
-vehicle for both.
+Two workstreams, ordered by dependency. Status: UI entry + phase 1B done
+(selection button, gating, 2D click capture + cyan overlay paint); 1C
+(compare/validate) and workstream 2 pending. Harness (`muler-harness`,
+Playwright + installed Chrome) is the verification vehicle for both.
 
 ---
 

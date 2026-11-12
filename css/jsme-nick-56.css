@@ -3156,7 +3156,12 @@ color: var(--veryLightEarth);
    Toggled with .active on #selectAtomsBtn (see fToggleAtomSelect). */
 #jsmeNomeclatureSVG.selecting,
 #jsmeNomeclatureSVG.selecting * {
-  cursor: crosshair;
+  cursor: pointer;
+}
+
+#selectAtomsBtn svg {
+  width: 20px;
+  height: 20px;
 }
 
 /* ── "Rotate device" prompt ──────────────────────────────────────────── */
