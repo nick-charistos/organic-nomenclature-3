@@ -2796,3 +2796,9 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * `#bondAtomsCheck` ships `selectedCheck`; step-capture/stash fallbacks + new-step template `styleHighlight.bondAtoms` flipped to `true` (legacy steps keep stored `false`). Verified live (`fShowBondAtoms() === true`).
 * `#radioChainMode` commented out of settings (restore note inline); engine `data` path, step capture/apply, sync and lang key kept; default stays algorithmic. Verified live (row absent, sync safe, zero page errors).
 * Included as-is: parallel owner tweaks — `<title>` → `Ονοματολογία Οργανικών Ενώσεων`, auto-linearize label → `Αυτόματη γραμμικοποίηση νέων μορίων:` (HTML + GR/EN), `.scLangBadge` `position: absolute !important`.
+
+## 2026-11-12 — v56 fork + selection-mode button (v56 working tree)
+
+* Forked v56 from committed v55 (`mulermoc-nom-56.html` + `js/*-56.js` + `css/*-56.css` + `data_56.js`, `?v=56.0`; `index.html` stays on v55, v55 files untouched). Only the new HTML wires versions — no functional `55` refs inside JS/CSS. Pre-fork, v55 got its own commit (italic sec-/tert- + explainChip + ROADMAP.md).
+* Selection entry (phase 1A UI only, no click capture yet): `MuLERIcons.selectAtoms` (mouse-click SVG, shared registry additive); `#selectAtomsBtn` left of Edit; `fToggleAtomSelect` owns `window.MulerUserSelection.active` + crosshair cursor (owner picked pointer, implemented crosshair per recommendation — one-word change to revert); gated by new default-on "Allow selections" checkbox (uncheck-while-active exits mode; no mid-draft checkbox guard); dimmed without molecule; `draftLocked` block; hidden in Present. Lang keys `selectAtoms`/`allowSelect` + setTip.
+* Verified: `node --check` clean (molview/teaching/lang/icons-56), harness (order, icon, toggle on/off, checkbox gating incl. active-exit, EN tooltip, zero page errors), screenshots of active state. Click capture + selection contents = phase 1B next.
