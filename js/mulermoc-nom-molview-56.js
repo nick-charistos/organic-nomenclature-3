@@ -361,7 +361,7 @@ function jsmeOnLoad() {
 
   let bgAtom = [
     "#7ddfff",
-    "#ffc37d",
+    "#22d3ee", // palette slot 2: v56 user-selection cyan (JSME slots are 1-based — slot N is bgAtom[N-1]; slot 9 green stays)
     "#00ffff",
     "#ffcc66",
     "#ffff00",
@@ -374,6 +374,7 @@ function jsmeOnLoad() {
     "#93bfff",
   ];
   jsmeNomeclatureApplet.setBackGroundColorPalette(bgAtom);
+  try { if (typeof fMulerSelectWrapBgChannel === "function") fMulerSelectWrapBgChannel(); } catch (eSelWrap) {}
 
   carbonHydrogens = Array(jsmeNomeclatureApplet.totalNumberOfAtoms()).fill(0);
 
@@ -1152,23 +1153,26 @@ function fToggleAtomSelect() {
     } catch (eV) {}
     try { if (!makeActive && typeof fMulerSelectClear === "function") fMulerSelectClear(); } catch (eC) {}
     try { if (typeof fMulerSelectRepaint === "function") fMulerSelectRepaint(); } catch (eR) {}
+    try { if (typeof fUpdateSVG === "function") fUpdateSVG(); } catch (eU) {}
   } catch (e) {}
 }
 
 // ── 2D atom/bond picking (v56 phase 1B: selection contents + paint) ─────
-// Displayed-SVG hit-testing + an independent cyan overlay layer. The JSME
-// background-color channel stays 100% component-owned (no clobbering either
-// way): component green comes baked from fUpdateSVG, selection cyan is DOM
-// painted on top of it. Stored indices are 1-based JSME numbers (= displayed
+// Displayed-SVG hit-testing + native JSME background-color paint. The JSME
+// background channel carries BOTH layers: component green (palette slot 9,
+// every existing paint site) and user-selection cyan (palette slot 2).
+// A guarded boot-time wrapper merges the two per channel on every paint, so
+// selection looks exactly like the default highlight, in cyan, with zero
+// DOM cloning and zero per-mode geometry. Precedence is component-wins
+// (single merge-order switch — flip it if selection should win instead).
+// Stored indices are 1-based JSME numbers (= displayed
 // MOL order + 1, same convention as mainChainAtomsList); bond indices are
 // 1-based bondList positions (same as setBondBackgroundColors).
 var MULER_SELECT_CYAN = "#22d3ee";
+var MULER_SELECT_BG_SLOT = 2;   // 1-based JSME palette slot for the selection (component green = 9)
 var MULER_SELECT_VERT_EPS = 40;   // vertex clustering, SVG units
 var MULER_SELECT_ATOM_R = 0.35;   // atom hit radius, × median bond length
 var MULER_SELECT_BOND_HW = 0.2;   // bond corridor half-width, × median bond length
-var MULER_SELECT_PAINT_HW = 130;  // highlight quad half-width, SVG units (JSME uses ~135)
-var MULER_SELECT_HALO_PAD = 70;   // atom halo margin around label rect, SVG units
-var MULER_SELECT_DOT_R = 170;     // implicit-carbon halo radius, SVG units
 
 function fMulerSelectState() {
   try {
@@ -1210,12 +1214,20 @@ function fMulerSelectPresenting() {
   return false;
 }
 
-// Remove the overlay layer (DOM only; state untouched — callers own that).
+// Remove the selection halos (DOM only; state untouched — callers own that).
+// Halos are <path data-muler-sel> inside the main JSME SVG; the legacy
+// sibling-overlay selector is kept so one repaint clears either generation.
 function fMulerSelectClearLayer() {
+  try {
+    var olds = document.querySelectorAll("#jsmeNomeclatureSVG path[data-muler-sel]");
+    for (var i = 0; i < olds.length; i++) {
+      if (olds[i] && olds[i].parentNode) olds[i].parentNode.removeChild(olds[i]);
+    }
+  } catch (e) {}
   try {
     var old = document.querySelector("#jsmeNomeclatureSVG #mulerSelectLayerSvg, #jsmeNomeclatureSVG #mulerSelectLayer");
     if (old && old.parentNode) old.parentNode.removeChild(old);
-  } catch (e) {}
+  } catch (e2) {}
 }
 
 // Empty the selection (atoms + bonds + groups), paint cleared by repaint.
@@ -1251,10 +1263,35 @@ function fMulerSelectLineGroups() {
     }
     if (!raw.length) return null;
     if (typeof svgBondList === "undefined" || !svgBondList) return null;
+    // Compaction deletes removed-bond lines from the DOM, shifting every
+    // later bond's position: adjust each start by removed lines before it and
+    // skip removed bonds (unpickable — their lines are gone). The removed set
+    // is recorded by fCompactFunctionalGroups2D per render (empty elsewhere,
+    // so expanded/skeletal/zigzag take the identical path as before).
+    var removedSet = {}, removedLinesBefore = {};
+    try {
+      var __rb = (typeof window !== "undefined" && Array.isArray(window.__mulerRemovedBondIdx))
+        ? window.__mulerRemovedBondIdx : [];
+      for (var rb = 0; rb < __rb.length; rb++) {
+        if (typeof __rb[rb] === "number" && bondList[__rb[rb]]) removedSet[__rb[rb]] = true;
+      }
+      var __all = [];
+      for (var ab = 0; ab < bondList.length; ab++) {
+        if (!bondList[ab]) continue;
+        __all.push({ b: ab, pos: (svgBondList[ab] || 0), rem: !!removedSet[ab] });
+      }
+      __all.sort(function (x, y) { return x.pos - y.pos; });
+      var __run = 0;
+      for (var ao = 0; ao < __all.length; ao++) {
+        removedLinesBefore[__all[ao].b] = __run;
+        if (__all[ao].rem) __run += bondList[__all[ao].b][2] || 0;
+      }
+    } catch (eRS) {}
     var groups = [], want = 0;
     for (var b = 0; b < bondList.length; b++) {
       if (!bondList[b]) return null;
-      var start = (svgBondList[b] || 0) - 1;
+      if (removedSet[b]) continue;
+      var start = (svgBondList[b] || 0) - 1 - (removedLinesBefore[b] || 0);
       var cnt = bondList[b][2] || 0;
       if (!(start >= 0) || !(cnt > 0) || start + cnt > raw.length) return null;
       want += cnt;
@@ -1360,32 +1397,46 @@ function fMulerSelectAnchors() {
   var out = [];
   try {
     if (typeof molSvg === "undefined" || !molSvg) return out;
+    // Skeletal has no per-carbon texts (hetero labels only), so order maps
+    // cannot align there — heteroatoms resolve geometrically below, carbons
+    // via the topological vertex path in the pick. Other modes use the maps.
+    var skel = false;
+    try { skel = (typeof mode2D !== "undefined" && mode2D === "skeletal"); } catch (eM2) {}
+    if (skel) {
+      try {
+        var hg = (typeof fMulerSelectLineGroups === "function") ? fMulerSelectLineGroups() : null;
+        var ha = (typeof fMulerSelectHeteroAnchors === "function") ? fMulerSelectHeteroAnchors(hg) : [];
+        for (var hi = 0; hi < ha.length; hi++) out.push(ha[hi]);
+      } catch (eH) {}
+      return out;
+    }
     var inclH = false;
     try { inclH = (typeof mode2D !== "undefined" && mode2D === "expanded"); } catch (eM) {}
     var rMap = null, tMap = null;
-    try { if (typeof fGetRenderedAtomRectMap === "function") rMap = fGetRenderedAtomRectMap(true, inclH) || null; } catch (eR) { rMap = null; }
-    try { if (typeof fGetRenderedAtomTextMap === "function") tMap = fGetRenderedAtomTextMap(true, inclH) || null; } catch (eT) { tMap = null; }
+    // Exclude compaction-hidden atoms (COOH/CHO/NO2/CN members): their nodes
+    // are deleted from the DOM, so including them shifts every downstream
+    // atom onto its neighbor's label. Established maps use the same flags.
+    // Hidden skeletal sp-C labels (display:none, kept for order) are filtered
+    // below via the data-muler-hidden marker — the vertex fallback owns them.
+    try { if (typeof fGetRenderedAtomRectMap === "function") rMap = fGetRenderedAtomRectMap(false, inclH) || null; } catch (eR) { rMap = null; }
+    try { if (typeof fGetRenderedAtomTextMap === "function") tMap = fGetRenderedAtomTextMap(false, inclH) || null; } catch (eT) { tMap = null; }
+    var isHiddenNode = function (nd) {
+      try {
+        if (!nd || !nd.getAttribute) return false;
+        if (nd.getAttribute("data-muler-hidden")) return true;
+        if (nd.style && nd.style.display === "none") return true;
+      } catch (eH) {}
+      return false;
+    };
     var seen = {};
-    var pushP = function (atom, x, y) {
+    var pushP = function (atom, x, y, w, h) {
       if (atom == null || isNaN(x) || isNaN(y) || seen[atom]) return;
       seen[atom] = true;
-      out.push({ atom: atom, x: x, y: y });
+      out.push({ atom: atom, x: x, y: y, w: (w > 0 ? w : 0), h: (h > 0 ? h : 0) });
     };
-    if (rMap) {
-      for (var k in rMap) {
-        if (!Object.prototype.hasOwnProperty.call(rMap, k)) continue;
-        try {
-          var el = rMap[k];
-          var nd = el && el.node ? el.node : el;
-          var x = parseFloat(nd.getAttribute ? nd.getAttribute("x") : NaN);
-          var y = parseFloat(nd.getAttribute ? nd.getAttribute("y") : NaN);
-          var w = parseFloat(nd.getAttribute ? nd.getAttribute("width") : NaN);
-          var h = parseFloat(nd.getAttribute ? nd.getAttribute("height") : NaN);
-          if (isNaN(x + y + w + h)) continue;
-          pushP(parseInt(k, 10), x + w / 2, y + h / 2);
-        } catch (eA) {}
-      }
-    }
+    // Text centers first (visual truth, immune to rect-list surgery:
+    // bg-removal, highlight nodes, compaction deletions); rect centers only
+    // as fallback where getBBox is unavailable (e.g. display:none nodes).
     if (tMap && typeof document !== "undefined" && document.createElementNS) {
       for (var k2 in tMap) {
         if (!Object.prototype.hasOwnProperty.call(tMap, k2)) continue;
@@ -1394,10 +1445,113 @@ function fMulerSelectAnchors() {
           var el2 = tMap[k2];
           var nd2 = el2 && el2.node ? el2.node : null;
           if (!nd2 || !nd2.getBBox) continue;
+          if (typeof isHiddenNode === "function" && isHiddenNode(nd2)) continue;
           var bb = nd2.getBBox();
-          pushP(parseInt(k2, 10), bb.x + bb.width / 2, bb.y + bb.height / 2);
+          pushP(parseInt(k2, 10), bb.x + bb.width / 2, bb.y + bb.height / 2, bb.width, bb.height);
         } catch (eB) {}
       }
+    }
+    if (rMap) {
+      for (var k in rMap) {
+        if (!Object.prototype.hasOwnProperty.call(rMap, k)) continue;
+        if (seen[k]) continue;
+        try {
+          var el = rMap[k];
+          var nd = el && el.node ? el.node : el;
+          if (typeof isHiddenNode === "function" && isHiddenNode(nd)) continue;
+          var x = parseFloat(nd.getAttribute ? nd.getAttribute("x") : NaN);
+          var y = parseFloat(nd.getAttribute ? nd.getAttribute("y") : NaN);
+          var w = parseFloat(nd.getAttribute ? nd.getAttribute("width") : NaN);
+          var h = parseFloat(nd.getAttribute ? nd.getAttribute("height") : NaN);
+          if (isNaN(x + y + w + h)) continue;
+          pushP(parseInt(k, 10), x + w / 2, y + h / 2, w, h);
+        } catch (eA) {}
+      }
+    }
+  } catch (e) {}
+  return out;
+}
+
+// Heteroatom anchors for skeletal mode (no order maps there — skeletal
+// carbons have no text nodes at all). Each hetero label sits at the end of
+// its bond line(s), so labels are matched to atoms by bond-endpoint
+// proximity: greedy best-first, one text and one atom each, element-letter
+// match preferred (breaks N–O ties). Positions come from the text bboxes
+// (pixel-exact); bonds only decide the atom index. Fail closed throughout.
+function fMulerSelectHeteroAnchors(groups) {
+  var out = [];
+  try {
+    if (typeof molSvg === "undefined" || !molSvg) return out;
+    if (typeof bondList === "undefined" || !bondList || !bondList.length) return out;
+    if (typeof allAtomsTypeList === "undefined" || !allAtomsTypeList) return out;
+    if (!groups || !groups.length) return out;
+    var med = 0;
+    try { med = (typeof fMulerSelectMedianBond === "function") ? fMulerSelectMedianBond(groups) : 0; } catch (eM) { med = 0; }
+    if (!(med > 0)) return out;
+    var texts = [];
+    try {
+      var textEls = molSvg.selectAll("text");
+      for (var ti = 0; ti < textEls.length; ti++) {
+        var tel = textEls[ti], tnd = tel && tel.node ? tel.node : null;
+        if (!tnd || !tnd.getAttribute) continue;
+        try {
+          var tid = String(tnd.getAttribute("id") || "");
+          if (tid.indexOf("number") === 0) continue;
+          if (tnd.getAttribute("data-muler-hidden")) continue;
+          if (tnd.style && tnd.style.display === "none") continue;
+        } catch (eA) { continue; }
+        var tc = "";
+        try { tc = String(tnd.textContent || "").replace(/\s+/g, ""); } catch (eT) { tc = ""; }
+        if (!tc) continue;
+        var bb = null;
+        try { bb = tnd.getBBox ? tnd.getBBox() : null; } catch (eB) { bb = null; }
+        if (!bb || !(bb.width > 0 && bb.height > 0)) continue;
+        var m = tc.match(/[A-Za-z]/);
+        texts.push({ x: bb.x + bb.width / 2, y: bb.y + bb.height / 2, w: bb.width, h: bb.height, sym: m ? m[0].toUpperCase() : "" });
+      }
+    } catch (eT2) {}
+    if (!texts.length) return out;
+    var heteros = [];
+    try {
+      for (var ai = 0; ai < allAtomsTypeList.length; ai++) {
+        var es = allAtomsTypeList[ai];
+        if (es !== "C" && es !== "H") heteros.push(ai);
+      }
+    } catch (eH2) {}
+    if (!heteros.length) return out;
+    var byBond = {};
+    try { for (var gi = 0; gi < groups.length; gi++) byBond[groups[gi].bond] = groups[gi]; } catch (eG) {}
+    var pairs = [];
+    for (var hi = 0; hi < heteros.length; hi++) {
+      var hat = heteros[hi], hElem = "";
+      try { hElem = String(allAtomsTypeList[hat] || "").toUpperCase().charAt(0); } catch (eE) { hElem = ""; }
+      for (var b = 0; b < bondList.length; b++) {
+        if (!bondList[b]) continue;
+        if (bondList[b][0] !== hat + 1 && bondList[b][1] !== hat + 1) continue;
+        var G = byBond[b];
+        if (!G || !G.lines) continue;
+        for (var li = 0; li < G.lines.length; li++) {
+          var L = G.lines[li];
+          var ends = [[L.x1, L.y1], [L.x2, L.y2]];
+          for (var ei = 0; ei < 2; ei++) {
+            for (var tj = 0; tj < texts.length; tj++) {
+              var dx = texts[tj].x - ends[ei][0], dy = texts[tj].y - ends[ei][1];
+              if (dx * dx + dy * dy > med * med) continue;
+              var sc = Math.sqrt(dx * dx + dy * dy);
+              if (texts[tj].sym && hElem && texts[tj].sym !== hElem) sc += med;
+              pairs.push({ atom: hat, text: tj, dist: sc });
+            }
+          }
+        }
+      }
+    }
+    pairs.sort(function (p, q) { return p.dist - q.dist; });
+    var usedText = {}, usedAtom = {};
+    for (var pi = 0; pi < pairs.length; pi++) {
+      var P = pairs[pi];
+      if (usedText[P.text] || usedAtom[P.atom]) continue;
+      usedText[P.text] = true; usedAtom[P.atom] = true;
+      try { out.push({ atom: P.atom, x: texts[P.text].x, y: texts[P.text].y, w: texts[P.text].w, h: texts[P.text].h }); } catch (eP) {}
     }
   } catch (e) {}
   return out;
@@ -1467,7 +1621,9 @@ function fMulerSelectCompacted() {
     if (!comps.length) return out;
     // anchor text per component: mapped label of a non-skipped neighbor
     var tMap = null;
-    try { if (typeof fGetRenderedAtomTextMap === "function") tMap = fGetRenderedAtomTextMap(true, false) || null; } catch (eT) { tMap = null; }
+    // Anchor labels only: hidden FG members are deleted from the DOM, so the
+    // map must exclude them (same shift bug as the anchors above).
+    try { if (typeof fGetRenderedAtomTextMap === "function") tMap = fGetRenderedAtomTextMap(false, false) || null; } catch (eT) { tMap = null; }
     var byNode = {};
     if (tMap) {
       for (var k in tMap) {
@@ -1522,22 +1678,237 @@ function fMulerSelectCompacted() {
   } catch (e) { return []; }
 }
 
+// Hover-ring skin (v56 selection follow-up): stroke-only cyan, no fill —
+// visually distinct from solid selection cyan and component green.
+var MULER_HOVER_PAD = 45;   // ring margin around label boxes, SVG units
+var MULER_HOVER_SW = 30;    // ring stroke width, SVG units
+var MULER_HOVER_DOT_R = 210;  // implicit-carbon ring radius, SVG units
+var MULER_HOVER_BOND_W = 110; // bond hover stroke width, SVG units
+var MULER_HOVER_OPACITY = 0.55; // ring translucency (bonds keep their own 0.5)
+
+// Per-render geometry cache for hit-testing (hover reads it at mousemove
+// rate; rebuilding maps + getBBox per move would blow the frame budget).
+// Keyed by molecule+mode+render-epoch; fail-soft miss returns empty shapes.
+function fMulerSelectGeom() {
+  try {
+    var key = "";
+    try { key = (typeof fMulerSelectMolKey === "function") ? fMulerSelectMolKey() : ""; } catch (eK) {}
+    try {
+      var seq = (typeof window !== "undefined" && typeof window.__mulerSelRenderSeq === "number") ? window.__mulerSelRenderSeq : 0;
+      key += "#" + seq;
+    } catch (eS) {}
+    try {
+      if (typeof window !== "undefined" && window.__mulerSelGeom && window.__mulerSelGeom.key === key) return window.__mulerSelGeom;
+    } catch (eC) {}
+    var g = null, a = [], c = [], v = [], va = [], m = 0, bb = {};
+    try { if (typeof fMulerSelectLineGroups === "function") g = fMulerSelectLineGroups(); } catch (eG) { g = null; }
+    try { if (typeof fMulerSelectAnchors === "function") a = fMulerSelectAnchors() || []; } catch (eA) { a = []; }
+    try { if (typeof fMulerSelectCompacted === "function") c = fMulerSelectCompacted() || []; } catch (eC2) { c = []; }
+    try { v = (typeof fMulerSelectVertices === "function") ? fMulerSelectVertices(g) : []; } catch (eV) { v = []; }
+    try { va = (typeof fMulerSelectVertexAtoms === "function") ? fMulerSelectVertexAtoms(v) : []; } catch (eVA) { va = []; }
+    try { m = (typeof fMulerSelectMedianBond === "function") ? fMulerSelectMedianBond(g) : 0; } catch (eM) { m = 0; }
+    try { if (g) for (var gi = 0; gi < g.length; gi++) bb[g[gi].bond] = g[gi]; } catch (eBB) {}
+    var geom = { key: key, groups: g, anchors: a, comp: c, verts: v, vassign: va, med: (m > 0 ? m : 0), byBond: bb };
+    try { if (typeof window !== "undefined") window.__mulerSelGeom = geom; } catch (eW) {}
+    return geom;
+  } catch (e) { return { key: "", groups: null, anchors: [], comp: [], verts: [], vassign: [], med: 0, byBond: {} }; }
+}
+
+// Label box for a resolved pick (atom/fragment), from cached anchors /
+// compacted entries. Vertex picks and bonds are painted from groups instead.
+function fMulerHoverBoxForPick(pick, geom) {
+  try {
+    if (!pick) return null;
+    if (pick.kind === "fragment") {
+      var want = ((pick.atoms || []).slice() || []).sort(function (x, y) { return x - y; });
+      var list = (geom && geom.comp) || [];
+      for (var ci = 0; ci < list.length; ci++) {
+        var cm = list[ci];
+        if (!cm || !cm.members || !cm.el) continue;
+        var got = (cm.members.slice() || []).sort(function (x, y) { return x - y; });
+        if (got.length !== want.length) continue;
+        var same = true;
+        for (var mi = 0; mi < got.length; mi++) { if (got[mi] !== want[mi]) { same = false; break; } }
+        if (!same) continue;
+        var bb = null;
+        try { bb = (cm.el.getBBox && cm.el.getBBox()) || null; } catch (eB) { bb = null; }
+        if (bb && bb.width > 0 && bb.height > 0) return { x: bb.x, y: bb.y, w: bb.width, h: bb.height };
+      }
+      return null;
+    }
+    if (pick.kind === "atom" && (pick.vertex === undefined || pick.vertex === null)) {
+      var al = (geom && geom.anchors) || [];
+      for (var ai = 0; ai < al.length; ai++) {
+        if (al[ai] && al[ai].atom === pick.atom - 1 && al[ai].w > 0 && al[ai].h > 0) {
+          return { x: al[ai].x - al[ai].w / 2, y: al[ai].y - al[ai].h / 2, w: al[ai].w, h: al[ai].h };
+        }
+      }
+    }
+    return null;
+  } catch (e) { return null; }
+}
+
+function fMulerHoverClear() {
+  try {
+    var old = document.querySelector("#jsmeNomeclatureSVG #mulerHoverRing");
+    if (old && old.parentNode) old.parentNode.removeChild(old);
+  } catch (e) {}
+}
+
+// Hover ring paint (DOM overlay only — never the applet channel, never a
+// re-render: safe at mousemove rate). One persistent layer, rebuilt per move;
+// the fUpdateSVG innerHTML rebuild wipes it implicitly on re-render.
+function fMulerHoverPaint(pick, geom) {
+  try {
+    try { fMulerHoverClear(); } catch (eC) {}
+    if (!pick || pick.ignore) return;
+    var host = null;
+    try { host = document.getElementById("jsmeNomeclatureSVG"); } catch (eH) {}
+    if (!host) return;
+    var NS = "http://www.w3.org/2000/svg";
+    var layer = null, inner = null;
+    try {
+      layer = document.createElementNS(NS, "svg");
+      layer.setAttribute("id", "mulerHoverRing");
+      layer.setAttribute("pointer-events", "none");
+      layer.setAttribute("width", "100%"); layer.setAttribute("height", "100%");
+      layer.setAttribute("style", "position:absolute;inset:0;pointer-events:none;");
+      var gT = "";
+      try {
+        var _svg = host.querySelector("svg");
+        var _gs = _svg ? _svg.getElementsByTagName("g") : null;
+        var _g0 = (_gs && _gs.length) ? _gs[0] : null;
+        if (_g0 && _g0.getAttribute) gT = _g0.getAttribute("transform") || "";
+      } catch (eG) {}
+      inner = document.createElementNS(NS, "g");
+      if (gT) inner.setAttribute("transform", gT);
+      layer.appendChild(inner);
+    } catch (eL) { return; }
+    if (!inner) return;
+    var done = false;
+    if ((pick.kind === "atom" || pick.kind === "fragment") && (pick.vertex === undefined || pick.vertex === null)) {
+      var box = (typeof fMulerHoverBoxForPick === "function") ? fMulerHoverBoxForPick(pick, geom) : null;
+      if (box && box.w > 0 && box.h > 0) {
+        try {
+          var r = document.createElementNS(NS, "rect");
+          r.setAttribute("x", Math.round(box.x - MULER_HOVER_PAD));
+          r.setAttribute("y", Math.round(box.y - MULER_HOVER_PAD));
+          r.setAttribute("width", Math.round(box.w + 2 * MULER_HOVER_PAD));
+          r.setAttribute("height", Math.round(box.h + 2 * MULER_HOVER_PAD));
+          r.setAttribute("rx", "90");
+          r.setAttribute("fill", "none");
+          r.setAttribute("stroke", MULER_SELECT_CYAN);
+          r.setAttribute("stroke-width", MULER_HOVER_SW);
+          r.setAttribute("stroke-opacity", MULER_HOVER_OPACITY);
+          r.setAttribute("pointer-events", "none");
+          inner.appendChild(r); done = true;
+        } catch (eR) {}
+      }
+    }
+    // unlabeled skeletal vertex: circle outline at the vertex
+    if (!done && pick.kind === "atom" && pick.vertex !== undefined && pick.vertex !== null && geom && geom.verts) {
+      try {
+        var vv = geom.verts[pick.vertex];
+        if (vv) {
+          var cc = document.createElementNS(NS, "circle");
+          cc.setAttribute("cx", Math.round(vv.x)); cc.setAttribute("cy", Math.round(vv.y));
+          cc.setAttribute("r", MULER_HOVER_DOT_R);
+          cc.setAttribute("fill", "none");
+          cc.setAttribute("stroke", MULER_SELECT_CYAN);
+          cc.setAttribute("stroke-width", MULER_HOVER_SW);
+          cc.setAttribute("stroke-opacity", MULER_HOVER_OPACITY);
+          cc.setAttribute("pointer-events", "none");
+          inner.appendChild(cc); done = true;
+        }
+      } catch (eC2) {}
+    }
+    // bond: wide translucent stroke per segment (mirrors selection look)
+    if (!done && pick.kind === "bond" && geom && geom.byBond) {
+      try {
+        var G = geom.byBond[pick.bond - 1];
+        if (G && G.lines) {
+          for (var li = 0; li < G.lines.length; li++) {
+            var L = G.lines[li];
+            var ln = document.createElementNS(NS, "line");
+            ln.setAttribute("x1", Math.round(L.x1)); ln.setAttribute("y1", Math.round(L.y1));
+            ln.setAttribute("x2", Math.round(L.x2)); ln.setAttribute("y2", Math.round(L.y2));
+            ln.setAttribute("stroke", MULER_SELECT_CYAN);
+            ln.setAttribute("stroke-width", MULER_HOVER_BOND_W);
+            ln.setAttribute("stroke-linecap", "round");
+            ln.setAttribute("stroke-opacity", "0.5");
+            ln.setAttribute("pointer-events", "none");
+            inner.appendChild(ln); done = true;
+          }
+        }
+      } catch (eQ) {}
+    }
+    if (done) { try { host.appendChild(layer); } catch (eA2) { done = false; } }
+  } catch (e) {}
+}
+
+// rAF tick for hover: same guards + transform + pick path as clicks, so the
+// ring always shows exactly what a click would do. No-op on touch devices
+// (no mousemove) and whenever select mode is not armed.
+function fMulerHoverTick() {
+  try {
+    if (typeof window === "undefined" || !window.__mulerHoverInside) return;
+    if (!(typeof fMulerSelectActive === "function" && fMulerSelectActive())) return;
+    if (typeof window !== "undefined" && window.MulerDraft) return;
+    if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return;
+    if (typeof selectedMol === "undefined" || !selectedMol) return;
+    var svg = null;
+    try { svg = document.querySelector("#jsmeNomeclatureSVG svg"); } catch (eS) { svg = null; }
+    if (!svg) return;
+    var g = null;
+    try { var gs = svg.getElementsByTagName("g"); if (gs && gs.length) g = gs[0]; } catch (eG) { g = null; }
+    var m = null;
+    try { m = (g || svg).getScreenCTM(); } catch (eM) { m = null; }
+    if (!m) return;
+    var inv = null;
+    try { inv = m.inverse(); } catch (eI) { return; }
+    var q = null;
+    try { q = new DOMPoint(window.__mulerHoverX || 0, window.__mulerHoverY || 0).matrixTransform(inv); } catch (eP) { return; }
+    if (!q || !isFinite(q.x) || !isFinite(q.y)) return;
+    var pick = null;
+    try { pick = (typeof fMulerSelectPick === "function") ? fMulerSelectPick(q.x, q.y) : null; } catch (ePk) { pick = null; }
+    if (!pick || pick.ignore) { try { fMulerHoverClear(); } catch (eC) {} return; }
+    try {
+      var geom = (typeof fMulerSelectGeom === "function") ? fMulerSelectGeom() : null;
+      if (typeof fMulerHoverPaint === "function") fMulerHoverPaint(pick, geom);
+    } catch (ePt) {}
+  } catch (e) {}
+}
+
 // {kind:'bond',bond:0-based,pair:[a,b]1-based} | null.
 function fMulerSelectPick(px, py) {
   try {
-    var groups = null;
-    try { if (typeof fMulerSelectLineGroups === "function") groups = fMulerSelectLineGroups(); } catch (eG) { groups = null; }
-    var med = 0;
-    if (groups && groups.length) {
-      try { med = (typeof fMulerSelectMedianBond === "function") ? fMulerSelectMedianBond(groups) : 0; } catch (eM) { med = 0; }
+    var geom = null;
+    try { if (typeof fMulerSelectGeom === "function") geom = fMulerSelectGeom(); } catch (eG0) { geom = null; }
+    var groups = null, anchors = [], comp = null, verts = [], vAssign = [], med = 0;
+    if (geom) {
+      groups = geom.groups || null;
+      anchors = geom.anchors || [];
+      comp = geom.comp || null;
+      verts = geom.verts || [];
+      vAssign = geom.vassign || [];
+      med = geom.med || 0;
+    } else {
+      try { if (typeof fMulerSelectLineGroups === "function") groups = fMulerSelectLineGroups(); } catch (eG) { groups = null; }
+      if (groups && groups.length) {
+        try { med = (typeof fMulerSelectMedianBond === "function") ? fMulerSelectMedianBond(groups) : 0; } catch (eM) { med = 0; }
+      }
+      try { if (typeof fMulerSelectCompacted === "function") comp = fMulerSelectCompacted(); } catch (eC0) { comp = null; }
+      try { if (typeof fMulerSelectAnchors === "function") anchors = fMulerSelectAnchors() || []; } catch (eA0) { anchors = []; }
+      try { verts = (typeof fMulerSelectVertices === "function") ? fMulerSelectVertices(groups) : []; } catch (eV) { verts = []; }
+      try { vAssign = (typeof fMulerSelectVertexAtoms === "function") ? fMulerSelectVertexAtoms(verts) : []; } catch (eVA) { vAssign = []; }
     }
     var rAtom = med > 0 ? med * MULER_SELECT_ATOM_R : 200;
     var rBond = med > 0 ? med * MULER_SELECT_BOND_HW : 150;
     // compacted-label fragments (condensed) first: the label IS the anchor's
     // own text element, so a plain anchor hit below would select only the
     // anchor atom instead of the whole fragment.
+    // (comp comes from the per-render geometry cache above.)
     try {
-      var comp = (typeof fMulerSelectCompacted === "function") ? fMulerSelectCompacted() : null;
       if (comp && comp.length) {
         for (var ci = 0; ci < comp.length; ci++) {
           var L0 = comp[ci], m0 = 14, lb = null;
@@ -1550,8 +1921,7 @@ function fMulerSelectPick(px, py) {
         }
       }
     } catch (eC) {}
-    var anchors = [];
-    try { if (typeof fMulerSelectAnchors === "function") anchors = fMulerSelectAnchors() || []; } catch (eA) { anchors = []; }
+    // (anchors come from the per-render geometry cache above.)
     var best = null, bd = rAtom * rAtom;
     for (var i = 0; i < anchors.length; i++) {
       if (!anchors[i] || anchors[i].atom == null || isNaN(anchors[i].atom)) continue;
@@ -1567,8 +1937,7 @@ function fMulerSelectPick(px, py) {
       rBond = med * MULER_SELECT_BOND_HW;
     }
     // vertices (implicit skeletal carbons): resolve topologically
-    var verts = (typeof fMulerSelectVertices === "function") ? fMulerSelectVertices(groups) : [];
-    var vAssign = (typeof fMulerSelectVertexAtoms === "function") ? fMulerSelectVertexAtoms(verts) : [];
+    // (verts/vassign come from the per-render geometry cache above).
     var bv = null, bvd = rAtom * rAtom;
     for (var v = 0; v < verts.length; v++) {
       var dx2 = verts[v].x - px, dy2 = verts[v].y - py, d22 = dx2 * dx2 + dy2 * dy2;
@@ -1660,169 +2029,203 @@ function fMulerSelectToggle(px) {
   } catch (e) {}
 }
 
-// Rebuild the cyan overlay from state. The overlay is a SEPARATE sibling SVG
-// (#mulerSelectLayerSvg, pointer-events:none) that mirrors the JSME g
-// transform — established JSME-DOM queries (order-based maps, nth-of-type
-// highlights, highlight scraping) never see it, so selection can never
-// corrupt them. Called at the end of fUpdateSVG (every repaint/zoom/load
-// rebuilds selection from state) and after each selection change.
-function fMulerSelectRepaint() {
+// Selection-over-component merge (component-wins): keep every component pair,
+// append selection pairs only where the component has no claim. Empty
+// selection degrades to the component arg unchanged — component behavior with
+// selection off is byte-identical to unwrapped.
+function fMulerSelectMergeBgArg(compArg, kind) {
   try {
-    try { fMulerSelectClearLayer(); } catch (eC) {}
+    var selIdx = [];
+    try {
+      var s = (typeof fMulerSelectState === "function") ? fMulerSelectState() : null;
+      if (s && s.active === true && !fMulerSelectPresenting()) selIdx = ((kind === "bond") ? s.bonds2D : s.atoms2D) || [];
+    } catch (eS) { selIdx = []; }
+    var compSet = {}, out = [];
+    try {
+      var parts = String(compArg == null ? "" : compArg).split(",");
+      for (var i = 0; i + 1 < parts.length; i += 2) {
+        var idx = parseInt(parts[i], 10);
+        if (isNaN(idx)) continue;
+        compSet[idx] = true;
+        out.push(idx + "," + parts[i + 1]);
+      }
+    } catch (eP) {}
+    // Condensed hidden members (compacted FG atoms: COOH/CHO oxygens etc.)
+    // never paint: their labels are deleted by the compaction, but their
+    // highlight circles would survive as detached blobs. The anchor carries
+    // the visible selection (compact label inherits its fill). State keeps
+    // the full member list for the future 1C compare — this is paint-only.
+    var skipSet = null;
+    try {
+      if (kind === "atom" && typeof mode2D !== "undefined" && mode2D === "condensed" &&
+          typeof fGetCompactedAtomSkipSet === "function") skipSet = fGetCompactedAtomSkipSet(false);
+    } catch (eSk) { skipSet = null; }
+    for (var j = 0; j < selIdx.length; j++) {
+      if (compSet[selIdx[j]]) continue;
+      try { if (skipSet && skipSet.has(selIdx[j] - 1)) continue; } catch (eSk2) {}
+      out.push(selIdx[j] + "," + MULER_SELECT_BG_SLOT);
+    }
+    return out.join(",");
+  } catch (e) { try { return String(compArg == null ? "" : compArg); } catch (e2) { return ""; } }
+}
+// Push the merged colors through the ORIGINALS (never the wrapped methods —
+// recording merged output as component input would leak cyan into the
+// component set, and clearing the selection could never clear it).
+function fMulerSelectPush() {
+  try {
+    // Self-healing: if the boot-time install never took, retry it here.
+    try {
+      if (typeof window !== "undefined" && !window.__mulerBgWrapped &&
+          typeof fMulerSelectWrapBgChannel === "function") fMulerSelectWrapBgChannel();
+    } catch (eW) {}
+    var oA = (typeof window !== "undefined") ? window.__mulerOrigSetAtomBg : null;
+    var oB = (typeof window !== "undefined") ? window.__mulerOrigSetBondBg : null;
+    if (typeof oA !== "function" || typeof oB !== "function") return;
+    var oRA = (typeof window !== "undefined") ? window.__mulerOrigResetAtom : null;
+    var oRB = (typeof window !== "undefined") ? window.__mulerOrigResetBond : null;
+    var ca = (typeof window !== "undefined" && typeof window.__mulerCompAtomArg === "string") ? window.__mulerCompAtomArg : "";
+    var cb = (typeof window !== "undefined" && typeof window.__mulerCompBondArg === "string") ? window.__mulerCompBondArg : "";
+    // Empty merged arg clears via reset: JSME ignores set(0,""), so setting
+    // with "" would leave stale cyan on screen (adds but never removes).
+    try {
+      var ma = fMulerSelectMergeBgArg(ca, "atom");
+      if (ma) { try { oA(0, ma); } catch (eA) {} }
+      else if (typeof oRA === "function") { try { oRA(0); } catch (eRA) {} }
+    } catch (eM) {}
+    try {
+      var mb = fMulerSelectMergeBgArg(cb, "bond");
+      if (mb) { try { oB(0, mb); } catch (eB) {} }
+      else if (typeof oRB === "function") { try { oRB(0); } catch (eRB) {} }
+    } catch (eM2) {}
+  } catch (e) {}
+}
+// Boot-time channel wrapper (v56 selection look rework): intercept the four
+// background-color methods on the DISPLAY applet only (draft applet untouched).
+// Records the last component arg per channel, delegates the merged arg.
+// Resets clear the recorded component set and re-apply selection-only, so a
+// component clear never wipes the selection. Guarded + once-only; JSME vendor
+// code untouched.
+function fMulerSelectWrapBgChannel() {
+  try {
+    if (typeof window !== "undefined" && window.__mulerBgWrapped) return;
+    if (typeof jsmeNomeclatureApplet === "undefined" || !jsmeNomeclatureApplet) return;
+    if (typeof jsmeNomeclatureApplet.setAtomBackgroundColors !== "function") return;
+    if (typeof jsmeNomeclatureApplet.setBondBackgroundColors !== "function") return;
+    var _origSetA = jsmeNomeclatureApplet.setAtomBackgroundColors.bind(jsmeNomeclatureApplet);
+    var _origSetB = jsmeNomeclatureApplet.setBondBackgroundColors.bind(jsmeNomeclatureApplet);
+    var _origResA = jsmeNomeclatureApplet.resetAtomColors.bind(jsmeNomeclatureApplet);
+    var _origResB = jsmeNomeclatureApplet.resetBondColors.bind(jsmeNomeclatureApplet);
+    try {
+      if (typeof window !== "undefined") {
+        window.__mulerOrigSetAtomBg = _origSetA;
+        window.__mulerOrigSetBondBg = _origSetB;
+        window.__mulerOrigResetAtom = _origResA;
+        window.__mulerOrigResetBond = _origResB;
+        if (typeof window.__mulerCompAtomArg !== "string") window.__mulerCompAtomArg = "";
+        if (typeof window.__mulerCompBondArg !== "string") window.__mulerCompBondArg = "";
+      }
+    } catch (eS) {}
+    jsmeNomeclatureApplet.setAtomBackgroundColors = function (mol, arg) {
+      try { if (typeof window !== "undefined") window.__mulerCompAtomArg = (arg == null ? "" : String(arg)); } catch (eR) {}
+      return _origSetA(mol, fMulerSelectMergeBgArg(arg, "atom"));
+    };
+    var _wrappedSetA = jsmeNomeclatureApplet.setAtomBackgroundColors;
+    jsmeNomeclatureApplet.setBondBackgroundColors = function (mol, arg) {
+      try { if (typeof window !== "undefined") window.__mulerCompBondArg = (arg == null ? "" : String(arg)); } catch (eR2) {}
+      return _origSetB(mol, fMulerSelectMergeBgArg(arg, "bond"));
+    };
+    var _wrappedSetB = jsmeNomeclatureApplet.setBondBackgroundColors;
+    jsmeNomeclatureApplet.resetAtomColors = function (mol) {
+      try { if (typeof window !== "undefined") window.__mulerCompAtomArg = ""; } catch (eR3) {}
+      var r = _origResA(mol);
+      try { fMulerSelectPush(); } catch (eP) {}
+      return r;
+    };
+    var _wrappedResA = jsmeNomeclatureApplet.resetAtomColors;
+    jsmeNomeclatureApplet.resetBondColors = function (mol) {
+      try { if (typeof window !== "undefined") window.__mulerCompBondArg = ""; } catch (eR4) {}
+      var r2 = _origResB(mol);
+      try { fMulerSelectPush(); } catch (eP2) {}
+      return r2;
+    };
+    var _wrappedResB = jsmeNomeclatureApplet.resetBondColors;
+    // Verify the shadowing took (a sealed/frozen applet object would silently
+    // refuse it in sloppy mode) — only then claim wrapped. A later Push
+    // retries the install if this run failed.
+    var _ok = false;
+    try {
+      _ok = (jsmeNomeclatureApplet.setAtomBackgroundColors === _wrappedSetA) &&
+            (jsmeNomeclatureApplet.setBondBackgroundColors === _wrappedSetB) &&
+            (jsmeNomeclatureApplet.resetAtomColors === _wrappedResA) &&
+            (jsmeNomeclatureApplet.resetBondColors === _wrappedResB);
+    } catch (eV) { _ok = false; }
+    if (!_ok) return;
+    try { if (typeof window !== "undefined") window.__mulerBgWrapped = true; } catch (eF) {}
+  } catch (e) {}
+}
+
+// Rebuild the selection paint from state: push merged colors (no render —
+// the fUpdateSVG head calls fMulerSelectPushState before rendering, and its
+// tail calls here mid-render). Molecule/mode change drops contents AND the
+// recorded component set (stale indices), stays armed. Present pushes
+// component-only (selection stays hidden in Present, state kept).
+function fMulerSelectPushState() {
+  try {
     var sel = null;
     try { sel = (typeof fMulerSelectState === "function") ? fMulerSelectState() : null; } catch (eS) {}
-    if (!sel || sel.active !== true) return;
-    if ((!sel.atoms2D || !sel.atoms2D.length) && (!sel.bonds2D || !sel.bonds2D.length)) return;
-    if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return;
+    if (!sel) return;
     var key = "";
     try { key = (typeof fMulerSelectMolKey === "function") ? fMulerSelectMolKey() : ""; } catch (eK) { key = ""; }
     if (!sel.molKey) { try { sel.molKey = key; } catch (eK2) {} }
     else if (sel.molKey !== key) {
       // molecule or 2D mode changed under a live selection: indices belong
-      // to the old drawing — drop contents, stay armed.
+      // to the old drawing — drop contents AND the recorded component set
+      // (stale indices), stay armed.
       sel.atoms2D = []; sel.bonds2D = []; sel.atoms3D = []; sel.bonds3D = []; sel.groups = [];
+      try {
+        // Wrapped resets when installed (clear recorded comp set, re-push
+        // the now-empty selection); original resets otherwise — either way
+        // the applet cannot keep stale cyan across the switch.
+        if (typeof jsmeNomeclatureApplet !== "undefined" && jsmeNomeclatureApplet &&
+            typeof jsmeNomeclatureApplet.resetAtomColors === "function") {
+          try { jsmeNomeclatureApplet.resetAtomColors(0); } catch (eRA) {}
+        }
+        if (typeof jsmeNomeclatureApplet !== "undefined" && jsmeNomeclatureApplet &&
+            typeof jsmeNomeclatureApplet.resetBondColors === "function") {
+          try { jsmeNomeclatureApplet.resetBondColors(0); } catch (eRB) {}
+        }
+      } catch (eCC) {}
+      try {
+        if (typeof window !== "undefined") { window.__mulerCompAtomArg = ""; window.__mulerCompBondArg = ""; }
+      } catch (eCC2) {}
       try { sel.molKey = key; } catch (eK3) {}
+    }
+    var presenting = false;
+    try { presenting = (typeof fMulerSelectPresenting === "function") ? !!fMulerSelectPresenting() : false; } catch (ePr) { presenting = false; }
+    if (presenting) {
+      // Hidden in Present: merge() already degrades to component-only when
+      // presenting, so a plain push hides the selection (state kept).
+      try { if (typeof fMulerSelectPush === "function") fMulerSelectPush(); } catch (ePP) {}
       return;
     }
-    if (!key) return;
-    if (typeof molSvg === "undefined" || !molSvg || !molSvg.node) return;
-    if (typeof bondList === "undefined" || !bondList) return;
-    var host = null;
-    try { host = document.getElementById("jsmeNomeclatureSVG"); } catch (eH) { host = null; }
-    if (!host) return;
-    try {
-      if (typeof window !== "undefined" && window.getComputedStyle) {
-        var _pos = window.getComputedStyle(host).position;
-        if (_pos !== "relative" && _pos !== "absolute" && _pos !== "fixed") host.style.position = "relative";
-      } else { host.style.position = "relative"; }
-    } catch (eP) { try { host.style.position = "relative"; } catch (eP2) {} }
-    var NS = "http://www.w3.org/2000/svg";
-    var layer = null;
-    try { layer = document.createElementNS(NS, "svg"); } catch (eL) { return; }
-    try { layer.setAttribute("id", "mulerSelectLayerSvg"); } catch (eI) {}
-    try { layer.setAttribute("pointer-events", "none"); } catch (eP2) {}
-    try { layer.setAttribute("width", "100%"); layer.setAttribute("height", "100%"); } catch (eW) {}
-    try { layer.setAttribute("style", "position:absolute;inset:0;pointer-events:none;"); } catch (eSt) {}
-    // Mirror the JSME depict transform exactly (same math on both trees).
-    var gT = "";
-    try {
-      var _jg = molSvg.select("g");
-      var _jn = _jg && _jg.node ? _jg.node : null;
-      if (_jn && _jn.getAttribute) gT = _jn.getAttribute("transform") || "";
-    } catch (eG) { gT = ""; }
-    var inner = null;
-    try {
-      inner = document.createElementNS(NS, "g");
-      if (gT) inner.setAttribute("transform", gT);
-      layer.appendChild(inner);
-    } catch (eIn) { inner = null; }
-    if (!inner) return;
-    var groups = null;
-    try { if (typeof fMulerSelectLineGroups === "function") groups = fMulerSelectLineGroups(); } catch (eG2) { groups = null; }
-    var white = "#22d3ee";
-    // atoms: halo rounded rect over the label rect (mapped), circle on the
-    // vertex for implicit (unlabeled) carbons.
-    try {
-      var rMap = null;
-      try { if (typeof fGetRenderedAtomRectMap === "function") rMap = fGetRenderedAtomRectMap(true, (typeof mode2D !== "undefined" && mode2D === "expanded")) || null; } catch (eR) { rMap = null; }
-      var verts = null, vassign = null;
-      try {
-        verts = (typeof fMulerSelectVertices === "function") ? fMulerSelectVertices(groups) : [];
-        vassign = (typeof fMulerSelectVertexAtoms === "function") ? fMulerSelectVertexAtoms(verts) : [];
-      } catch (eV) { verts = []; vassign = []; }
-      var vOfAtom = {};
-      try {
-        for (var vi = 0; vi < verts.length; vi++) {
-          if (vassign && vassign[vi] >= 0 && vOfAtom[vassign[vi]] === undefined) vOfAtom[vassign[vi]] = vi;
-        }
-      } catch (eM) {}
-      for (var ai = 0; ai < sel.atoms2D.length; ai++) {
-        var a0 = sel.atoms2D[ai] - 1;
-        var done = false;
-        try {
-          var re = rMap ? rMap[a0] : null;
-          var nd = re && re.node ? re.node : (re && re.getAttribute ? re : null);
-          if (nd && nd.getAttribute) {
-            var rx = parseFloat(nd.getAttribute("x")), ry = parseFloat(nd.getAttribute("y"));
-            var rw = parseFloat(nd.getAttribute("width")), rh = parseFloat(nd.getAttribute("height"));
-            if (!isNaN(rx + ry + rw + rh) && rw > 0 && rh > 0) {
-              var hr = document.createElementNS(NS, "rect");
-              hr.setAttribute("x", Math.round(rx - MULER_SELECT_HALO_PAD)); hr.setAttribute("y", Math.round(ry - MULER_SELECT_HALO_PAD));
-              hr.setAttribute("width", Math.round(rw + 2 * MULER_SELECT_HALO_PAD)); hr.setAttribute("height", Math.round(rh + 2 * MULER_SELECT_HALO_PAD));
-              hr.setAttribute("rx", "90"); hr.setAttribute("fill", white); hr.setAttribute("fill-opacity", "0.5"); hr.setAttribute("pointer-events", "none");
-              inner.appendChild(hr);
-              done = true;
-            }
-          }
-        } catch (eH) {}
-        if (!done && vOfAtom[a0] !== undefined && verts[vOfAtom[a0]]) {
-          try {
-            var c = document.createElementNS(NS, "circle");
-            c.setAttribute("cx", Math.round(verts[vOfAtom[a0]].x)); c.setAttribute("cy", Math.round(verts[vOfAtom[a0]].y));
-            c.setAttribute("r", MULER_SELECT_DOT_R); c.setAttribute("fill", white); c.setAttribute("fill-opacity", "0.5"); c.setAttribute("pointer-events", "none");
-            inner.appendChild(c);
-            done = true;
-          } catch (eC2) {}
-        }
-      }
-    } catch (eA) {}
-    // compacted-label fragments: one halo per label whose members are all selected
-    try {
-      var comp2 = (typeof fMulerSelectCompacted === "function") ? fMulerSelectCompacted() : null;
-      if (comp2) {
-        var selSet = {};
-        try { for (var si = 0; si < sel.atoms2D.length; si++) selSet[sel.atoms2D[si]] = true; } catch (eSS) {}
-        for (var ci2 = 0; ci2 < comp2.length; ci2++) {
-          var cm = comp2[ci2];
-          if (!cm || !cm.members || !cm.members.length || !cm.el) continue;
-          var allIn = true;
-          for (var mi = 0; mi < cm.members.length; mi++) { if (!selSet[cm.members[mi]]) { allIn = false; break; } }
-          if (!allIn) continue;
-          try {
-            var cbb = cm.el.getBBox ? cm.el.getBBox() : null;
-            if (!cbb || !(cbb.width > 0 && cbb.height > 0)) continue;
-            var cr = document.createElementNS(NS, "rect");
-            cr.setAttribute("x", Math.round(cbb.x - 70)); cr.setAttribute("y", Math.round(cbb.y - 70));
-            cr.setAttribute("width", Math.round(cbb.width + 140)); cr.setAttribute("height", Math.round(cbb.height + 140));
-            cr.setAttribute("rx", "90"); cr.setAttribute("fill", white); cr.setAttribute("fill-opacity", "0.5"); cr.setAttribute("pointer-events", "none");
-            inner.appendChild(cr);
-          } catch (eCR) {}
-        }
-      }
-    } catch (eCG) {}
-    // bonds: JSME-style corridor quads per line.
-    if (groups) {
-      var byBond = {};
-      for (var gi = 0; gi < groups.length; gi++) byBond[groups[gi].bond] = groups[gi];
-      for (var bi = 0; bi < sel.bonds2D.length; bi++) {
-        var G = byBond[sel.bonds2D[bi] - 1];
-        if (!G) continue;
-        for (var li = 0; li < G.lines.length; li++) {
-          try {
-            var L = G.lines[li];
-            var dx = L.x2 - L.x1, dy = L.y2 - L.y1, L2 = Math.sqrt(dx * dx + dy * dy);
-            if (!(L2 > 0)) continue;
-            var nx = -dy / L2 * MULER_SELECT_PAINT_HW, ny = dx / L2 * MULER_SELECT_PAINT_HW;
-            var pts = [[L.x1 + nx, L.y1 + ny], [L.x2 + nx, L.y2 + ny], [L.x2 - nx, L.y2 - ny], [L.x1 - nx, L.y1 - ny]];
-            var pg = document.createElementNS(NS, "polygon");
-            pg.setAttribute("points", pts.map(function (p) { return Math.round(p[0]) + "," + Math.round(p[1]); }).join(" "));
-            pg.setAttribute("fill", white); pg.setAttribute("fill-opacity", "0.5"); pg.setAttribute("stroke", "none"); pg.setAttribute("pointer-events", "none");
-            inner.appendChild(pg);
-          } catch (eQ) {}
-        }
-      }
-    }
-    try {
-      var old = null;
-      try { old = document.getElementById("mulerSelectLayerSvg"); } catch (eO) { old = null; }
-      if (old && old.parentNode) old.parentNode.removeChild(old);
-      host.appendChild(layer);
-    } catch (eA2) {}
+    try { if (typeof fMulerSelectPush === "function") fMulerSelectPush(); } catch (eP) {}
   } catch (e) {}
 }
 
-// Click + Esc wiring (bound once). Guards: select mode armed, no draft,
-// no Present, molecule selected.
+// Selection repaint entry (tail of fUpdateSVG + every selection change):
+// legacy DOM cleanup, then the state push. Rendering itself is owned by the
+// caller (fUpdateSVG renders right after its head push).
+function fMulerSelectRepaint() {
+  try {
+    try { fMulerSelectClearLayer(); } catch (eC) {}
+    try { if (typeof fMulerHoverClear === "function") fMulerHoverClear(); } catch (eHC) {}
+    try { if (typeof fMulerSelectPushState === "function") fMulerSelectPushState(); } catch (eP2) {}
+  } catch (e) {}
+}
+
+// Click + Esc + hover wiring (bound once). Guards: select mode armed, no
+// draft, no Present, molecule selected. Hover is rAF-throttled and paints a
+// DOM-only ring (never the applet channel, never a re-render).
 function fMulerSelectBindOnce() {
   try {
     if (typeof window !== "undefined" && window.__mulerSelBound) return;
@@ -1857,11 +2260,37 @@ function fMulerSelectBindOnce() {
             // empty canvas: clear the selection (nothing to pick)
             try { if (typeof fMulerSelectClear === "function") fMulerSelectClear(); } catch (eC) {}
             try { if (typeof fMulerSelectRepaint === "function") fMulerSelectRepaint(); } catch (eR) {}
+            try { if (typeof fUpdateSVG === "function") fUpdateSVG(); } catch (eU) {}
             return;
           }
           try { if (typeof fMulerSelectToggle === "function") fMulerSelectToggle(pick); } catch (eT) {}
           try { if (typeof fMulerSelectRepaint === "function") fMulerSelectRepaint(); } catch (eR) {}
+          try { if (typeof fUpdateSVG === "function") fUpdateSVG(); } catch (eU2) {}
         } catch (e) {}
+      });
+      host.addEventListener("mousemove", function (e) {
+        try {
+          if (!(typeof fMulerSelectActive === "function" && fMulerSelectActive())) return;
+          if (typeof window !== "undefined" && window.MulerDraft) return;
+          if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return;
+          if (typeof selectedMol === "undefined" || !selectedMol) return;
+          if (typeof window === "undefined") return;
+          try { window.__mulerHoverInside = true; } catch (eI) {}
+          try { window.__mulerHoverX = (e && e.clientX) || 0; window.__mulerHoverY = (e && e.clientY) || 0; } catch (eXY) {}
+          try { if (window.__mulerHoverRaf) return; } catch (eRF) {}
+          var run = function () {
+            try { window.__mulerHoverRaf = 0; } catch (eR0) {}
+            try { if (typeof fMulerHoverTick === "function") fMulerHoverTick(); } catch (eT) {}
+          };
+          try {
+            if (window.requestAnimationFrame) window.__mulerHoverRaf = window.requestAnimationFrame(run);
+            else run();
+          } catch (eF) { try { run(); } catch (eF2) {} }
+        } catch (e) {}
+      });
+      host.addEventListener("mouseleave", function () {
+        try { if (typeof window !== "undefined") window.__mulerHoverInside = false; } catch (eI2) {}
+        try { if (typeof fMulerHoverClear === "function") fMulerHoverClear(); } catch (eC2) {}
       });
     }
     if (typeof document !== "undefined" && document.addEventListener) {
@@ -1878,6 +2307,7 @@ function fMulerSelectBindOnce() {
             if (s && (s.atoms2D.length || s.bonds2D.length)) {
               try { fMulerSelectClear(); } catch (eC) {}
               try { fMulerSelectRepaint(); } catch (eR) {}
+              try { if (typeof fUpdateSVG === "function") fUpdateSVG(); } catch (eU) {}
             }
           } catch (eS) {}
         } catch (e) {}
@@ -1976,6 +2406,8 @@ function fMolDraftEnter(mode) {
     if (typeof window !== "undefined" && window.MulerUserSelection && window.MulerUserSelection.active === true) {
       window.MulerUserSelection.active = false;
       try { window.MulerUserSelection.atoms2D = []; window.MulerUserSelection.bonds2D = []; window.MulerUserSelection.atoms3D = []; window.MulerUserSelection.bonds3D = []; } catch (eClr) {}
+      try { if (typeof fMulerSelectPush === "function") fMulerSelectPush(); } catch (ePush) {}
+      try { if (typeof fMulerHoverClear === "function") fMulerHoverClear(); } catch (eHC2) {}
     }
   } catch (eSel) {}
   try {
@@ -6629,6 +7061,13 @@ function fCollectHighlightRectsNearText(textEls) {
       if (!rectEl || !rectEl.node) {
         continue;
       }
+      // Index 0 is the white canvas background (same convention as the
+      // rectIdx = 1 skip in fGetRenderedAtomRectMap): it overlaps every
+      // removed text, so without this guard every compacted render deletes
+      // it and the rect map shifts one label to the right from then on.
+      if (r === 0) {
+        continue;
+      }
       if (seenRects.has(rectEl.node)) {
         continue;
       }
@@ -6660,6 +7099,67 @@ function fCollectHighlightRectsNearText(textEls) {
   }
 
   return collectedRects;
+}
+
+// Circle twin of the rect collector above: highlight circles (JSME renders
+// atom highlights as circles where no label rect owns them) near removed
+// texts are dropped by the compaction too. Fill-restricted to highlight
+// colors (component green + selection cyan) so structural circles are never
+// touched.
+function fCollectHighlightCirclesNearText(textEls) {
+  const collectedCircles = [];
+  const seenCircles = new Set();
+  const circleEls = molSvg.selectAll("circle");
+
+  for (let i = 0; i < textEls.length; i++) {
+    const textEl = textEls[i];
+    if (!textEl || !textEl.node || !textEl.node.getBBox) {
+      continue;
+    }
+
+    let textBBox;
+    try {
+      textBBox = textEl.node.getBBox();
+    } catch (e) {
+      continue;
+    }
+
+    const padX = Math.max(textBBox.width * 0.7, 160);
+    const padY = Math.max(textBBox.height * 0.6, 120);
+    const minX = textBBox.x - padX;
+    const maxX = textBBox.x + textBBox.width + padX;
+    const minY = textBBox.y - padY;
+    const maxY = textBBox.y + textBBox.height + padY;
+
+    for (let c = 0; c < circleEls.length; c++) {
+      const circleEl = circleEls[c];
+      if (!circleEl || !circleEl.node) {
+        continue;
+      }
+      if (seenCircles.has(circleEl.node)) {
+        continue;
+      }
+
+      const fillValue = String(circleEl.node.getAttribute("fill") || "").replace(/\s+/g, "").toLowerCase();
+      if (fillValue.indexOf("79dc6d") === -1 && fillValue.indexOf("121,220,109") === -1 && fillValue.indexOf("22d3ee") === -1) {
+        continue;
+      }
+
+      const cx = parseFloat(circleEl.attr("cx"));
+      const cy = parseFloat(circleEl.attr("cy"));
+      const cr = parseFloat(circleEl.attr("r"));
+      if (isNaN(cx) || isNaN(cy) || isNaN(cr)) {
+        continue;
+      }
+
+      if (cx + cr >= minX && cx - cr <= maxX && cy + cr >= minY && cy - cr <= maxY) {
+        seenCircles.add(circleEl.node);
+        collectedCircles.push(circleEl);
+      }
+    }
+  }
+
+  return collectedCircles;
 }
 
 function fGetCompactLabelNumberX(textEl, labelKey, defaultOffsetX) {
@@ -7515,10 +8015,22 @@ function fCompactFunctionalGroups2D() {
   for (let i = 0; i < bondsToRemove.length; i++) {
     fRemoveBondLinesByBondIndex(bondsToRemove[i], lineEls);
   }
+  // Record the removed bonds for the selection line groups (positions of all
+  // later bonds shift by the deleted lines; see fMulerSelectLineGroups).
+  try {
+    if (typeof window !== "undefined") window.__mulerRemovedBondIdx = bondsToRemove.slice();
+  } catch (eRB) {}
 
   const nearbyRectEls = fCollectHighlightRectsNearText(textElsToRemove);
   for (let i = 0; i < nearbyRectEls.length; i++) {
     rectElsToRemove.push(nearbyRectEls[i]);
+  }
+
+  const nearbyCircleEls = fCollectHighlightCirclesNearText(textElsToRemove);
+  for (let i = 0; i < nearbyCircleEls.length; i++) {
+    if (nearbyCircleEls[i]) {
+      nearbyCircleEls[i].remove();
+    }
   }
 
   for (let i = 0; i < textElsToRemove.length; i++) {
@@ -7694,19 +8206,26 @@ function fHideSkeletalSpCarbons() {
   if (!svg) {
     return;
   }
+  // Hide (NOT remove): deleting these nodes shifts every order map built on
+  // the live DOM (atom text/rect maps assign slots in document order), so
+  // later atoms would resolve onto their neighbor's label. display:none keeps
+  // document order — and PNG export still omits them. Pick code skips
+  // data-muler-hidden nodes; the vertex fallback owns those carbons.
   svg.querySelectorAll("text").forEach(function (label) {
     if (label.textContent.trim() !== "C") {
       return;
     }
+    try { label.setAttribute("data-muler-hidden", "spC"); } catch (eM) {}
+    try { label.style.display = "none"; } catch (eD) {}
     const backplate = label.previousElementSibling;
     if (
       backplate &&
       backplate.localName === "rect" &&
       backplate.hasAttribute("rx")
     ) {
-      backplate.remove();
+      try { backplate.setAttribute("data-muler-hidden", "spC"); } catch (eM2) {}
+      try { backplate.style.display = "none"; } catch (eD2) {}
     }
-    label.remove();
   });
 }
 
@@ -7714,6 +8233,15 @@ function fHideSkeletalSpCarbons() {
 
 function fUpdateSVG() {
   if (!jsmeNomeclatureApplet) return;
+  // Selection state into the applet BEFORE the SVG string is read, so the
+  // render below already carries the merged component+selection colors.
+  try { if (typeof fMulerSelectPushState === "function") fMulerSelectPushState(); } catch (eSelPush) {}
+  // Fresh line layout per render: the compaction below records its removed
+  // bonds for the selection line groups (stale indices would shift picks).
+  try { if (typeof window !== "undefined") window.__mulerRemovedBondIdx = []; } catch (eRB2) {}
+  // Render epoch for the selection geometry cache (hover reads it at 60 Hz;
+  // zoom/repaint bumps it so cached hit-testing never goes stale).
+  try { if (typeof window !== "undefined") window.__mulerSelRenderSeq = ((typeof window.__mulerSelRenderSeq === "number") ? window.__mulerSelRenderSeq : 0) + 1; } catch (eSq) {}
   compactNumberingLabelMap = {};
   let mySVG = jsmeNomeclatureApplet.getMolecularAreaGraphicsString();
   // Fix JSME highlight malformation BEFORE HTML parsing

@@ -3150,13 +3150,14 @@ color: var(--veryLightEarth);
   /* max-width: 450px; */
   height: auto;
   min-height: var(--viewerMinH, 150px);
+  position: relative; /* anchor for the absolute hover/selection overlays */
 }
 
 /* 2D selection mode (v56): precision cursor while picking atoms/bonds.
    Toggled with .active on #selectAtomsBtn (see fToggleAtomSelect). */
 #jsmeNomeclatureSVG.selecting,
 #jsmeNomeclatureSVG.selecting * {
-  cursor: pointer;
+  cursor: crosshair;
 }
 
 #selectAtomsBtn svg {
