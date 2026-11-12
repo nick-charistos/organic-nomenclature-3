@@ -323,7 +323,10 @@ function fNameCompBox(boxId, boxClass, displayComp, tipHtml) {
   var cls = boxClass + (hidden ? " comp-hidden" : "");
   var tip = (typeof tipHtml === "string" && tipHtml) ? tipHtml : null;
   if (tip) cls += " sysDiff";
+  // Display-only italic prefixes (IUPAC detached sec-/tert-): raw slot text,
+  // ids, tooltips and matching stay untouched (see fMulerItalicSecTert).
   var body = hidden ? "–" : displayComp;
+  try { if (!hidden && typeof fMulerItalicSecTert === "function") body = fMulerItalicSecTert(displayComp); } catch (eI) {}
   var eye = "";
   if (fNameEyeVisible()) {
     eye = "<button class='compEye" + (hidden ? " off-state" : "") + "' data-comp='" + boxId + "' data-tooltip='" + (hidden ? ((typeof fMulerT === "function") ? fMulerT("showComp") : "Εμφάνιση συνθετικού") : ((typeof fMulerT === "function") ? fMulerT("hideComp") : "Απόκρυψη συνθετικού")) + "'>" + (hidden ? svgEyeOff : svgEye) + "</button>";
@@ -1625,6 +1628,35 @@ function fMolDraftEsc(s) {
   return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
+// Italicize detached `sec-`/`tert-` prefixes (IUPAC: italic + hyphen) for
+// DISPLAY HTML only — engines, oracles, matching, tooltips (title attrs)
+// and storage keep the raw strings. `withN` adds the `(n-)` table prefix.
+// Tag-safe (attributes never touched) and idempotent (re-wrapping collapses
+// to exactly one <i>). Letter-boundary guarded so `butan-2-yl`/`isopropyl`
+// never match (`n` needs a non-letter before it, e.g. `(n-)`).
+function fMulerItalicSecTert(html, withN) {
+  try {
+    var src = String(html == null ? "" : html);
+    if (src.indexOf("sec-") < 0 && src.indexOf("tert-") < 0 && src.indexOf("Sec-") < 0 && src.indexOf("Tert-") < 0 && (!withN || !/(^|[^A-Za-z])[nN]-/.test(src))) return src;
+    var parts = src.split(/(<[^>]*>)/);
+    for (var i = 0; i < parts.length; i++) {
+      if (!parts[i] || parts[i].charAt(0) === "<") continue;
+      var t = parts[i];
+      // Idempotence: a bare prefix flanked by <i>...</i> parts is already
+      // wrapped from a previous pass — leave it alone (nested <i> would
+      // render the same but pollute the markup and the overview cache).
+      var prevTag = (i > 0 && parts[i - 1].charAt(0) === "<") ? parts[i - 1] : "";
+      var nextTag = (i + 1 < parts.length && parts[i + 1].charAt(0) === "<") ? parts[i + 1] : "";
+      var tTrim = t.replace(/^\s+|\s+$/g, "");
+      if (/^(sec-|tert-|Sec-|Tert-|SEC-|TERT-)$/.test(tTrim) && /^<i\b[^>]*>$/.test(prevTag) && /^<\/i\s*>$/.test(nextTag)) continue;
+      t = t.replace(/(^|[^A-Za-z])(sec-|tert-|Sec-|Tert-|SEC-|TERT-)/g, "$1<i>$2</i>");
+      if (withN) t = t.replace(/(^|[^A-Za-z])(n-|N-)/g, "$1<i>$2</i>");
+      parts[i] = t;
+    }
+    return parts.join("");
+  } catch (e) { try { return String(html); } catch (e2) { return ""; } }
+}
+
 function fMolDraftReadDrawing() {
   // The drawing lives in the dedicated edit applet (display applet untouched).
   var molText = "", smiles = "", hasAny = false;
@@ -1711,10 +1743,10 @@ function fMolDraftRenderPreview() {
     var clsGR = vGR === "correct" ? " draftV-correct" : (vGR === "wrong" ? " draftV-wrong" : "");
     var clsEN = vEN === "correct" ? " draftV-correct" : (vEN === "wrong" ? " draftV-wrong" : "");
     var html = "<div class='draftPreview'><div class='draftPreviewTitle'>" + fMolDraftEsc(fMolDraftT("draftPreviewTitle", "Πρόβλεψη Ονομασίας")) + "</div>" +
-      "<div class='draftVRow'>" + fMolDraftVerdictCtrl("gr", vGR, false) + "<div class='draftEngine" + clsGR + "'>" + fMolDraftEsc((d.engineName_sys ? fMolDraftT("commonName", "Κοινή") + ": " : "") + d.engineName) + "</div></div>";
+      "<div class='draftVRow'>" + fMolDraftVerdictCtrl("gr", vGR, false) + "<div class='draftEngine" + clsGR + "'>" + fMulerItalicSecTert(fMolDraftEsc((d.engineName_sys ? fMolDraftT("commonName", "Κοινή") + ": " : "") + d.engineName)) + "</div></div>";
     // Systematic Greek row (v54.31) when it differs — shares the GR verdict
     // state (manual-only, like EN). Common stays first.
-    if (d.engineName_sys) html += "<div class='draftVRow'>" + fMolDraftVerdictCtrl("gr", vGR, false) + "<div class='draftEngine" + clsGR + "'>" + fMolDraftEsc(fMolDraftT("systematicName", "Συστηματική") + ": " + d.engineName_sys) + "</div></div>";
+    if (d.engineName_sys) html += "<div class='draftVRow'>" + fMolDraftVerdictCtrl("gr", vGR, false) + "<div class='draftEngine" + clsGR + "'>" + fMulerItalicSecTert(fMolDraftEsc(fMolDraftT("systematicName", "Συστηματική") + ": " + d.engineName_sys)) + "</div></div>";
     // EN prediction rows: school (Traditional) always; Systematic variant row
     // (v54.24) when it differs — e.g. 4,4-bis(chloromethyl)heptane vs school
     // 4,4-dichloromethylheptane. One shared EN verdict state per draft
@@ -1726,8 +1758,8 @@ function fMolDraftRenderPreview() {
         _syW = fMolDraftT("substSystematic", "Systematic");
       } catch (eSW) {}
       var _enLbl = d.engineEN_sys ? _scW + ": " : "";
-      html += "<div class='draftVRow'>" + fMolDraftVerdictCtrl("en", vEN, !!d.enAutoValidated) + "<div class='draftEngineEN" + clsEN + "'>" + fMolDraftEsc(_enLbl + d.engineEN) + "</div></div>";
-      if (d.engineEN_sys) html += "<div class='draftVRow'>" + fMolDraftVerdictCtrl("en", vEN, !!d.enAutoValidated) + "<div class='draftEngineEN" + clsEN + "'>" + fMolDraftEsc(_syW + ": " + d.engineEN_sys) + "</div></div>";
+      html += "<div class='draftVRow'>" + fMolDraftVerdictCtrl("en", vEN, !!d.enAutoValidated) + "<div class='draftEngineEN" + clsEN + "'>" + fMulerItalicSecTert(fMolDraftEsc(_enLbl + d.engineEN)) + "</div></div>";
+      if (d.engineEN_sys) html += "<div class='draftVRow'>" + fMolDraftVerdictCtrl("en", vEN, !!d.enAutoValidated) + "<div class='draftEngineEN" + clsEN + "'>" + fMulerItalicSecTert(fMolDraftEsc(_syW + ": " + d.engineEN_sys)) + "</div></div>";
     }
     if (typeof d.pubchem === "undefined") {
       html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitFetching", "Looking up PubChem…")) + "</div>";
@@ -10145,6 +10177,9 @@ function fExplainNameComp() {
     }
   }
   fShowRule(nameAnalysisMode);
+  // Display-only italic prefixes (IUPAC detached sec-/tert-); narration
+  // reads .text() (tags stripped) and the overview scrape reuses this HTML.
+  try { if (typeof fMulerItalicSecTert === "function") myText = fMulerItalicSecTert(myText); } catch (eI) {}
   myHTML = `<div class='explainText ${myClass} ' style='${nStyle}'  >${myText}</div>`;
   $("#nameAnalysisExplain").html(myHTML);
   fFitNameComponents();
@@ -10249,6 +10284,10 @@ function fNameExplainTableRender() {
     var h = "<div class='explainTable'>";
     for (var i = 0; i < rows.length; i++) {
       var esc = String(rows[i].chip).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      // Display-only italic prefixes (IUPAC detached sec-/tert-), mirroring
+      // the box: escape first, then wrap (chip source is textContent, so the
+      // only tags reaching the HTML are our own <i>).
+      try { if (typeof fMulerItalicSecTert === "function") esc = fMulerItalicSecTert(esc); } catch (eI) {}
       h += "<div class='explainRow" + (rows[i].hidden ? " row-hidden" : "") + (rows[i].id === sel ? " selected" : "") + "' data-box='" + rows[i].id + "'><span class='explainChip'>" + esc + "</span><div class='explainCell'>" + rows[i].html + "</div></div>";
     }
     na.innerHTML = h + "</div>";
@@ -10422,6 +10461,9 @@ function fShowRule(theRule) {
   <div class='ruleTile ${myClass}' id='ruleTitle'> ${ruleTitle} </div>
   <div id='ruleContainer' style='${myStyle}'><div class='ruleText' >${ruleText}</div><div class='ruleTable' >${ruleTable}</div></div>
   </div>`;
+  // Display-only italic prefixes (IUPAC detached sec-/tert-, plus (n-) in
+  // tables): applied post-translation so RULE_GR2EN keys still match.
+  try { if (typeof fMulerItalicSecTert === "function") myHTML = fMulerItalicSecTert(myHTML, true); } catch (eI) {}
 
   $("#ruleTheoryContainer").html(myHTML);
 
