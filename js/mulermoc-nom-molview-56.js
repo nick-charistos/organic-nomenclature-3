@@ -1602,13 +1602,6 @@ function fMulerSelectPick(px, py) {
   } catch (e) { return { ignore: true }; }
 }
 
-function fMulerSelectHas(sel, kind, id) {
-  try {
-    var arr = kind === "atom" ? sel.atoms2D : sel.bonds2D;
-    return arr.indexOf(id) >= 0;
-  } catch (e) { return false; }
-}
-
 function fMulerSelectToggle(px) {
   // px = pick result. No-shift replaces (single re-click clears); shift toggles.
   try {
@@ -1650,6 +1643,7 @@ function fMulerSelectToggle(px) {
         if (jx >= 0) sel.bonds2D.splice(jx, 1);
         else sel.bonds2D.push(b);
       }
+      try { sel.groups = []; } catch (eG4) {}
     } else if (px && px.kind === "fragment") {
       var fa = ((px.atoms || []).slice() || []).sort(function (x, y) { return x - y; });
       var cur = (sel.atoms2D || []).slice().sort(function (x, y) { return x - y; });

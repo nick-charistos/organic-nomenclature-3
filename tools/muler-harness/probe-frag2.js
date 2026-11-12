@@ -1,0 +1,22 @@
+const { chromium } = require("playwright-core");
+(async () => {
+  const b = await chromium.launch({ executablePath: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" });
+  const p = await b.newPage({ viewport: { width: 1500, height: 900 } });
+  const errs = [];
+  p.on("pageerror", (e) => errs.push(String(e.message).slice(0, 120)));
+  await p.goto("http://localhost:8901/mulermoc-nom-56.html?mol=butanoic_acid", { waitUntil: "load", timeout: 60000 });
+  await p.waitForTimeout(14000);
+  await p.evaluate(() => { try { document.getElementById("selectAtomsBtn").click(); } catch (e) {} });
+  await p.waitForTimeout(300);
+  await p.mouse.click(766, 346);
+  await p.waitForTimeout(800);
+  await p.screenshot({ path: "acid-frag2.png", clip: { x: 340, y: 100, width: 680, height: 360 } });
+  const s1 = await p.evaluate(() => { const s = window.MulerUserSelection; return JSON.stringify({ a: s.atoms2D, g: s.groups.map((x) => x.members) }); });
+  await p.mouse.click(766, 346);
+  await p.waitForTimeout(800);
+  const s2 = await p.evaluate(() => { const s = window.MulerUserSelection; return JSON.stringify({ a: s.atoms2D }); });
+  console.log("AFTER-CLICK:" + s1);
+  console.log("AFTER-RECLICK:" + s2);
+  console.log("PAGEERRORS:" + JSON.stringify(errs));
+  await b.close();
+})().catch((e) => { console.error("FAIL " + e.message); process.exit(1); });
