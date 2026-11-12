@@ -1885,7 +1885,10 @@ function fScenarioClickNameBox(step, token) {
   // boxes). Drop the class first so the click always takes the select branch
   // and repaints both viewers — 3D may not have been ready at restore time.
   try { if (box.classList) box.classList.remove("selected"); } catch (eS) {}
-  $(box).trigger("click");
+  // Stored replay must never quiz-arm (bypass flag around the synthetic
+  // trigger; genuine row/box clicks are unaffected).
+  try { if (typeof window !== "undefined") window.__mulerQuizReplayBypass = true; } catch (eB) {}
+  try { $(box).trigger("click"); } finally { try { if (typeof window !== "undefined") window.__mulerQuizReplayBypass = false; } catch (eB2) {} }
   if (fScenarioNormMode(nameAnalysisMode) !== fScenarioNormMode(step.nameAnalysisMode)) {
     nameAnalysisMode = "none";
     $(".nameCompBox").removeClass("selected");

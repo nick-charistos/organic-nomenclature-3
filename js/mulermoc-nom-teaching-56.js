@@ -1388,6 +1388,17 @@ $(document).ready(function () {
     }
     // Hidden (dash) boxes are inert: no highlight, no explanation change.
     if ($(this).hasClass("comp-hidden")) return;
+    // Quiz mode (v56 1C selection aid): armed select + resolvable component
+    // arms the quiz target instead of highlighting (prompt, no paint).
+    // Stored-highlight replay ($(box).trigger, untrusted) never quiz-arms;
+    // overview row .click() is genuine user intent and behaves like a box.
+    try {
+      if (typeof window !== "undefined" && !window.__mulerQuizReplayBypass &&
+          typeof fMulerSelectActive === "function" && fMulerSelectActive() && !window.MulerDraft &&
+          typeof fMulerQuizArmForBox === "function" && fMulerQuizArmForBox($(this).attr("id"), $(this))) return;
+      if (typeof fMulerSelectActive === "function" && fMulerSelectActive() && !window.MulerDraft &&
+          typeof fMulerQuizDisarm === "function") fMulerQuizDisarm();
+    } catch (eQ) {}
     const scrollX = window.scrollX;
     const scrollY = window.scrollY;
     const lockScroll = () => window.scrollTo(scrollX, scrollY);

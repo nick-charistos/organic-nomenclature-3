@@ -21,6 +21,7 @@ Scripts (all read-only against the app; screenshots land next to the script):
   `bond,2` clicks the middle of bond index 2, trailing `s` = shift-click,
   `empty` = click empty canvas. Prints resulting selection after each step.
 - `probe-shift.js` — shift-accumulate check on ethane.
+- `probe-quiz.js` — main-chain quiz: arm select, click the `comp5` box (quiz target), pick both carbons; prints prompt/verdict/target/selection, atom fills (expect green `#79dc6d`), screenshot `quiz-green.png`.
 - `probe-frag2.js` — compacted-label (e.g. COOH) whole-fragment pick.
 - `audit.js <port> <query|- > <width> <out>` — tooltip clip audit:
   measures every `[data-tooltip]` bubble against overflow ancestors and the

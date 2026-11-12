@@ -33,7 +33,7 @@ const { chromium } = require("playwright-core");
       const nd = el && el.node ? el.node : null;
       fill = nd ? nd.getAttribute("fill") : null;
     } catch (e) {}
-    return { a: s.atoms2D, fill, wrapped: !!window.__mulerBgWrapped };
+    return { a: s.atoms2D, fill, wrapped: !!window.__mulerBgWrapped, seq: !!document.getElementById("mulerSelNum0") };
   });
   // hover preview: move back over the picked label, ring should appear
   await p.mouse.move(t[0], t[1]);

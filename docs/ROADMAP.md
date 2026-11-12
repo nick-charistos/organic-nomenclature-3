@@ -68,15 +68,31 @@ functional group, substituent, locants…).
 - Disabled in Present by default (authoring-only aid like eye-edit; the
   `QUIZ-FUTURE` hook is the natural later consumer).
 
-**1C — compare/validate vs component.**
-- Validator: order-insensitive set compare of selection vs the component's
-  atom set (main chain / FG / branch / locant set), heavy-atom canonical.
-  Verdicts: exact / subset / superset / partial (overlap %) / disjoint.
-  Reuse the tri-state verdict control pattern (`draftVBtn`), not toasts.
-- Entry point: with an active selection, clicking a name box (or a
-  Validate button) runs the compare instead of only highlighting; result
-  renders next to the explanation. Never auto-marks anything correct —
-  same standing as the oracle verdicts (display only).
+**1C — compare/validate vs component (v56 working tree: quiz mode, main chain first).**
+- Quiz target: clicking a name box while select mode is armed sets
+  `window.MulerQuizTarget` instead of highlighting (unarmed clicks + stored
+  scenario replay via `__mulerQuizReplayBypass` keep classic behavior).
+  v1 resolver table has the main chain only (`compCarbonsCount` →
+  shared-resolution helper); FG/branch/bond-aware resolvers extend it later.
+- Compare: order-insensitive set compare, H folded to heavy parent,
+  bonds v1-ignored. Verdicts: exact / subset / wrong (outsiders reported by
+  count in the verdict line, no red paint) / disjoint; empty hint. Exact
+  sets additionally require a bonded walk end to end; the sequence must
+  match the C1-first chain (engine-oriented via lowest-locant tiers) —
+  a full reverse match gets a `direction` verdict, scrambled sets an
+  `order` verdict with the break reported by pick numbers. Badges
+  (`mulerSelNum*`) below each picked label. Multiple tied chains: acceptance
+  spans the whole ranked pool (each entry C1-oriented); an exact match on a
+  non-live entry auto-adopts it via the stepper path (adopted-only in data
+  mode, where curation wins). Symmetric chains (all lowest-locant tiers tie)
+  accept either direction as exact via an orienter-indifference oracle —
+  no pool duplication, no adoption needed for them.
+- Reward: exact match replays the classic component path (green +
+  numbering + explanation), no new paint code. Verdict line is a plain
+  `#mulerQuizVerdict` div (inline-styled, no CSS dependency); prompt replaces
+  the explanation while armed. Esc clears the pick but keeps the target;
+  re-click/exit/draft/molecule-change disarm. Present: merge ignores the
+  quiz, no quiz paint. TTS skipped on success (v1).
 
 ### Risks / open calls (owner)
 
