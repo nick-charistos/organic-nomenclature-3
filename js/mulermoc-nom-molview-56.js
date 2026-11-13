@@ -361,7 +361,7 @@ function jsmeOnLoad() {
 
   let bgAtom = [
     "#7ddfff",
-    "#22d3ee", // palette slot 2: v56 user-selection cyan (JSME slots are 1-based — slot N is bgAtom[N-1]; slot 9 green stays)
+    "#6ddcbe", // palette slot 2: v56 user-selection cyan (JSME slots are 1-based — slot N is bgAtom[N-1]; slot 9 green stays)
     "#00ffff",
     "#ffcc66",
     "#ffff00",
@@ -1182,7 +1182,7 @@ function fToggleAtomSelect() {
 // Stored indices are 1-based JSME numbers (= displayed
 // MOL order + 1, same convention as mainChainAtomsList); bond indices are
 // 1-based bondList positions (same as setBondBackgroundColors).
-var MULER_SELECT_CYAN = "#22d3ee";
+var MULER_SELECT_CYAN = "#6ddcbe";
 var MULER_SELECT_BG_SLOT = 2;   // 1-based JSME palette slot for the selection (component green = 9)
 var MULER_SELECT_VERT_EPS = 40;   // vertex clustering, SVG units
 var MULER_SELECT_JOINT_EPS = 150; // joint-adoption radius, SVG units (see fMulerSelectVertexAtoms)
@@ -2597,6 +2597,10 @@ function fMulerQuizVerdictEl() {
 
 function fMulerQuizVerdict(kind, cmp) {
   try {
+    // Renderer for every verdict kind. The schedule is final-only today:
+    // fMulerQuizRefresh pushes only exact/direction/order (and clear), so
+    // subset/wrong/disjoint/empty stay unused but remain available for future
+    // quiz targets (FG/branch) that may want progress feedback.
     var el = (typeof fMulerQuizVerdictEl === "function") ? fMulerQuizVerdictEl() : null;
     if (!el) return;
     var T = function (k) { try { return (typeof fMulerT === "function") ? fMulerT(k) : ""; } catch (eT) { return ""; } };
@@ -2623,7 +2627,9 @@ function fMulerQuizPrompt() {
   try {
     var ex = document.getElementById("nameAnalysisExplain");
     if (ex) { try { ex.textContent = (typeof fMulerT === "function") ? fMulerT("quizPick") : ""; } catch (eT) {} }
-    if (typeof fMulerQuizVerdict === "function") fMulerQuizVerdict("empty", null);
+    // Final-only: no neutral verdict line while picking; the instruction above
+    // is the only text until the target resolves.
+    if (typeof fMulerQuizVerdict === "function") fMulerQuizVerdict("clear", null);
   } catch (e) {}
 }
 
@@ -2680,6 +2686,9 @@ function fMulerQuizArmForBox(boxId, $box) {
     try { if (typeof fMulerSelectRepaint === "function") fMulerSelectRepaint(); } catch (eR4) {}
     try { if (typeof fUpdateSVG === "function") fUpdateSVG(); } catch (eU) {}
     try { if (typeof fFitNameComponents === "function") fFitNameComponents(); } catch (eF) {}
+    // Explain-all panel stays the overview table when it is open (the prompt
+    // above only owns the single-explanation panel).
+    try { if (window.nameExplainAll && typeof fNameExplainTableRender === "function") fNameExplainTableRender(); } catch (eET) {}
     return true;
   } catch (e) { return false; }
 }
@@ -2687,6 +2696,10 @@ function fMulerQuizArmForBox(boxId, $box) {
 // Live compare after every selection change. On exact: clear the target,
 // replay the classic component path (green + numbering + explanation as the
 // reward), then the success line. Callers repaint/render as usual afterwards.
+// While the user is still picking, the verdict line stays hidden (final-only
+// feedback): no partial counts and no "outside the main chain" / "no overlap"
+// notes. `direction`/`order` are final too — they only fire once the picked set
+// already equals the target set — and stay visible.
 function fMulerQuizRefresh() {
   try {
     var target = (typeof window !== "undefined") ? window.MulerQuizTarget : null;
@@ -2717,11 +2730,22 @@ function fMulerQuizRefresh() {
       // Green wins outright: drop the selection itself (not just its paint)
       // so no later clear can resurrect cyan from stale state.
       try { if (sel) { sel.atoms2D = []; sel.bonds2D = []; sel.atoms3D = []; sel.bonds3D = []; sel.groups = []; } } catch (eS2) {}
+      // Exact is the one moment selection mode allows a component highlight:
+      // opt the viewer-owning guard in fExplainNameComp through for this call.
+      try { if (typeof window !== "undefined") window.__mulerQuizReward = true; } catch (eRw) {}
       try { if (typeof fExplainNameComp === "function") fExplainNameComp(); } catch (eE) {}
+      try { if (typeof window !== "undefined") window.__mulerQuizReward = false; } catch (eRw2) {}
       try { if (typeof fMulerQuizVerdict === "function") fMulerQuizVerdict("exact", r.cmp || r); } catch (eV) {}
+      // Explain-all panel stays the overview table when it is open.
+      try { if (window.nameExplainAll && typeof fNameExplainTableRender === "function") fNameExplainTableRender(); } catch (eET) {}
       return r.cmp || null;
     }
-    try { if (typeof fMulerQuizVerdict === "function") fMulerQuizVerdict(r.verdict, r); } catch (eV2) {}
+    if (r.verdict === "direction" || r.verdict === "order") {
+      try { if (typeof fMulerQuizVerdict === "function") fMulerQuizVerdict(r.verdict, r); } catch (eV2) {}
+    } else {
+      // subset / wrong / disjoint / empty: silent while picking.
+      try { if (typeof fMulerQuizVerdict === "function") fMulerQuizVerdict("clear", null); } catch (eV3) {}
+    }
     return r.cmp || null;
   } catch (e) { return null; }
 }
@@ -2867,9 +2891,11 @@ function fMulerSelectWrapBgChannel() {
 
 // Rebuild the selection paint from state: push merged colors (no render —
 // the fUpdateSVG head calls fMulerSelectPushState before rendering, and its
-// tail calls here mid-render). Molecule/mode change drops contents AND the
-// recorded component set (stale indices), stays armed. Present pushes
-// component-only (selection stays hidden in Present, state kept).
+// tail calls here mid-render). A molecule/mode change drops the selection
+// contents (stale indices) and stays armed; a 2D-style change also keeps an
+// armed quiz target (molecule-level atom set) and restores its prompt, while a
+// molecule change disarms it. Present pushes component-only (selection stays
+// hidden in Present, state kept).
 function fMulerSelectPushState() {
   try {
     var sel = null;
@@ -2877,13 +2903,25 @@ function fMulerSelectPushState() {
     if (!sel) return;
     var key = "";
     try { key = (typeof fMulerSelectMolKey === "function") ? fMulerSelectMolKey() : ""; } catch (eK) { key = ""; }
-    if (!sel.molKey) { try { sel.molKey = key; } catch (eK2) {} }
+    var molName = "";
+    try { molName = (typeof selectedMol !== "undefined" && selectedMol) ? String(selectedMol) : ""; } catch (eMN) { molName = ""; }
+    if (!sel.molKey) { try { sel.molKey = key; sel.molName = molName; } catch (eK2) {} }
     else if (sel.molKey !== key) {
-      // molecule or 2D mode changed under a live selection: indices belong
-      // to the old drawing — drop contents AND the recorded component set
-      // (stale indices), stay armed.
+      // molecule or 2D style changed under a live selection: the geometry
+      // indices belong to the old drawing — drop the contents (stay armed).
       sel.atoms2D = []; sel.bonds2D = []; sel.atoms3D = []; sel.bonds3D = []; sel.groups = [];
-      try { if (typeof fMulerQuizDisarm === "function") fMulerQuizDisarm(); } catch (eQD2) {}
+      // A main-chain quiz target is a molecule-level atom set, so a 2D-style
+      // switch keeps it armed (the user can pick in the new style and still
+      // get the verdict); only an actual molecule change disarms.
+      var sameMol = (typeof sel.molName === "string") && sel.molName === molName;
+      try {
+        if (sameMol) {
+          if (typeof window !== "undefined" && window.MulerQuizTarget &&
+              typeof fMulerQuizPrompt === "function") fMulerQuizPrompt();
+        } else if (typeof fMulerQuizDisarm === "function") {
+          fMulerQuizDisarm();
+        }
+      } catch (eQD2) {}
       try {
         // Wrapped resets when installed (clear recorded comp set, re-push
         // the now-empty selection); original resets otherwise — either way
@@ -2900,7 +2938,9 @@ function fMulerSelectPushState() {
       try {
         if (typeof window !== "undefined") { window.__mulerCompAtomArg = ""; window.__mulerCompBondArg = ""; }
       } catch (eCC2) {}
-      try { sel.molKey = key; } catch (eK3) {}
+      try { sel.molKey = key; sel.molName = molName; } catch (eK3) {}
+    } else if (typeof sel.molName !== "string") {
+      try { sel.molName = molName; } catch (eMN2) {}
     }
     var presenting = false;
     try { presenting = (typeof fMulerSelectPresenting === "function") ? !!fMulerSelectPresenting() : false; } catch (ePr) { presenting = false; }
@@ -2915,8 +2955,29 @@ function fMulerSelectPushState() {
 }
 
 function fMulerSelectIsSelectionFill(fill) {
-  var f = String(fill || "").replace(/\s+/g, "").toLowerCase();
-  return f.indexOf("22d3ee") !== -1 || f.indexOf("34,211,238") !== -1;
+  // JSME writes background fills either as the palette hex or as rgb(r,g,b),
+  // so derive both forms from the configured selection color. Legacy cyan is
+  // kept for one-generation overlap (older renders / cached DOM).
+  return fMulerFillMatches(MULER_SELECT_CYAN, fill) || fMulerFillMatches("#22d3ee", fill);
+}
+
+// True when a fill attribute expresses `color` in either notation (hex
+// substring or rgb(r,g,b)). Used by fill-restricted cleanups so a palette
+// change needs no second hardcoded pair.
+function fMulerFillMatches(color, fill) {
+  try {
+    var f = String(fill || "").replace(/\s+/g, "").toLowerCase();
+    if (!f) return false;
+    var h = String(color || "").replace(/\s+/g, "").replace("#", "").toLowerCase();
+    if (h && f.indexOf(h) !== -1) return true;
+    if (h.length === 6) {
+      var r = parseInt(h.slice(0, 2), 16);
+      var g = parseInt(h.slice(2, 4), 16);
+      var b = parseInt(h.slice(4, 6), 16);
+      if (f.indexOf(r + "," + g + "," + b) !== -1) return true;
+    }
+  } catch (e) {}
+  return false;
 }
 
 // The JSME anchor atom owns both a small ellipse (the atom) and the resized
@@ -7969,7 +8030,11 @@ function fCollectHighlightCirclesNearText(textEls) {
       }
 
       const fillValue = String(circleEl.node.getAttribute("fill") || "").replace(/\s+/g, "").toLowerCase();
-      if (fillValue.indexOf("79dc6d") === -1 && fillValue.indexOf("121,220,109") === -1 && fillValue.indexOf("22d3ee") === -1) {
+      const isHiglightFill =
+        fMulerFillMatches("#79dc6d", fillValue) ||
+        fMulerFillMatches((typeof MULER_SELECT_CYAN !== "undefined" ? MULER_SELECT_CYAN : "#22d3ee"), fillValue) ||
+        fMulerFillMatches("#22d3ee", fillValue);
+      if (!isHiglightFill) {
         continue;
       }
 
@@ -9139,7 +9204,7 @@ function fMulerSelectSeqBadges() {
         }
       } catch (eB) { continue; }
       try {
-        var s = "<text id='mulerSelNum" + i + "' x='" + Math.round(bx) + "' y='" + Math.round(by) + "' font-size='" + Math.round(numFS) + "px' font-weight='bold' font-family='Arial, sans-serif' text-anchor='middle' fill='#ffffff' stroke='#22d3ee' stroke-width='" + Math.round(numSW) + "px' paint-order='stroke'>" + (i + 1) + "</text>";
+        var s = "<text id='mulerSelNum" + i + "' x='" + Math.round(bx) + "' y='" + Math.round(by) + "' font-size='" + Math.round(numFS) + "px' font-weight='bold' font-family='Arial, sans-serif' text-anchor='middle' fill='#6ddcbe' stroke='#000000' stroke-width='" + Math.round(numSW) + "px' paint-order='stroke'>" + (i + 1) + "</text>";
         var nel = null;
         try { nel = (typeof MuSVG !== "undefined" && MuSVG.parse) ? MuSVG.parse(s) : null; } catch (eP) { nel = null; }
         if (nel) gWrap.append(nel);
@@ -11684,6 +11749,21 @@ function fShowAnalysisNumbering(time, overrideAtoms, overrideAtoms3D) {
 }
 
 function fExplainNameComp() {
+  // Selection mode owns the viewer: while it is armed, no name-component
+  // highlight or explanation is painted — including the classic repaint a 2D
+  // style switch runs (fShowNameAnalysis -> fExplainNameComp). The exact quiz
+  // verdict opts in for one call via __mulerQuizReward so the green reward is
+  // the only highlight the user ever sees while selecting.
+  try {
+    var _selOwnsViewer = (typeof fMulerSelectActive === "function") && fMulerSelectActive();
+    var _rewardPaint = (typeof window !== "undefined") && window.__mulerQuizReward === true;
+    // Explain-all builds scrape this function's explanation HTML with paints
+    // suppressed (__mulerExplainQuiet): the text must still be generated there,
+    // otherwise the table nests its own previous markup or repeats the quiz
+    // prompt in every cell.
+    var _quietExplainBuild = (typeof window !== "undefined") && window.__mulerExplainQuiet === true;
+    if (_selOwnsViewer && !_rewardPaint && !_quietExplainBuild) return;
+  } catch (eSelOwn) {}
   let myText, myClass, nStyle, countSubs, myCountText, myFG0, myFG1, myHTML;
   switch (nameAnalysisMode) {
     case "none":
@@ -12509,6 +12589,9 @@ function fNameExplainTableBuild() {
         try { if (typeof fExplainNameComp === "function") fExplainNameComp(); } catch (eX) { continue; }
         var html = "";
         try { html = document.getElementById("nameAnalysisExplain").innerHTML || ""; } catch (eH2) {}
+        // Defensive: never scrape our own overview markup into a cell (a stale
+        // nested table must not survive a rebuild).
+        try { if (html.indexOf("explainTable") >= 0) html = ""; } catch (eH3) { html = ""; }
         if (!html) continue;
         rows.push({ id: bid, chip: chip, html: html, hidden: _rowHidden });
       }

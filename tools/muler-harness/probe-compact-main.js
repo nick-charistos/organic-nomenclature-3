@@ -5,6 +5,17 @@ const { chromium } = require("playwright-core");
 
 const failures = [];
 const check = (ok, msg) => { if (!ok) failures.push(msg); };
+const isSelFillColor = (fill, hex) => {
+  if (!fill) return false;
+  const f = String(fill).replace(/\s+/g, "").toLowerCase();
+  const h = String(hex || "#22d3ee").replace("#", "").toLowerCase();
+  if (h && f.indexOf(h) >= 0) return true;
+  if (h.length === 6) {
+    const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
+    if (f.indexOf(r + "," + g + "," + b) >= 0) return true;
+  }
+  return f.indexOf("34,211,238") >= 0; // legacy cyan
+};
 
 (async () => {
   const b = await chromium.launch({ executablePath: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" });
@@ -45,10 +56,20 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
       const c = fMulerSelectCompacted()[0] || null;
       const rect = c ? fMulerSelectCompactRect(c.anchor) : null;
       const path = c ? document.querySelector('#jsmeNomeclatureSVG path[data-muler-compact-sel="' + (c.anchor + 1) + '"]') : null;
+      const selColor = (typeof MULER_SELECT_CYAN === "string") ? MULER_SELECT_CYAN : "#22d3ee";
+      const isSelFill = (fill) => {
+        const f = String(fill || "").replace(/\s+/g, "").toLowerCase();
+        const h = selColor.replace("#", "").toLowerCase();
+        if (h && f.indexOf(h) >= 0) return true;
+        if (h.length === 6) {
+          const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16);
+          if (f.indexOf(r + "," + g + "," + b) >= 0) return true;
+        }
+        return f.indexOf("34,211,238") >= 0; // legacy cyan
+      };
       const ellipses = [];
       document.querySelectorAll("#jsmeNomeclatureSVG ellipse").forEach((n) => {
-        const f = String(n.getAttribute("fill") || "").toLowerCase();
-        if (f.indexOf("22d3ee") >= 0 || f.indexOf("34,211,238") >= 0) {
+        if (isSelFill(n.getAttribute("fill"))) {
           ellipses.push({ display: n.getAttribute("display"), computed: getComputedStyle(n).display });
         }
       });
@@ -57,6 +78,7 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
       return {
         atoms: s.atoms2D || [],
         target: window.MulerQuizTarget || null,
+        selColor,
         rectFill: rect ? rect.getAttribute("fill") : null,
         rectWhitened: !!(rect && rect.getAttribute("data-muler-compact-white") === "1"),
         compactPath: !!path,
@@ -86,7 +108,7 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
   await p.waitForTimeout(700);
   const free = await state();
   check(JSON.stringify(free.atoms) === JSON.stringify([4, 5, 6]), "free compact click should select [4,5,6], got " + JSON.stringify(free.atoms));
-  check(free.rectFill === "rgb(34,211,238)" || free.rectFill === "#22d3ee", "free fragment should paint the full backplate cyan");
+  check(isSelFillColor(free.rectFill, free.selColor), "free fragment should paint the full backplate in the selection color, got " + free.rectFill);
   check(!free.compactPath, "free fragment must not create the carbon-only path");
   const freePick = await p.evaluate(() => {
     const c = fMulerSelectCompacted()[0];

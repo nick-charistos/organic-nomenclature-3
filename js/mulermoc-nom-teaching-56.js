@@ -1455,7 +1455,20 @@ $(document).ready(function () {
     if (window.nameExplainAll) {
       try { if (typeof fNameExplainTableShow === "function") fNameExplainTableShow(); } catch (eS) {}
     } else {
-      try { if (typeof fExplainNameComp === "function") fExplainNameComp(); } catch (eS2) {}
+      try {
+        if (typeof fMulerSelectActive === "function" && fMulerSelectActive()) {
+          // Selection mode suppressed the explanation panel; closing the
+          // overview must not leave the table behind. Restore the quiz prompt
+          // when one is armed, otherwise clear the panel.
+          if (window.MulerQuizTarget && typeof fMulerQuizPrompt === "function") fMulerQuizPrompt();
+          else {
+            var _ex = document.getElementById("nameAnalysisExplain");
+            if (_ex) _ex.innerHTML = "";
+          }
+        } else if (typeof fExplainNameComp === "function") {
+          fExplainNameComp();
+        }
+      } catch (eS2) {}
     }
   });
 
