@@ -11,6 +11,14 @@
 //   C. for each carbonyl atom, clicking the carbon-side endpoint of every
 //      incident bond (the exact old failure spot) picks the carbonyl atom.
 const { chromium } = require("playwright-core");
+const CHROME = process.env.MULER_CHROME || "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+const BASE = process.env.MULER_BASE || "http://localhost:8901";
+async function waitReady(p, failures) {
+  try {
+    await p.waitForFunction(() => { try { return !!document.querySelector("#jsmeNomeclatureSVG svg") && typeof fMulerSelectAnchors === "function" && !!window.MulerUserSelection; } catch (e) { return false; } }, { timeout: 30000 });
+  } catch (e) { try { failures.push("ready timeout"); } catch (e2) {} }
+  try { await p.waitForTimeout(800); } catch (e) {}
+}
 
 const MOLS = [
   "ethanal", "propanal", "butanal", "pentanal", "propynal",
@@ -23,13 +31,13 @@ const failures = [];
 const check = (ok, msg) => { if (!ok) failures.push(msg); };
 
 (async () => {
-  const b = await chromium.launch({ executablePath: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" });
+  const b = await chromium.launch(await (async () => { try { const fs = require("fs"); if (fs.existsSync(CHROME)) return { executablePath: CHROME }; } catch (e) {} return {}; })());
   const p = await b.newPage({ viewport: { width: 1600, height: 950 } });
   const errs = [];
   p.on("pageerror", (e) => errs.push(String(e.message).slice(0, 200)));
 
   for (const mol of MOLS) {
-    await p.goto("http://localhost:8901/mulermoc-nom-56.html?lang=en&mol=" + mol, { waitUntil: "load", timeout: 60000 });
+    await p.goto(BASE + "/mulermoc-nom-56.html?lang=en&mol=" + mol, { waitUntil: "load", timeout: 60000 });
     await p.waitForTimeout(9000);
     await p.evaluate(() => {
       const opts = Array.from(document.querySelectorAll("#radio2DMode .mode2DOption"));

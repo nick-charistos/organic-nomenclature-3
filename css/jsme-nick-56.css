@@ -3165,6 +3165,32 @@ color: var(--veryLightEarth);
   height: 20px;
 }
 
+/* ── v56 quiz verdict + sequence badges ─────────────────────────────── */
+/* Verdict line owns layout; JS sets only color + text (no inline layout). */
+#mulerQuizVerdict {
+  margin-top: 6px;
+  font-weight: bold;
+}
+#mulerQuizVerdict.mulerQuiz-empty { color: #555555; }
+#mulerQuizVerdict.mulerQuiz-exact { color: #1a7a3c; }
+#mulerQuizVerdict.mulerQuiz-subset,
+#mulerQuizVerdict.mulerQuiz-more,
+#mulerQuizVerdict.mulerQuiz-fewer,
+#mulerQuizVerdict.mulerQuiz-gap,
+#mulerQuizVerdict.mulerQuiz-direction,
+#mulerQuizVerdict.mulerQuiz-order { color: #8a6d00; }
+#mulerQuizVerdict.mulerQuiz-hetero,
+#mulerQuizVerdict.mulerQuiz-wrong { color: #b3261e; }
+#mulerQuizVerdict.mulerQuiz-disjoint { color: #555555; }
+
+/* Sequence badges: white text + dark outline painted as SVG text.
+   Fill comes from MULER_SELECT_CYAN via the `fill` attribute (JS-owned);
+   this class only marks the nodes for scraping skips + future skinning. */
+.mulerSelNum {
+  font-weight: bold;
+  font-family: Arial, sans-serif;
+}
+
 /* ── "Rotate device" prompt ──────────────────────────────────────────── */
 #rotatePrompt {
   display: none;

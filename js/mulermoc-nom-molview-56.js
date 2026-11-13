@@ -1134,6 +1134,9 @@ function fToggleAtomSelect() {
       try { if (typeof fScenarioToast === "function") fScenarioToast(fMolDraftT("draftLocked", "Finish the draft first (Submit/Cancel).")); } catch (eT) {}
       return;
     }
+    // Present owns the viewer: arming here would create invisible-active state
+    // (paint forced component-only, state kept). Block entry like drafts.
+    try { if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return; } catch (eP) {}
     var sel = null;
     try {
       if (typeof window !== "undefined") {
@@ -1142,7 +1145,7 @@ function fToggleAtomSelect() {
       }
     } catch (eS) { sel = null; }
     var makeActive = !(sel && sel.active === true);
-    if (sel) { try { sel.active = makeActive; if (!makeActive) { sel.atoms2D = []; sel.bonds2D = []; sel.atoms3D = []; sel.bonds3D = []; } } catch (eA) {} }
+    if (sel) { try { sel.active = makeActive; if (!makeActive) { sel.atoms2D = []; sel.bonds2D = []; sel.atoms3D = []; sel.bonds3D = []; sel.groups = []; } } catch (eA) {} }
     try {
       var b = document.getElementById("selectAtomsBtn");
       if (b) { if (makeActive) b.classList.add("active"); else b.classList.remove("active"); }
@@ -1241,6 +1244,10 @@ function fMulerSelectActive() {
 
 function fMulerSelectMolKey() {
   try {
+    // Intentionally molecule+mode only: eye toggles, chain-stepper index and
+    // compaction-skip changes keep atom indices stable, so the selection
+    // itself stays valid and only needs a repaint (fUpdateSVG head calls
+    // PushState before every render). Extending the key would drop valid picks.
     var m = (typeof selectedMol !== "undefined" && selectedMol) ? String(selectedMol) : "";
     var md = (typeof mode2D !== "undefined" && mode2D) ? String(mode2D) : "";
     return m + "|" + md;
@@ -1367,7 +1374,26 @@ function fMulerSelectVertices(groups) {
   var verts = [];
   try {
     if (!groups || !groups.length) return verts;
-    var EPS2 = MULER_SELECT_VERT_EPS * MULER_SELECT_VERT_EPS;
+    // Zoom-relative clustering: absolute EPS breaks when JSME rescales the
+    // SVG user units (user zoom / equalizer). Derive from the live median
+    // bond length, clamped so extreme layouts fall back near the v56 tuning
+    // (40 vertex / 150 joint at typical scale). Falls back to absolute on med==0.
+    var _med = 0;
+    try { if (typeof fMulerSelectMedianBond === "function") _med = fMulerSelectMedianBond(groups) || 0; } catch (eM) { _med = 0; }
+    var _vertEps = MULER_SELECT_VERT_EPS, _jointEps = MULER_SELECT_JOINT_EPS;
+    try {
+      if (_med > 0 && isFinite(_med)) {
+        _vertEps = _med * 0.12;
+        if (!(_vertEps >= 15) || !isFinite(_vertEps)) _vertEps = MULER_SELECT_VERT_EPS;
+        if (_vertEps < 15) _vertEps = 15;
+        if (_vertEps > 120) _vertEps = 120;
+        _jointEps = _med * 0.35;
+        if (!(_jointEps >= 60) || !isFinite(_jointEps)) _jointEps = MULER_SELECT_JOINT_EPS;
+        if (_jointEps < 60) _jointEps = 60;
+        if (_jointEps > 400) _jointEps = 400;
+      }
+    } catch (eC) { _vertEps = MULER_SELECT_VERT_EPS; _jointEps = MULER_SELECT_JOINT_EPS; }
+    var EPS2 = _vertEps * _vertEps;
     var at = function (x, y, bi) {
       for (var v = 0; v < verts.length; v++) {
         var dx = verts[v].x - x, dy = verts[v].y - y;
@@ -1394,9 +1420,9 @@ function fMulerSelectVertices(groups) {
     // coordinates). A candidate must carry a different bond and must not
     // already carry the multi-line bond itself — that excludes the bond's
     // opposite end and prevents collapsing both ends into one vertex on a
-    // pathologically short bond.
+    // pathologically short bond. Uses the same zoom-relative joint radius.
     try {
-      var jointEps2 = MULER_SELECT_JOINT_EPS * MULER_SELECT_JOINT_EPS;
+      var jointEps2 = _jointEps * _jointEps;
       var merged = true, guard = 0;
       while (merged && guard++ < 64) {
         merged = false;
@@ -1439,7 +1465,9 @@ function fMulerSelectVertices(groups) {
 // resolve from a resolved co-vertex on the same bond. Leftovers (fully
 // symmetric subgraphs, e.g. ethane) get a deterministic arbitrary mapping —
 // verdict-neutral there by symmetry. Returns array parallel to verts.
-function fMulerSelectVertexAtoms(verts) {
+// Optional groups2nd arg lets the joint safety net use the same zoom-relative
+// radius as fMulerSelectVertices; without it falls back to absolute.
+function fMulerSelectVertexAtoms(verts, groups2nd) {
   var assign = [];
   try {
     for (var v0 = 0; v0 < verts.length; v0++) assign.push(-1);
@@ -1476,15 +1504,27 @@ function fMulerSelectVertexAtoms(verts) {
       }
     }
     // Safety net for offset ends that fMulerSelectVertices could not merge
-    // (no different-bond vertex within MULER_SELECT_JOINT_EPS, or a layout
+    // (no different-bond vertex within joint radius, or a layout
     // where the offset exceeds the clustering radius): adopt the nearby
     // resolved joint's atom — but only when it belongs to this bond. Multi-line
     // bonds only: single-line joints coincide exactly, so clustering already
     // merges them, and terminal atoms (a full bond length from any joint) can
     // never trigger this. Runs before the leftover pass so the taken-set it
-    // sees is clean.
+    // sees is clean. Zoom-relative when groups are passed, absolute fallback.
     try {
-      var JOINT_EPS2 = MULER_SELECT_JOINT_EPS * MULER_SELECT_JOINT_EPS;
+      var _jEps = MULER_SELECT_JOINT_EPS;
+      try {
+        if (groups2nd && groups2nd.length && typeof fMulerSelectMedianBond === "function") {
+          var _m2 = fMulerSelectMedianBond(groups2nd) || 0;
+          if (_m2 > 0 && isFinite(_m2)) {
+            _jEps = _m2 * 0.35;
+            if (!(_jEps >= 60) || !isFinite(_jEps)) _jEps = MULER_SELECT_JOINT_EPS;
+            if (_jEps < 60) _jEps = 60;
+            if (_jEps > 400) _jEps = 400;
+          }
+        }
+      } catch (eJE) { _jEps = MULER_SELECT_JOINT_EPS; }
+      var JOINT_EPS2 = _jEps * _jEps;
       for (var vj = 0; vj < verts.length; vj++) {
         if (!verts[vj] || !verts[vj].bonds || verts[vj].bonds.length !== 1) continue;
         var bj = verts[vj].bonds[0];
@@ -1953,7 +1993,7 @@ function fMulerSelectGeom() {
     try { if (typeof fMulerSelectAnchors === "function") a = fMulerSelectAnchors() || []; } catch (eA) { a = []; }
     try { if (typeof fMulerSelectCompacted === "function") c = fMulerSelectCompacted() || []; } catch (eC2) { c = []; }
     try { v = (typeof fMulerSelectVertices === "function") ? fMulerSelectVertices(g) : []; } catch (eV) { v = []; }
-    try { va = (typeof fMulerSelectVertexAtoms === "function") ? fMulerSelectVertexAtoms(v) : []; } catch (eVA) { va = []; }
+    try { va = (typeof fMulerSelectVertexAtoms === "function") ? fMulerSelectVertexAtoms(v, g) : []; } catch (eVA) { va = []; }
     try { m = (typeof fMulerSelectMedianBond === "function") ? fMulerSelectMedianBond(g) : 0; } catch (eM) { m = 0; }
     try { if (g) for (var gi = 0; gi < g.length; gi++) bb[g[gi].bond] = g[gi]; } catch (eBB) {}
     var geom = { key: key, groups: g, anchors: a, comp: c, verts: v, vassign: va, med: (m > 0 ? m : 0), byBond: bb };
@@ -2132,7 +2172,7 @@ function fMulerHoverTick() {
   } catch (e) {}
 }
 
-// {kind:'bond',bond:0-based,pair:[a,b]1-based} | null.
+// Returns an atom, fragment, bond, ignored hit, or null for empty canvas.
 function fMulerSelectPick(px, py) {
   try {
     var geom = null;
@@ -2153,7 +2193,7 @@ function fMulerSelectPick(px, py) {
       try { if (typeof fMulerSelectCompacted === "function") comp = fMulerSelectCompacted(); } catch (eC0) { comp = null; }
       try { if (typeof fMulerSelectAnchors === "function") anchors = fMulerSelectAnchors() || []; } catch (eA0) { anchors = []; }
       try { verts = (typeof fMulerSelectVertices === "function") ? fMulerSelectVertices(groups) : []; } catch (eV) { verts = []; }
-      try { vAssign = (typeof fMulerSelectVertexAtoms === "function") ? fMulerSelectVertexAtoms(verts) : []; } catch (eVA) { vAssign = []; }
+      try { vAssign = (typeof fMulerSelectVertexAtoms === "function") ? fMulerSelectVertexAtoms(verts, groups) : []; } catch (eVA) { vAssign = []; }
     }
     var rAtom = med > 0 ? med * MULER_SELECT_ATOM_R : 200;
     var rBond = med > 0 ? med * MULER_SELECT_BOND_HW : 150;
@@ -2245,7 +2285,11 @@ function fMulerSelectPick(px, py) {
         }
       }
     }
-    if (bb !== null && bpair) return { kind: "bond", bond: groups[bb].bond + 1, pair: bpair };
+    if (bb !== null && bpair) {
+      // An ignored bond must not behave like empty canvas and clear picks.
+      if (typeof window !== "undefined" && window.MulerQuizTarget === "compCarbonsCount") return { ignore: true };
+      return { kind: "bond", bond: groups[bb].bond + 1, pair: bpair };
+    }
     return null;
   } catch (e) { return { ignore: true }; }
 }
@@ -2334,33 +2378,14 @@ function fMulerQuizTargetSet() {
   } catch (e) { return []; }
 }
 
-// Fold an explicit H pick onto its heavy parent (condensed MOLs carry no H;
-// expanded H picks count as their heavy atom in the compare AND the paint
-// below uses the picked index itself, so expanded H labels light up too).
-function fMulerQuizFoldHeavy(atom1) {
-  try {
-    if (typeof allAtomsTypeList === "undefined" || !allAtomsTypeList) return atom1;
-    if (allAtomsTypeList[atom1 - 1] !== "H") return atom1;
-    var nb = (typeof atomConnectivityList !== "undefined" && atomConnectivityList) ? (atomConnectivityList[atom1 - 1] || []) : [];
-    for (var i = 0; i < nb.length; i++) {
-      if (allAtomsTypeList[nb[i]] !== "H") return nb[i] + 1;
-    }
-  } catch (e) {}
-  return atom1;
-}
-
-// Order-insensitive set compare of the (folded) pick vs the target chain.
+// Order-insensitive set compare of the picked atoms vs the target chain.
 // Bonds are v1-out-of-scope (atoms only); bond-aware resolvers come with FGs.
 function fMulerQuizCompare(selAtoms, target) {
   try {
     var tset = {}, sset = {};
     var ta = target || [], sa = selAtoms || [];
     for (var i = 0; i < ta.length; i++) tset[ta[i]] = true;
-    for (var j = 0; j < sa.length; j++) {
-      var h = sa[j];
-      try { if (typeof fMulerQuizFoldHeavy === "function") h = fMulerQuizFoldHeavy(sa[j]); } catch (eF) {}
-      sset[h] = true;
-    }
+    for (var j = 0; j < sa.length; j++) sset[sa[j]] = true;
     var missing = [], extra = [], nHit = 0, nTarget = 0;
     for (var tk in tset) {
       if (!Object.prototype.hasOwnProperty.call(tset, tk)) continue;
@@ -2385,7 +2410,6 @@ function fMulerQuizCompare(selAtoms, target) {
         var seq = [];
         for (var sj = 0; sj < sa.length; sj++) {
           var sh = sa[sj];
-          try { if (typeof fMulerQuizFoldHeavy === "function") sh = fMulerQuizFoldHeavy(sa[sj]); } catch (eF2) {}
           if (!seq.length || seq[seq.length - 1].atom !== sh) seq.push({ atom: sh, pick: sj + 1 });
         }
         var brk = null;
@@ -2419,6 +2443,40 @@ function fMulerQuizCompare(selAtoms, target) {
     }
     return { verdict: verdict, nHit: nHit, nTarget: nTarget, missing: missing, extra: extra, orderPair: orderPair };
   } catch (e) { return { verdict: "empty", nHit: 0, nTarget: 0, missing: [], extra: [], orderPair: null }; }
+}
+
+// Live-feedback helpers (numberless): the verdict line never leaks the
+// chain length or pick positions — helpers use counts/geometry internally
+// only to choose *which* sentence to show.
+function fMulerQuizHasHetero(atoms) {
+  try {
+    var list = Array.isArray(atoms) ? atoms : [];
+    if (!list.length) return false;
+    if (typeof allAtomsTypeList === "undefined" || !Array.isArray(allAtomsTypeList)) return false;
+    for (var i = 0; i < list.length; i++) {
+      var a1 = list[i], t = "";
+      try { t = String(allAtomsTypeList[a1 - 1] || "").toUpperCase(); } catch (eT) { t = ""; }
+      if (t && t !== "C") return true;
+    }
+  } catch (e) {}
+  return false;
+}
+
+// Partial walk break in pick order (any prefix length >= 2). Same
+// anchor-collapsing as the exact-set check, but without requiring a complete
+// set — powers the live "adjacent atoms" hint.
+function fMulerQuizPartialBreak(atoms) {
+  try {
+    var sa = Array.isArray(atoms) ? atoms : [];
+    if (sa.length < 2) return null;
+    var seq = [];
+    for (var i = 0; i < sa.length; i++) {
+      if (!seq.length || seq[seq.length - 1].atom !== sa[i]) seq.push({ atom: sa[i], pick: i + 1 });
+    }
+    if (seq.length < 2) return null;
+    try { if (typeof fMulerQuizWalkBreak === "function") return fMulerQuizWalkBreak(seq); } catch (eB) {}
+  } catch (e) {}
+  return null;
 }
 
 // Pool-wide candidates for main-chain validation (v56 1C multi-chain):
@@ -2490,8 +2548,9 @@ function fMulerQuizSymmetricChain(chain1) {
 }
 
 // Pool-wide compare: exact-directional match on ANY candidate wins
-// (adopted first); then direction, then order; subset/wrong/disjoint counts
-// always come from the adopted chain (stable reference for the panel).
+// (adopted first); then direction, then order; live numberless hints
+// (hetero/gap/more/fewer/wrong) always come from the adopted chain
+// (stable reference for the panel).
 function fMulerQuizComparePool(atoms) {
   try {
     var cands = (typeof fMulerQuizMainChainPool === "function") ? fMulerQuizMainChainPool() : [];
@@ -2562,7 +2621,7 @@ function fMulerQuizBonded(a, b) {
   return false;
 }
 
-// seq: [{atom (1-based folded), pick (1-based selection position)}].
+// seq: [{atom (1-based), pick (1-based selection position)}].
 // Returns {a, b} pick numbers of the first broken link, or null.
 function fMulerQuizWalkBreak(seq) {
   try {
@@ -2589,7 +2648,10 @@ function fMulerQuizVerdictEl() {
     if (!host || !host.parentNode) return null;
     el = document.createElement("div");
     el.setAttribute("id", "mulerQuizVerdict");
+    // Layout lives in css/jsme-nick-56.css; keep the inline style as fallback
+    // for cached CSS (same values, harmless duplication).
     try { el.setAttribute("style", "margin-top:6px;font-weight:bold;"); } catch (eS) {}
+    try { el.className = "mulerQuiz-empty"; } catch (eC) {}
     host.parentNode.insertBefore(el, host.nextSibling);
     return el;
   } catch (e) { return null; }
@@ -2597,28 +2659,35 @@ function fMulerQuizVerdictEl() {
 
 function fMulerQuizVerdict(kind, cmp) {
   try {
-    // Renderer for every verdict kind. The schedule is final-only today:
-    // fMulerQuizRefresh pushes only exact/direction/order (and clear), so
-    // subset/wrong/disjoint/empty stay unused but remain available for future
-    // quiz targets (FG/branch) that may want progress feedback.
+    // Renderer for every verdict kind. Live schedule: exact/direction/order
+    // (final, full-set) plus hetero/gap/more/fewer/wrong (live, numberless —
+    // no counts, no pick positions). subset/disjoint/empty stay as compat
+    // aliases (rendered numberless) for future FG/branch targets.
+    // Color is set inline (immediate) + via CSS class (skinnable, see
+    // css/jsme-nick-56.css #mulerQuizVerdict.*).
     var el = (typeof fMulerQuizVerdictEl === "function") ? fMulerQuizVerdictEl() : null;
     if (!el) return;
     var T = function (k) { try { return (typeof fMulerT === "function") ? fMulerT(k) : ""; } catch (eT) { return ""; } };
     if (!kind || kind === "clear") { try { el.textContent = ""; el.style.display = "none"; } catch (eC) {} return; }
     try { el.style.display = ""; } catch (eD) {}
-    var txt = "", col = "#555555", glyph = "○";
-    if (kind === "exact") { col = "#1a7a3c"; glyph = "✓"; txt = T("quizExact"); }
-    else if (kind === "subset") { col = "#8a6d00"; glyph = "◐"; txt = ((cmp && cmp.nHit) || 0) + "/" + ((cmp && cmp.nTarget) || 0) + " " + T("quizPartial"); }
-    else if (kind === "wrong") { col = "#b3261e"; glyph = "✕"; txt = T("quizWrong") + " (" + ((cmp && cmp.nHit) || 0) + "/" + ((cmp && cmp.nTarget) || 0) + ")"; }
-    else if (kind === "disjoint") { col = "#555555"; glyph = "○"; txt = T("quizDisjoint"); }
+    var txt = "", col = "#555555", glyph = "○", cls = "mulerQuiz-empty";
+    if (kind === "exact") { col = "#1a7a3c"; glyph = "✓"; txt = T("quizExact"); cls = "mulerQuiz-exact"; }
+    else if (kind === "more") { col = "#8a6d00"; glyph = "◐"; txt = T("quizMore"); cls = "mulerQuiz-more"; }
+    else if (kind === "fewer") { col = "#8a6d00"; glyph = "◐"; txt = T("quizFewer"); cls = "mulerQuiz-fewer"; }
+    else if (kind === "hetero") { col = "#b3261e"; glyph = "✕"; txt = T("quizHetero"); cls = "mulerQuiz-hetero"; }
+    else if (kind === "gap") { col = "#8a6d00"; glyph = "⇄"; txt = T("quizGap"); cls = "mulerQuiz-gap"; }
+    else if (kind === "subset") { col = "#8a6d00"; glyph = "◐"; txt = T("quizMore"); cls = "mulerQuiz-subset"; }
+    else if (kind === "wrong") { col = "#b3261e"; glyph = "✕"; txt = T("quizWrong"); cls = "mulerQuiz-wrong"; }
+    else if (kind === "disjoint") { col = "#555555"; glyph = "○"; txt = T("quizDisjoint"); cls = "mulerQuiz-disjoint"; }
     else if (kind === "order") {
-      col = "#8a6d00"; glyph = "⇄";
+      col = "#8a6d00"; glyph = "⇄"; cls = "mulerQuiz-order";
       var _op = (cmp && cmp.orderPair) || [0, 0];
       try { txt = T("quizOrder").replace("{a}", String(_op[0])).replace("{b}", String(_op[1])); } catch (eO) { txt = T("quizOrder"); }
     }
-    else if (kind === "direction") { col = "#8a6d00"; glyph = "↩"; txt = T("quizDirection"); }
-    else { col = "#555555"; glyph = "·"; txt = T("quizEmpty"); }
+    else if (kind === "direction") { col = "#8a6d00"; glyph = "↩"; txt = T("quizDirection"); cls = "mulerQuiz-direction"; }
+    else { col = "#555555"; glyph = "·"; txt = T("quizEmpty"); cls = "mulerQuiz-empty"; }
     try { el.style.color = col; } catch (eC2) {}
+    try { el.className = cls; } catch (eC3) {}
     try { el.textContent = glyph + " " + txt; } catch (eT2) {}
   } catch (e) {}
 }
@@ -2627,8 +2696,8 @@ function fMulerQuizPrompt() {
   try {
     var ex = document.getElementById("nameAnalysisExplain");
     if (ex) { try { ex.textContent = (typeof fMulerT === "function") ? fMulerT("quizPick") : ""; } catch (eT) {} }
-    // Final-only: no neutral verdict line while picking; the instruction above
-    // is the only text until the target resolves.
+    // The prompt owns the panel until the first pick; Refresh then owns the
+    // verdict line (live numberless hints, final direction/order).
     if (typeof fMulerQuizVerdict === "function") fMulerQuizVerdict("clear", null);
   } catch (e) {}
 }
@@ -2636,6 +2705,58 @@ function fMulerQuizPrompt() {
 function fMulerQuizDisarm() {
   try { if (typeof window !== "undefined") window.MulerQuizTarget = null; } catch (eT) {}
   try { if (typeof fMulerQuizVerdict === "function") fMulerQuizVerdict("clear", null); } catch (eV) {}
+}
+
+// Sticky-quiz re-arm on molecule switch (v56): sticky selection restores the
+// component box (.selected + nameAnalysisMode) but PushState disarms the quiz
+// on molecule change, leaving select ON + comp selected + purpose "free" —
+// so condensed CHO/COOH clicks then take the whole fragment instead of the
+// anchor carbon. Re-arm when the restored box is quiz-capable. Mirrors the
+// click-arm body without requiring a click; never overrides an active target,
+// Present/draft/replay, hidden boxes, or a deselected panel.
+function fMulerQuizRearmSticky() {
+  try {
+    if (typeof window === "undefined") return false;
+    if (window.MulerDraft) return false;
+    if (typeof fMulerSelectActive === "function" && !fMulerSelectActive()) return false;
+    if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return false;
+    if (window.__mulerQuizReplayBypass) return false;
+    if (window.MulerQuizTarget) return false;
+    var mode = "none";
+    try { mode = (typeof nameAnalysisMode !== "undefined") ? nameAnalysisMode : "none"; } catch (eM) { mode = "none"; }
+    if (!mode || mode === "none") return false;
+    var resolver = null;
+    try { resolver = (typeof MULER_QUIZ_TARGET_RESOLVERS !== "undefined" && MULER_QUIZ_TARGET_RESOLVERS) ? MULER_QUIZ_TARGET_RESOLVERS[mode] : null; } catch (eR) { resolver = null; }
+    if (typeof resolver !== "function") return false;
+    var boxId = null;
+    try {
+      var s = document.querySelector("#nameAnalysis .nameCompBox.selected");
+      if (s) boxId = s.getAttribute("id") || null;
+    } catch (eS) { boxId = null; }
+    if (!boxId) return false;
+    var boxMode = "none";
+    try { boxMode = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId(boxId) : "none"; } catch (eM2) { boxMode = "none"; }
+    if (boxMode !== mode) return false;
+    try {
+      var bEl = document.getElementById(boxId);
+      if (!bEl) return false;
+      if (bEl.classList && bEl.classList.contains("comp-hidden")) return false;
+      if (typeof fNameCompHidden === "function" && fNameCompHidden(boxId)) return false;
+    } catch (eH) { return false; }
+    try { window.MulerQuizTarget = mode; } catch (eT) {}
+    try { if (typeof fMulerSelectNormalizeMainChainCompacts === "function") fMulerSelectNormalizeMainChainCompacts(); } catch (eN) {}
+    try { if (typeof fClearHighlights === "function") fClearHighlights(); } catch (eCH) {}
+    try { numberingFlag = false; } catch (eN2) {}
+    try { if (window.nameExplainAll) { window.nameExplainAll = false; try { jQuery("#nameExplainAllBtn").removeClass("active"); } catch (eB) {} } } catch (eT2) {}
+    try { var rc = document.getElementById("ruleTheoryContainer"); if (rc) rc.style.display = "none"; } catch (eR2) {}
+    try { if (typeof fMulerQuizPrompt === "function") fMulerQuizPrompt(); } catch (eP) {}
+    try { if (typeof fMulerQuizRefresh === "function") fMulerQuizRefresh(); } catch (eR3) {}
+    try { if (typeof fMulerSelectRepaint === "function") fMulerSelectRepaint(); } catch (eR4) {}
+    try { if (typeof fUpdateSVG === "function") fUpdateSVG(); } catch (eU) {}
+    try { if (typeof fFitNameComponents === "function") fFitNameComponents(); } catch (eF) {}
+    try { if (window.nameExplainAll && typeof fNameExplainTableRender === "function") fNameExplainTableRender(); } catch (eET) {}
+    return true;
+  } catch (e) { return false; }
 }
 
 // Quiz arm on name-box click while select mode is armed (teaching layer
@@ -2696,10 +2817,9 @@ function fMulerQuizArmForBox(boxId, $box) {
 // Live compare after every selection change. On exact: clear the target,
 // replay the classic component path (green + numbering + explanation as the
 // reward), then the success line. Callers repaint/render as usual afterwards.
-// While the user is still picking, the verdict line stays hidden (final-only
-// feedback): no partial counts and no "outside the main chain" / "no overlap"
-// notes. `direction`/`order` are final too — they only fire once the picked set
-// already equals the target set — and stay visible.
+// Live feedback (numberless — no chain length, no pick positions):
+// hetero > gap > more/fewer > wrong. `direction`/`order` stay final-only —
+// they fire once the picked set already equals the target set.
 function fMulerQuizRefresh() {
   try {
     var target = (typeof window !== "undefined") ? window.MulerQuizTarget : null;
@@ -2732,9 +2852,13 @@ function fMulerQuizRefresh() {
       try { if (sel) { sel.atoms2D = []; sel.bonds2D = []; sel.atoms3D = []; sel.bonds3D = []; sel.groups = []; } } catch (eS2) {}
       // Exact is the one moment selection mode allows a component highlight:
       // opt the viewer-owning guard in fExplainNameComp through for this call.
+      // try/finally: the flag must clear even if the explain path throws.
       try { if (typeof window !== "undefined") window.__mulerQuizReward = true; } catch (eRw) {}
-      try { if (typeof fExplainNameComp === "function") fExplainNameComp(); } catch (eE) {}
-      try { if (typeof window !== "undefined") window.__mulerQuizReward = false; } catch (eRw2) {}
+      try {
+        try { if (typeof fExplainNameComp === "function") fExplainNameComp(); } catch (eE) {}
+      } finally {
+        try { if (typeof window !== "undefined") window.__mulerQuizReward = false; } catch (eRw2) {}
+      }
       try { if (typeof fMulerQuizVerdict === "function") fMulerQuizVerdict("exact", r.cmp || r); } catch (eV) {}
       // Explain-all panel stays the overview table when it is open.
       try { if (window.nameExplainAll && typeof fNameExplainTableRender === "function") fNameExplainTableRender(); } catch (eET) {}
@@ -2742,9 +2866,35 @@ function fMulerQuizRefresh() {
     }
     if (r.verdict === "direction" || r.verdict === "order") {
       try { if (typeof fMulerQuizVerdict === "function") fMulerQuizVerdict(r.verdict, r); } catch (eV2) {}
-    } else {
-      // subset / wrong / disjoint / empty: silent while picking.
+    } else if (r.verdict === "empty") {
+      // No picks: prompt owns the panel, verdict stays hidden.
       try { if (typeof fMulerQuizVerdict === "function") fMulerQuizVerdict("clear", null); } catch (eV3) {}
+    } else {
+      // Live, numberless, priority-ordered: hetero > gap > count > wrong.
+      var liveKind = null;
+      try { if (typeof fMulerQuizHasHetero === "function" && fMulerQuizHasHetero(atoms)) liveKind = "hetero"; } catch (eH) {}
+      if (!liveKind) {
+        try { if (typeof fMulerQuizPartialBreak === "function" && fMulerQuizPartialBreak(atoms)) liveKind = "gap"; } catch (eG) {}
+      }
+      if (!liveKind) {
+        try {
+          var uniq = {};
+          for (var ui = 0; ui < atoms.length; ui++) uniq[atoms[ui]] = true;
+          var nSel = 0;
+          for (var uk in uniq) if (Object.prototype.hasOwnProperty.call(uniq, uk)) nSel++;
+          var nT = (r && typeof r.nTarget === "number") ? r.nTarget : 0;
+          if (nT > 0) {
+            if (nSel < nT) liveKind = "more";
+            else if (nSel > nT) liveKind = "fewer";
+          }
+        } catch (eC) {}
+      }
+      if (!liveKind) {
+        // Same count, wrong composition, walk intact (e.g. swapped branch):
+        // keep the generic outside-chain line (already numberless).
+        liveKind = "wrong";
+      }
+      try { if (typeof fMulerQuizVerdict === "function") fMulerQuizVerdict(liveKind, r); } catch (eV4) {}
     }
     return r.cmp || null;
   } catch (e) { return null; }
@@ -2782,7 +2932,7 @@ function fMulerSelectMergeBgArg(compArg, kind) {
           typeof fGetCompactedAtomSkipSet === "function") skipSet = fGetCompactedAtomSkipSet(false);
     } catch (eSk) { skipSet = null; }
     // Quiz compare (not paint) tells right from wrong: the verdict line
-    // reports counts, all picks stay cyan. Present pushes component-only.
+    // shows a numberless hint, all picks stay cyan. Present pushes component-only.
     for (var j = 0; j < selIdx.length; j++) {
       if (compSet[selIdx[j]]) continue;
       try { if (skipSet && skipSet.has(selIdx[j] - 1)) continue; } catch (eSk2) {}
@@ -2956,8 +3106,10 @@ function fMulerSelectPushState() {
 
 function fMulerSelectIsSelectionFill(fill) {
   // JSME writes background fills either as the palette hex or as rgb(r,g,b),
-  // so derive both forms from the configured selection color. Legacy cyan is
-  // kept for one-generation overlap (older renders / cached DOM).
+  // so derive both forms from the configured selection color. Legacy cyan
+  // #22d3ee is retained for one-generation overlap (older renders / cached
+  // DOM after the v56 palette move to #6ddcbe). Remove the legacy branch once
+  // no cached v56-early DOM can survive (post-v56 live flip + cache-bust).
   return fMulerFillMatches(MULER_SELECT_CYAN, fill) || fMulerFillMatches("#22d3ee", fill);
 }
 
@@ -3291,7 +3443,7 @@ function fMolDraftEnter(mode) {
   try {
     if (typeof window !== "undefined" && window.MulerUserSelection && window.MulerUserSelection.active === true) {
       window.MulerUserSelection.active = false;
-      try { window.MulerUserSelection.atoms2D = []; window.MulerUserSelection.bonds2D = []; window.MulerUserSelection.atoms3D = []; window.MulerUserSelection.bonds3D = []; } catch (eClr) {}
+      try { window.MulerUserSelection.atoms2D = []; window.MulerUserSelection.bonds2D = []; window.MulerUserSelection.atoms3D = []; window.MulerUserSelection.bonds3D = []; window.MulerUserSelection.groups = []; } catch (eClr) {}
       try { if (typeof fMulerSelectPush === "function") fMulerSelectPush(); } catch (ePush) {}
       try { if (typeof fMulerHoverClear === "function") fMulerHoverClear(); } catch (eHC2) {}
       try { if (typeof fMulerQuizDisarm === "function") fMulerQuizDisarm(); } catch (eQD3) {}
@@ -4350,7 +4502,7 @@ function fMolDraftLocal3DReloadMinimized(sdfText, expectHeavy) {
     if (typeof fJSmolScriptWait !== "function" || typeof fJSmolLoadInlineSDF !== "function") return false;
     try { if (fJSmolScriptWait(jmolAppletNomeclature, "zap;") === null) return false; } catch (eZ) { return false; }
     var ok = false;
-    try { ok = !!fJSmolLoadInlineSDF(jmolAppletNomeclature, sdfText, "script spt/init-3.spt;"); } catch (eL) { ok = false; }
+    try { ok = !!fJSmolLoadInlineSDF(jmolAppletNomeclature, sdfText, "script spt/init-3-56.spt;"); } catch (eL) { ok = false; }
     if (!ok) return false;
     var lv = null;
     try { if (typeof fJSmolScriptEcho === "function") lv = fJSmolScriptEcho(jmolAppletNomeclature, "write MOL") || null; } catch (eR) { lv = null; }
@@ -4865,7 +5017,7 @@ function fMolDraftShow3D(sdf) {
   var _issued = false;
   try {
     if (typeof fJSmolLoadInlineSDF === "function") {
-      _issued = !!fJSmolLoadInlineSDF(jmolAppletNomeclature, sdf, "script spt/init-3.spt;");
+      _issued = !!fJSmolLoadInlineSDF(jmolAppletNomeclature, sdf, "script spt/init-3-56.spt;");
     }
   } catch (eJ) { _issued = false; }
   if (!_issued) {
@@ -5249,7 +5401,7 @@ function fMolDraftShowFlat3D() {
       if (typeof fJSmolScriptWait === "function") { if (fJSmolScriptWait(jmolAppletNomeclature, "zap;") === null) return; }
     } catch (eZ) {}
     var ok = false;
-    try { if (typeof fJSmolLoadInlineSDF === "function") ok = !!fJSmolLoadInlineSDF(jmolAppletNomeclature, d.molText, "script spt/init-3.spt;"); } catch (eL) { ok = false; }
+    try { if (typeof fJSmolLoadInlineSDF === "function") ok = !!fJSmolLoadInlineSDF(jmolAppletNomeclature, d.molText, "script spt/init-3-56.spt;"); } catch (eL) { ok = false; }
     if (!ok) return;
     try {
       var b3 = document.getElementById("view3DBtn");
@@ -9204,7 +9356,8 @@ function fMulerSelectSeqBadges() {
         }
       } catch (eB) { continue; }
       try {
-        var s = "<text id='mulerSelNum" + i + "' x='" + Math.round(bx) + "' y='" + Math.round(by) + "' font-size='" + Math.round(numFS) + "px' font-weight='bold' font-family='Arial, sans-serif' text-anchor='middle' fill='#6ddcbe' stroke='#000000' stroke-width='" + Math.round(numSW) + "px' paint-order='stroke'>" + (i + 1) + "</text>";
+        var _cyan = (typeof MULER_SELECT_CYAN !== "undefined" && MULER_SELECT_CYAN) ? MULER_SELECT_CYAN : "#6ddcbe";
+        var s = "<text id='mulerSelNum" + i + "' x='" + Math.round(bx) + "' y='" + Math.round(by) + "' font-size='" + Math.round(numFS) + "px' font-weight='bold' font-family='Arial, sans-serif' text-anchor='middle' fill='" + _cyan + "' stroke='#000000' stroke-width='" + Math.round(numSW) + "px' paint-order='stroke' class='mulerSelNum'>" + (i + 1) + "</text>";
         var nel = null;
         try { nel = (typeof MuSVG !== "undefined" && MuSVG.parse) ? MuSVG.parse(s) : null; } catch (eP) { nel = null; }
         if (nel) gWrap.append(nel);
@@ -9486,7 +9639,7 @@ function fLoadMol3D() {
     try {
       if (typeof fJSmolLoadInlineSDF === "function") {
         fJSmolLoadInlineSDF(jmolAppletNomeclature, selectedExample.sdf3D,
-          "script spt/init-3.spt;" + zoomInline + movetoInline);
+          "script spt/init-3-56.spt;" + zoomInline + movetoInline);
       }
     } catch (eInline) {}
     try { if (typeof fSetMolVis3D === "function") fSetMolVis3D(); } catch (eV) {}
@@ -9516,7 +9669,7 @@ function fLoadMol3D() {
     "frank off;load " +
       myMol3D +
       "; select all; center selected;" +
-      "script spt/init-3.spt;" + zoomCmd + movetoCmd,
+      "script spt/init-3-56.spt;" + zoomCmd + movetoCmd,
   );
   fSetMolVis3D();
   // A fresh load satisfies any pending one-shot exit reload (e.g. molecule
@@ -11119,6 +11272,14 @@ function fShowNameAnalysis() {
 
   fExplainNameComp();
 
+  // Sticky-quiz re-arm: sticky selection restored .selected above, but the
+  // molecule switch disarmed the quiz (PushState) — re-arm so condensed
+  // CHO/COOH clicks stay anchor-carbon-only instead of whole-fragment.
+  // No-op unless select is armed, target is clear, and the restored box is
+  // quiz-capable + visible. Safe on every rebuild (style/eye/stepper paths
+  // keep their target and skip here).
+  try { if (typeof fMulerQuizRearmSticky === "function") fMulerQuizRearmSticky(); } catch (eQR) {}
+
   // Scenario rebuild hook (additive, guarded): this rebuild recreates
   // #nameSettingsBtnDiv/#nameSettingsPanel + voice buttons without the
   // presentation hides, so re-assert the current present step's naming
@@ -12569,42 +12730,47 @@ function fNameExplainTableBuild() {
     try { prevNum = !!numberingFlag; } catch (eN) {}
     try { prevRule = !!ruleFlag; } catch (eR) {}
     try { prevRTC = (typeof $ !== "undefined") ? $("#ruleTheoryContainer").is(":visible") : null; } catch (eV) {}
-    try { window.__mulerExplainQuiet = true; } catch (eF) {}
+    // try/finally: quiet flag + author view state must restore even if the
+    // synchronous scrape loop throws (a stuck flag would suppress all paints).
+    try { if (typeof window !== "undefined") window.__mulerExplainQuiet = true; } catch (eF) {}
     try {
-      for (var bi = 0; bi < boxes.length; bi++) {
-        var box = boxes[bi], bid = "";
-        try { bid = box.getAttribute("id") || ""; } catch (eI) { bid = ""; }
-        if (!bid) continue;
-        // Eye-hidden components keep their row instead of vanishing: the
-        // chip mirrors the hidden box (dash), the explanation cell stays.
-        var _rowHidden = false;
-        try { _rowHidden = !!(box.classList && box.classList.contains("comp-hidden")); } catch (eH) { _rowHidden = false; }
-        var mode = null;
-        try { mode = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId(bid) : null; } catch (eM) { mode = null; }
-        if (!mode || mode === "none") continue;
-        var chip = _rowHidden ? "–" : "";
-        try { if (!_rowHidden) chip = (box.textContent || "").replace(/\s+/g, " ").trim(); } catch (eC) {}
-        if (!chip) continue;
-        try { nameAnalysisMode = mode; } catch (eS) {}
-        try { if (typeof fExplainNameComp === "function") fExplainNameComp(); } catch (eX) { continue; }
-        var html = "";
-        try { html = document.getElementById("nameAnalysisExplain").innerHTML || ""; } catch (eH2) {}
-        // Defensive: never scrape our own overview markup into a cell (a stale
-        // nested table must not survive a rebuild).
-        try { if (html.indexOf("explainTable") >= 0) html = ""; } catch (eH3) { html = ""; }
-        if (!html) continue;
-        rows.push({ id: bid, chip: chip, html: html, hidden: _rowHidden });
-      }
-    } catch (eL) {}
-    try { window.__mulerExplainQuiet = false; } catch (eF2) {}
-    try { nameAnalysisMode = prevMode; } catch (eS2) {}
-    try { numberingFlag = !!prevNum; } catch (eN2) {}
-    try { ruleFlag = !!prevRule; } catch (eR2) {}
-    try {
-      if (typeof $ !== "undefined") {
-        if (prevRTC) $("#ruleTheoryContainer").show(); else $("#ruleTheoryContainer").hide();
-      }
-    } catch (eV2) {}
+      try {
+        for (var bi = 0; bi < boxes.length; bi++) {
+          var box = boxes[bi], bid = "";
+          try { bid = box.getAttribute("id") || ""; } catch (eI) { bid = ""; }
+          if (!bid) continue;
+          // Eye-hidden components keep their row instead of vanishing: the
+          // chip mirrors the hidden box (dash), the explanation cell stays.
+          var _rowHidden = false;
+          try { _rowHidden = !!(box.classList && box.classList.contains("comp-hidden")); } catch (eH) { _rowHidden = false; }
+          var mode = null;
+          try { mode = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId(bid) : null; } catch (eM) { mode = null; }
+          if (!mode || mode === "none") continue;
+          var chip = _rowHidden ? "–" : "";
+          try { if (!_rowHidden) chip = (box.textContent || "").replace(/\s+/g, " ").trim(); } catch (eC) {}
+          if (!chip) continue;
+          try { nameAnalysisMode = mode; } catch (eS) {}
+          try { if (typeof fExplainNameComp === "function") fExplainNameComp(); } catch (eX) { continue; }
+          var html = "";
+          try { html = document.getElementById("nameAnalysisExplain").innerHTML || ""; } catch (eH2) {}
+          // Defensive: never scrape our own overview markup into a cell (a stale
+          // nested table must not survive a rebuild).
+          try { if (html.indexOf("explainTable") >= 0) html = ""; } catch (eH3) { html = ""; }
+          if (!html) continue;
+          rows.push({ id: bid, chip: chip, html: html, hidden: _rowHidden });
+        }
+      } catch (eL) {}
+    } finally {
+      try { if (typeof window !== "undefined") window.__mulerExplainQuiet = false; } catch (eF2) {}
+      try { nameAnalysisMode = prevMode; } catch (eS2) {}
+      try { numberingFlag = !!prevNum; } catch (eN2) {}
+      try { ruleFlag = !!prevRule; } catch (eR2) {}
+      try {
+        if (typeof $ !== "undefined") {
+          if (prevRTC) $("#ruleTheoryContainer").show(); else $("#ruleTheoryContainer").hide();
+        }
+      } catch (eV2) {}
+    }
   } catch (eO) {}
   return rows;
 }

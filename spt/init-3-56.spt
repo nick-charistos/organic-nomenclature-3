@@ -1,0 +1,40 @@
+
+ set minimizationCriterion 0.005;
+
+  set picking OFF;
+
+
+  set measurement OFF;
+  set showMeasurements OFF;
+ 
+ set antialiasDisplay on;
+
+ set antialiasImages ON;
+
+ set labelOffset 0 0; 
+ font labels 18; 
+ color labels black;
+
+  font echo 28; 
+ color echo [xA4031F];
+
+ color selectionHalos[X66ff66] ;
+
+ select all and not _Xx; 
+ spacefill 24%; 
+ wireframe 0.13;
+
+ hover off;
+ 
+ background [xffffff]
+
+ frank off;
+
+ rotate best;
+ 
+ zoom 0;
+
+ zoomto 0.0 out;
+
+
+

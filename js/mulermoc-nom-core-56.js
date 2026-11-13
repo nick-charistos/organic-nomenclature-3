@@ -83,6 +83,13 @@ let nameMultiPrefix = []
 // (carboxylicAcid > ester > cyanide > aldehyde > ketone > alcohol > amine;
 // nitro/ether/halogen unranked, lose to everything ranked).
 const gFunctionalGroupsOrder = ["carboxylicAcid", "ester", "cyanide", "aldehyde", "ketone", "alcohol", "amine", "nitro"]
+// fGuessName is fail-closed (a wrong name is worse than none): anything outside
+// these sets declines. Single-group naming covers the groups below; with several
+// groups the principal must be a suffix group and the rest simple prefixes.
+const gNamableElements = ["C", "H", "N", "O", "F", "Cl", "Br", "I"]
+const gNamableSingleGroups = ["hydrocarbon", "halogen", "nitro", "alcohol", "ketone", "ether", "aldehyde", "cyanide", "carboxylicAcid", "ester"]
+const gNamablePrincipalGroups = ["carboxylicAcid", "cyanide", "aldehyde", "ketone", "alcohol"]
+const gNamablePrefixGroups = ["carboxylicAcid", "cyanide", "aldehyde", "ketone", "alcohol", "amine", "nitro", "halogen"]
 let molTaxonomy = ""
 
 function fGetMoleculeClassification() {
@@ -389,7 +396,7 @@ function fDetectMolType() {
                                     }
                                 } else { //is not terminal: classify by bond-order counts, not summed valence
                                     // (valence-sum misclassifies R3N as imine and leaves R-NO2 unmatched)
-                                    let nSingleN = 0, nDoubleN = 0, nTripleN = 0, nDoubleON = 0, nDoubleCN = 0, nON = 0;
+                                    let nSingleN = 0, nDoubleN = 0, nTripleN = 0, nDoubleON = 0, nDoubleCN = 0, nON = 0, nCN = 0;
                                     if (Array.isArray(bondList)) {
                                         for (let b = 0; b < bondList.length; b++) {
                                             const bb = bondList[b];
@@ -400,6 +407,7 @@ function fDetectMolType() {
                                             else { continue; }
                                             const nbTypeN0 = allAtomsTypeList[nbN];
                                             if (nbTypeN0 === "O") { nON++; }
+                                            if (nbTypeN0 === "C") { nCN++; }
                                             if (bb[2] === 1) { nSingleN++; }
                                             else if (bb[2] === 2) {
                                                 nDoubleN++;
@@ -409,7 +417,7 @@ function fDetectMolType() {
                                             else if (bb[2] === 3) { nTripleN++; }
                                         }
                                     }
-                                    if (nON >= 2 && nSingleN >= 1 && nDoubleON >= 1) {
+                                    if (nON === 2 && nCN === 1 && nSingleN >= 1 && nDoubleON >= 1) {
                                         // R-NO2 incl. JSME charge-separated form (1 C-single + 1 O-single + 1 O-double)
                                         myFunctionalGroup = "nitro";
                                         molTaxonomy = "Νιτροενώσεις";
@@ -446,6 +454,11 @@ function fDetectMolType() {
                                 myXAtomIndex = j
                                 //check if terminal
                                 if (atomConnectivityList[j].length == 1) { // is terminal
+                                    if (allAtomsTypeList[atomConnectivityList[j][0]] === "N") {
+                                        // O on N is never an alcohol/carbonyl: a nitro O belongs to the
+                                        // nitro group (detected from N); nitroso/N-oxide/N-OH are unsupported.
+                                        myFunctionalGroup = fIsNitroNitrogen(atomConnectivityList[j][0], allAtomsTypeList, atomConnectivityList) ? null : "unsupported"
+                                    } else {
                                     // check bond order from valency
                                     switch (atomValenceList[j]) {
                                         case 1:// single bond
@@ -467,11 +480,14 @@ function fDetectMolType() {
                                             }
                                             break;
                                     }
+                                    }
                                 } else { //is not terminal   
                                     myFunctionalGroup = "ether"
                                     molTaxonomy = "Αιθέρες"
                                 }
-                                if (functionalGroupObj.hasOwnProperty(myFunctionalGroup)) {
+                                if (myFunctionalGroup === null) {
+                                    // nitro O: nothing to register
+                                } else if (functionalGroupObj.hasOwnProperty(myFunctionalGroup)) {
                                     functionalGroupObj[myFunctionalGroup][myHetero][functionalGroupObj[myFunctionalGroup][myHetero].length] = j
                                 } else {
                                     functionalGroupObj[myFunctionalGroup] = {}
@@ -1232,6 +1248,7 @@ function fCalcMainChain() {
     principalFgCarbons = {}  // subset: alcohol/ketone/amine (beat multi-bonds in orientation)
     anchorSubstName = {}     // reset: rebuilt each call for Tier-4 tiebreaker
     terminalFgCarbons = {} // sub-set: aldehyde/acid/cyanide — forced to C1 (Rule A)
+    const principalByFg = {}  // alcohol/ketone/amine anchors per group; only the senior group is principal
 
     const fgKeys = Object.keys(functionalGroupObj)
     for (let fi = 0; fi < fgKeys.length; fi++) {
@@ -1253,7 +1270,7 @@ function fCalcMainChain() {
                 } else {
                     // Single heteroatom index — its first (only, for terminal atoms) C neighbour
                     if (Array.isArray(atomConnectivityList[entry])) {
-                        anchorC = atomConnectivityList[entry][0]
+                        anchorC = fAnchorCarbonOf(entry, atomConnectivityList, allAtomsTypeList)
                     }
                 }
                 if (anchorC !== null) {
@@ -1270,9 +1287,9 @@ function fCalcMainChain() {
                         }
                     }
                     if (fg === 'carboxylicAcid') {
-                        terminalFgCarbons[anchorC] = 3  // highest IUPAC priority: always C1 when on chain
+                        terminalFgCarbons[anchorC] = 4  // highest IUPAC priority: always C1 when on chain
                     } else if (fg === 'ester') {
-                        terminalFgCarbons[anchorC] = 4  // ester carbonyl C: always C1 of acid chain
+                        terminalFgCarbons[anchorC] = 3  // ester carbonyl C: always C1 of acid chain
                         // also anchor the alcohol-side C (2nd O neighbour) for completeness
                         if (Array.isArray(entry) && entry.length > 1 && Array.isArray(atomConnectivityList[entry[1]])) {
                             const _oNbrs = atomConnectivityList[entry[1]]
@@ -1288,7 +1305,8 @@ function fCalcMainChain() {
                         terminalFgCarbons[anchorC] = 1  // demoted when higher-priority FG also present
                     } else if (fg === 'alcohol' || fg === 'ketone' || fg === 'amine') {
                         // Principal characteristic groups: suffix FGs that rank above multi-bonds
-                        principalFgCarbons[anchorC] = true
+                        if (!principalByFg[fg]) principalByFg[fg] = []
+                        principalByFg[fg].push(anchorC)
                     }
                     // halogen / nitro: also store Greek name for Tier-4 alphabetical tiebreaker
                     if (fg === 'halogen') {
@@ -1303,6 +1321,17 @@ function fCalcMainChain() {
                     }
                 }
             }
+        }
+    }
+
+    // Only the senior of alcohol/ketone/amine is the suffix group that fixes the
+    // numbering; a junior one (e.g. OH beside C=O) is a prefix and joins the
+    // detachable-prefix tier (5-hydroxypentan-2-one, not 1-hydroxypentan-4-one).
+    for (let gi = 0; gi < gFunctionalGroupsOrder.length; gi++) {
+        const seniorCs = principalByFg[gFunctionalGroupsOrder[gi]]
+        if (seniorCs) {
+            for (let ci = 0; ci < seniorCs.length; ci++) principalFgCarbons[seniorCs[ci]] = true
+            break
         }
     }
 
@@ -1822,6 +1851,7 @@ function fCalcMainChain3D() {
     principalFgCarbons3D = {}
     terminalFgCarbons3D = {}
 
+    const principalByFg3D = {}  // senior of alcohol/ketone/amine only (mirrors the 2D Step 5)
     const fgKeys3D = Object.keys(functionalGroupObj3D)
     for (let fi = 0; fi < fgKeys3D.length; fi++) {
         const fg = fgKeys3D[fi]
@@ -1839,15 +1869,15 @@ function fCalcMainChain3D() {
                     }
                 } else {
                     if (Array.isArray(atomConnectivityList3D[entry])) {
-                        anchorC = atomConnectivityList3D[entry][0]
+                        anchorC = fAnchorCarbonOf(entry, atomConnectivityList3D, allAtomsTypeList3D)
                     }
                 }
                 if (anchorC !== null) {
                     anchorCarbons3D[anchorC] = true
                     if (fg === 'carboxylicAcid') {
-                        terminalFgCarbons3D[anchorC] = 3
-                    } else if (fg === 'ester') {
                         terminalFgCarbons3D[anchorC] = 4
+                    } else if (fg === 'ester') {
+                        terminalFgCarbons3D[anchorC] = 3
                         if (Array.isArray(entry) && entry.length > 1 && Array.isArray(atomConnectivityList3D[entry[1]])) {
                             const _oNbrs = atomConnectivityList3D[entry[1]]
                             for (let _oi = 0; _oi < _oNbrs.length; _oi++) {
@@ -1861,10 +1891,18 @@ function fCalcMainChain3D() {
                     } else if (fg === 'aldehyde') {
                         terminalFgCarbons3D[anchorC] = 1
                     } else if (fg === 'alcohol' || fg === 'ketone' || fg === 'amine') {
-                        principalFgCarbons3D[anchorC] = true
+                        if (!principalByFg3D[fg]) principalByFg3D[fg] = []
+                        principalByFg3D[fg].push(anchorC)
                     }
                 }
             }
+        }
+    }
+    for (let gi = 0; gi < gFunctionalGroupsOrder.length; gi++) {
+        const seniorCs3D = principalByFg3D[gFunctionalGroupsOrder[gi]]
+        if (seniorCs3D) {
+            for (let ci = 0; ci < seniorCs3D.length; ci++) principalFgCarbons3D[seniorCs3D[ci]] = true
+            break
         }
     }
 
@@ -2312,8 +2350,16 @@ function fIsNitroNitrogen(idx, typeList, connList) {
             if (t === "C") cCount++
             else if (t === "O") oCount++
         }
-        return oCount >= 1 && cCount === 1
+        // nitro = exactly one C and two O (nitroso / N-oxide / nitrate esters excluded)
+        return oCount === 2 && cCount === 1 && nbs.length === 3
     } catch (eN) { return false }
+}
+// A hetero group attaches to the parent chain through carbon. A nitro N also
+// lists its O neighbours (in bond order), so [0] may be an O: take the first C.
+function fAnchorCarbonOf(idx, connList, typeList) {
+    const nbs = Array.isArray(connList[idx]) ? connList[idx] : []
+    for (let i = 0; i < nbs.length; i++) if (typeList[nbs[i]] === "C") return nbs[i]
+    return nbs.length ? nbs[0] : null
 }
 function fBondOrder1b(a1b, b1b) {
     try {
@@ -3341,6 +3387,23 @@ function fGuessName(skipChainRecalc) {
         functionalGroupsList = Object.keys(functionalGroupObj)
     }
 
+    // Fail-closed scope guards: unsupported elements/groups must never fall
+    // through to a hydrocarbon-style name of the carbon skeleton.
+    {
+        const _badEl = Object.keys(atomTypeObj).filter(function (el) { return gNamableElements.indexOf(el) < 0 })
+        if (_badEl.length) fDeclineNaming("unsupported element " + _badEl.join(","))
+        if (functionalGroupsList.length === 1) {
+            if (gNamableSingleGroups.indexOf(functionalGroupsList[0]) < 0) fDeclineNaming("unsupported group " + functionalGroupsList[0])
+        } else {
+            const _rank = function (g) { const i = gFunctionalGroupsOrder.indexOf(g); return i < 0 ? 99 : i }
+            const _byRank = functionalGroupsList.slice().sort(function (a, b) { return _rank(a) - _rank(b) })
+            if (gNamablePrincipalGroups.indexOf(_byRank[0]) < 0) fDeclineNaming("unsupported principal group " + _byRank[0])
+            for (let _gi = 1; _gi < _byRank.length; _gi++) {
+                if (gNamablePrefixGroups.indexOf(_byRank[_gi]) < 0) fDeclineNaming("unsupported substituent group " + _byRank[_gi])
+            }
+        }
+    }
+
     ////// GUESS MOLECULE NAME ///////////
     switch (mode2D) {
         case 'condensed':
@@ -3420,7 +3483,7 @@ function fGuessName(skipChainRecalc) {
             sortedMultiDBonds.push(bondPos)
         }
         if (sortedMultiDBonds.length > 0) {
-            sortedMultiDBonds.sort()
+            sortedMultiDBonds.sort(function (a, b) { return a - b })
         }
         for (let i = 0; i < sortedMultiDBonds.length; i++) {
             bondPrefixDB += sortedMultiDBonds[i]
@@ -3444,7 +3507,7 @@ function fGuessName(skipChainRecalc) {
             sortedMultiTBonds.push(bondPos)
         }
         if (sortedMultiTBonds.length > 0) {
-            sortedMultiTBonds.sort()
+            sortedMultiTBonds.sort(function (a, b) { return a - b })
         }
         for (let i = 0; i < sortedMultiTBonds.length; i++) {
             bondPrefixTB += sortedMultiTBonds[i]
@@ -3478,7 +3541,10 @@ function fGuessName(skipChainRecalc) {
     // Υδρογονάνθρακες, αλκυλαλογονίδια, νιτρο (-ιο): τόνος στο τελευταίο συνθετικό δεσμού (άν/έν/ίν)
     // Defensive: buckets without a naming entry (e.g. CCamine) fall back to
     // hydrocarbon instead of throwing on undefined (cf. nitro crash at :1710)
-    const _principalEntry = nameMainCompObj3[functionalGroupsList[0]] || nameMainCompObj3.hydrocarbon
+    // The principal group (not the first-inserted key) decides the accent rule.
+    const _principalKey = functionalGroupsList.length < 2 ? functionalGroupsList[0]
+        : (gFunctionalGroupsOrder.find(function (g) { return functionalGroupsList.indexOf(g) >= 0 }) || functionalGroupsList[0])
+    const _principalEntry = nameMainCompObj3[_principalKey] || nameMainCompObj3.hydrocarbon
     if (_principalEntry.suffix === "ιο") {
         if (comp2b !== "") { // μεικτή περίπτωση (διπλοί + τριπλοί): τόνος μόνο στο τελευταίο (comp2b)
             comp2b = "ίν"
@@ -3673,15 +3739,15 @@ function fGuessName(skipChainRecalc) {
                 for (let i = 0; i < myFunctionalGroups.length; i++) { // τρέχει για όλες τις εμφανίσεις της ΧΟ
                     theXno = myFunctionalGroups[i]
                     if (_decNitroClaimed[theXno]) continue
-                    currXPos = fMainChainLocant(atomConnectivityList[theXno][0] + 1)
+                    currXPos = fMainChainLocant(fAnchorCarbonOf(theXno, atomConnectivityList, allAtomsTypeList) + 1)
                     if (currXPos == null) fDeclineNaming("nitro off main chain")
                     _directNitro.push(currXPos)
                 }
                 if (!_decNitro.length) {
-                    // Legacy path, byte-identical (count prefix computed but
-                    // unused, as before).
+                    // Legacy path, byte-identical for a single group (the multiplier
+                    // is empty then); polynitro now carries δι-/τρι-.
                     sortedFunPositions = _directNitro
-                    sortedFunPositions.sort()
+                    sortedFunPositions.sort(function (a, b) { return a - b })
                     for (let j = 0; j < sortedFunPositions.length; j++) {
                         myXpositions += sortedFunPositions[j]
                         if (j < sortedFunPositions.length - 1) {
@@ -3695,7 +3761,8 @@ function fGuessName(skipChainRecalc) {
                     }
 
                     comp0 = myXpositions
-                    comp0Text = nameMainCompObj3.nitro.substitute
+                    // δι-/τρι- multiplier for polynitro (empty for a single group)
+                    comp0Text = nameMultiPrefix[sortedFunPositions.length - 1] + nameMainCompObj3.nitro.substitute
 
                     break;
                 }
@@ -3770,7 +3837,7 @@ function fGuessName(skipChainRecalc) {
                     if (currXPos == null) fDeclineNaming(functionalGroupsList[0] + " O off main chain")
                     sortedFunPositions.push(currXPos)
                 }
-                sortedFunPositions.sort()
+                sortedFunPositions.sort(function (a, b) { return a - b })
                 for (let j = 0; j < sortedFunPositions.length; j++) {
                     myXpositions += sortedFunPositions[j]
                     if (j < sortedFunPositions.length - 1) {
@@ -3871,7 +3938,7 @@ function fGuessName(skipChainRecalc) {
     } else { // αν περιέχει > 1 ΧΟ
         // console.log("multiple functional groups ", functionalGroupsList)
         // Local priority copy: the global stays pristine for the next molecule
-        const fgOrder = ["carboxylicAcid", "ester", "cyanide", "aldehyde", "ketone", "alcohol", "amine", "nitro", "ether"]
+        const fgOrder = ["carboxylicAcid", "ester", "cyanide", "aldehyde", "ketone", "alcohol", "amine", "nitro", "halogen", "ether"]
 
         ///////// PATCH για σωστή σειρά υποκαταστατών ////////////
 
@@ -3900,46 +3967,82 @@ function fGuessName(skipChainRecalc) {
         }
 
         comp4 = theCountPrefix + nameMainCompObj3[fgOrder[0]].suffix
-        XOPrefix = ""
-        myXpositions = ""
-        sortedFunPositions = []
+        // A C-C multiple bond needs its own locant slot next to the group
+        // locants; the multi-group layout has none, so decline instead of
+        // dropping the bond locant (…-εν- would be ambiguous).
+        if (multiBondListCC.length > 0) fDeclineNaming("multi-FG with C-C multiple bond")
+
+        // One entry per substituent type, each with its own locants. (The old
+        // loop shared one accumulator, so a second type repeated the first
+        // type's locants and the merged list was attached to every name.)
+        const _prefixGroups = []
         for (let i = 1; i < fgOrder.length; i++) {
             currXO = fgOrder[i] // η τρεχουσα ΧΟ υποκαταστατη
-            currXOhetero = Object.keys(functionalGroupObj[fgOrder[i]])[0] // το ετεροάτομο της ΧΟ
-            currXOcount = functionalGroupObj[fgOrder[i]][currXOhetero].length // ποσες φορες υπάρχει η ΧΟ
-            theCountPrefix = nameMultiPrefix[currXOcount - 1] // τιποτα,Δι,τρι....
-
+            if (currXO === "halogen") {
+                // Halogens are prefixes: one group per halogen type, own locants.
+                const _hxs = Object.keys(functionalGroupObj.halogen)
+                for (let h = 0; h < _hxs.length; h++) {
+                    const _sub = nameMainCompObj3.halogen.substitute[_hxs[h]]
+                    if (!_sub) fDeclineNaming("unsupported halogen " + _hxs[h])
+                    const _hl = functionalGroupObj.halogen[_hxs[h]].map(function (x) {
+                        const _l = fMainChainLocant(fAnchorCarbonOf(x, atomConnectivityList, allAtomsTypeList) + 1)
+                        if (_l == null) fDeclineNaming("multi-FG halogen off main chain")
+                        return _l
+                    }).sort(function (a, b) { return a - b })
+                    _prefixGroups.push({ xo: "halogen", locs: _hl, substitute: _sub, label: nameMultiPrefix[_hl.length - 1] + _sub })
+                }
+                continue
+            }
+            currXOhetero = Object.keys(functionalGroupObj[currXO])[0] // το ετεροάτομο της ΧΟ
+            currXOcount = functionalGroupObj[currXO][currXOhetero].length // ποσες φορες υπάρχει η ΧΟ
+            const _locs = []
             for (let j = 0; j < currXOcount; j++) {
-                theXno = functionalGroupObj[fgOrder[i]][currXOhetero][j] // ο αριθμός του ετερορατομου της τρεχουσας ΧΟ
+                theXno = functionalGroupObj[currXO][currXOhetero][j] // ο αριθμός του ετερορατομου της τρεχουσας ΧΟ
                 // Fail-closed: multi-FG decorated naming is v2 — an off-chain
                 // substituent hetero (e.g. Cl inside a branch) declines here.
-                currXPos = fMainChainLocant(atomConnectivityList[theXno][0] + 1)
+                currXPos = fMainChainLocant(fAnchorCarbonOf(theXno, atomConnectivityList, allAtomsTypeList) + 1)
                 if (currXPos == null) fDeclineNaming("multi-FG substituent off main chain")
-                sortedFunPositions.push(currXPos)
+                _locs.push(currXPos)
             }
-            sortedFunPositions.sort()
-            for (let j = 0; j < sortedFunPositions.length; j++) {
-                myXpositions += sortedFunPositions[j]
-                if (j < sortedFunPositions.length - 1) {
-                    myXpositions += ","
-                } else {
-                    myXpositions += "-"
-                }
-            }
+            _locs.sort(function (a, b) { return a - b })
+            _prefixGroups.push({
+                xo: currXO, locs: _locs, substitute: nameMainCompObj3[currXO].substitute,
+                label: nameMultiPrefix[currXOcount - 1] + nameMainCompObj3[currXO].substitute
+            })
+        }
 
+        if (_prefixGroups.length === 1) {
+            const _g = _prefixGroups[0]
+            myXpositions = _g.locs.join(",") + "-"
             // Oxo-acid naming (carboxylic principal): keep the substituent
             // locant so both languages render it (2-οξο- / 2-oxo-). Other
             // principals keep the school convention (locant omitted).
-            if (currXO == "aldehyde" && fgOrder[0] !== "carboxylicAcid") { myXpositions = "" }
-            if (currXO == "ketone" && mainChainAtomsList.length < 5 && fgOrder[0] !== "carboxylicAcid") { myXpositions = "" }
-
-            // Per-group count prefix accumulated with its own substitute
-            // (was: only the last group's count prefix applied to the whole string)
-            XOPrefix += nameMultiPrefix[currXOcount - 1] + nameMainCompObj3[currXO].substitute
+            if (_g.xo == "aldehyde" && fgOrder[0] !== "carboxylicAcid") { myXpositions = "" }
+            if (_g.xo == "ketone" && mainChainAtomsList.length < 5 && fgOrder[0] !== "carboxylicAcid") { myXpositions = "" }
+            comp0 = myXpositions;
+            comp0Text = _g.label;
+        } else {
+            // Several substituent types: alphabetical by substituent name (multiplier
+            // ignored), every locant shown; the shared prefix-slot block below lays them out.
+            _prefixGroups.sort(function (a, b) { return a.substitute < b.substitute ? -1 : (a.substitute > b.substitute ? 1 : 0) })
+            for (let i = 0; i < _prefixGroups.length; i++) {
+                comp0NumberList.push(_prefixGroups[i].locs.join(","))
+                comp0TextList.push(_prefixGroups[i].label)
+            }
         }
 
-        comp0 = myXpositions;
-        comp0Text = XOPrefix;
+        // Principal alcohol/ketone locant (e.g. 5-υδροξυ-2-πεντανόνη), same
+        // length thresholds as the single-group path; before this it was never emitted.
+        if (fgOrder[0] === "alcohol" || fgOrder[0] === "ketone") {
+            if (mainChainAtomsList.length >= (fgOrder[0] === "alcohol" ? 3 : 5)) {
+                const _pl = functionalGroupObj[fgOrder[0]].O.map(function (o) {
+                    const _l = fMainChainLocant(fAnchorCarbonOf(o, atomConnectivityList, allAtomsTypeList) + 1)
+                    if (_l == null) fDeclineNaming(fgOrder[0] + " O off main chain")
+                    return _l
+                }).sort(function (a, b) { return a - b }).join(",")
+                comp1No = "-" + _pl + "-"
+            }
+        }
 
     }
     // Preserve the functional-group locant for branched alcohols/ketones before
@@ -4185,7 +4288,7 @@ function fDetectMolType3D() {
                             } else {
                                 // Non-terminal: classify by bond-order counts, not summed valence
                                 // (mirrors fDetectMolType 2D: R3N is amine, R-NO2 is nitro)
-                                let nSingleN3 = 0, nDoubleN3 = 0, nTripleN3 = 0, nDoubleON3 = 0, nDoubleCN3 = 0, nON3 = 0;
+                                let nSingleN3 = 0, nDoubleN3 = 0, nTripleN3 = 0, nDoubleON3 = 0, nDoubleCN3 = 0, nON3 = 0, nCN3 = 0;
                                 if (Array.isArray(bondList3D)) {
                                     for (let b3 = 0; b3 < bondList3D.length; b3++) {
                                         const bb3 = bondList3D[b3];
@@ -4196,6 +4299,7 @@ function fDetectMolType3D() {
                                         else { continue; }
                                         const nbTypeN30 = allAtomsTypeList3D[nbN3];
                                         if (nbTypeN30 === 'O') { nON3++; }
+                                        if (nbTypeN30 === 'C') { nCN3++; }
                                         if (bb3[2] === 1) { nSingleN3++; }
                                         else if (bb3[2] === 2) {
                                             nDoubleN3++;
@@ -4205,7 +4309,7 @@ function fDetectMolType3D() {
                                         else if (bb3[2] === 3) { nTripleN3++; }
                                     }
                                 }
-                                if (nON3 >= 2 && nSingleN3 >= 1 && nDoubleON3 >= 1) { myFunctionalGroup = 'nitro'; }
+                                if (nON3 === 2 && nCN3 === 1 && nSingleN3 >= 1 && nDoubleON3 >= 1) { myFunctionalGroup = 'nitro'; }
                                 else if (nTripleN3 >= 1) { myFunctionalGroup = 'cyanide'; }
                                 else if (nDoubleCN3 >= 1) { myFunctionalGroup = 'CCimine'; }
                                 else { myFunctionalGroup = 'CCamine'; }
@@ -4229,7 +4333,10 @@ function fDetectMolType3D() {
                         if (allAtomsTypeList3D[j] === myHetero) {
                             if (!Array.isArray(atomConnectivityList3D[j])) { myStart = j + 1; break }
                             if (atomConnectivityList3D[j].length === 1) {
-                                switch (atomValenceList3D[j]) {
+                                if (allAtomsTypeList3D[atomConnectivityList3D[j][0]] === 'N') {
+                                    // mirrors 2D: O on N belongs to the nitro group or is unsupported
+                                    myFunctionalGroup = fIsNitroNitrogen(atomConnectivityList3D[j][0], allAtomsTypeList3D, atomConnectivityList3D) ? null : 'unsupported'
+                                } else switch (atomValenceList3D[j]) {
                                     case 1: myFunctionalGroup = 'alcohol'; break
                                     case 2:
                                         const theCarbon = atomConnectivityList3D[j][0]
@@ -4241,7 +4348,9 @@ function fDetectMolType3D() {
                             } else {
                                 myFunctionalGroup = 'ether'
                             }
-                            if (functionalGroupObj3D.hasOwnProperty(myFunctionalGroup)) {
+                            if (myFunctionalGroup === null) {
+                                // nitro O: nothing to register
+                            } else if (functionalGroupObj3D.hasOwnProperty(myFunctionalGroup)) {
                                 functionalGroupObj3D[myFunctionalGroup][myHetero][functionalGroupObj3D[myFunctionalGroup][myHetero].length] = j
                             } else {
                                 functionalGroupObj3D[myFunctionalGroup] = {}

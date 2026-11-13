@@ -1,11 +1,6 @@
  
  set minimizationCriterion 0.005;
 
-  set picking OFF;
-
-
-  set measurement OFF;
-  set showMeasurements OFF;
  
  set antialiasDisplay on;
 

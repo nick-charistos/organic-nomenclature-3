@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>core/molview 56 chemistry regression</title>
+</head>
+<body>
+  <!--
+    Headless regression for the v56 naming engine (docs/REVIEW-CORE-MOLVIEW-56.md).
+    Loads the real app in an iframe (needs an http server: python -m http.server),
+    names every stored molecule through fSelectMol and a set of drawn probes
+    through the draft path (fAnalyseStructure/fDetectMolType/fGuessName), then
+    prints JSON into #out and sets document.title to CORE56-DONE.
+    Usage: serve the repo root (python -m http.server 8099), then open
+           zz-test-core56.html  -> JSON in #out, title "CORE56-DONE PASS|FAIL"
+           chrome --headless=new --virtual-time-budget=180000 --dump-dom http://localhost:8099/zz-test-core56.html
+    Also records fParseSDF3D/fDetectMolType3D/fCalcMainChain3D for all stored
+    molecules (res.threeD) so 2D/3D drift can be diffed between revisions.
+  -->
+  <iframe id="app" src="mulermoc-nom-56.html?libs=local" style="width:1200px;height:900px"></iframe>
+  <pre id="out">booting…</pre>
+  <script>
+    (function () {
+      var frame = document.getElementById("app");
+      var out = document.getElementById("out");
+      // [label, SMILES, expected EN name | "DECLINE"]. Declines are deliberate
+      // (fail-closed): unsupported groups must never fall back to a skeleton name.
+      var probes = [
+        ["dodeca_2_10_diene", "CC=CCCCCCCC=CC", "dodeca-2,10-diene"],
+        ["chloroethanol", "ClCCO", "2-chloroethanol"],
+        ["bromo_hydroxy_ketone", "BrCC(=O)CCO", "1-bromo-4-hydroxybutan-2-one"],
+        ["hydroxypentanone", "OCCCC(=O)C", "5-hydroxypentan-2-one"],
+        ["pentanone_5_hydroxy_rev", "CC(=O)CCCO", "5-hydroxypentan-2-one"],
+        ["hydroxypentanone_4", "CC(O)CC(=O)C", "4-hydroxypentan-2-one"],
+        ["dinitropropane", "O=[N+]([O-])CCC[N+](=O)[O-]", "1,3-dinitropropane"],
+        ["tri_nitro_geminal", "O=[N+]([O-])C(CC)[N+](=O)[O-]", "1,1-dinitropropane"],
+        ["nitropropane_pentavalent", "O=N(=O)CCC", "1-nitropropane"],
+        ["nitroethanol_N_first", "[N+](=O)([O-])CCO", "2-nitroethanol"],
+        ["nitroso", "CCCN=O", "DECLINE"],
+        ["propanamine_1", "CCCN", "DECLINE"],
+        ["propanamine_2", "CC(N)C", "DECLINE"],
+        ["ethylenediamine", "NCCN", "DECLINE"],
+        ["nitroamine", "NCC[N+](=O)[O-]", "DECLINE"],
+        ["dimethylamine", "CNC", "DECLINE"],
+        ["thiol", "CCS", "DECLINE"],
+        ["methoxyethanol", "COCCO", "DECLINE"],
+        ["imine", "CCC=N", "DECLINE"],
+        ["ester_acid", "COC(=O)CCC(=O)O", "DECLINE"],
+        ["hydroxy_acid_ok", "CC(O)C(=O)O", "2-hydroxypropanoic acid"],
+        ["oxo_acid_ok", "O=CC(=O)O", "2-oxoethanoic acid"],
+        ["butenedioic_acid_ok", "OC(=O)C=CC(=O)O", "but-2-enedioic acid"],
+        ["chlorobutane_ok", "CCCCCl", "1-chlorobutane"],
+        ["methoxyethane_ok", "CCOC", "methoxyethane"],
+        ["methylundecadiene_ok", "CC=CCC(C)CCCC=CC", "5-methylundeca-2,9-diene"],
+        ["chloropropanol", "OCC(Cl)C", "2-chloropropan-1-ol"],
+        ["bromo_chloro_propanol", "OCC(Br)CCl", "2-bromo-3-chloropropan-1-ol"],
+        ["dichloro_ketone", "ClCC(=O)CCCCl", "1,5-dichloropentan-2-one"],
+        ["serine_like", "OCC(N)C(=O)O", "2-amino-3-hydroxypropanoic acid"],
+        ["hydroxy_acid_c11", "OC(=O)C(O)CCCCCCCCC", "2-hydroxyundecanoic acid"]
+      ];
+      function parse(s) {
+        var atoms = [], bonds = [], stack = [], prev = -1, order = 1, i = 0;
+        while (i < s.length) {
+          var c = s[i], el;
+          if (c === "(") { stack.push(prev); i++; continue; }
+          if (c === ")") { prev = stack.pop(); i++; continue; }
+          if (c === "=") { order = 2; i++; continue; }
+          if (c === "#") { order = 3; i++; continue; }
+          if (c === "[") { var j = s.indexOf("]", i); el = /[A-Z][a-z]?/.exec(s.slice(i + 1, j))[0]; i = j + 1; }
+          else if (s.substr(i, 2) === "Cl" || s.substr(i, 2) === "Br") { el = s.substr(i, 2); i += 2; }
+          else { el = c; i++; }
+          atoms.push(el);
+          var idx = atoms.length - 1;
+          if (prev >= 0) bonds.push([prev, idx, order]);
+          prev = idx; order = 1;
+        }
+        return { atoms: atoms, bonds: bonds };
+      }
+      function pad(s, n) { s = String(s); while (s.length < n) s = " " + s; return s; }
+      function molText(name, smi) {
+        var p = parse(smi), n = p.atoms.length, depth = new Array(n).fill(-1);
+        depth[0] = 0;
+        var q = [0];
+        while (q.length) {
+          var a = q.shift();
+          p.bonds.forEach(function (b) {
+            var o = b[0] === a ? b[1] : (b[1] === a ? b[0] : -1);
+            if (o >= 0 && depth[o] < 0) { depth[o] = depth[a] + 1; q.push(o); }
+          });
+        }
+        var cnt = {}, lines = [name, "  core56", "", pad(n, 3) + pad(p.bonds.length, 3) + "  0  0  0  0  0  0  0  0999 V2000"];
+        p.atoms.forEach(function (el, i) {
+          var d = depth[i]; cnt[d] = (cnt[d] || 0);
+          var x = d * 1.25, y = cnt[d] * 1.1 + (d % 2) * 0.55; cnt[d]++;
+          lines.push(pad(x.toFixed(4), 10) + pad(y.toFixed(4), 10) + "    0.0000 " + (el + "   ").slice(0, 3) + " 0  0  0  0  0  0  0  0  0  0  0  0");
+        });
+        p.bonds.forEach(function (b) { lines.push(pad(b[0] + 1, 3) + pad(b[1] + 1, 3) + pad(b[2], 3) + "  0  0  0  0"); });
+        lines.push("M  END");
+        return lines.join("\n");
+      }
+
+      var runner = function () {
+        var res = { curated: {}, probes: {} };
+        var keys = Object.keys(nameExamples);
+        keys.forEach(function (k) {
+          try {
+            selectedMol = k; fSelectMol();
+            res.curated[k] = {
+              name: currentMolName,
+              fg: Object.keys(functionalGroupObj).join(","),
+              chain: (mainChainAtomsList || []).join(","),
+              en: (nameExamples[k] && nameExamples[k].engineEN) || null,
+              slots: JSON.stringify(nameComponentsList)
+            };
+          } catch (e) { res.curated[k] = { err: String(e && e.message) }; }
+        });
+        return res;
+      };
+
+      function probe(w, label, smi) {
+        var r = { smi: smi };
+        try {
+          var text = molText(label, smi);
+          w.eval("jsmeNomeclatureApplet.readMolFile(" + JSON.stringify(text) + "); mainChainMode = 'algorithmic'; fAnalyseStructure(); fDetectMolType();");
+          r.fg = w.eval("Object.keys(functionalGroupObj).join(',')");
+          try {
+            w.eval("fDeclineNaming = function (reason) { window.__declineReason = String(reason || 'unsupported'); throw new Error('decline'); }; window.__declineReason = null;");
+            w.eval("currentMolName = ''; fGuessName();");
+            r.name = w.eval("currentMolName");
+            r.slots = w.eval("JSON.stringify(nameComponentsList)");
+            r.chain = w.eval("mainChainAtomsList.join(',')");
+            try { r.en = w.eval("fPopulateEngineENFromGreek('__draft__')"); } catch (eE) { r.enErr = String(eE && eE.message); }
+          } catch (eN) { r.declined = w.__declineReason || String(eN && eN.message) || ("THROWN:" + String(eN) + " " + (eN && eN.stack ? String(eN.stack).split("\n").slice(0, 3).join(" | ") : "")); }
+        } catch (e) { r.err = String(e && e.message); }
+        return r;
+      }
+
+      function ready(w) {
+        try {
+          return !!w.eval("typeof jsmeNomeclatureApplet !== 'undefined' && !!jsmeNomeclatureApplet && typeof nameExamples !== 'undefined' && typeof fSelectMol === 'function' && Object.keys(nameExamples).length > 0 && !!nameExamples[Object.keys(nameExamples)[0]].classification");
+        } catch (e) { return false; }
+      }
+
+      // 3D mirror: parse every stored SDF and record the 3D groups + main chain.
+      var run3D = async function (w) {
+        var out3 = {};
+        var keys = w.eval("Object.keys(nameExamples)");
+        for (var i = 0; i < keys.length; i++) {
+          var k = keys[i];
+          try {
+            var url = w.eval("nameExamples[" + JSON.stringify(k) + "].file3D");
+            var text = url ? await (await fetch(url)).text() : w.eval("nameExamples[" + JSON.stringify(k) + "].sdf3D");
+            out3[k] = w.eval("(function(t){ fParseSDF3D(t); fDetectMolType3D(); fCalcMainChain3D(); return JSON.stringify({fg:Object.keys(functionalGroupObj3D),chain:mainChainAtoms3D,pool:mainChainPool3D.length}) })(" + JSON.stringify(text) + ")");
+          } catch (e) { out3[k] = "ERR " + String(e && e.message); }
+        }
+        return out3;
+      };
+
+      var tries = 0;
+      var timer = setInterval(async function () {
+        tries++;
+        var w = frame.contentWindow;
+        if (!w || !ready(w)) {
+          out.textContent = "booting… " + tries;
+          if (tries > 400) { clearInterval(timer); out.textContent = "TIMEOUT"; document.title = "CORE56-TIMEOUT"; }
+          return;
+        }
+        clearInterval(timer);
+        try {
+          var res = w.eval("(" + runner.toString() + ")()");
+          res = JSON.parse(JSON.stringify(res));
+          res.threeD = await run3D(w);
+          probes.forEach(function (p) {
+            var r = probe(w, p[0], p[1]);
+            r.expect = p[2];
+            r.pass = (p[2] === "DECLINE") ? (!!r.declined && !r.en) : (r.en === p[2]);
+            res.probes[p[0]] = r;
+          });
+          var failed = Object.keys(res.probes).filter(function (k) { return !res.probes[k].pass; });
+          var unnamed = Object.keys(res.curated).filter(function (k) { return !res.curated[k].name; });
+          res.summary = { probes: probes.length, failed: failed, curatedUnnamed: unnamed };
+          document.title = "CORE56-DONE " + (failed.length || unnamed.length ? "FAIL" : "PASS");
+          out.textContent = "JSON>>" + JSON.stringify(res) + "<<JSON";
+        } catch (e) { out.textContent = "ERROR " + (e && e.stack || e); document.title = "CORE56-ERROR"; return; }
+        if (document.title.indexOf("CORE56-DONE") !== 0) document.title = "CORE56-DONE";
+      }, 250);
+    })();
+  </script>
+</body>
+</html>

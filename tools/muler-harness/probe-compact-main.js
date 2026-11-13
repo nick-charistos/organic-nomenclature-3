@@ -2,6 +2,14 @@
 // Free selection keeps the whole fragment; main-chain selection resolves a
 // carbon-anchored label to the anchor carbon only. NOx/SOx stay fragments.
 const { chromium } = require("playwright-core");
+const CHROME = process.env.MULER_CHROME || "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+const BASE = process.env.MULER_BASE || "http://localhost:8901";
+async function waitReady(p, failures) {
+  try {
+    await p.waitForFunction(() => { try { return !!document.querySelector("#jsmeNomeclatureSVG svg") && typeof fMulerSelectAnchors === "function" && !!window.MulerUserSelection; } catch (e) { return false; } }, { timeout: 30000 });
+  } catch (e) { try { failures.push("ready timeout"); } catch (e2) {} }
+  try { await p.waitForTimeout(800); } catch (e) {}
+}
 
 const failures = [];
 const check = (ok, msg) => { if (!ok) failures.push(msg); };
@@ -18,14 +26,14 @@ const isSelFillColor = (fill, hex) => {
 };
 
 (async () => {
-  const b = await chromium.launch({ executablePath: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" });
+  const b = await chromium.launch(await (async () => { try { const fs = require("fs"); if (fs.existsSync(CHROME)) return { executablePath: CHROME }; } catch (e) {} return {}; })());
   const p = await b.newPage({ viewport: { width: 1500, height: 900 } });
   const errs = [];
   p.on("pageerror", (e) => errs.push(String(e.message).slice(0, 200)));
 
   async function open(mol) {
-    await p.goto("http://localhost:8901/mulermoc-nom-56.html?mol=" + mol, { waitUntil: "load", timeout: 60000 });
-    await p.waitForTimeout(14000);
+    await p.goto(BASE + "/mulermoc-nom-56.html?mol=" + mol, { waitUntil: "load", timeout: 60000 });
+    await waitReady(p, (typeof failures !== "undefined" ? failures : []));
     await p.evaluate(() => document.getElementById("selectAtomsBtn").click());
     await p.waitForTimeout(250);
   }
