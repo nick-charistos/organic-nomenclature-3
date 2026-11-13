@@ -1189,6 +1189,35 @@ var MULER_SELECT_JOINT_EPS = 150; // joint-adoption radius, SVG units (see fMule
 var MULER_SELECT_ATOM_R = 0.35;   // atom hit radius, × median bond length
 var MULER_SELECT_BOND_HW = 0.2;   // bond corridor half-width, × median bond length
 
+// Selection purpose by quiz target. Only a main-chain purpose lets a compacted
+// carbon label resolve to its anchor atom; every other purpose keeps the
+// existing whole-fragment semantics (nitro/sulfonyl groups included).
+var MULER_SELECT_PURPOSE_BY_TARGET = { compCarbonsCount: "mainChain" };
+
+function fMulerSelectPurpose() {
+  try {
+    if (typeof window !== "undefined" && window.MulerSelectPurpose) {
+      return String(window.MulerSelectPurpose);
+    }
+    var t = (typeof window !== "undefined" && window.MulerQuizTarget) ? String(window.MulerQuizTarget) : "";
+    if (t && Object.prototype.hasOwnProperty.call(MULER_SELECT_PURPOSE_BY_TARGET, t)) {
+      return MULER_SELECT_PURPOSE_BY_TARGET[t];
+    }
+  } catch (e) {}
+  return "free";
+}
+
+// Main-chain + carbon-anchored compact label: the whole label acts as the
+// anchor atom. NOx/SOx and every non-main-chain purpose fail this test.
+function fMulerSelectCompactCarbonOnly(comp) {
+  try {
+    if (!comp || typeof comp.anchor !== "number" || comp.anchor < 0) return false;
+    if (fMulerSelectPurpose() !== "mainChain") return false;
+    if (typeof allAtomsTypeList === "undefined" || !Array.isArray(allAtomsTypeList)) return false;
+    return String(allAtomsTypeList[comp.anchor] || "").toUpperCase() === "C";
+  } catch (e) { return false; }
+}
+
 function fMulerSelectState() {
   try {
     if (typeof window === "undefined") return null;
@@ -1234,7 +1263,7 @@ function fMulerSelectPresenting() {
 // sibling-overlay selector is kept so one repaint clears either generation.
 function fMulerSelectClearLayer() {
   try {
-    var olds = document.querySelectorAll("#jsmeNomeclatureSVG path[data-muler-sel]");
+    var olds = document.querySelectorAll("#jsmeNomeclatureSVG path[data-muler-sel], #jsmeNomeclatureSVG path[data-muler-compact-sel]");
     for (var i = 0; i < olds.length; i++) {
       if (olds[i] && olds[i].parentNode) olds[i].parentNode.removeChild(olds[i]);
     }
@@ -1322,6 +1351,18 @@ function fMulerSelectLineGroups() {
 // Vertex clustering over group representative segments (longest line per
 // group): [{x, y, bonds:[bondIdx...]}]. Implicit (unlabeled) carbons live
 // exactly here.
+//
+// Offset ends of multi-line bonds (C=O, C≡N, ...) are not joints: the
+// parallel-line spacing puts the representative endpoint ~60 SVG units away
+// from the true atom center, i.e. outside the 40-unit clustering radius, so
+// they surface as extra degree-1 vertices. They are merged into the nearby
+// true joint (a vertex carrying a different bond) before returning, so the
+// topology-based atom assignment below resolves the joint atom correctly.
+// Without this, a skeletal aldehyde carbonyl carbon — which has only ONE drawn
+// single bond (the C–C; its H is implicit) — would hand the offset C=O end the
+// oxygen atom, so clicking the carbon selected O. Ketones/acids were already
+// covered by the joint-adoption pass in fMulerSelectVertexAtoms because their
+// carbonyl carbon owns two or more drawn single bonds.
 function fMulerSelectVertices(groups) {
   var verts = [];
   try {
@@ -1349,6 +1390,46 @@ function fMulerSelectVertices(groups) {
       at(best.x1, best.y1, groups[g].bond);
       at(best.x2, best.y2, groups[g].bond);
     }
+    // Merge offset multi-line ends into their true joint (keep the joint's
+    // coordinates). A candidate must carry a different bond and must not
+    // already carry the multi-line bond itself — that excludes the bond's
+    // opposite end and prevents collapsing both ends into one vertex on a
+    // pathologically short bond.
+    try {
+      var jointEps2 = MULER_SELECT_JOINT_EPS * MULER_SELECT_JOINT_EPS;
+      var merged = true, guard = 0;
+      while (merged && guard++ < 64) {
+        merged = false;
+        for (var vi = 0; vi < verts.length; vi++) {
+          var vv = verts[vi];
+          if (!vv || !vv.bonds || vv.bonds.length !== 1) continue;
+          var bj = vv.bonds[0];
+          if (!bondList[bj] || !(bondList[bj][2] > 1)) continue;
+          var target = -1, bestD2 = jointEps2 + 1;
+          for (var uj = 0; uj < verts.length; uj++) {
+            if (uj === vi) continue;
+            var uu = verts[uj];
+            if (!uu || !uu.bonds || uu.bonds.indexOf(bj) >= 0) continue;
+            var otherBond = false;
+            for (var ub = 0; ub < uu.bonds.length; ub++) {
+              if (uu.bonds[ub] !== bj) { otherBond = true; break; }
+            }
+            if (!otherBond) continue;
+            var ddx = uu.x - vv.x, ddy = uu.y - vv.y, dd = ddx * ddx + ddy * ddy;
+            if (dd < bestD2) { bestD2 = dd; target = uj; }
+          }
+          if (target < 0 || bestD2 > jointEps2) continue;
+          for (var vb = 0; vb < vv.bonds.length; vb++) {
+            if (verts[target].bonds.indexOf(vv.bonds[vb]) < 0) {
+              verts[target].bonds.push(vv.bonds[vb]);
+            }
+          }
+          verts.splice(vi, 1);
+          merged = true;
+          break;
+        }
+      }
+    } catch (eJ) {}
   } catch (e) {}
   return verts;
 }
@@ -1394,15 +1475,14 @@ function fMulerSelectVertexAtoms(verts) {
         }
       }
     }
-    // C-side ends of multi-line bonds sit offset from the true joint
-    // (parallel-line spacing, ~60 SVG units) and the free-atom rule below
-    // would misassign them to the far atom (taken-set order): clicks at the
-    // carbon end of a skeletal C=O would then resolve to oxygen. Adopt the
-    // nearby resolved joint's atom first — but only when it belongs to this
-    // bond. Restricted to multi-line bonds: single-line joints coincide
-    // exactly, so clustering already merges them, and terminal atoms (a
-    // full bond length from any joint) can never trigger this. Runs before
-    // the leftover pass so the taken-set it sees is clean.
+    // Safety net for offset ends that fMulerSelectVertices could not merge
+    // (no different-bond vertex within MULER_SELECT_JOINT_EPS, or a layout
+    // where the offset exceeds the clustering radius): adopt the nearby
+    // resolved joint's atom — but only when it belongs to this bond. Multi-line
+    // bonds only: single-line joints coincide exactly, so clustering already
+    // merges them, and terminal atoms (a full bond length from any joint) can
+    // never trigger this. Runs before the leftover pass so the taken-set it
+    // sees is clean.
     try {
       var JOINT_EPS2 = MULER_SELECT_JOINT_EPS * MULER_SELECT_JOINT_EPS;
       for (var vj = 0; vj < verts.length; vj++) {
@@ -1628,6 +1708,71 @@ function fMulerSelectMedianBond(groups) {
   } catch (e) { return 0; }
 }
 
+function fMulerSelectCompactRect(anchor) {
+  try {
+    if (typeof document === "undefined" || typeof anchor !== "number") return null;
+    return document.querySelector(
+      '#jsmeNomeclatureSVG rect[data-muler-compact-rect="' + (anchor + 1) + '"]',
+    );
+  } catch (e) { return null; }
+}
+
+function fRectBox(rect) {
+  try {
+    if (!rect || !rect.getBoundingClientRect) return null;
+    var bb = rect.getBBox ? rect.getBBox() : null;
+    if (!bb || !(bb.width > 0) || !(bb.height > 0)) return null;
+    return { x: bb.x, y: bb.y, w: bb.width, h: bb.height };
+  } catch (e) { return null; }
+}
+
+function fUnionBox(a, b) {
+  if (!a) return b;
+  if (!b) return a;
+  var x = Math.min(a.x, b.x), y = Math.min(a.y, b.y);
+  var r = Math.max(a.x + a.w, b.x + b.w);
+  var bot = Math.max(a.y + a.h, b.y + b.h);
+  return { x: x, y: y, w: r - x, h: bot - b.y };
+}
+
+// Bounding boxes for one compacted label:
+// - box: whole label/backplate area (main-chain hit area; fragment hover);
+// - textBox: the glyph run only (free-selection hit area, pre-v56 behavior);
+// - atomBox: the anchor C/N/S glyph only (hover/badge/paint helper).
+function fMulerSelectCompactBoxes(comp) {
+  var out = { box: null, textBox: null, atomBox: null, rectEl: null, symbol: "" };
+  try {
+    if (!comp || !comp.el) return out;
+    try { out.symbol = String(allAtomsTypeList[comp.anchor] || "").toUpperCase(); } catch (eS) {}
+    var textBox = fRectBox(comp.el);
+    out.textBox = textBox ? { x: textBox.x, y: textBox.y, w: textBox.w, h: textBox.h } : null;
+    out.box = out.textBox;
+    var rectEl = fMulerSelectCompactRect(comp.anchor);
+    out.rectEl = rectEl || null;
+    var rectBox = rectEl ? fRectBox(rectEl) : null;
+    if (rectBox) out.box = fUnionBox(out.box, rectBox);
+
+    var txt = "";
+    try { txt = String(comp.el.textContent || ""); } catch (eT) { txt = ""; }
+    var idx = (out.symbol && txt) ? txt.indexOf(out.symbol) : -1;
+    if (idx >= 0 && comp.el.getExtentOfChar) {
+      try {
+        var ext = comp.el.getExtentOfChar(idx);
+        if (ext && ext.width > 0 && ext.height > 0) {
+          out.atomBox = { x: ext.x, y: ext.y, w: ext.width, h: ext.height };
+        }
+      } catch (eC) {}
+    }
+    if (!out.atomBox && textBox && txt.length) {
+      // Geometric fallback: same character cell as the label's text run.
+      var cw = textBox.w / txt.length;
+      var ci = idx >= 0 ? idx : 0;
+      out.atomBox = { x: textBox.x + ci * cw, y: textBox.y, w: cw, h: textBox.h };
+    }
+  } catch (e) {}
+  return out;
+}
+
 // Hit test in SVG user units. Priority: labeled anchor → vertex (implicit C)
 // → bond corridor → null (clear). Returns {kind:'atom',atom:1-based} |
 // Compacted functional-group labels (condensed): the JSME text/rects of the
@@ -1727,10 +1872,58 @@ function fMulerSelectCompacted() {
     for (var fk in merged) {
       if (!Object.prototype.hasOwnProperty.call(merged, fk)) continue;
       merged[fk].members.sort(function (x, y) { return x - y; });
+      var boxes = fMulerSelectCompactBoxes(merged[fk]);
+      merged[fk].box = boxes.box;
+      merged[fk].textBox = boxes.textBox;
+      merged[fk].atomBox = boxes.atomBox;
+      merged[fk].rectEl = boxes.rectEl;
+      merged[fk].symbol = boxes.symbol;
       fin.push(merged[fk]);
     }
     return fin;
   } catch (e) { return []; }
+}
+
+// Main-chain purpose only: collapse any already-selected compacted carbon
+// fragments to their anchor before comparison continues. Non-carbon groups
+// (NOx/SOx etc.) and free selection are untouched.
+function fMulerSelectNormalizeMainChainCompacts() {
+  try {
+    if (fMulerSelectPurpose() !== "mainChain") return;
+    var sel = fMulerSelectState();
+    if (!sel || !Array.isArray(sel.atoms2D) || !sel.atoms2D.length) return;
+    var comps = (typeof fMulerSelectCompacted === "function") ? fMulerSelectCompacted() : [];
+    for (var ci = 0; ci < comps.length; ci++) {
+      var cm = comps[ci];
+      if (!cm || !Array.isArray(cm.members) || !fMulerSelectCompactCarbonOnly(cm)) continue;
+      var members = {};
+      for (var mi = 0; mi < cm.members.length; mi++) members[cm.members[mi]] = true;
+      var anchor = cm.anchor + 1;
+      var out = [], placed = false, touched = false;
+      for (var ai = 0; ai < sel.atoms2D.length; ai++) {
+        var a = sel.atoms2D[ai];
+        if (members[a]) {
+          touched = true;
+          if (!placed) { out.push(anchor); placed = true; }
+        } else {
+          out.push(a);
+        }
+      }
+      if (touched) {
+        sel.atoms2D = out;
+        if (Array.isArray(sel.groups)) {
+          sel.groups = sel.groups.map(function (g) {
+            if (!g || !Array.isArray(g.members)) return g;
+            var hit = false;
+            for (var gi = 0; gi < g.members.length; gi++) {
+              if (members[g.members[gi]]) { hit = true; break; }
+            }
+            return hit ? { heavy: anchor, members: [anchor], compacted: true, anchorOnly: true } : g;
+          });
+        }
+      }
+    }
+  } catch (e) {}
 }
 
 // Hover-ring skin (v56 selection follow-up): stroke-only cyan, no fill —
@@ -1774,7 +1967,11 @@ function fMulerSelectGeom() {
 function fMulerHoverBoxForPick(pick, geom) {
   try {
     if (!pick) return null;
+    if (pick.kind === "atom" && pick.compactAnchor && pick.compactAtomBox) {
+      return pick.compactAtomBox;
+    }
     if (pick.kind === "fragment") {
+      if (pick.compactGroupBox) return pick.compactGroupBox;
       var want = ((pick.atoms || []).slice() || []).sort(function (x, y) { return x - y; });
       var list = (geom && geom.comp) || [];
       for (var ci = 0; ci < list.length; ci++) {
@@ -1785,6 +1982,7 @@ function fMulerHoverBoxForPick(pick, geom) {
         var same = true;
         for (var mi = 0; mi < got.length; mi++) { if (got[mi] !== want[mi]) { same = false; break; } }
         if (!same) continue;
+        if (cm.box && cm.box.w > 0 && cm.box.h > 0) return cm.box;
         var bb = null;
         try { bb = (cm.el.getBBox && cm.el.getBBox()) || null; } catch (eB) { bb = null; }
         if (bb && bb.width > 0 && bb.height > 0) return { x: bb.x, y: bb.y, w: bb.width, h: bb.height };
@@ -1965,13 +2163,39 @@ function fMulerSelectPick(px, py) {
     // (comp comes from the per-render geometry cache above.)
     try {
       if (comp && comp.length) {
+        var mainChainPurpose = fMulerSelectPurpose() === "mainChain";
         for (var ci = 0; ci < comp.length; ci++) {
-          var L0 = comp[ci], m0 = 14, lb = null;
+          var L0 = comp[ci], m0 = 14;
           if (!L0 || !L0.el) continue;
-          try { if (L0.el.getBBox) lb = L0.el.getBBox(); } catch (eBb) { lb = null; }
-          if (!lb || !(lb.width > 0 && lb.height > 0)) continue;
-          if (px >= lb.x - m0 && px <= lb.x + lb.width + m0 && py >= lb.y - m0 && py <= lb.y + lb.height + m0) {
-            return { kind: "fragment", atoms: (L0.members || []).slice() };
+          // Main-chain purpose: the whole label/backplate is the anchor
+          // carbon's hit area. Free selection keeps the pre-v56 glyph-run
+          // area only, so the deliberately wider backplate never steals
+          // picks from adjacent atoms or bond stubs.
+          var lb = (mainChainPurpose && L0.box) ? L0.box : (L0.textBox || null);
+          if (!lb) {
+            try {
+              var _bb = L0.el.getBBox ? L0.el.getBBox() : null;
+              if (_bb && _bb.width > 0 && _bb.height > 0) lb = { x: _bb.x, y: _bb.y, w: _bb.width, h: _bb.height };
+            } catch (eBb) { lb = null; }
+          }
+          if (!lb || !(lb.w > 0 && lb.h > 0)) continue;
+          if (px >= lb.x - m0 && px <= lb.x + lb.w + m0 && py >= lb.y - m0 && py <= lb.y + lb.h + m0) {
+            // Main-chain purpose: a compacted carbon label is the anchor
+            // atom, never the heteroatom fragment. Other purposes (and
+            // N/S-anchored groups) keep whole-fragment picking.
+            if (typeof fMulerSelectCompactCarbonOnly === "function" && fMulerSelectCompactCarbonOnly(L0)) {
+              return {
+                kind: "atom",
+                atom: L0.anchor + 1,
+                compactAnchor: true,
+                compactAtomBox: L0.atomBox || null
+              };
+            }
+            return {
+              kind: "fragment",
+              atoms: (L0.members || []).slice(),
+              compactGroupBox: lb
+            };
           }
         }
       }
@@ -2432,6 +2656,9 @@ function fMulerQuizArmForBox(boxId, $box) {
       }
     } catch (eD) { return false; }
     try { window.MulerQuizTarget = mode; } catch (eT) {}
+    // Main-chain purpose: an earlier compacted-carbon fragment pick is now a
+    // carbon-only pick. NOx/SOx fragment picks are left untouched.
+    try { if (typeof fMulerSelectNormalizeMainChainCompacts === "function") fMulerSelectNormalizeMainChainCompacts(); } catch (eNorm) {}
     // Clean slate like the classic preamble (skipped by the early return
     // below): stale component green + numbering interval must not leak in.
     try { if (typeof fClearHighlights === "function") fClearHighlights(); } catch (eCH) {}
@@ -2687,6 +2914,126 @@ function fMulerSelectPushState() {
   } catch (e) {}
 }
 
+function fMulerSelectIsSelectionFill(fill) {
+  var f = String(fill || "").replace(/\s+/g, "").toLowerCase();
+  return f.indexOf("22d3ee") !== -1 || f.indexOf("34,211,238") !== -1;
+}
+
+// The JSME anchor atom owns both a small ellipse (the atom) and the resized
+// compact-label backplate. For a carbon-only compacted pick, restore the
+// whole-label backplate to white, hide the oversized native ellipse, and draw
+// a compact rounded path behind the C glyph only. Group fragment picks leave
+// both native shapes painted. The path contains no rect/line/text nodes, so
+// order maps and highlight scraping stay blind to it.
+// The backplate is optional: methanal can render without highlight geometry,
+// in which case the C-sized path is still the only selection cue available.
+function fMulerSelectCompactAnchorEllipse(rectEl, comp) {
+  try {
+    var doc = (rectEl && rectEl.ownerDocument) ||
+      (comp && comp.el && comp.el.ownerDocument) || null;
+    if (!doc) return null;
+    var rbox = rectEl ? fRectBox(rectEl) : null;
+    var abox = comp && comp.atomBox ? comp.atomBox : null;
+    var cx = abox ? abox.x + abox.w / 2 : (rbox ? rbox.x + rbox.w / 2 : null);
+    var cy = abox ? abox.y + abox.h / 2 : (rbox ? rbox.y + rbox.h / 2 : null);
+    if (cx === null || cy === null) return null;
+    var limit = abox ? Math.max(abox.w, abox.h) * 1.2 : 300;
+    var best = null, bestD = limit * limit;
+    var els = doc.querySelectorAll("#jsmeNomeclatureSVG ellipse, #jsmeNomeclatureSVG circle");
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i];
+      if (!fMulerSelectIsSelectionFill(el.getAttribute("fill"))) continue;
+      var box = fRectBox(el);
+      if (!box) continue;
+      // Ownership guard: only shapes whose center sits inside the label's
+      // own backing area (plus one glyph of slack) may be hidden — never a
+      // neighboring atom's ellipse that merely happens to be close.
+      if (rbox) {
+        var pad = abox ? Math.max(abox.w, abox.h) * 0.5 : 0;
+        var ex = box.x + box.w / 2, ey = box.y + box.h / 2;
+        if (ex < rbox.x - pad || ex > rbox.x + rbox.w + pad ||
+            ey < rbox.y - pad || ey > rbox.y + rbox.h + pad) continue;
+      }
+      var dx = (box.x + box.w / 2) - cx, dy = (box.y + box.h / 2) - cy;
+      var d = dx * dx + dy * dy;
+      if (d <= bestD) { bestD = d; best = el; }
+    }
+    return best;
+  } catch (e) { return null; }
+}
+
+function fMulerSelectRoundedRectPath(x, y, w, h, r) {
+  var rr = Math.max(0, Math.min(r, w / 2, h / 2));
+  return "M" + (x + rr) + "," + y +
+    "H" + (x + w - rr) +
+    "Q" + (x + w) + "," + y + " " + (x + w) + "," + (y + rr) +
+    "V" + (y + h - rr) +
+    "Q" + (x + w) + "," + (y + h) + " " + (x + w - rr) + "," + (y + h) +
+    "H" + (x + rr) +
+    "Q" + x + "," + (y + h) + " " + x + "," + (y + h - rr) +
+    "V" + (y + rr) +
+    "Q" + x + "," + y + " " + (x + rr) + "," + y + "Z";
+}
+
+// Marker on a backplate this pass has already whitened. It makes the pass
+// idempotent: a repaint that runs without a fresh JSME render (clear removes
+// the previous path, fill is now white) must still redraw the C-sized path,
+// while a green component backplate is never overpainted.
+var MULER_COMPACT_WHITENED_ATTR = "data-muler-compact-white";
+
+function fMulerSelectCompactPaintPass() {
+  try {
+    // Present keeps the selection state but never shows it (pushState degrades
+    // to component-only); the rectless branch below must not leak a cyan path.
+    if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return;
+    var sel = fMulerSelectState();
+    if (!sel || sel.active !== true || !Array.isArray(sel.atoms2D) || !sel.atoms2D.length) return;
+    var comps = (typeof fMulerSelectCompacted === "function") ? fMulerSelectCompacted() : [];
+    var selected = {};
+    for (var ai = 0; ai < sel.atoms2D.length; ai++) selected[sel.atoms2D[ai]] = true;
+    for (var ci = 0; ci < comps.length; ci++) {
+      var cm = comps[ci];
+      if (!cm || !Array.isArray(cm.members) || !cm.atomBox) continue;
+      if (String(cm.symbol || "").toUpperCase() !== "C") continue;
+      var anchor = cm.anchor + 1;
+      if (!selected[anchor]) continue;
+      var groupMemberSelected = false;
+      for (var mi = 0; mi < cm.members.length; mi++) {
+        if (cm.members[mi] !== anchor && selected[cm.members[mi]]) { groupMemberSelected = true; break; }
+      }
+      if (groupMemberSelected) continue;
+      try {
+        if (cm.rectEl) {
+          var selfWhitened = cm.rectEl.getAttribute(MULER_COMPACT_WHITENED_ATTR) === "1";
+          // Component-wins: a green backplate means the selection is not the
+          // visible layer on this label, so it is never overpainted. Only a
+          // cyan (selection) backplate or our own earlier white-out proceeds.
+          if (!selfWhitened) {
+            if (!fMulerSelectIsSelectionFill(cm.rectEl.getAttribute("fill"))) continue;
+            cm.rectEl.setAttribute("fill", "white");
+            cm.rectEl.setAttribute(MULER_COMPACT_WHITENED_ATTR, "1");
+          }
+        }
+        var ell = fMulerSelectCompactAnchorEllipse(cm.rectEl, cm);
+        if (ell) ell.setAttribute("display", "none");
+        var labelEl = cm.el;
+        if (!labelEl || !labelEl.parentNode) continue;
+        var px = cm.atomBox.x - 6;
+        var py = cm.atomBox.y - 8;
+        var pw = cm.atomBox.w + 12;
+        var ph = cm.atomBox.h + 16;
+        var NS = "http://www.w3.org/2000/svg";
+        var path = document.createElementNS(NS, "path");
+        path.setAttribute("data-muler-compact-sel", String(anchor));
+        path.setAttribute("d", fMulerSelectRoundedRectPath(px, py, pw, ph, 56));
+        path.setAttribute("fill", MULER_SELECT_CYAN);
+        path.setAttribute("pointer-events", "none");
+        labelEl.parentNode.insertBefore(path, labelEl);
+      } catch (eF) {}
+    }
+  } catch (e) {}
+}
+
 // Selection repaint entry (tail of fUpdateSVG + every selection change):
 // legacy DOM cleanup, then the state push. Rendering itself is owned by the
 // caller (fUpdateSVG renders right after its head push).
@@ -2695,6 +3042,7 @@ function fMulerSelectRepaint() {
     try { fMulerSelectClearLayer(); } catch (eC) {}
     try { if (typeof fMulerHoverClear === "function") fMulerHoverClear(); } catch (eHC) {}
     try { if (typeof fMulerSelectPushState === "function") fMulerSelectPushState(); } catch (eP2) {}
+    try { fMulerSelectCompactPaintPass(); } catch (eCP) {}
   } catch (e) {}
 }
 
@@ -7508,6 +7856,7 @@ function fResizeCompactLabelRect(
     rectAttrs.x = rectX - forwardShift;
   }
   workingRectEl.attr(rectAttrs);
+  return workingRectEl;
 }
 
 function fCollectHighlightRectsNearText(textEls) {
@@ -8536,13 +8885,21 @@ function fCompactFunctionalGroups2D() {
       replacements[i].rectEl.node.parentNode
         ? replacements[i].rectEl
         : null;
-    fResizeCompactLabelRect(
+    var compactRectEl = fResizeCompactLabelRect(
       rectEl,
       newTextEl,
       replacements[i].labelKey,
       replacements[i].reverseLabel,
       replacements[i].geometryHint,
     );
+    // Tag the group backplate so selection can distinguish an anchor-only
+    // highlight from a whole-fragment highlight. The tag is geometry only;
+    // atom/rect order maps ignore it.
+    try {
+      if (compactRectEl && compactRectEl.node && replacements[i].anchorIdx >= 0) {
+        compactRectEl.node.setAttribute("data-muler-compact-rect", String(replacements[i].anchorIdx + 1));
+      }
+    } catch (eCR) {}
     if (newTextEl && replacements[i].anchorIdx >= 0) {
       compactNumberingLabelMap[replacements[i].anchorIdx] =
         replacements[i].labelKey;
@@ -8729,6 +9086,14 @@ function fMulerSelectSeqBadges() {
     var anchors = (geom && geom.anchors) || [];
     var byAtom = {};
     try { for (var ai = 0; ai < anchors.length; ai++) { if (anchors[ai] && !(anchors[ai].atom in byAtom)) byAtom[anchors[ai].atom] = anchors[ai]; } } catch (eA) {}
+    var compByAnchor = {}, selectedSet = {};
+    try {
+      var cList = (geom && geom.comp) || [];
+      for (var ci = 0; ci < cList.length; ci++) {
+        if (cList[ci] && typeof cList[ci].anchor === "number") compByAnchor[cList[ci].anchor] = cList[ci];
+      }
+      for (var si = 0; si < atoms.length; si++) selectedSet[atoms[si]] = true;
+    } catch (eCA) {}
     var verts = (geom && geom.verts) || [], va = (geom && geom.vassign) || [];
     // Expanded compensation mirrors fShowNumbering (the equalizer shrinks
     // the model while overlay glyphs stay fixed-size).
@@ -8752,13 +9117,25 @@ function fMulerSelectSeqBadges() {
     for (var i = 0; i < atoms.length; i++) {
       var a0 = atoms[i] - 1, bx = null, by = null;
       try {
-        var an = byAtom[a0];
-        if (an && an.w > 0 && an.h > 0) { bx = an.x; by = an.y + an.h / 2 + MULER_SELECT_SEQ_DY * numK; }
-        else {
-          for (var vi = 0; vi < verts.length; vi++) {
-            if (va[vi] === a0) { bx = verts[vi].x; by = verts[vi].y + MULER_HOVER_DOT_R + MULER_SELECT_SEQ_DY * numK; break; }
+        var cm = compByAnchor[a0];
+        var cmHiddenPicked = false;
+        if (cm && Array.isArray(cm.members)) {
+          for (var cmi = 0; cmi < cm.members.length; cmi++) {
+            if (cm.members[cmi] !== atoms[i] && selectedSet[cm.members[cmi]]) { cmHiddenPicked = true; break; }
           }
-          if (bx === null || bx === undefined) continue;
+        }
+        if (cm && !cmHiddenPicked && cm.atomBox && cm.atomBox.w > 0 && cm.atomBox.h > 0) {
+          bx = cm.atomBox.x + cm.atomBox.w / 2;
+          by = cm.atomBox.y + cm.atomBox.h / 2 + MULER_SELECT_SEQ_DY * numK;
+        } else {
+          var an = byAtom[a0];
+          if (an && an.w > 0 && an.h > 0) { bx = an.x; by = an.y + an.h / 2 + MULER_SELECT_SEQ_DY * numK; }
+          else {
+            for (var vi = 0; vi < verts.length; vi++) {
+              if (va[vi] === a0) { bx = verts[vi].x; by = verts[vi].y + MULER_HOVER_DOT_R + MULER_SELECT_SEQ_DY * numK; break; }
+            }
+            if (bx === null || bx === undefined) continue;
+          }
         }
       } catch (eB) { continue; }
       try {

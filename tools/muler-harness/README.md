@@ -22,7 +22,9 @@ Scripts (all read-only against the app; screenshots land next to the script):
   `empty` = click empty canvas. Prints resulting selection after each step.
 - `probe-shift.js` — shift-accumulate check on ethane.
 - `probe-quiz.js` — main-chain quiz: arm select, click the `comp5` box (quiz target), pick both carbons; prints prompt/verdict/target/selection, atom fills (expect green `#79dc6d`), screenshot `quiz-green.png`.
-- `probe-frag2.js` — compacted-label (e.g. COOH) whole-fragment pick.
+- `probe-frag2.js` — compacted-label (e.g. COOH) whole-fragment pick (free selection).
+- `probe-compact-main.js` — main-chain versus free compacted-label semantics: COOH/HCOOH/CN resolve to the anchor carbon under a main-chain target, NO2 stays a fragment, free selection stays a fragment; checks C-only paint, hover box, badge, exact reward, the free-mode backplate edge, clear/marker restore and methanal (no highlight geometry).
+- `probe-skel-joints.js` — skeletal vertex→atom assignment: for 16 molecules across aldehydes, ketones, acids, ester, alkene, alkyne, nitrile and nitro, asserts every vertex pick is an endpoint of all its incident bonds, no offset multi-line end is left unmerged, and every carbonyl carbon's incident-bond line endpoints (the old "click the carbon, get the oxygen" spot) select the carbon. Guards the C=O offset-end merge in `fMulerSelectVertices`.
 - `audit.js <port> <query|- > <width> <out>` — tooltip clip audit:
   measures every `[data-tooltip]` bubble against overflow ancestors and the
   viewport; prints TOTAL / SPILL count + offending entries.
