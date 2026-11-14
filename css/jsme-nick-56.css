@@ -2663,7 +2663,7 @@ outline: 3px solid var(--vibrantGreen);
   box-sizing: border-box;
   padding: 10px;
   color: #333;
-  background-color: #fff;
+  background-color: var(--veryLightEarth);
   border: 1px solid var(--darkBlue);
   font-size: 0.969rem;
   margin-bottom: 10px;
