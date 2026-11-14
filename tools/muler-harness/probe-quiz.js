@@ -6,6 +6,8 @@
 // Cases:
 //   1. ethane — arm: prompt only, verdict hidden; first of two picks: live
 //      "more" (visible, target armed); second pick: exact success.
+//   1b. ethane expanded — alkyl-H click resolves to the parent carbon
+//      (condensed-style unit picking); parent-C + second C exacts.
 //   2. 2-methylpentane — pick a branch carbon (outside the chain, bonded
 //      walk intact): live "more" (count), target still armed.
 //   3. 2-methylpentane — hetero pick (oxygen): live hetero line.
@@ -176,6 +178,47 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
   check(/Correct/.test(s.verdict) && !s.hidden, "ethane: exact should show the success line, got " + JSON.stringify(s.verdict));
   check(!s.target, "ethane: exact should clear the target");
 
+  // 1b. ethane expanded: alkyl-H click resolves to the parent carbon.
+  await open("ethane");
+  await p.evaluate((name) => {
+    const option = Array.from(document.querySelectorAll("#radio2DMode .mode2DOption"))
+      .find((el) => el.textContent.trim().toLowerCase() === name);
+    if (!option) throw new Error("Missing mode option " + name);
+    option.click();
+  }, "expanded");
+  await p.waitForFunction(() => mode2D === "expanded", null);
+  await p.waitForTimeout(800);
+  await p.evaluate(() => document.getElementById("selectAtomsBtn").click());
+  await p.waitForTimeout(300);
+  await p.evaluate(() => { try { document.getElementById("comp5").click(); } catch (e) {} });
+  await p.waitForTimeout(800);
+  ch = await chain();
+  const hyd = await p.evaluate((chainArr) => {
+    try {
+      const parent = chainArr[0];
+      for (let b = 0; b < bondList.length; b++) {
+        if (!bondList[b]) continue;
+        const [x, y] = [bondList[b][0], bondList[b][1]];
+        if (x === parent && String(allAtomsTypeList[y - 1] || "").toUpperCase() === "H") return y;
+        if (y === parent && String(allAtomsTypeList[x - 1] || "").toUpperCase() === "H") return x;
+      }
+      return null;
+    } catch (e) { return null; }
+  }, ch);
+  check(!!hyd, "ethane expanded: no alkyl H found on the first chain carbon");
+  if (hyd) {
+    await clickAtom(hyd);
+    s = await state();
+    check(JSON.stringify(s.sel) === JSON.stringify([ch[0]]),
+      "ethane expanded: H click should select the parent carbon, got " + JSON.stringify(s.sel));
+    check(s.target === "compCarbonsCount", "ethane expanded: H redirect must keep the quiz armed");
+  }
+  await clickAtom(ch[1]);
+  await p.waitForTimeout(400);
+  s = await state();
+  check(/Correct/.test(s.verdict) && !s.hidden, "ethane expanded: parent-C + C should exact, got " + JSON.stringify(s.verdict));
+  check(!s.target, "ethane expanded: exact should clear the target");
+
   // 2. branch carbon outside the chain: live "more" (count), still armed.
   await open("methyl_2_pentane");
   await armQuiz();
@@ -207,6 +250,14 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
 
   // 3. hetero pick (oxygen in butanoic acid): live hetero line, numberless.
   await open("butanoic_acid");
+  await p.evaluate(() => {
+    const option = Array.from(document.querySelectorAll("#radio2DMode .mode2DOption"))
+      .find((el) => /^expanded$/i.test(el.textContent.trim()));
+    if (!option) throw new Error("Missing expanded mode option");
+    option.click();
+  });
+  await p.waitForFunction(() => mode2D === "expanded");
+  await p.waitForTimeout(800);
   await armQuiz();
   const oxy = await p.evaluate(() => {
     try {

@@ -118,6 +118,7 @@ const isSelFillColor = (fill, hex) => {
   check(JSON.stringify(free.atoms) === JSON.stringify([4, 5, 6]), "free compact click should select [4,5,6], got " + JSON.stringify(free.atoms));
   check(isSelFillColor(free.rectFill, free.selColor), "free fragment should paint the full backplate in the selection color, got " + free.rectFill);
   check(!free.compactPath, "free fragment must not create the carbon-only path");
+  check(!free.badge, "free selection should not render sequence badges (main-chain only)");
   const freePick = await p.evaluate(() => {
     const c = fMulerSelectCompacted()[0];
     return fMulerSelectPick(c.box.x + c.box.w / 2, c.box.y + c.box.h / 2);

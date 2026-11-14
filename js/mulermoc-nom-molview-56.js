@@ -361,11 +361,11 @@ function jsmeOnLoad() {
 
   let bgAtom = [
     "#7ddfff",
-    "#6ddcbe", // palette slot 2: v56 user-selection cyan (JSME slots are 1-based — slot N is bgAtom[N-1]; slot 9 green stays)
+    "#7ddfff", // palette slot 2: v56 user-selection cyan (JSME slots are 1-based — slot N is bgAtom[N-1]; slot 9 green stays)
     "#00ffff",
     "#ffcc66",
     "#ffff00",
-    "#ff9999", // palette slot 6 (reserved: quiz-wrong red, unused for now)
+    "#f74f4f", // palette slot 6 (reserved: quiz-wrong red, unused for now)
     "#33ccff",
     "#ff99ff",
     "#79dc6d",
@@ -1185,7 +1185,7 @@ function fToggleAtomSelect() {
 // Stored indices are 1-based JSME numbers (= displayed
 // MOL order + 1, same convention as mainChainAtomsList); bond indices are
 // 1-based bondList positions (same as setBondBackgroundColors).
-var MULER_SELECT_CYAN = "#6ddcbe";
+var MULER_SELECT_CYAN = "#7ddfff";
 var MULER_SELECT_BG_SLOT = 2;   // 1-based JSME palette slot for the selection (component green = 9)
 var MULER_SELECT_VERT_EPS = 40;   // vertex clustering, SVG units
 var MULER_SELECT_JOINT_EPS = 150; // joint-adoption radius, SVG units (see fMulerSelectVertexAtoms)
@@ -1195,7 +1195,8 @@ var MULER_SELECT_BOND_HW = 0.2;   // bond corridor half-width, × median bond le
 // Selection purpose by quiz target. Only a main-chain purpose lets a compacted
 // carbon label resolve to its anchor atom; every other purpose keeps the
 // existing whole-fragment semantics (nitro/sulfonyl groups included).
-var MULER_SELECT_PURPOSE_BY_TARGET = { compCarbonsCount: "mainChain" };
+// FG purposes ("fg") are set-only, numberless quiz targets (suffix/ether/ester).
+var MULER_SELECT_PURPOSE_BY_TARGET = { compCarbonsCount: "mainChain", compSuffix: "fg", commonEther: "fg", esterEster: "fg", compEndNumber: "loc", compSuffixLocants: "loc", compBondPos: "loc", compNumber1: "loc", compBondType: "bond", compBondType2: "bond" };
 
 function fMulerSelectPurpose() {
   try {
@@ -1203,8 +1204,34 @@ function fMulerSelectPurpose() {
       return String(window.MulerSelectPurpose);
     }
     var t = (typeof window !== "undefined" && window.MulerQuizTarget) ? String(window.MulerQuizTarget) : "";
-    if (t && Object.prototype.hasOwnProperty.call(MULER_SELECT_PURPOSE_BY_TARGET, t)) {
-      return MULER_SELECT_PURPOSE_BY_TARGET[t];
+    if (t && typeof fMulerQuizPurposeFor === "function") {
+      return fMulerQuizPurposeFor(t);
+    }
+  } catch (e) {}
+  return "free";
+}
+
+// Effective purpose for a mode (no live target needed): bond wins on
+// dual-use boxes holding a bond position, else the static map, else free.
+// Single FG-first rule shared by arming, redirects and sticky re-arm.
+function fMulerQuizPurposeFor(mode) {
+  try {
+    if (!mode || mode === "none") return "free";
+    // Branch first (classic paints branch groups before bond/FG fallthroughs),
+    // then bond dual-use, then the static map. One FG-first rule for the
+    // whole dispatch: arm gates, prompts, verdicts and guards.
+    if (typeof fMulerBranchAtomsForMode === "function") {
+      var _br = fMulerBranchAtomsForMode(mode) || [];
+      if (_br.length) return "branch";
+    }
+    if ((mode === "compBondPos" || mode === "compEndNumber" || mode === "compNumber1") &&
+        typeof fMulerBondAtomsForMode === "function") {
+      var _ba = fMulerBondAtomsForMode(mode) || [];
+      if (_ba.length) return "bond";
+    }
+    if (typeof MULER_SELECT_PURPOSE_BY_TARGET !== "undefined" && MULER_SELECT_PURPOSE_BY_TARGET &&
+        Object.prototype.hasOwnProperty.call(MULER_SELECT_PURPOSE_BY_TARGET, mode)) {
+      return MULER_SELECT_PURPOSE_BY_TARGET[mode];
     }
   } catch (e) {}
   return "free";
@@ -2173,6 +2200,30 @@ function fMulerHoverTick() {
 }
 
 // Returns an atom, fragment, bond, ignored hit, or null for empty canvas.
+// Armed-quiz hydrogen rule (v56 H phase): an H pick that is not itself a
+// target atom resolves to its sole neighbor — condensed-style unit picking
+// (the H belongs to its heavy atom's unit), so alkyl H can never leak into a
+// set-only target or force a hetero/wrong hint. Target H (hydroxyl, aldehyde)
+// stays distinct and pickable; free selection is untouched. Returns the
+// replacement 1-based atom, or -1 to keep the original pick.
+function fMulerQuizHydrogenParent(atom1) {
+  try {
+    if (typeof window === "undefined" || !window.MulerQuizTarget) return -1;
+    if (typeof allAtomsTypeList === "undefined" || !allAtomsTypeList) return -1;
+    if (String(allAtomsTypeList[atom1 - 1] || "").toUpperCase() !== "H") return -1;
+    var tgt = [];
+    try { tgt = (typeof fMulerQuizTargetSet === "function") ? fMulerQuizTargetSet() : []; } catch (eT) { tgt = []; }
+    if (tgt.indexOf(atom1) >= 0) return -1;
+    if (typeof bondList === "undefined" || !bondList) return -1;
+    for (var b = 0; b < bondList.length; b++) {
+      if (!bondList[b]) continue;
+      if (bondList[b][0] === atom1) return bondList[b][1];
+      if (bondList[b][1] === atom1) return bondList[b][0];
+    }
+  } catch (e) {}
+  return -1;
+}
+
 function fMulerSelectPick(px, py) {
   try {
     var geom = null;
@@ -2247,7 +2298,13 @@ function fMulerSelectPick(px, py) {
       var dx = anchors[i].x - px, dy = anchors[i].y - py, d2 = dx * dx + dy * dy;
       if (d2 <= bd) { bd = d2; best = anchors[i].atom; }
     }
-    if (best !== null && best !== undefined) return { kind: "atom", atom: best + 1 };
+    if (best !== null && best !== undefined) {
+      // Armed quiz: a non-target H resolves to its heavy atom (condensed-style
+      // unit picking); target H stays distinct. See fMulerQuizHydrogenParent.
+      var _ha = -1;
+      try { if (typeof fMulerQuizHydrogenParent === "function") _ha = fMulerQuizHydrogenParent(best + 1); } catch (eH) { _ha = -1; }
+      return { kind: "atom", atom: (_ha > 0 ? _ha : best + 1) };
+    }
     if (!groups || !groups.length) return null;
     if (!(med > 0)) {
       try { med = (typeof fMulerSelectMedianBond === "function") ? fMulerSelectMedianBond(groups) : 0; } catch (eM2) { med = 0; }
@@ -2286,8 +2343,12 @@ function fMulerSelectPick(px, py) {
       }
     }
     if (bb !== null && bpair) {
-      // An ignored bond must not behave like empty canvas and clear picks.
-      if (typeof window !== "undefined" && window.MulerQuizTarget === "compCarbonsCount") return { ignore: true };
+      // Atoms-only quizzes (all targets): bond clicks never select, never clear.
+      // Bond-purpose quizzes accept bond clicks (normalized to endpoint atoms
+      // at compare time) — the prompt names the bond.
+      var _bPurp = "free";
+      try { _bPurp = (typeof fMulerSelectPurpose === "function") ? fMulerSelectPurpose() : "free"; } catch (eP2) { _bPurp = "free"; }
+      if (typeof window !== "undefined" && window.MulerQuizTarget && _bPurp !== "bond") return { ignore: true };
       return { kind: "bond", bond: groups[bb].bond + 1, pair: bpair };
     }
     return null;
@@ -2350,7 +2411,7 @@ function fMulerSelectToggle(px) {
 // Quiz target registry (v56 1C, main chain first): component mode →
 // atom-set resolver. Later phases add FG/branch resolvers (incl. bond-aware
 // ones) without touching the dispatch, compare, or paint below.
-var MULER_QUIZ_TARGET_RESOLVERS = { compCarbonsCount: fMulerMainChainResolved };
+var MULER_QUIZ_TARGET_RESOLVERS = { compCarbonsCount: fMulerMainChainResolved, compSuffix: fMulerSuffixResolved, commonEther: fMulerEtherResolved, esterEster: fMulerEsterResolved, compEndNumber: fMulerEndNumberResolved, compSuffixLocants: fMulerSuffixResolved, compBondPos: fMulerBondPosResolved, compNumber1: fMulerNumber1Resolved, compBondType: fMulerBondTypeResolved, compBondType2: fMulerBondType2Resolved };
 
 // Main-chain resolution shared with the highlight path (same stored-data vs
 // algorithmic rule) so quiz and green can never disagree on the answer.
@@ -2367,10 +2428,616 @@ function fMulerMainChainResolved() {
   } catch (e) { return []; }
 }
 
+// FG quiz resolvers (v56 1C suffix phase): green-faithful atom sets — heavy
+// fragment atoms plus H exactly where green paints it (alcohol/amine hetero H,
+// acid OH hydrogen, aldehyde C-H; bondList-driven, so condensed/skeletal with
+// no explicit H stay heavy-only). Ether/ketone/nitro/cyanide/halogen/ester
+// stay H-free like the highlight.
+// Source of truth is the green path: compSuffix paints fHighlightFG() with
+// FGno undefined (single FG) or 2 (principal group of several), commonEther
+// paints the whole C-O-C via fHighlightFG(), esterEster paints
+// fGetEsterGroupFragment(). The exact reward replays that green, so quiz and
+// reward never disagree.
+// Hydrocarbon taxonomy (-ιο suffix, alkyl halides) has no highlight atoms,
+// so the resolver returns [] and the arm gate falls through to classic.
+function fMulerFGInstances() {
+  try {
+    if (typeof functionalGroupObj === "undefined" || !functionalGroupObj) return [];
+    var fgKeys = Object.keys(functionalGroupObj).filter(function (k) { return k !== "hydrocarbon"; });
+    if (!fgKeys.length) return [];
+    var instances = [];
+    for (var k = 0; k < fgKeys.length; k++) {
+      var heteroEls = Object.keys(functionalGroupObj[fgKeys[k]]);
+      for (var e = 0; e < heteroEls.length; e++) instances.push([fgKeys[k], heteroEls[e]]);
+    }
+    var order2D = ["carboxylicAcid", "ester", "cyanide", "aldehyde", "ketone", "alcohol", "amine", "nitro", "ether"];
+    var halOrder = [];
+    try { halOrder = Object.keys(nameMainCompObj3.halogen.substitute); } catch (eH) { halOrder = []; }
+    instances.sort(function (a, b) {
+      if (a[0] === "halogen" && b[0] === "halogen") return halOrder.indexOf(a[1]) - halOrder.indexOf(b[1]);
+      return order2D.indexOf(b[0]) - order2D.indexOf(a[0]);
+    });
+    return instances;
+  } catch (e) { return []; }
+}
+
+function fMulerFGHeavyAtoms(FGno) {
+  try {
+    var instances = (typeof fMulerFGInstances === "function") ? fMulerFGInstances() : [];
+    if (!instances.length) return [];
+    var targets = (FGno === undefined) ? instances : (instances[FGno - 1] ? [instances[FGno - 1]] : []);
+    if (!targets.length) return [];
+    var out = [];
+    var push = function (a1) { if (typeof a1 === "number" && a1 > 0 && out.indexOf(a1) < 0) out.push(a1); };
+    // H donors mirror the green H rules exactly (alcohol/amine hetero H, acid
+    // OH hydrogen, aldehyde C-H). The bondList scan below adds only modeled H,
+    // so condensed/skeletal (no explicit H) stay heavy-only with no branches.
+    var hDonors = [];
+    var donor = function (a0) { if (typeof a0 === "number" && a0 >= 0 && hDonors.indexOf(a0) < 0) hDonors.push(a0); };
+    for (var t = 0; t < targets.length; t++) {
+      var fgKey = targets[t][0], heteroEl = targets[t][1];
+      var heteroList = functionalGroupObj[fgKey][heteroEl];
+      for (var i = 0; i < heteroList.length; i++) {
+        var entry = heteroList[i];
+        if (Array.isArray(entry)) {
+          if (fgKey === "ester") {
+            var triad = (typeof fGetEsterTriad === "function") ? fGetEsterTriad() : null;
+            if (triad) for (var e2 = 0; e2 < triad.length; e2++) push(triad[e2]);
+            continue;
+          }
+          var ohIdx = entry[0], coIdx = entry[1];
+          push(ohIdx + 1); push(coIdx + 1);
+          donor(ohIdx);
+          try {
+            if (Array.isArray(atomConnectivityList[ohIdx])) push(atomConnectivityList[ohIdx][0] + 1);
+          } catch (eA) {}
+        } else {
+          var hIdx = entry;
+          if (fgKey === "aldehyde") {
+            push(hIdx + 1);
+            try {
+              if (Array.isArray(atomConnectivityList[hIdx]) && atomConnectivityList[hIdx].length) {
+                push(atomConnectivityList[hIdx][0] + 1);
+                donor(atomConnectivityList[hIdx][0]);
+              }
+            } catch (eC) {}
+          } else if (fgKey === "ketone") {
+            push(hIdx + 1);
+            try {
+              var carbC = Array.isArray(atomConnectivityList[hIdx]) ? atomConnectivityList[hIdx][0] : undefined;
+              if (carbC !== undefined) {
+                push(carbC + 1);
+                var nbrs = atomConnectivityList[carbC] || [];
+                for (var n = 0; n < nbrs.length; n++) {
+                  try { if (String(allAtomsTypeList[nbrs[n]] || "").toUpperCase() === "C") push(nbrs[n] + 1); } catch (eN) {}
+                }
+              }
+            } catch (eK) {}
+          } else if (fgKey === "nitro") {
+            push(hIdx + 1);
+            try {
+              var on = atomConnectivityList[hIdx] || [];
+              for (var o = 0; o < on.length; o++) {
+                try { if (String(allAtomsTypeList[on[o]] || "").toUpperCase() === "O") push(on[o] + 1); } catch (eO) {}
+              }
+            } catch (eNO) {}
+          } else if (fgKey === "ether") {
+            push(hIdx + 1);
+            try {
+              var ec = (atomConnectivityList[hIdx] || []).filter(function (nn) {
+                try { return String(allAtomsTypeList[nn] || "").toUpperCase() === "C"; } catch (eF) { return false; }
+              });
+              for (var c = 0; c < ec.length; c++) push(ec[c] + 1);
+            } catch (eE) {}
+          } else if (fgKey === "cyanide") {
+            push(hIdx + 1);
+            try {
+              var cn = atomConnectivityList[hIdx] || [];
+              for (var u = 0; u < cn.length; u++) push(cn[u] + 1);
+            } catch (eCN) {}
+          } else {
+            push(hIdx + 1);
+            if (fgKey === "alcohol" || fgKey === "amine") donor(hIdx);
+            if (fgKey !== "alcohol" && fgKey !== "amine" && fgKey !== "halogen") {
+              try {
+                var gn = atomConnectivityList[hIdx] || [];
+                for (var g = 0; g < gn.length; g++) push(gn[g] + 1);
+              } catch (eG) {}
+            }
+          }
+        }
+      }
+    }
+    // Modeled H only (same atoms green paints): each donor contributes its
+    // bonded H atoms. No explicit H in the model (condensed/skeletal) → noop.
+    try {
+      if (hDonors.length && typeof bondList !== "undefined" && bondList && typeof allAtomsTypeList !== "undefined" && allAtomsTypeList) {
+        var donorSet = {};
+        for (var d = 0; d < hDonors.length; d++) donorSet[hDonors[d] + 1] = true;
+        for (var b = 0; b < bondList.length; b++) {
+          if (!bondList[b]) continue;
+          var ba1 = bondList[b][0], ba2 = bondList[b][1];
+          if (donorSet[ba1] && String(allAtomsTypeList[ba2 - 1] || "").toUpperCase() === "H") push(ba2);
+          else if (donorSet[ba2] && String(allAtomsTypeList[ba1 - 1] || "").toUpperCase() === "H") push(ba1);
+        }
+      }
+    } catch (eH) {}
+    out.sort(function (a, b) { return a - b; });
+    return out;
+  } catch (e) { return []; }
+}
+
+function fMulerSuffixResolved() {
+  try {
+    if (typeof molTaxonomy !== "undefined" && molTaxonomy == "Υδρογονάνθρακες") return [];
+    if (typeof functionalGroupObj === "undefined" || !functionalGroupObj) return [];
+    var nKeys = Object.keys(functionalGroupObj).length;
+    var FGno = nKeys > 1 ? 2 : undefined;
+    return ((typeof fMulerFGHeavyAtoms === "function") ? fMulerFGHeavyAtoms(FGno) : []) || [];
+  } catch (e) { return []; }
+}
+
+function fMulerEtherResolved() {
+  try {
+    return ((typeof fMulerFGHeavyAtoms === "function") ? fMulerFGHeavyAtoms(undefined) : []) || [];
+  } catch (e) { return []; }
+}
+
+function fMulerEsterResolved() {
+  try {
+    if (typeof fGetEsterGroupFragment !== "function") return [];
+    var frag = fGetEsterGroupFragment() || [];
+    return frag.slice();
+  } catch (e) { return []; }
+}
+
+// Bond quiz resolvers (v56 1B bond phase): the bonded heavy atoms. Mirror the
+// green path exactly — fHighlightMultiBonds(1) paints the double bonds when
+// any exist, else the triple bonds; fHighlightMultiBonds(2) paints triples.
+function fMulerMultiBondAtoms(order) {
+  try {
+    var out = [];
+    if (typeof multiBondListCC === "undefined" || !multiBondListCC) return [];
+    if (typeof bondList === "undefined" || !bondList) return [];
+    for (var i = 0; i < multiBondListCC.length; i++) {
+      var b = multiBondListCC[i];
+      var bl = bondList[b - 1];
+      if (!bl || bl[2] !== order) continue;
+      if (out.indexOf(bl[0]) < 0) out.push(bl[0]);
+      if (out.indexOf(bl[1]) < 0) out.push(bl[1]);
+    }
+    out.sort(function (a, b) { return a - b; });
+    return out;
+  } catch (e) { return []; }
+}
+
+function fMulerBondAtomsPos1() {
+  try {
+    var hasD = false;
+    try { hasD = !!(typeof multiBondsObj !== "undefined" && multiBondsObj && multiBondsObj.CCd && multiBondsObj.CCd.length > 0); } catch (eD) { hasD = false; }
+    return ((typeof fMulerMultiBondAtoms === "function") ? fMulerMultiBondAtoms(hasD ? 2 : 3) : []) || [];
+  } catch (e) { return []; }
+}
+
+function fMulerBondAtomsPos2() {
+  try {
+    return ((typeof fMulerMultiBondAtoms === "function") ? fMulerMultiBondAtoms(3) : []) || [];
+  } catch (e) { return []; }
+}
+
+// Single C–C bonds (order 1, both ends carbon — never C–H), molecule-wide or
+// scoped to the ester acid chain, mirroring fHighlightSingleBondsCC.
+function fMulerSingleBondAtoms() {
+  try {
+    var scope = null;
+    try {
+      if ((typeof fIsSingleEster === "function") && fIsSingleEster() &&
+          typeof fGetEsterAcidChain === "function") scope = fGetEsterAcidChain() || null;
+    } catch (eS) { scope = null; }
+    var set = null;
+    if (Array.isArray(scope) && scope.length) {
+      set = {};
+      for (var s = 0; s < scope.length; s++) set[scope[s]] = true;
+    }
+    if (typeof bondList === "undefined" || !bondList || typeof allAtomsTypeList === "undefined" || !allAtomsTypeList) return [];
+    var out = [];
+    for (var b = 0; b < bondList.length; b++) {
+      if (!bondList[b] || bondList[b][2] !== 1) continue;
+      var a1 = bondList[b][0], a2 = bondList[b][1];
+      if (String(allAtomsTypeList[a1 - 1] || "").toUpperCase() !== "C" ||
+          String(allAtomsTypeList[a2 - 1] || "").toUpperCase() !== "C") continue;
+      if (set && (!set[a1] || !set[a2])) continue;
+      if (out.indexOf(a1) < 0) out.push(a1);
+      if (out.indexOf(a2) < 0) out.push(a2);
+    }
+    out.sort(function (a, b) { return a - b; });
+    return out;
+  } catch (e) { return []; }
+}
+
+// Quiz-effective atom set: picked atoms plus the endpoints of picked bonds.
+// Bond clicks in a bond quiz count their two atoms, so a bond line and its
+// labels are interchangeable ways to pick the same atoms.
+function fMulerQuizEffectiveAtoms(selAtoms, selBonds) {
+  try {
+    var set = {}, out = [];
+    var push = function (a) { if (typeof a === "number" && a > 0 && !set[a]) { set[a] = true; out.push(a); } };
+    var sa = Array.isArray(selAtoms) ? selAtoms : [];
+    for (var i = 0; i < sa.length; i++) push(sa[i]);
+    var sb = Array.isArray(selBonds) ? selBonds : [];
+    if (sb.length && typeof bondList !== "undefined" && bondList) {
+      for (var j = 0; j < sb.length; j++) {
+        var bl = bondList[sb[j] - 1];
+        if (!bl) continue;
+        push(bl[0]); push(bl[1]);
+      }
+    }
+    out.sort(function (a, b) { return a - b; });
+    return out;
+  } catch (e) { return Array.isArray(selAtoms) ? selAtoms.slice() : []; }
+}
+
+// compBondType: the named multiplicity's atoms. "αν" (only singles) quizzes
+// every single C–C bond (reward paints that set); other infixes take the
+// multi-bond atoms (doubles preferred, else triples — same as the green).
+function fMulerBondTypeResolved() {
+  try {
+    var s6 = "";
+    try { s6 = (typeof nameComponentsList !== "undefined" && nameComponentsList) ? (nameComponentsList[6] || "") : ""; } catch (e6) { s6 = ""; }
+    if (s6 === "αν" || s6 === "άν") {
+      return ((typeof fMulerSingleBondAtoms === "function") ? fMulerSingleBondAtoms() : []) || [];
+    }
+    if (s6 === "εν" || s6 === "έν" || s6 === "διέν" || s6 === "διεν" || s6 === "ίν" || s6 === "ιν") {
+      return ((typeof fMulerBondAtomsPos1 === "function") ? fMulerBondAtomsPos1() : []) || [];
+    }
+    return [];
+  } catch (e) { return []; }
+}
+
+// compBondType2: mirrors the classic unconditional fHighlightMultiBonds(2)
+// (triple bonds when two multiplicities exist).
+function fMulerBondType2Resolved() {
+  try {
+    return ((typeof fMulerBondAtomsPos2 === "function") ? fMulerBondAtomsPos2() : []) || [];
+  } catch (e) { return []; }
+}
+
+// Dual-use locant boxes (compBondPos / compEndNumber / compNumber1): bond
+// atoms when the box holds a bond position, i.e. exactly when the FG
+// resolver for that mode is empty. Keeps quiz and green in agreement by
+// construction — one of the two always matches the classic paint.
+function fMulerBondAtomsForMode(mode) {
+  try {
+    var fg = [];
+    try {
+      var r = (typeof MULER_QUIZ_TARGET_RESOLVERS !== "undefined" && MULER_QUIZ_TARGET_RESOLVERS) ? MULER_QUIZ_TARGET_RESOLVERS[mode] : null;
+      if (typeof r === "function") fg = r() || [];
+    } catch (eR) { fg = []; }
+    if (fg.length) return [];
+    if (mode === "compBondPos" || mode === "compNumber1") {
+      return ((typeof fMulerBondAtomsPos1 === "function") ? fMulerBondAtomsPos1() : []) || [];
+    }
+    if (mode === "compEndNumber") {
+      return ((typeof fMulerBondAtomsPos2 === "function") ? fMulerBondAtomsPos2() : []) || [];
+    }
+  } catch (e) {}
+  return [];
+}
+
+// Branch quiz resolver: heavy atoms of the substituent / alkyl group behind
+// the box, mirroring the green paint (fGetHydrocarbonBranchHighlight, with
+// the mode passed explicitly so piece scoping and the compNumber2 first-group
+// narrowing match the armed box even before nameAnalysisMode is restored).
+// Heavy atoms only (branch H is invisible in condensed; the armed H→parent
+// redirect keeps expanded picks forgiving). Single-ether alkoxy boxes defer
+// to their commonAlkyl quiz home.
+function fMulerBranchAtomsForMode(mode) {
+  try {
+    if (!mode || typeof mode !== "string") return [];
+    var heavyOnly = function (arr) {
+      var out = [];
+      try {
+        for (var i = 0; i < ((arr && arr.length) || 0); i++) {
+          var a = arr[i];
+          if (typeof a !== "number" || a <= 0) continue;
+          try { if (typeof allAtomsTypeList !== "undefined" && allAtomsTypeList && String(allAtomsTypeList[a - 1] || "").toUpperCase() === "H") continue; } catch (eH) {}
+          if (out.indexOf(a) < 0) out.push(a);
+        }
+      } catch (eL) {}
+      out.sort(function (x, y) { return x - y; });
+      return out;
+    };
+    if (mode === "commonAlkyl1" || mode === "commonAlkyl2") {
+      try {
+        var parts = (typeof fGetEtherCommonParts === "function") ? fGetEtherCommonParts() : null;
+        var part = (parts && parts.parts) ? parts.parts[mode === "commonAlkyl1" ? 0 : 1] : null;
+        return heavyOnly(part && part.chain ? part.chain : []);
+      } catch (eP) { return []; }
+    }
+    if (mode === "esterAlkyl") {
+      try {
+        var alc = (typeof fGetEsterAlcoholChain === "function") ? fGetEsterAlcoholChain() : null;
+        return heavyOnly(alc || []);
+      } catch (eA) { return []; }
+    }
+    var slot = 0;
+    if (/^compBranch(Sub|Loc)\d+$/.test(mode)) slot = 2;
+    else if (mode === "compSecondSub2" || mode === "compNumber2") slot = 2;
+    else if (mode === "compSecondSub1" || mode === "compNumber1") slot = 1;
+    else return [];
+    // An unmatched split piece must not fall back to the whole slot group:
+    // without a resolved piece there is no sufficiently precise quiz target.
+    try {
+      var _pm = /^compBranch(Sub|Loc)(\d+)$/.exec(mode || "");
+      if (_pm) {
+        var _pp = (typeof fGetHydrocarbonBranchPiece === "function") ? fGetHydrocarbonBranchPiece(parseInt(_pm[2], 10)) : null;
+        if (!_pp || !Array.isArray(_pp.members) || !_pp.members.length) return [];
+      }
+    } catch (eP) { return []; }
+    // The classic highlighter falls back to the whole slot for an unmatched
+    // split piece; that fallback is not a sufficiently precise quiz target.
+    var piece = /^compBranch(Sub|Loc)(\d+)$/.exec(mode);
+    if (piece && !fGetHydrocarbonBranchPiece(parseInt(piece[2], 10))) return [];
+    // Ether slot groups include alkoxy prefixes, which the branch highlighter
+    // filters out. A single-alkoxy selection quizzes the same atoms classic
+    // paints (O + full alkoxy chain, heavy-only like other branch quizzes; H
+    // via the armed H->parent redirect). A mixed slot cannot safely be indexed.
+    if (functionalGroupsList.length === 1 && functionalGroupsList[0] === "ether") {
+      var etherGroups = fEtherPrefixGroups();
+      var selectedGroups = slot === 1 ? etherGroups.slice(0, 1) : etherGroups.slice(1);
+      if (!selectedGroups.length) return [];
+      if (selectedGroups.length === 1 && selectedGroups[0].kind === "alkoxy") {
+        try {
+          var _o1 = (typeof functionalGroupObj !== "undefined" && functionalGroupObj &&
+            functionalGroupObj.ether && functionalGroupObj.ether.O) ? (functionalGroupObj.ether.O[0] + 1) : null;
+          var _ach = (typeof fGetEtherAlkoxyChain === "function") ? fGetEtherAlkoxyChain() : null;
+          var _arr = [];
+          if (typeof _o1 === "number" && _o1 > 0) _arr.push(_o1);
+          if (_ach && _ach.length) for (var _ai = 0; _ai < _ach.length; _ai++) _arr.push(_ach[_ai]);
+          var _ho = heavyOnly(_arr);
+          if (_ho.length) return _ho;
+        } catch (eA) {}
+        return [];
+      }
+      if (selectedGroups.some(function (group) { return group.kind !== "alkyl"; })) return [];
+    }
+    var g = null;
+    try { g = (typeof fGetHydrocarbonBranchHighlight === "function") ? fGetHydrocarbonBranchHighlight(slot, mode) : null; } catch (eG) { g = null; }
+    return heavyOnly(g && g.atoms ? g.atoms : []);
+  } catch (e) { return []; }
+}
+
+// Prerequisite state (v56 locant phase): per-molecule main-chain solves.
+// Locant tasks show the chain numbering aid only for solved molecules.
+function fMulerChainSolved() {
+  try {
+    if (typeof window === "undefined") return false;
+    var m = (typeof selectedMol !== "undefined" && selectedMol) ? String(selectedMol) : "";
+    if (!m) return false;
+    var map = window.__mulerChainSolved;
+    return !!(map && map[m] === true);
+  } catch (e) { return false; }
+}
+
+// Mode → box id (mirrors the _modeToCompId table in fShowNameAnalysis plus
+// the branch-piece fallback). Used by the chain→locant return flow.
+function fMulerQuizBoxIdForMode(mode) {
+  try {
+    var map = {
+      compNumber1: "comp0", compSecondSub1: "comp1", compNumber2: "comp2",
+      compSecondSub2: "comp3", compBondPos: "comp4", compCarbonsCount: "comp5",
+      compBondType: "comp6", compEndNumber: "comp7", compBondType2: "comp8",
+      compSuffix: "comp9", compSuffixLocants: "comp9loc", compBranchSub1: "comp3",
+      compBranchLoc2: "comp3loc", compBranchSub2: "comp3b", commonAlkyl1: "comp10",
+      commonAlkyl2: "comp11", commonEther: "comp12", esterAlkyl: "comp10",
+      esterEster: "comp11",
+    };
+    if (Object.prototype.hasOwnProperty.call(map, mode)) return map[mode];
+    if (typeof fBranchPieceBoxId === "function") {
+      var b = fBranchPieceBoxId(mode);
+      if (b) return b;
+    }
+  } catch (e) {}
+  return null;
+}
+
+// Principal FG position atoms (1-based) for the box/locant match gate — the
+// carbons that carry the FG locant, not the full green paint set. Ketone green
+// includes alpha carbons and alcohol green is O-only (no locant), so gating on
+// paint atoms both over-matches (bond "3" via alpha C3 next to a 2-keto) and
+// under-matches (OH "2-" via O with no chain locant). Bearing/carbonyl carbons
+// only: ketone/aldehyde carbonyl C, acid carbonyl C, ester carbonyl C,
+// alcohol/amine/halogen/nitro bearing C(s), ether both flanking Cs, cyanide
+// nitrile C. Quiz/classic targets stay full (paint-faithful); only the gate
+// narrows.
+function fMulerFGPositionAtoms(FGno) {
+  try {
+    var inst = (typeof fMulerFGInstances === "function") ? fMulerFGInstances() : [];
+    if (!inst.length) return [];
+    var tgts = (FGno === undefined) ? inst : (inst[FGno - 1] ? [inst[FGno - 1]] : []);
+    if (!tgts.length) return [];
+    var out = [];
+    var push = function (a1) { if (typeof a1 === "number" && a1 > 0 && out.indexOf(a1) < 0) out.push(a1); };
+    var firstC = function (idx0) {
+      try {
+        var nbs = (typeof atomConnectivityList !== "undefined" && atomConnectivityList) ? atomConnectivityList[idx0] : null;
+        if (!nbs) return [];
+        var res = [];
+        for (var i = 0; i < nbs.length; i++) {
+          try { if (String(allAtomsTypeList[nbs[i]] || "").toUpperCase() === "C") res.push(nbs[i] + 1); } catch (eC) {}
+        }
+        return res;
+      } catch (e) { return []; }
+    };
+    for (var t = 0; t < tgts.length; t++) {
+      var fgKey = tgts[t][0], heteroEl = tgts[t][1];
+      var hList = null;
+      try { hList = functionalGroupObj[fgKey][heteroEl]; } catch (eH) { hList = null; }
+      if (!hList) continue;
+      for (var i = 0; i < hList.length; i++) {
+        var entry = hList[i];
+        if (Array.isArray(entry)) {
+          if (fgKey === "ester") {
+            try {
+              var tri = (typeof fGetEsterTriad === "function") ? fGetEsterTriad() : null;
+              if (tri && tri.length >= 2) { push(tri[1]); continue; }
+            } catch (eT) {}
+          }
+          try {
+            var coO = entry[1];
+            var carb = (typeof atomConnectivityList !== "undefined" && atomConnectivityList) ? atomConnectivityList[coO] : null;
+            var c0 = (carb && carb.length) ? carb[0] : null;
+            if (typeof c0 === "number") push(c0 + 1);
+          } catch (eA) {}
+          continue;
+        }
+        var h0 = entry;
+        if (fgKey === "ketone" || fgKey === "aldehyde") {
+          try {
+            var cc = (typeof atomConnectivityList !== "undefined" && atomConnectivityList) ? atomConnectivityList[h0] : null;
+            if (cc && cc.length !== undefined && typeof cc[0] === "number") push(cc[0] + 1);
+            else if (Array.isArray(cc) && cc.length) push(cc[0] + 1);
+          } catch (eK) {}
+        } else if (fgKey === "cyanide") {
+          var ncs = firstC(h0);
+          if (ncs.length) push(ncs[0]);
+        } else if (fgKey === "ether") {
+          var ecs = firstC(h0);
+          for (var e2 = 0; e2 < ecs.length; e2++) push(ecs[e2]);
+        } else {
+          var bcs = firstC(h0);
+          for (var b = 0; b < bcs.length; b++) push(bcs[b]);
+        }
+      }
+    }
+    out.sort(function (a, b) { return a - b; });
+    return out;
+  } catch (e) { return []; }
+}
+
+// Locant-box resolver for compBondPos: the same atoms the classic case paints
+// green — the keto/OH group whenever the box holds its position: branched
+// saturated ketone, alcohol-as-compBondPos, or a slot-{0,4,7} locant on a single
+// alcohol/ketone (e.g. EN 2-πεντανόνη, 2-πεντανόλη). Multiple-bond positions
+// belong to the bond family: [] falls through to classic.
+function fMulerBondPosResolved() {
+  try {
+    var out = [];
+    var allFG = function () {
+      try { return ((typeof fMulerFGHeavyAtoms === "function") ? fMulerFGHeavyAtoms(undefined) : []) || []; }
+      catch (eF) { return []; }
+    };
+    try { if ((typeof fBranchedSaturatedKetonePosition === "function") && fBranchedSaturatedKetonePosition()) out = allFG(); } catch (eB) {}
+    if (!out.length) {
+      try { if ((typeof fAlcoholOHNameComponent === "function") && fAlcoholOHNameComponent() === 'compBondPos') out = allFG(); } catch (eA) {}
+    }
+    if (!out.length && typeof functionalGroupsList !== "undefined" && functionalGroupsList && functionalGroupsList.length === 1 &&
+        (functionalGroupsList[0] === 'ketone' || functionalGroupsList[0] === 'alcohol')) {
+      var s4 = "", s0 = "", s7 = "";
+      try {
+        if (typeof nameComponentsList !== "undefined" && nameComponentsList) {
+          s4 = nameComponentsList[4] || "";
+          s0 = nameComponentsList[0] || "";
+          s7 = nameComponentsList[7] || "";
+        }
+      } catch (e4) {}
+      var stripLoc = function (t) { return String(t == null ? "" : t).replace(/^[-\s]+/, "").replace(/[-\s]+$/, ""); };
+      if (/^\d/.test(stripLoc(s4)) || /^\d/.test(stripLoc(s0)) || /^\d/.test(stripLoc(s7))) out = allFG();
+    }
+    // Box must name the FG: a bond locant in an FG-position box (e.g. a
+    // triple-bond number where the OH position was expected) belongs to the
+    // bond family, so an unmatched box falls through instead of quizzing FG.
+    // Gate on principal position atoms (carbonyl/bearing C), not the full
+    // paint set (ketone alpha Cs over-match, OH O under-matches).
+    if (out.length && typeof fMulerBoxMatchesTarget === "function") {
+      try {
+        var _pos = (typeof fMulerFGPositionAtoms === "function") ? fMulerFGPositionAtoms(undefined) : out;
+        if (!fMulerBoxMatchesTarget("compBondPos", (_pos && _pos.length) ? _pos : out)) return [];
+      } catch (eG) {}
+    }
+    return out;
+  } catch (e) { return []; }
+}
+
+// Locant-box resolver for compNumber1: the same atoms the classic case paints
+// green — the principal FG (fHighlightFG(), all instances) in the saturated
+// fallthrough (e.g. GR 2-πεντανόνη in box comp0). Branch groups, secondary
+// positions and multiple-bond infixes belong to later families: [].
+function fMulerNumber1Resolved() {
+  try {
+    var bg = null;
+    try { bg = (typeof fGetHydrocarbonBranchGroup === "function") ? fGetHydrocarbonBranchGroup(1) : null; } catch (eB) { bg = null; }
+    if (bg) return [];
+    var s1 = null;
+    try { s1 = (typeof nameComponentsList !== "undefined" && nameComponentsList) ? nameComponentsList[1] : null; } catch (e1) { s1 = null; }
+    if (s1 !== null && s1 !== undefined && s1 !== "" && s1.length > 0) return [];
+    var s0 = "";
+    try { s0 = (typeof nameComponentsList !== "undefined" && nameComponentsList) ? (nameComponentsList[0] || "") : ""; } catch (e0) { s0 = ""; }
+    var stripOwnLoc = function (t) { return String(t == null ? "" : t).replace(/^[-\s]+/, "").replace(/[-\s]+$/, ""); };
+    if (!/^\d/.test(stripOwnLoc(s0))) return [];
+    var s6 = "";
+    try { s6 = (typeof nameComponentsList !== "undefined" && nameComponentsList) ? nameComponentsList[6] : ""; } catch (e6) { s6 = ""; }
+    if (s6 !== "άν" && s6 !== "αν") return [];
+    if (typeof functionalGroupObj === "undefined" || !functionalGroupObj) return [];
+    var keys = Object.keys(functionalGroupObj).filter(function (k) { return k !== "hydrocarbon"; });
+    if (!keys.length) return [];
+    var out1 = ((typeof fMulerFGHeavyAtoms === "function") ? fMulerFGHeavyAtoms(undefined) : []) || [];
+    if (out1.length && typeof fMulerBoxMatchesTarget === "function") {
+      try {
+        var _pos1 = (typeof fMulerFGPositionAtoms === "function") ? fMulerFGPositionAtoms(undefined) : out1;
+        if (!fMulerBoxMatchesTarget("compNumber1", (_pos1 && _pos1.length) ? _pos1 : out1)) return [];
+      } catch (eG1) {}
+    }
+    return out1;
+  } catch (e) { return []; }
+}
+
+// Locant-box resolver for compEndNumber: the same atoms the classic case
+// paints — all FG instances (fHighlightFG(), FGno undefined) in the ketone,
+// alcohol and empty-suffix branches. The triple-bond-position branch belongs
+// to the bond family: [] makes the arm gate fall through to classic.
+function fMulerEndNumberResolved() {
+  try {
+    var out = [];
+    var allFG = function () {
+      try { return ((typeof fMulerFGHeavyAtoms === "function") ? fMulerFGHeavyAtoms(undefined) : []) || []; }
+      catch (eF) { return []; }
+    };
+    if (typeof functionalGroupsList !== "undefined" && functionalGroupsList &&
+        functionalGroupsList.length === 1 && functionalGroupsList[0] === 'ketone' &&
+        (typeof fIsAcyclicKetoneGraph === "function") && fIsAcyclicKetoneGraph(atomConnectivityList, allAtomsTypeList, bondList) &&
+        (typeof fIsAcyclicSaturatedMonoketoneGraph === "function") && !fIsAcyclicSaturatedMonoketoneGraph(atomConnectivityList, allAtomsTypeList, bondList) &&
+        (typeof nameComponentsList !== "undefined" && nameComponentsList && nameComponentsList[8] && nameComponentsList[8].length === 0)) {
+      out = allFG();
+    } else {
+      var ohIsEnd = false;
+      try { ohIsEnd = (typeof fAlcoholOHNameComponent === "function") && fAlcoholOHNameComponent() === 'compEndNumber'; } catch (eO) { ohIsEnd = false; }
+      var empty8 = true;
+      try { empty8 = (typeof nameComponentsList === "undefined" || !nameComponentsList[8] || nameComponentsList[8].length === 0); } catch (e8) { empty8 = true; }
+      if (ohIsEnd || empty8) {
+        out = allFG();
+      }
+    }
+    // Box must name the FG: a bond locant here belongs to the bond family.
+    // Gate on principal position atoms, not the full paint set.
+    if (out.length && typeof fMulerBoxMatchesTarget === "function") {
+      try {
+        var _posE = (typeof fMulerFGPositionAtoms === "function") ? fMulerFGPositionAtoms(undefined) : out;
+        if (!fMulerBoxMatchesTarget("compEndNumber", (_posE && _posE.length) ? _posE : out)) return [];
+      } catch (eGE) {}
+    }
+    return out;
+  } catch (e) { return []; }
+}
+
 function fMulerQuizTargetSet() {
   try {
     var t = (typeof window !== "undefined") ? window.MulerQuizTarget : null;
     if (!t) return [];
+    if (typeof fMulerQuizResolveTarget === "function") {
+      var _rt = fMulerQuizResolveTarget(t) || [];
+      return _rt.slice();
+    }
     var r = (typeof MULER_QUIZ_TARGET_RESOLVERS !== "undefined" && MULER_QUIZ_TARGET_RESOLVERS) ? MULER_QUIZ_TARGET_RESOLVERS[t] : null;
     if (typeof r !== "function") return [];
     var out = r() || [];
@@ -2378,8 +3045,34 @@ function fMulerQuizTargetSet() {
   } catch (e) { return []; }
 }
 
+// Effective quiz target for a mode: branch atoms win on branch boxes,
+// then bond atoms on dual-use boxes holding a bond position, otherwise the
+// registry resolver (FG-or-[]). Single FG-first rule shared by the arm gates
+// and fMulerQuizTargetSet.
+function fMulerQuizResolveTarget(mode) {
+  try {
+    if (!mode || mode === "none") return [];
+    // Branch first (classic paints branch groups before bond/FG fallthroughs),
+    // then bond dual-use, then the registry. Single FG-first rule shared by
+    // the arm gates and fMulerQuizTargetSet.
+    if (typeof fMulerBranchAtomsForMode === "function") {
+      var _br = fMulerBranchAtomsForMode(mode) || [];
+      if (_br.length) return _br.slice();
+    }
+    if ((mode === "compBondPos" || mode === "compEndNumber" || mode === "compNumber1") &&
+        typeof fMulerBondAtomsForMode === "function") {
+      var _ba = fMulerBondAtomsForMode(mode) || [];
+      if (_ba.length) return _ba.slice();
+    }
+    var r = (typeof MULER_QUIZ_TARGET_RESOLVERS !== "undefined" && MULER_QUIZ_TARGET_RESOLVERS) ? MULER_QUIZ_TARGET_RESOLVERS[mode] : null;
+    if (typeof r !== "function") return [];
+    var out = r() || [];
+    return out.slice();
+  } catch (e) { return []; }
+}
+
 // Order-insensitive set compare of the picked atoms vs the target chain.
-// Bonds are v1-out-of-scope (atoms only); bond-aware resolvers come with FGs.
+// Bonds are normalized to endpoint atoms upstream (fMulerQuizEffectiveAtoms).
 function fMulerQuizCompare(selAtoms, target) {
   try {
     var tset = {}, sset = {};
@@ -2403,6 +3096,18 @@ function fMulerQuizCompare(selAtoms, target) {
     var orderPair = null;
     if (nHit + extra.length > 0) {
       if (!missing.length && !extra.length) {
+        // FG/locant/bond/branch purposes are set-only (no walk, no direction): an unordered
+        // fragment is either complete or it is not. Main chain keeps the
+        // walk + direction checks below.
+        var setOnly = false;
+        try {
+          if (typeof fMulerSelectPurpose === "function") {
+            var _sp = fMulerSelectPurpose();
+            setOnly = (_sp === "fg" || _sp === "loc" || _sp === "bond" || _sp === "branch");
+          }
+        } catch (eP) { setOnly = false; }
+        if (setOnly) { verdict = "exact"; }
+        else {
         // Exact set: the walk itself must be bonded end to end (either
         // direction is walkable — direction is checked separately below).
         // Same-fragment consecutive picks share one click action and assert
@@ -2435,6 +3140,7 @@ function fMulerQuizCompare(selAtoms, target) {
             if (rev) { for (var ri = 0; ri < ta.length; ri++) { if (aseq[ri] !== ta[ta.length - 1 - ri]) { rev = false; break; } } }
             verdict = rev ? "direction" : "order";
           }
+        }
         }
       }
       else if (!extra.length) verdict = "subset";
@@ -2553,6 +3259,23 @@ function fMulerQuizSymmetricChain(chain1) {
 // (stable reference for the panel).
 function fMulerQuizComparePool(atoms) {
   try {
+    // FG/locant/bond/branch purposes are a single set-only candidate (no pool, no direction).
+    var setOnly = false;
+    try {
+      if (typeof fMulerSelectPurpose === "function") {
+        var _pp = fMulerSelectPurpose();
+        setOnly = (_pp === "fg" || _pp === "loc" || _pp === "bond" || _pp === "branch");
+      }
+    } catch (eP) { setOnly = false; }
+    if (setOnly) {
+      var tgt = [];
+      try { tgt = (typeof fMulerQuizTargetSet === "function") ? fMulerQuizTargetSet() : []; } catch (eT) { tgt = []; }
+      if (!tgt.length) return { verdict: "empty", nHit: 0, nTarget: 0, missing: [], extra: [], orderPair: null, matched: null };
+      var one = null;
+      try { one = (typeof fMulerQuizCompare === "function") ? fMulerQuizCompare(atoms, tgt) : null; } catch (eC) { one = null; }
+      if (!one) return { verdict: "empty", nHit: 0, nTarget: 0, missing: [], extra: [], orderPair: null, matched: null };
+      return { verdict: one.verdict, nHit: one.nHit, nTarget: one.nTarget, missing: one.missing, extra: one.extra, orderPair: null, matched: null };
+    }
     var cands = (typeof fMulerQuizMainChainPool === "function") ? fMulerQuizMainChainPool() : [];
     if (!cands.length) return { verdict: "empty", nHit: 0, nTarget: 0, missing: [], extra: [], orderPair: null, matched: null };
     var results = [];
@@ -2657,12 +3380,35 @@ function fMulerQuizVerdictEl() {
   } catch (e) { return null; }
 }
 
+// Branch target split: locant boxes keep the "indicated position" wording,
+// name boxes (substituent names, common/ester alkyls) use the short wording.
+function fMulerBranchTargetIsLocant(mode) {
+  try {
+    var m = String(mode == null ? "" : mode);
+    if (m === "compNumber1" || m === "compNumber2") return true;
+    if (/^compBranchLoc\d+$/.test(m)) return true;
+    return false;
+  } catch (e) { return false; }
+}
+
+// Single-bond quiz: compBondType with the "αν" infix quizzes every single
+// C–C bond (reward paints that set); all other bond quizzes are multiple.
+function fMulerBondIsSingle() {
+  try {
+    if (typeof window === "undefined" || !window.MulerQuizTarget) return false;
+    if (String(window.MulerQuizTarget) !== "compBondType") return false;
+    var s6 = "";
+    try { s6 = (typeof nameComponentsList !== "undefined" && nameComponentsList) ? (nameComponentsList[6] || "") : ""; } catch (e6) { s6 = ""; }
+    return s6 === "αν" || s6 === "άν";
+  } catch (e) { return false; }
+}
+
 function fMulerQuizVerdict(kind, cmp) {
   try {
     // Renderer for every verdict kind. Live schedule: exact/direction/order
     // (final, full-set) plus hetero/gap/more/fewer/wrong (live, numberless —
-    // no counts, no pick positions). subset/disjoint/empty stay as compat
-    // aliases (rendered numberless) for future FG/branch targets.
+    // no counts, no pick positions). FG/locant targets reuse the set-only
+    // kinds with their own strings (direction/order/gap/hetero never fire).
     // Color is set inline (immediate) + via CSS class (skinnable, see
     // css/jsme-nick-56.css #mulerQuizVerdict.*).
     var el = (typeof fMulerQuizVerdictEl === "function") ? fMulerQuizVerdictEl() : null;
@@ -2671,14 +3417,50 @@ function fMulerQuizVerdict(kind, cmp) {
     if (!kind || kind === "clear") { try { el.textContent = ""; el.style.display = "none"; } catch (eC) {} return; }
     try { el.style.display = ""; } catch (eD) {}
     var txt = "", col = "#555555", glyph = "○", cls = "mulerQuiz-empty";
-    if (kind === "exact") { col = "#1a7a3c"; glyph = "✓"; txt = T("quizExact"); cls = "mulerQuiz-exact"; }
-    else if (kind === "more") { col = "#8a6d00"; glyph = "◐"; txt = T("quizMore"); cls = "mulerQuiz-more"; }
-    else if (kind === "fewer") { col = "#8a6d00"; glyph = "◐"; txt = T("quizFewer"); cls = "mulerQuiz-fewer"; }
+    // FG/locant/bond/branch targets use their own strings (never main-chain words).
+    // The exact verdict renders after Refresh clears the target, so it reads
+    // the one-shot __mulerQuizFgVerdict flag ("fg"/"loc"/"bond"/"bondSingle"/"branchLoc"/"branchName") first, then live purpose.
+    var fgTxt = false, locTxt = false, bondTxt = false, bondSingleTxt = false, branchTxt = false, branchNameTxt = false;
+    try {
+      if (typeof window !== "undefined") {
+        if (window.__mulerQuizFgVerdict === "loc") locTxt = true;
+        else if (window.__mulerQuizFgVerdict === "fg") fgTxt = true;
+        else if (window.__mulerQuizFgVerdict === "bondSingle") bondSingleTxt = true;
+        else if (window.__mulerQuizFgVerdict === "bond") bondTxt = true;
+        else if (window.__mulerQuizFgVerdict === "branch" || window.__mulerQuizFgVerdict === "branchLoc") branchTxt = true;
+        else if (window.__mulerQuizFgVerdict === "branchName") branchNameTxt = true;
+        window.__mulerQuizFgVerdict = "";
+      }
+    } catch (eF) {}
+    if (!fgTxt && !locTxt && !bondTxt && !bondSingleTxt && !branchTxt && !branchNameTxt) {
+      try {
+        if (typeof fMulerSelectPurpose === "function") {
+          var _vp = fMulerSelectPurpose();
+          if (_vp === "fg") fgTxt = true;
+          else if (_vp === "loc") locTxt = true;
+          else if (_vp === "bond") {
+            try {
+              if ((typeof fMulerBondIsSingle === "function") && fMulerBondIsSingle()) bondSingleTxt = true;
+              else bondTxt = true;
+            } catch (eBS) { bondTxt = true; }
+          }
+          else if (_vp === "branch") {
+            var _vm = (typeof window !== "undefined") ? window.MulerQuizTarget : "";
+            if (typeof fMulerBranchTargetIsLocant === "function" && fMulerBranchTargetIsLocant(_vm)) branchTxt = true;
+            else branchNameTxt = true;
+          }
+        }
+      } catch (eP) {}
+    }
+    var keyFor = function (base) { return fgTxt ? base + "Fg" : (locTxt ? base + "Loc" : (bondSingleTxt ? base + "BondSingle" : (bondTxt ? base + "Bond" : (branchTxt ? base + "Branch" : (branchNameTxt ? base + "Branch" : base))))); };
+    if (kind === "exact") { col = "#1a7a3c"; glyph = "✓"; txt = T(branchNameTxt ? "quizExactBranchName" : keyFor("quizExact")); cls = "mulerQuiz-exact"; }
+    else if (kind === "more") { col = "#8a6d00"; glyph = "◐"; txt = T(keyFor("quizMore")); cls = "mulerQuiz-more"; }
+    else if (kind === "fewer") { col = "#8a6d00"; glyph = "◐"; txt = T(keyFor("quizFewer")); cls = "mulerQuiz-fewer"; }
     else if (kind === "hetero") { col = "#b3261e"; glyph = "✕"; txt = T("quizHetero"); cls = "mulerQuiz-hetero"; }
     else if (kind === "gap") { col = "#8a6d00"; glyph = "⇄"; txt = T("quizGap"); cls = "mulerQuiz-gap"; }
-    else if (kind === "subset") { col = "#8a6d00"; glyph = "◐"; txt = T("quizMore"); cls = "mulerQuiz-subset"; }
-    else if (kind === "wrong") { col = "#b3261e"; glyph = "✕"; txt = T("quizWrong"); cls = "mulerQuiz-wrong"; }
-    else if (kind === "disjoint") { col = "#555555"; glyph = "○"; txt = T("quizDisjoint"); cls = "mulerQuiz-disjoint"; }
+    else if (kind === "subset") { col = "#8a6d00"; glyph = "◐"; txt = T(keyFor("quizMore")); cls = "mulerQuiz-subset"; }
+    else if (kind === "wrong") { col = "#b3261e"; glyph = "✕"; txt = T(keyFor("quizWrong")); cls = "mulerQuiz-wrong"; }
+    else if (kind === "disjoint") { col = "#555555"; glyph = "○"; txt = T(keyFor("quizDisjoint")); cls = "mulerQuiz-disjoint"; }
     else if (kind === "order") {
       col = "#8a6d00"; glyph = "⇄"; cls = "mulerQuiz-order";
       var _op = (cmp && cmp.orderPair) || [0, 0];
@@ -2695,7 +3477,21 @@ function fMulerQuizVerdict(kind, cmp) {
 function fMulerQuizPrompt() {
   try {
     var ex = document.getElementById("nameAnalysisExplain");
-    if (ex) { try { ex.textContent = (typeof fMulerT === "function") ? fMulerT("quizPick") : ""; } catch (eT) {} }
+    var pickKey = "quizPick";
+    try {
+      if (typeof fMulerSelectPurpose === "function") {
+        var _pp = fMulerSelectPurpose();
+        if (_pp === "fg") pickKey = "quizPickFg";
+        else if (_pp === "loc") pickKey = "quizPickLoc";
+        else if (_pp === "bond") pickKey = "quizPickBond";
+        else if (_pp === "branch") {
+          var _bt = (typeof window !== "undefined") ? window.MulerQuizTarget : "";
+          pickKey = ((typeof fMulerBranchTargetIsLocant === "function") && fMulerBranchTargetIsLocant(_bt)) ? "quizPickBranch" : "quizPickBranchName";
+        }
+        else if (_pp === "mainChain" && typeof window !== "undefined" && window.__mulerQuizReturnTo) pickKey = "quizChainFirst";
+      }
+    } catch (eP) {}
+    if (ex) { try { ex.textContent = (typeof fMulerT === "function") ? fMulerT(pickKey) : ""; } catch (eT) {} }
     // The prompt owns the panel until the first pick; Refresh then owns the
     // verdict line (live numberless hints, final direction/order).
     if (typeof fMulerQuizVerdict === "function") fMulerQuizVerdict("clear", null);
@@ -2704,6 +3500,7 @@ function fMulerQuizPrompt() {
 
 function fMulerQuizDisarm() {
   try { if (typeof window !== "undefined") window.MulerQuizTarget = null; } catch (eT) {}
+  try { if (typeof window !== "undefined") window.__mulerQuizReturnTo = null; } catch (eR) {}
   try { if (typeof fMulerQuizVerdict === "function") fMulerQuizVerdict("clear", null); } catch (eV) {}
 }
 
@@ -2727,7 +3524,25 @@ function fMulerQuizRearmSticky() {
     if (!mode || mode === "none") return false;
     var resolver = null;
     try { resolver = (typeof MULER_QUIZ_TARGET_RESOLVERS !== "undefined" && MULER_QUIZ_TARGET_RESOLVERS) ? MULER_QUIZ_TARGET_RESOLVERS[mode] : null; } catch (eR) { resolver = null; }
-    if (typeof resolver !== "function") return false;
+    // Atom-less targets (hydrocarbon -ιο suffix, hidden boxes) never arm:
+    // fall through to the classic explanation path instead of a stuck quiz.
+    // Effective target (branch/bond-aware); branch modes need no registry
+    // entry of their own, so its emptiness alone decides.
+    try {
+      var preTgt = (typeof fMulerQuizResolveTarget === "function") ? fMulerQuizResolveTarget(mode) : ((typeof resolver === "function") ? resolver() : []);
+      if (!preTgt.length) return false;
+    } catch (ePT) { return false; }
+    // Number-locant boxes need a solved chain on this molecule (numbering aid
+    // reference): sticky restore on an unsolved molecule disarms instead of
+    // redirecting — the next box click starts the chain-first flow. Name boxes
+    // may re-arm directly (same component selected = same task).
+    try {
+      var _rBox = null;
+      try { _rBox = (typeof fMulerQuizBoxIdForMode === "function") ? fMulerQuizBoxIdForMode(mode) : null; } catch (eRB) { _rBox = null; }
+      var _rLoc = false;
+      try { _rLoc = (typeof fMulerQuizBoxShowsLocant === "function") ? fMulerQuizBoxShowsLocant(_rBox, null) : false; } catch (eW) { _rLoc = false; }
+      if (_rLoc && (typeof fMulerChainSolved !== "function" || !fMulerChainSolved())) return false;
+    } catch (eG) {}
     var boxId = null;
     try {
       var s = document.querySelector("#nameAnalysis .nameCompBox.selected");
@@ -2763,6 +3578,57 @@ function fMulerQuizRearmSticky() {
 // calls this; returns true when it consumed the click). Mirrors the classic
 // selection visuals (selected box + mode) but swaps the highlight for the
 // neutral prompt; the live compare below replays the classic path on exact.
+// A box showing a position number ("-2-", "2,4-") needs the chain scale to
+// be interpretable, so on an unsolved molecule it redirects to the main-chain
+// quiz first (auto-return on exact); name boxes arm directly.
+function fMulerQuizBoxShowsLocant(boxId, $box) {
+  try {
+    var txt = "";
+    try { if ($box && typeof $box.text === "function") txt = $box.text() || ""; } catch (eT) { txt = ""; }
+    if (!txt) {
+      try {
+        var el = (typeof document !== "undefined" && boxId) ? document.getElementById(boxId) : null;
+        if (el) txt = el.textContent || "";
+      } catch (eD) {}
+    }
+    var t = String(txt == null ? "" : txt).replace(/^[-\s]+/, "").replace(/[-\s]+$/, "");
+    return /^\d/.test(t);
+  } catch (e) { return false; }
+}
+
+// True when a locant box actually names the FG target: any digit run in the
+// rendered box text equals a main-chain locant of the given (1-based) atoms.
+// Guards FG quizzes AND classic FG paint against box/mode skew (e.g. a
+// triple-bond locant landing in an FG-position box): in that case the box is
+// about the bond, not the group. Boxes without digits, missing DOM, or any
+// error fall through to true (no contradiction possible — current behavior).
+function fMulerBoxMatchesTarget(mode, atoms) {
+  try {
+    var boxId = null;
+    try { boxId = (typeof fMulerQuizBoxIdForMode === "function") ? fMulerQuizBoxIdForMode(mode) : null; } catch (eB) { boxId = null; }
+    var txt = "";
+    try {
+      if (boxId && typeof document !== "undefined") {
+        var el = document.getElementById(boxId);
+        if (el && el.textContent) txt = el.textContent;
+      }
+    } catch (eD) {}
+    var m = String(txt == null ? "" : txt).match(/\d+/g) || [];
+    if (!m.length) return true;
+    var locs = {};
+    var arr = Array.isArray(atoms) ? atoms : [];
+    for (var i = 0; i < arr.length; i++) {
+      var L = null;
+      try { L = (typeof fMainChainLocant === "function") ? fMainChainLocant(arr[i]) : null; } catch (eL) { L = null; }
+      if (typeof L === "number" && isFinite(L)) locs[L] = true;
+    }
+    for (var j = 0; j < m.length; j++) {
+      if (locs[parseInt(m[j], 10)]) return true;
+    }
+    return false;
+  } catch (e) { return true; }
+}
+
 function fMulerQuizArmForBox(boxId, $box) {
   try {
     if (typeof window === "undefined" || window.MulerDraft) return false;
@@ -2771,9 +3637,50 @@ function fMulerQuizArmForBox(boxId, $box) {
     var mode = "none";
     try { mode = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId(boxId) : "none"; } catch (eM) { mode = "none"; }
     if (!mode || mode === "none") return false;
+    // Atom-less targets (hydrocarbon -ιο suffix) never arm: fall through to
+    // the classic explanation path instead of a stuck quiz. The effective
+    // target resolves branch/bond/registry in one place — modes need no
+    // registry entry of their own, so its emptiness alone decides.
     var resolver = null;
     try { resolver = (typeof MULER_QUIZ_TARGET_RESOLVERS !== "undefined" && MULER_QUIZ_TARGET_RESOLVERS) ? MULER_QUIZ_TARGET_RESOLVERS[mode] : null; } catch (eR) { resolver = null; }
-    if (typeof resolver !== "function") return false;
+    try {
+      var preTgt = (typeof fMulerQuizResolveTarget === "function") ? fMulerQuizResolveTarget(mode) : ((typeof resolver === "function") ? resolver() : []);
+      if (!preTgt.length) return false;
+    } catch (ePT) { return false; }
+    // Chain-first prerequisite: a number-locant box on an unsolved molecule
+    // redirects to the main-chain quiz (chain box visuals included) and stashes
+    // the mode for the auto-return on exact. Name boxes arm directly even
+    // unsolved; solved molecules arm everything directly.
+    try {
+      var _showsLoc = false;
+      try { _showsLoc = (typeof fMulerQuizBoxShowsLocant === "function") ? fMulerQuizBoxShowsLocant(boxId, $box) : false; } catch (eW) { _showsLoc = false; }
+      if (_showsLoc && (typeof fMulerChainSolved !== "function" || !fMulerChainSolved())) {
+        var _cb = (typeof fMulerQuizBoxIdForMode === "function") ? fMulerQuizBoxIdForMode("compCarbonsCount") : null;
+        var _$cb = null;
+        try { _$cb = (_cb && typeof jQuery !== "undefined") ? jQuery("#" + _cb) : null; } catch (eJ) { _$cb = null; }
+        if (_cb && _$cb && _$cb.length) {
+          try { if (typeof window !== "undefined") window.__mulerQuizReturnTo = mode; } catch (eR) {}
+          try { boxId = _cb; } catch (eB) {}
+          try { $box = _$cb; } catch (eB2) {}
+          mode = "compCarbonsCount";
+          try { resolver = (typeof MULER_QUIZ_TARGET_RESOLVERS !== "undefined" && MULER_QUIZ_TARGET_RESOLVERS) ? MULER_QUIZ_TARGET_RESOLVERS[mode] : null; } catch (eR2) { resolver = null; }
+          if (typeof resolver !== "function") {
+            try { if (typeof window !== "undefined") window.__mulerQuizReturnTo = null; } catch (eR3) {}
+            return false;
+          }
+          try {
+            var _preC = resolver() || [];
+            if (!_preC.length) {
+              try { if (typeof window !== "undefined") window.__mulerQuizReturnTo = null; } catch (eR4) {}
+              return false;
+            }
+          } catch (ePC) {
+            try { if (typeof window !== "undefined") window.__mulerQuizReturnTo = null; } catch (eR5) {}
+            return false;
+          }
+        }
+      }
+    } catch (eRedir) {}
     // Same-box re-click always deselects through the classic path (disarm
     // first); a fresh click afterwards can re-arm.
     try {
@@ -2810,6 +3717,8 @@ function fMulerQuizArmForBox(boxId, $box) {
     // Explain-all panel stays the overview table when it is open (the prompt
     // above only owns the single-explanation panel).
     try { if (window.nameExplainAll && typeof fNameExplainTableRender === "function") fNameExplainTableRender(); } catch (eET) {}
+    // Stale return-to must not survive a direct (non-chain) arm.
+    try { if (mode !== "compCarbonsCount" && typeof window !== "undefined") window.__mulerQuizReturnTo = null; } catch (eRT) {}
     return true;
   } catch (e) { return false; }
 }
@@ -2829,8 +3738,18 @@ function fMulerQuizRefresh() {
     }
     var sel = (typeof fMulerSelectState === "function") ? fMulerSelectState() : null;
     var atoms = (sel && Array.isArray(sel.atoms2D)) ? sel.atoms2D.slice() : [];
+    // Bond quizzes compare bond lines by their endpoint atoms, so a bond
+    // click counts its two atoms (bond lines and labels interchangeable).
+    var effAtoms = atoms;
+    try {
+      if (typeof fMulerSelectPurpose === "function" && fMulerSelectPurpose() === "bond" &&
+          typeof fMulerQuizEffectiveAtoms === "function") {
+        var _sb = (sel && Array.isArray(sel.bonds2D)) ? sel.bonds2D : [];
+        effAtoms = fMulerQuizEffectiveAtoms(atoms, _sb);
+      }
+    } catch (eE) { effAtoms = atoms; }
     var r = null;
-    try { if (typeof fMulerQuizComparePool === "function") r = fMulerQuizComparePool(atoms); } catch (eRP) { r = null; }
+    try { if (typeof fMulerQuizComparePool === "function") r = fMulerQuizComparePool(effAtoms); } catch (eRP) { r = null; }
     if (!r) return null;
     if (r.verdict === "exact") {
       // Adopt the matched chain when it is not the live one (stepper path:
@@ -2846,7 +3765,36 @@ function fMulerQuizRefresh() {
           try { if (typeof fApplyChainStep === "function") fApplyChainStep(); } catch (eA) {}
         }
       } catch (eAd) {}
+      // Solved-state is per molecule: any main-chain exact unlocks the locant
+      // numbering aid here. Captured before the target clear below.
+      var _wasMain = false;
+      try { _wasMain = (typeof window !== "undefined" && window.MulerQuizTarget === "compCarbonsCount"); } catch (eW) { _wasMain = false; }
+      // Verdict wording needs the pre-clear purpose (exact renders after the
+      // target is gone): one-shot flag ("fg"/"loc"/"bond"/"bondSingle"/"branchLoc"/"branchName") consumed by fMulerQuizVerdict.
+      try {
+        if (typeof window !== "undefined") {
+          var _wp = (typeof fMulerSelectPurpose === "function") ? fMulerSelectPurpose() : "";
+          var _wv = _wp;
+          if (_wp === "branch") {
+            try {
+              var _wmt = window.MulerQuizTarget;
+              _wv = ((typeof fMulerBranchTargetIsLocant === "function") && fMulerBranchTargetIsLocant(_wmt)) ? "branchLoc" : "branchName";
+            } catch (eB) { _wv = "branchLoc"; }
+          } else if (_wp === "bond") {
+            try {
+              if ((typeof fMulerBondIsSingle === "function") && fMulerBondIsSingle()) _wv = "bondSingle";
+            } catch (eBS2) {}
+          }
+          window.__mulerQuizFgVerdict = (_wv === "fg" || _wv === "loc" || _wv === "bond" || _wv === "bondSingle" || _wv === "branch" || _wv === "branchLoc" || _wv === "branchName") ? _wv : "";
+        }
+      } catch (eF) {}
       try { if (typeof window !== "undefined") window.MulerQuizTarget = null; } catch (eT) {}
+      try {
+        if (_wasMain && typeof selectedMol !== "undefined" && selectedMol && typeof window !== "undefined") {
+          if (!window.__mulerChainSolved) window.__mulerChainSolved = {};
+          window.__mulerChainSolved[String(selectedMol)] = true;
+        }
+      } catch (eS) {}
       // Green wins outright: drop the selection itself (not just its paint)
       // so no later clear can resurrect cyan from stale state.
       try { if (sel) { sel.atoms2D = []; sel.bonds2D = []; sel.atoms3D = []; sel.bonds3D = []; sel.groups = []; } } catch (eS2) {}
@@ -2862,6 +3810,40 @@ function fMulerQuizRefresh() {
       try { if (typeof fMulerQuizVerdict === "function") fMulerQuizVerdict("exact", r.cmp || r); } catch (eV) {}
       // Explain-all panel stays the overview table when it is open.
       try { if (window.nameExplainAll && typeof fNameExplainTableRender === "function") fNameExplainTableRender(); } catch (eET) {}
+      // Chain-first return: a locant/bond click armed this chain quiz; solving it
+      // arms the stashed task now. Selective arm clears the chain verdict
+      // when the new prompt opens: target + box + mode + prompt +
+      // repaint; the reward green is cleared like any quiz preamble.
+      try {
+        var _ret = (typeof window !== "undefined") ? window.__mulerQuizReturnTo : null;
+        try { if (typeof window !== "undefined") window.__mulerQuizReturnTo = null; } catch (eRC) {}
+        if (_wasMain && _ret && typeof fMulerQuizResolveTarget === "function") {
+          var _rt = [];
+          try { _rt = fMulerQuizResolveTarget(_ret) || []; } catch (eRT) { _rt = []; }
+          var _rb = (typeof fMulerQuizBoxIdForMode === "function") ? fMulerQuizBoxIdForMode(_ret) : null;
+          var _rel = null;
+          try { _rel = (_rb &&typeof document !== "undefined") ? document.getElementById(_rb) : null; } catch (eRE) { _rel = null; }
+          if (_rt.length && _rb && _rel && !_rel.classList.contains("comp-hidden") &&
+              (typeof fNameCompHidden !== "function" || !fNameCompHidden(_rb))) {
+            try { if (typeof window !== "undefined") window.MulerQuizTarget = _ret; } catch (eT2) {}
+            try { if (typeof fClearHighlights === "function") fClearHighlights(); } catch (eCH) {}
+            try {
+              if (typeof jQuery !== "undefined") { jQuery(".nameCompBox").removeClass("selected"); jQuery("#" + _rb).addClass("selected"); }
+              else {
+                var _bs = document.querySelectorAll(".nameCompBox");
+                for (var _bi = 0; _bi < _bs.length; _bi++) _bs[_bi].classList.remove("selected");
+                _rel.classList.add("selected");
+              }
+            } catch (eC) {}
+            try { nameAnalysisMode = _ret; } catch (eM2) {}
+            try { numberingFlag = false; } catch (eN) {}
+            try { if (typeof fMulerQuizPrompt === "function") fMulerQuizPrompt(); } catch (eP) {}
+            try { if (typeof fMulerSelectRepaint === "function") fMulerSelectRepaint(); } catch (eR4) {}
+            try { if (typeof fUpdateSVG === "function") fUpdateSVG(); } catch (eU) {}
+            try { if (typeof fFitNameComponents === "function") fFitNameComponents(); } catch (eF) {}
+          }
+        }
+      } catch (eRet) {}
       return r.cmp || null;
     }
     if (r.verdict === "direction" || r.verdict === "order") {
@@ -2871,15 +3853,28 @@ function fMulerQuizRefresh() {
       try { if (typeof fMulerQuizVerdict === "function") fMulerQuizVerdict("clear", null); } catch (eV3) {}
     } else {
       // Live, numberless, priority-ordered: hetero > gap > count > wrong.
+      // FG/locant/bond/branch targets fall through to count/wrong: hetero/gap
+      // hints are main-chain-only (hetero text names the main chain; gap needs a walk).
       var liveKind = null;
-      try { if (typeof fMulerQuizHasHetero === "function" && fMulerQuizHasHetero(atoms)) liveKind = "hetero"; } catch (eH) {}
-      if (!liveKind) {
+      var liveSetOnly = false;
+      try {
+        if (typeof fMulerSelectPurpose === "function") {
+          var _lp = fMulerSelectPurpose();
+          liveSetOnly = (_lp === "fg" || _lp === "loc" || _lp === "bond" || _lp === "branch");
+        }
+      } catch (eP) { liveSetOnly = false; }
+      if (!liveKind && !liveSetOnly) {
+        try { if (typeof fMulerQuizHasHetero === "function" && fMulerQuizHasHetero(atoms)) liveKind = "hetero"; } catch (eH) {}
+      }
+      if (!liveKind && !liveSetOnly) {
         try { if (typeof fMulerQuizPartialBreak === "function" && fMulerQuizPartialBreak(atoms)) liveKind = "gap"; } catch (eG) {}
       }
       if (!liveKind) {
         try {
+          // Bond quizzes count normalized atoms (bond lines count their ends).
+          var countList = (typeof effAtoms !== "undefined" && effAtoms) ? effAtoms : atoms;
           var uniq = {};
-          for (var ui = 0; ui < atoms.length; ui++) uniq[atoms[ui]] = true;
+          for (var ui = 0; ui < countList.length; ui++) uniq[countList[ui]] = true;
           var nSel = 0;
           for (var uk in uniq) if (Object.prototype.hasOwnProperty.call(uniq, uk)) nSel++;
           var nT = (r && typeof r.nTarget === "number") ? r.nTarget : 0;
@@ -3108,7 +4103,7 @@ function fMulerSelectIsSelectionFill(fill) {
   // JSME writes background fills either as the palette hex or as rgb(r,g,b),
   // so derive both forms from the configured selection color. Legacy cyan
   // #22d3ee is retained for one-generation overlap (older renders / cached
-  // DOM after the v56 palette move to #6ddcbe). Remove the legacy branch once
+  // DOM after the v56 palette move to #7ddfff). Remove the legacy branch once
   // no cached v56-early DOM can survive (post-v56 live flip + cache-bust).
   return fMulerFillMatches(MULER_SELECT_CYAN, fill) || fMulerFillMatches("#22d3ee", fill);
 }
@@ -8450,6 +9445,39 @@ function fIsHighlightFillColor(fillValue) {
   if (normalized.indexOf("121,220,109") !== -1) {
     return true;
   }
+  // Selection cyan gets the same black-label contrast as component green.
+  try {
+    if (typeof fMulerSelectIsSelectionFill === "function" && fMulerSelectIsSelectionFill(fillValue)) {
+      return true;
+    }
+  } catch (eSel) {}
+  try {
+    if (typeof fMulerFillMatches === "function") {
+      var _cyan = "#7ddfff";
+      try { if (typeof MULER_SELECT_CYAN !== "undefined" && MULER_SELECT_CYAN) _cyan = MULER_SELECT_CYAN; } catch (eC) {}
+      if (fMulerFillMatches(_cyan, fillValue)) {
+        return true;
+      }
+      if (fMulerFillMatches("#7ddfff", fillValue)) {
+        return true;
+      }
+      if (fMulerFillMatches("#22d3ee", fillValue)) {
+        return true;
+      }
+    }
+  } catch (eFill) {}
+  if (normalized.indexOf("7ddfff") !== -1) {
+    return true;
+  }
+  if (normalized.indexOf("22d3ee") !== -1) {
+    return true;
+  }
+  if (normalized.indexOf("125,223,255") !== -1) {
+    return true;
+  }
+  if (normalized.indexOf("34,211,238") !== -1) {
+    return true;
+  }
   return false;
 }
 
@@ -9291,9 +10319,11 @@ var MULER_SELECT_SEQ_DY = 300;  // selection badge baseline below label bottom, 
 // text + cyan halo, tagged mulerSelNum* and skipped by highlight scraping
 // like the numbering badges. Painted per render from live state — toggle,
 // re-pick, exact-clear and mode switches renumber automatically.
+// Main-chain only: FG and free selections paint the highlight with no numbers.
 function fMulerSelectSeqBadges() {
   try {
     if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return;
+    try { if (typeof fMulerSelectPurpose === "function" && fMulerSelectPurpose() !== "mainChain") return; } catch (eP) { return; }
     var sel = (typeof fMulerSelectState === "function") ? fMulerSelectState() : null;
     var atoms = (sel && sel.active === true && Array.isArray(sel.atoms2D)) ? sel.atoms2D : [];
     if (!atoms.length) return;
@@ -9356,7 +10386,7 @@ function fMulerSelectSeqBadges() {
         }
       } catch (eB) { continue; }
       try {
-        var _cyan = (typeof MULER_SELECT_CYAN !== "undefined" && MULER_SELECT_CYAN) ? MULER_SELECT_CYAN : "#6ddcbe";
+        var _cyan = (typeof MULER_SELECT_CYAN !== "undefined" && MULER_SELECT_CYAN) ? MULER_SELECT_CYAN : "#7ddfff";
         var s = "<text id='mulerSelNum" + i + "' x='" + Math.round(bx) + "' y='" + Math.round(by) + "' font-size='" + Math.round(numFS) + "px' font-weight='bold' font-family='Arial, sans-serif' text-anchor='middle' fill='" + _cyan + "' stroke='#000000' stroke-width='" + Math.round(numSW) + "px' paint-order='stroke' class='mulerSelNum'>" + (i + 1) + "</text>";
         var nel = null;
         try { nel = (typeof MuSVG !== "undefined" && MuSVG.parse) ? MuSVG.parse(s) : null; } catch (eP) { nel = null; }
@@ -9419,6 +10449,35 @@ function fUpdateSVG() {
   );
   try { if (typeof fMulerSelectRepaint === "function") fMulerSelectRepaint(); } catch (eSel) { /* selection overlay is best-effort */ }
   try { if (typeof fMulerSelectSeqBadges === "function") fMulerSelectSeqBadges(); } catch (eSeq) { /* sequence badges are best-effort */ }
+  try { if (typeof fMulerNumberAid === "function") fMulerNumberAid(); } catch (eAid) { /* numbering aid is best-effort */ }
+}
+
+// ── Numbering aid (v56 locant/bond phases) ───────────────────────────────────
+// Chain numbers as a position reference while a locant or bond quiz is armed
+// — only for molecules whose main chain is already solved. Branch name boxes
+// use the short wording and get no numbers; branch locant boxes do.
+// Numbers only (the aid never paints highlights), same number* ids,
+// repaint-driven lifecycle.
+function fMulerNumberAid() {
+  try {
+    if (typeof fMulerSelectPurpose !== "function") return;
+    var _ap = fMulerSelectPurpose();
+    if (_ap !== "loc" && _ap !== "bond" && _ap !== "branch") return;
+    if (_ap === "branch") {
+      try {
+        var _bt = (typeof window !== "undefined") ? window.MulerQuizTarget : "";
+        if ((typeof fMulerBranchTargetIsLocant !== "function") || !fMulerBranchTargetIsLocant(_bt)) return;
+      } catch (eB) { return; }
+    }
+    if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return;
+    if (typeof fMulerChainSolved !== "function" || !fMulerChainSolved()) return;
+    if (typeof molSvg === "undefined" || !molSvg) return;
+    var keep = false;
+    try { keep = numberingFlag; } catch (eK) { keep = false; }
+    try { numberingFlag = true; } catch (eS) { return; }
+    try { if (typeof fShowAnalysisNumbering === "function") fShowAnalysisNumbering(0); } catch (eN) {}
+    try { numberingFlag = keep; } catch (eR) {}
+  } catch (e) {}
 }
 
 // ── patchtheNitrogen ──────────────────────────────────────────────────────
@@ -11238,7 +12297,25 @@ function fShowNameAnalysis() {
     /* DOM unavailable */
   }
 
-  // Restore .selected on the previously-selected box after HTML rebuild
+  // Restore .selected on the previously-selected box after HTML rebuild.
+  // A shown position number ("-2-" here is not "-4-" there) never carries
+  // across molecules; component selections keep the sticky restore below.
+  // Same-molecule rebuilds are unaffected.
+  try {
+    var _rm = (typeof selectedMol !== "undefined" && selectedMol) ? String(selectedMol) : "";
+    var _prevRm = (typeof window !== "undefined") ? window.__mulerRestoreMol : null;
+    if (typeof window !== "undefined") window.__mulerRestoreMol = _rm;
+    if (_prevRm !== null && _prevRm !== _rm && nameAnalysisMode !== "none") {
+      var _showLoc = false;
+      try {
+        var _rBox = (typeof fMulerQuizBoxIdForMode === "function") ? fMulerQuizBoxIdForMode(nameAnalysisMode) : null;
+        _showLoc = (typeof fMulerQuizBoxShowsLocant === "function") ? fMulerQuizBoxShowsLocant(_rBox, null) : false;
+      } catch (eRP) { _showLoc = false; }
+      if (_showLoc) {
+        try { nameAnalysisMode = "none"; } catch (eRN) {}
+      }
+    }
+  } catch (eR) {}
   if (nameAnalysisMode !== "none") {
     const _modeToCompId = {
       compNumber1: "comp0",
@@ -11944,8 +13021,7 @@ function fExplainNameComp() {
       if (branchGroup_compNumber1) {
         myText = fHydrocarbonBranchExplanation(branchGroup_compNumber1, true);
         numberingFlag = true;
-        fHighlightFG(1);
-        fHighlightFG3D(1);
+        if (!fPaintBranchHighlightAtoms(1, "compNumber1")) { fHighlightFG(1); fHighlightFG3D(1); }
         fShowAnalysisNumbering(0);
         $("#ruleTheoryContainer").show();
         break;
@@ -11997,8 +13073,14 @@ function fExplainNameComp() {
           }
         }
       } else if (
-        nameComponentsList[6] == "άν" ||
-        nameComponentsList[6] == "αν"
+        (nameComponentsList[6] == "άν" ||
+        nameComponentsList[6] == "αν") &&
+        (function () {
+          try {
+            var _r1 = (typeof fMulerNumber1Resolved === "function") ? fMulerNumber1Resolved() : null;
+            return !!(_r1 && _r1.length);
+          } catch (eR1) { return true; }
+        })()
       ) {
         if (nameComponentsList[0].includes(",")) {
           countSubs = (nameComponentsList[0].match(/,/g) || []).length;
@@ -12062,8 +13144,7 @@ function fExplainNameComp() {
       if (branchGroup_compSecondSub1) {
         myText = fHydrocarbonBranchExplanation(branchGroup_compSecondSub1, false);
         numberingFlag = false;
-        fHighlightFG(1);
-        fHighlightFG3D(1);
+        if (!fPaintBranchHighlightAtoms(1, "compSecondSub1")) { fHighlightFG(1); fHighlightFG3D(1); }
         $("#ruleTheoryContainer").show();
         break;
       }
@@ -12071,23 +13152,12 @@ function fExplainNameComp() {
         functionalGroupsList.length === 1 &&
         functionalGroupsList[0] === "ether"
       ) {
-        // IUPAC alkoxy prefix (e.g. μεθοξυ): highlight O + alkoxy fragment,
-        // number the alkoxy chain only (systematic internal order, v54.39).
+        // IUPAC alkoxy prefix (e.g. μεθοξυ): highlight O + alkoxy fragment.
+        // Name box: no numbering (locants only).
         myText = fTX(` Δηλώνει το όνομα της αλκοξυομάδας${fGetSecondaryGroupNounSuffix(1)}.`, ` Indicates the name of the alkoxy group${fGetSecondaryGroupNounSuffix(1)}.`);
         fHighlightFG(1);
         fHighlightFG3D(1);
-        numberingFlag = true;
-        var _alcC = null, _alcC3 = null;
-        try { _alcC = fGetEtherAlkoxyChain(); } catch (eC1) { _alcC = null; }
-        try { _alcC3 = fGetEtherAlkoxyChain3D(); } catch (eC3) { _alcC3 = null; }
-        try {
-          var _alcNm = (typeof nameComponentsList !== "undefined" && nameComponentsList) ? nameComponentsList[1] : null;
-          var _alcOrd = (typeof fEtherAlkoxyNumbering === "function") ? fEtherAlkoxyNumbering(_alcC, _alcNm) : null;
-          var _alcOrd3 = (typeof fEtherAlkoxyNumbering3D === "function") ? fEtherAlkoxyNumbering3D(_alcC3, _alcNm) : null;
-          if (_alcOrd && _alcOrd.length) _alcC = _alcOrd;
-          if (_alcOrd3 && _alcOrd3.length) _alcC3 = _alcOrd3;
-        } catch (eAN) {}
-        fShowAnalysisNumbering(0, _alcC, _alcC3);
+        numberingFlag = false;
         $("#ruleTheoryContainer").show();
         break;
       }
@@ -12140,8 +13210,7 @@ function fExplainNameComp() {
       if (branchGroup_compNumber2) {
         myText = fHydrocarbonBranchExplanation(branchGroup_compNumber2, true);
         numberingFlag = true;
-        fHighlightFG(2);
-        fHighlightFG3D(2);
+        if (!fPaintBranchHighlightAtoms(2, "compNumber2")) { fHighlightFG(2); fHighlightFG3D(2); }
         fShowAnalysisNumbering(0);
         $("#ruleTheoryContainer").show();
         break;
@@ -12162,8 +13231,7 @@ function fExplainNameComp() {
       if (branchGroup_compSecondSub2) {
         myText = fHydrocarbonBranchExplanation(branchGroup_compSecondSub2, false);
         numberingFlag = false;
-        fHighlightFG(2);
-        fHighlightFG3D(2);
+        if (!fPaintBranchHighlightAtoms(2, "compSecondSub2")) { fHighlightFG(2); fHighlightFG3D(2); }
         $("#ruleTheoryContainer").show();
         break;
       }
@@ -12177,7 +13245,12 @@ function fExplainNameComp() {
     case "compBondPos":
       nStyle = "";
       myClass = "";
-      if (fBranchedSaturatedKetonePosition()) {
+      if (fBranchedSaturatedKetonePosition() && (function () {
+        try {
+          var _r = (typeof fMulerBondPosResolved === "function") ? fMulerBondPosResolved() : null;
+          return !!(_r && _r.length);
+        } catch (eR) { return true; }
+      })()) {
         myText = fTX(' Δηλώνει τη θέση της καρβονυλομάδας (>C=O).', ' Indicates the position of the carbonyl group (>C=O).');
         ruleTableHighlight = 'r3-ketones';
         fHighlightFG(); fHighlightFG3D();
@@ -12185,9 +13258,49 @@ function fExplainNameComp() {
         $('#ruleTheoryContainer').show();
         break;
       }
-      if (fAlcoholOHNameComponent() === 'compBondPos') {
+      if (fAlcoholOHNameComponent() === 'compBondPos' && (function () {
+        try {
+          var _r2 = (typeof fMulerBondPosResolved === "function") ? fMulerBondPosResolved() : null;
+          return !!(_r2 && _r2.length);
+        } catch (eR2) { return true; }
+      })()) {
         myText = fAlcoholOHPositionText();
         ruleTableHighlight = "r3-alcohols";
+        fHighlightFG(); fHighlightFG3D();
+        numberingFlag = true; fShowAnalysisNumbering(0);
+        $("#ruleTheoryContainer").show();
+        break;
+      }
+      // Saturated single-FG locant (e.g. 2-πεντανόνη, 2-πεντανόλη in box comp4):
+      // the classic fell through to the multiple-bond text with nothing to
+      // paint. The box holds the FG position, so paint the group (reward +
+      // classic agree, quiz armed via the matching resolver). The locant may
+      // live in slots {0,4,7} (EN renders the slot-0/7 locant in comp4).
+      // A digit-led box that names no FG locant belongs to a bond: fall
+      // through to the multiple-bond handling below instead.
+      if (typeof functionalGroupsList !== "undefined" && functionalGroupsList &&
+          functionalGroupsList.length === 1 &&
+          (functionalGroupsList[0] === 'ketone' || functionalGroupsList[0] === 'alcohol') &&
+          (function () {
+            try {
+              if (typeof nameComponentsList === "undefined" || !nameComponentsList) return false;
+              var stripLoc = function (t) { return String(t == null ? "" : t).replace(/^[-\s]+/, "").replace(/[-\s]+$/, ""); };
+              return /^\d/.test(stripLoc(nameComponentsList[4])) || /^\d/.test(stripLoc(nameComponentsList[0])) || /^\d/.test(stripLoc(nameComponentsList[7]));
+            } catch (eS) { return false; }
+          })() &&
+          (function () {
+            try {
+              var _r = (typeof fMulerBondPosResolved === "function") ? fMulerBondPosResolved() : null;
+              return !!(_r && _r.length);
+            } catch (eR) { return true; }
+          })()) {
+        if (functionalGroupsList[0] === 'ketone') {
+          myText = fTX(' Δηλώνει τη θέση της καρβονυλομάδας (>C=O).', ' Indicates the position of the carbonyl group (>C=O).');
+          ruleTableHighlight = 'r3-ketones';
+        } else {
+          myText = fAlcoholOHPositionText();
+          ruleTableHighlight = "r3-alcohols";
+        }
         fHighlightFG(); fHighlightFG3D();
         numberingFlag = true; fShowAnalysisNumbering(0);
         $("#ruleTheoryContainer").show();
@@ -12373,7 +13486,13 @@ function fExplainNameComp() {
       if (functionalGroupsList.length === 1 && functionalGroupsList[0] === 'ketone' &&
           fIsAcyclicKetoneGraph(atomConnectivityList, allAtomsTypeList, bondList) &&
           !fIsAcyclicSaturatedMonoketoneGraph(atomConnectivityList, allAtomsTypeList, bondList) &&
-          nameComponentsList[8].length === 0) {
+          nameComponentsList[8].length === 0 &&
+          (function () {
+            try {
+              var _re = (typeof fMulerEndNumberResolved === "function") ? fMulerEndNumberResolved() : null;
+              return !!(_re && _re.length);
+            } catch (eRe) { return true; }
+          })()) {
         myText = fTX(' Δηλώνει ', ' Indicates ') + (functionalGroupObj.ketone.O.length > 1 ? fTX('τις θέσεις των καρβονυλομάδων', 'the positions of the carbonyl groups') : fTX('τη θέση της καρβονυλομάδας', 'the position of the carbonyl group')) + ' (>C=O).';
         ruleTableHighlight = 'r3-ketones';
         fHighlightFG(); fHighlightFG3D();
@@ -12381,7 +13500,13 @@ function fExplainNameComp() {
         $('#ruleTheoryContainer').show();
         break;
       }
-      if (fAlcoholOHNameComponent() === 'compEndNumber' || nameComponentsList[8].length === 0) {
+      if ((fAlcoholOHNameComponent() === 'compEndNumber' || nameComponentsList[8].length === 0) &&
+          (function () {
+            try {
+              var _re2 = (typeof fMulerEndNumberResolved === "function") ? fMulerEndNumberResolved() : null;
+              return !!(_re2 && _re2.length);
+            } catch (eRe2) { return true; }
+          })()) {
         fHighlightFG();
         fHighlightFG3D();
         myText = fAlcoholOHNameComponent() === 'compEndNumber' ? fAlcoholOHPositionText()
@@ -12506,12 +13631,13 @@ function fExplainNameComp() {
       const ketoneSuffixLocants = functionalGroupsList.length === 1 && functionalGroupsList[0] === 'ketone' &&
         fIsAcyclicKetoneGraph(atomConnectivityList, allAtomsTypeList, bondList) &&
         multiBondsObj.CCd.length > 0 && multiBondsObj.CCt.length > 0;
-      numberingFlag = fAlcoholOHNameComponent() === 'compSuffix' || ketoneSuffixLocants;
+      // Class box: no numbering even when it carries positions in text
+      // (locants only) — split or not, numbers live on locant boxes.
+      numberingFlag = false;
       // Split suffix: the positions sentences live on the standalone
       // locants box (compSuffixLocants mode) — the suffix keeps the class
       // statement, the highlight, and no numbering.
       const _splitLoc = fSplitSuffixLocantsActive();
-      if (_splitLoc) numberingFlag = false;
       if (!_splitLoc && ketoneSuffixLocants) myText += fTX(' Δηλώνει ', ' Indicates ') + (functionalGroupObj.ketone.O.length > 1 ? fTX('τις θέσεις των καρβονυλομάδων', 'the positions of the carbonyl groups') : fTX('τη θέση της καρβονυλομάδας', 'the position of the carbonyl group')) + ' (>C=O).';
       if (!_splitLoc && fAlcoholOHNameComponent() === 'compSuffix') {
         myText += fAlcoholOHPositionText();
@@ -12525,12 +13651,12 @@ function fExplainNameComp() {
           fHighlightFG3D();
         }
       }
-      if (numberingFlag) fShowAnalysisNumbering(0);
       $("#ruleTheoryContainer").show();
       break;
     case "commonAlkyl1":
     case "commonAlkyl2": {
-      // COMMON alkyl click: highlight that alkyl chain only (no O), number it.
+      // COMMON alkyl click: highlight that alkyl chain only (no O).
+      // Name box: no numbering (locants only).
       nStyle = "";
       myClass = "";
       const _parts = fGetEtherCommonParts();
@@ -12556,18 +13682,12 @@ function fExplainNameComp() {
         // and C–H bonds explicitly (both ends in the chain), like the ester triad.
         fColorFragmentBonds3D(_chain3D, true);
       }
-      numberingFlag = true;
-      fShowAnalysisNumbering(
-        0,
-        _part ? _part.numberChain : null,
-        _part ? _part.numberChain3D : null,
-      );
+      numberingFlag = false;
       break;
     }
     case "esterAlkyl": {
-      // Ester alcohol-part click (e.g. μεθυλ): highlight O + alcohol chain, number it.
-      // Numbering follows the alkyl's systematic internal numbering (v54.39):
-      // attach atom first with its free-valence locant, then outward.
+      // Ester alcohol-part click (e.g. μεθυλ): highlight O + alcohol chain.
+      // Name box: no numbering (locants only).
       nStyle = "";
       myClass = "";
       myText = fTX('Δηλώνει το αλκυλο-τμήμα του εστέρα (από την αλκοόλη).', 'It indicates the alkyl part of the ester (from the alcohol).');
@@ -12579,15 +13699,7 @@ function fExplainNameComp() {
         // Alkyl rule: alcohol-part C–C and C–H bonds go green explicitly.
         fColorFragmentBonds3D(_alcChain3D, true);
       }
-      numberingFlag = true;
-      var _alcNum = _alcChain, _alcNum3 = _alcChain3D;
-      try {
-        var _alcOrd = (typeof fEsterAlcoholNumbering === "function") ? fEsterAlcoholNumbering(_alcChain) : null;
-        var _alcOrd3 = (typeof fEsterAlcoholNumbering3D === "function") ? fEsterAlcoholNumbering3D(_alcChain3D) : null;
-        if (_alcOrd && _alcOrd.length) _alcNum = _alcOrd;
-        if (_alcOrd3 && _alcOrd3.length) _alcNum3 = _alcOrd3;
-      } catch (eANm) {}
-      fShowAnalysisNumbering(0, _alcNum, _alcNum3);
+      numberingFlag = false;
       break;
     }
     case "esterEster":
@@ -12652,8 +13764,7 @@ function fExplainNameComp() {
         if (_pg) {
           myText = fHydrocarbonBranchExplanation(_pg, _isLoc);
           numberingFlag = _isLoc;
-          fHighlightFG(2);
-          fHighlightFG3D(2);
+          if (!fPaintBranchHighlightAtoms(2, (typeof nameAnalysisMode !== "undefined" ? nameAnalysisMode : ""))) { fHighlightFG(2); fHighlightFG3D(2); }
           if (_isLoc) fShowAnalysisNumbering(0);
           $("#ruleTheoryContainer").show();
         } else if (_isLoc) {
@@ -13138,6 +14249,10 @@ function fApplyChainStep() {
   var idx = (typeof mainChainPoolIdx === "number") ? mainChainPoolIdx : 0;
   if (idx < 0) idx = 0;
   if (idx > pool.length - 1) idx = pool.length - 1;
+  var branchQuiz = typeof window !== "undefined" && window.MulerQuizTarget &&
+    (fMulerSelectPurpose() === "branch" ||
+      (window.__mulerQuizReturnTo && fMulerBranchAtomsForMode(window.__mulerQuizReturnTo).length > 0));
+  if (branchQuiz) fMulerSelectClear();
   mainChainPoolIdx = idx;
   mainChainAtomsList = pool[idx].chain.slice();
   // 3D by atom correspondence, not ordinal: the 2D (JSME) and 3D (SDF) pools
@@ -13198,6 +14313,21 @@ function fApplyChainStep() {
     if (typeof fUpdateSVG === "function") fUpdateSVG();
     if (typeof fExplainNameComp === "function") fExplainNameComp();
   } catch (eHl) { /* viewer unavailable */ }
+  if (branchQuiz) {
+    var quizMode = window.MulerQuizTarget;
+    var quizBox = fMulerQuizBoxIdForMode(quizMode);
+    if (quizMode && quizBox && document.getElementById(quizBox) &&
+        fNameAnalysisModeForBoxId(quizBox) === quizMode &&
+        fMulerQuizResolveTarget(quizMode).length &&
+        (window.__mulerQuizReturnTo
+          ? fMulerBranchAtomsForMode(window.__mulerQuizReturnTo).length
+          : fMulerQuizPurposeFor(quizMode) === "branch")) {
+      fMulerQuizPrompt();
+    } else {
+      fMulerQuizDisarm();
+    }
+    fMulerSelectRepaint();
+  }
   fRenderChainStepper();
 }
 
@@ -13348,13 +14478,17 @@ function fGetNameComponentLocants(component) {
     });
 }
 
-function fGetHydrocarbonBranchHighlight(slot) {
+function fGetHydrocarbonBranchHighlight(slot, modeOverride) {
   if (!Array.isArray(mainChainAtomsList) || mainChainAtomsList.length === 0) {
     return { atoms: [], bonds: [] };
   }
 
   const mainSet = new Set(mainChainAtomsList.map((n) => n - 1));
-  const _pieceM = /^compBranch(Sub|Loc)(\d+)$/.exec(typeof nameAnalysisMode !== "undefined" ? nameAnalysisMode : "");
+  // Optional explicit mode (quiz resolvers): the global nameAnalysisMode is
+  // not yet (re)armed when an arm gate resolves the target, so the piece
+  // scope and compNumber2 narrowing below must see the candidate mode.
+  var _modeHl = (typeof modeOverride === "string" && modeOverride) ? modeOverride : ((typeof nameAnalysisMode !== "undefined") ? nameAnalysisMode : "");
+  const _pieceM = /^compBranch(Sub|Loc)(\d+)$/.exec(_modeHl || "");
   var group = slot ? fGetHydrocarbonBranchGroup(slot) : null;
   // Split branch-label pieces highlight only their own substituent; an
   // unmatched piece keeps the whole slot group (never an empty highlight).
@@ -13367,7 +14501,7 @@ function fGetHydrocarbonBranchHighlight(slot) {
   // the remaining groups — its explanation already scopes positions that
   // way ("της πρώτης από τις υπόλοιπες ομάδες"). Single-name slots are
   // unaffected; an unmatched shape keeps the whole slot group.
-  if (!_pieceM && nameAnalysisMode === "compNumber2" && slot === 2 &&
+  if (!_pieceM && _modeHl === "compNumber2" && slot === 2 &&
       group && Array.isArray(group.names) && group.names.length > 1) {
     const _fm = group.members.filter(function (b) { return b && b.name === group.names[0]; });
     if (_fm.length) group = { names: [group.names[0]], members: _fm };
@@ -13544,6 +14678,46 @@ function fGetHydrocarbonBranchHighlight3D(slot) {
   }
 
   return { atoms: [...atoms], bonds: [...bonds] };
+}
+
+// Paint a resolved branch group green (2D atom + bond backgrounds, 3D halo
+// selection), mirroring fGetHydrocarbonBranchHighlight slot/piece scoping so
+// paint and quiz target always agree. Used by classic branch-box sub-cases
+// and (via the exact-reward replay) by the branch quiz. Returns true when
+// something painted; false keeps the caller's FG paint (empty group).
+function fPaintBranchHighlightAtoms(slot, mode) {
+  try {
+    var useMode = (typeof mode === "string" && mode) ? mode : ((typeof nameAnalysisMode !== "undefined") ? nameAnalysisMode : "");
+    var gm = null;
+    try { gm = (typeof fGetHydrocarbonBranchHighlight === "function") ? fGetHydrocarbonBranchHighlight(slot, useMode) : null; } catch (eG) { gm = null; }
+    var atoms = (gm && gm.atoms) || [];
+    var bonds = (gm && gm.bonds) || [];
+    if (!atoms.length) return false;
+    if (typeof window !== "undefined" && window.__mulerExplainQuiet) return true;
+    var aArg = atoms.map(function (a) { return a + ",9"; }).join(",");
+    try { if (typeof jsmeNomeclatureApplet !== "undefined" && jsmeNomeclatureApplet) jsmeNomeclatureApplet.setAtomBackgroundColors(0, aArg); } catch (eA) {}
+    if (bonds.length) {
+      var bArg = bonds.map(function (b) { return b + ",9"; }).join(",");
+      try { if (typeof jsmeNomeclatureApplet !== "undefined" && jsmeNomeclatureApplet) jsmeNomeclatureApplet.setBondBackgroundColors(0, bArg); } catch (eB) {}
+    }
+    try {
+      var g3 = (typeof fGetHydrocarbonBranchHighlight3D === "function") ? fGetHydrocarbonBranchHighlight3D(slot) : null;
+      var a3 = (g3 && g3.atoms) || [];
+      if (a3.length && typeof fJSmolScript === "function") {
+        var arg3d = "select";
+        for (var i = 0; i < a3.length; i++) arg3d += (i ? "," : "") + " atomno=" + a3[i];
+        arg3d += "; select connected(selected) and _H or selected;";
+        var _jm = null;
+        try { _jm = (typeof jmolAppletNomeclature !== "undefined") ? jmolAppletNomeclature : null; } catch (eJM) { _jm = null; }
+        fJSmolScript(_jm,
+          "select all; selectionHalos off; color atoms none; color bonds none;" +
+          arg3d + ";color selectionHalos[X79dc6d]; selectionHalos on; color atoms [X79dc6d];");
+        try { JmolSelection = arg3d; } catch (eJS) {}
+      }
+    } catch (e3) {}
+    try { if (typeof fUpdateSVG === "function") fUpdateSVG(); } catch (eU) {}
+    return true;
+  } catch (e) { return false; }
 }
 
 // ── Ether helpers ─────────────────────────────────────────────────────────

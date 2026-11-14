@@ -1,5 +1,5 @@
-// v56 coverage gaps: H pick (expanded), molecule-switch sticky re-arm,
-// allowSelect gating, Present block. Hard-fail.
+// v56 coverage gaps: H pick (expanded, free) + armed-quiz H→parent redirect,
+// molecule-switch sticky re-arm, allowSelect gating, Present block. Hard-fail.
 const { chromium } = require("playwright-core");
 const CHROME = process.env.MULER_CHROME || "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const BASE = process.env.MULER_BASE || "http://localhost:8901";
@@ -71,30 +71,38 @@ async function waitReady(p) {
   }
   await p.evaluate(() => document.getElementById("comp5").click());
   await p.waitForTimeout(400);
+  // Armed quiz: alkyl-H clicks resolve to the parent carbon (condensed-style
+  // unit picking), so H never enters the selection and no hetero/wrong hint
+  // can fire for it. Toggle symmetry holds through the redirect.
   for (const h of hInfo.hydrogens) {
     await clickAtom(h);
-    const result = await p.evaluate(() => ({
+    const result = await p.evaluate((par) => ({
       atoms: window.MulerUserSelection.atoms2D.slice(),
       target: window.MulerQuizTarget,
-      comparison: fMulerQuizCompare(window.MulerUserSelection.atoms2D, fMulerQuizTargetSet())
-    }));
-    check(result.target === "compCarbonsCount" && result.atoms.length === 1 && result.atoms[0] === h &&
-      result.comparison.verdict === "disjoint" && result.comparison.extra.includes(h),
-      "quiz H " + h + " must not count as carbon: " + JSON.stringify(result));
+      parent: par
+    }), hInfo.parent);
+    check(result.target === "compCarbonsCount" && result.atoms.length === 1 && result.atoms[0] === result.parent,
+      "quiz H " + h + " must resolve to the parent carbon: " + JSON.stringify(result));
     await clickAtom(h);
+    const off = await p.evaluate(() => ({
+      atoms: window.MulerUserSelection.atoms2D.slice(),
+      target: window.MulerQuizTarget,
+      hidden: !document.getElementById("mulerQuizVerdict") || getComputedStyle(document.getElementById("mulerQuizVerdict")).display === "none"
+    }));
+    check(off.atoms.length === 0 && off.target === "compCarbonsCount" && off.hidden,
+      "quiz H " + h + " re-click must toggle the parent off: " + JSON.stringify(off));
   }
   if (hInfo.hydrogens.length) {
+    // Parent C, then its H (redirects back to the parent): pair toggles off.
     await clickAtom(hInfo.parent);
     await clickAtom(hInfo.hydrogens[0]);
-    const result = await p.evaluate(() => ({
+    const pair = await p.evaluate(() => ({
       atoms: window.MulerUserSelection.atoms2D.slice(),
-      target: window.MulerQuizTarget,
-      comparison: fMulerQuizCompare(window.MulerUserSelection.atoms2D, fMulerQuizTargetSet())
+      target: window.MulerQuizTarget
     }));
-    check(result.target === "compCarbonsCount" && result.atoms.includes(hInfo.parent) &&
-      result.atoms.includes(hInfo.hydrogens[0]) && result.comparison.verdict === "wrong" &&
-      result.comparison.extra.includes(hInfo.hydrogens[0]),
-      "quiz carbon + H must retain the extra H: " + JSON.stringify(result));
+    check(pair.target === "compCarbonsCount" && pair.atoms.length === 0,
+      "quiz carbon + its H must toggle back off: " + JSON.stringify(pair));
+    // Chain completes through the H redirect: H stands in for its carbon.
     await clickAtom(hInfo.hydrogens[0]);
     const chain = await p.evaluate(() => fMulerQuizTargetSet());
     for (const atom of chain) if (atom !== hInfo.parent) await clickAtom(atom);
@@ -104,13 +112,13 @@ async function waitReady(p) {
       verdict: document.getElementById("mulerQuizVerdict").className
     }));
     check(!completed.target && !completed.atoms.length && completed.verdict === "mulerQuiz-exact",
-      "carbon-only chain should still complete the quiz: " + JSON.stringify(completed));
+      "H-redirected chain should still complete the quiz: " + JSON.stringify(completed));
   }
 
   // 2. Molecule switch drops contents, stays armed, re-arms sticky quiz.
   // Sticky selection keeps comp5 selected, so the quiz must re-arm (not
   // disarm) — otherwise condensed CHO/COOH clicks fall back to whole-fragment.
-  await p.goto(BASE + "/mulermoc-nom-56.html?mol=butanoic_acid", { waitUntil: "load", timeout: 60000 });
+  await p.goto(BASE + "/mulermoc-nom-56.html?lang=en&mol=butanoic_acid", { waitUntil: "load", timeout: 60000 });
   await waitReady(p);
   await p.evaluate(() => { try { document.getElementById("selectAtomsBtn").click(); } catch (e) {} });
   await p.waitForTimeout(300);
@@ -135,22 +143,14 @@ async function waitReady(p) {
   // switch molecule in-page via menu row (no reload, keeps armed flag)
   const switched = await p.evaluate(() => {
     try {
-      const rows = Array.from(document.querySelectorAll("#nomeclature2Menu .menuRow, #nomeclature2Menu li"));
-      const cur = (typeof selectedMol !== "undefined" ? selectedMol : "");
-      for (const r of rows) {
-        const t = (r.textContent || "").trim();
-        if (t && cur && t.indexOf(cur) < 0 && r.click) { r.click(); return true; }
-      }
-      // fallback: direct fSelectMol on a different key
-      if (typeof fSelectMol === "function" && typeof nameExamples !== "undefined") {
-        const keys = Object.keys(nameExamples || {});
-        const other = keys.find((k) => k !== cur);
-        if (other) { fSelectMol(other); return true; }
-      }
-      return false;
+      const row = document.querySelector("#nomeclature2Menu .menuLi#pentanoic_acid");
+      if (!row || selectedMol === row.id) return false;
+      row.click();
+      return true;
     } catch (e) { return false; }
   });
   check(!!switched, "could not switch molecule in-page");
+  if (switched) await p.waitForFunction(() => selectedMol === "pentanoic_acid", null, { timeout: 10000 });
   await p.waitForTimeout(2200);
   const postSwitch = await p.evaluate(() => {
     try {
@@ -171,26 +171,14 @@ async function waitReady(p) {
   check(postSwitch.target === "compCarbonsCount", "sticky comp5 should re-arm the quiz, got " + JSON.stringify(postSwitch));
   check(postSwitch.comp5 === true, "sticky comp5 should stay selected, got " + JSON.stringify(postSwitch));
   check(postSwitch.prompt === "Select the main chain.", "quiz prompt should be restored, got " + JSON.stringify(postSwitch));
-  check(!/only carbon/i.test(postSwitch.prompt || "") || true, "prompt intact");
-  // Carbon-only regression on the new molecule when it carries a compact label:
-  // WTO whole-fragment picks used to trigger hetero + wrong numbering. If the
-  // new molecule has no compact group, switch back to butanoic_acid in-page.
-  let compactMol = await p.evaluate(() => {
+  // The new molecule has a compact label, which must resolve to its carbon.
+  const compactMol = await p.evaluate(() => {
     try {
       const C = (typeof fMulerSelectCompacted === "function") ? fMulerSelectCompacted() : null;
       return !!(C && C.length);
     } catch (e) { return false; }
   });
-  if (!compactMol) {
-    await p.evaluate(() => { try { if (typeof fSelectMol === "function" && typeof selectedMol !== "undefined" && selectedMol !== "butanoic_acid") { selectedMol = "butanoic_acid"; fSelectMol(); } } catch (e) {} });
-    await p.waitForTimeout(2200);
-    compactMol = await p.evaluate(() => {
-      try {
-        const C = (typeof fMulerSelectCompacted === "function") ? fMulerSelectCompacted() : null;
-        return !!(C && C.length);
-      } catch (e) { return false; }
-    });
-  }
+  check(compactMol, "post-switch molecule should have a compact label");
   if (compactMol) {
     const cc = await p.evaluate(() => {
       try {

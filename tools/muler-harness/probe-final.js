@@ -62,24 +62,31 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
   });
   check(s1.a.length === 1, "atom pick should select exactly one, got " + JSON.stringify(s1));
   check(!!s1.wrapped, "bg channel wrapper should be installed");
-  check(!!s1.seq, "sequence badge mulerSelNum0 should render");
+  check(!s1.seq, "free selection should not render sequence badges (main-chain only)");
   // hover preview: move back over the picked label, ring should appear
   if (t) await p.mouse.move(t[0], t[1]);
   await p.waitForTimeout(500);
   const hov = await p.evaluate(() => { const l = document.getElementById("mulerHoverRing"); return { ring: !!l, kids: l ? l.querySelectorAll("*").length : 0 }; });
   check(!!hov.ring, "hover ring should appear on picked label");
-  // click empty area: derive an off-molecule point from the SVG viewBox, not a hard coord
+  // Find an empty point inside the visible SVG, away from selectable geometry.
   await p.evaluate(() => {
-    try {
-      const svg = document.querySelector("#jsmeNomeclatureSVG svg");
-      const g = svg.getElementsByTagName("g")[0];
-      const vb = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal : null;
-      const ex = vb ? vb.x + 40 : 300, ey = vb ? vb.y + vb.height - 40 : 4600;
-      const q = new DOMPoint(ex, ey).matrixTransform(g.getScreenCTM());
-      window.__t = [q.x, q.y];
-    } catch (e) {}
+    const svg = document.querySelector("#jsmeNomeclatureSVG svg");
+    const g = svg.getElementsByTagName("g")[0];
+    const rect = svg.getBoundingClientRect();
+    window.__t = null;
+    for (let x = rect.left + 10; x < rect.right - 10 && !window.__t; x += 15) {
+      for (let y = rect.top + 10; y < rect.bottom - 10; y += 15) {
+        const el = document.elementFromPoint(x, y);
+        const q = new DOMPoint(x, y).matrixTransform(g.getScreenCTM().inverse());
+        if (el && svg.contains(el) && !fMulerSelectPick(q.x, q.y)) {
+          window.__t = [x, y];
+          break;
+        }
+      }
+    }
   });
   const t2 = await p.evaluate(() => window.__t);
+  check(!!t2, "no empty point inside the SVG");
   if (t2) await p.mouse.click(t2[0], t2[1]);
   await p.waitForTimeout(800);
   const s2 = await p.evaluate(() => { try { const s = window.MulerUserSelection || {}; return { a: s.atoms2D || [], wrapped: !!window.__mulerBgWrapped }; } catch (e) { return {}; } });
