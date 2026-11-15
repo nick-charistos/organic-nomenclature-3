@@ -4,6 +4,18 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ---
 
+## [v57] (3D atom/bond picking via JSmol pickCallback; LIVE, `index.html` → v57)
+
+Forked from v56 (`mulermoc-nom-57.html` + `js/*-57.js` + `css/*-57.css` + `jsme-nick-nomeclature-moc2-data_57.js` + `spt/init-3-57.spt` + `zz-test-core57.html`, `?v=57.0`; `ui-icons.js` stays shared, `index.html` stays on v56). v56 files untouched. No chemistry changes (`core-57.js` is a byte copy of `core-56.js`).
+
+### 3D picking (v57 working tree)
+- Spike (owner-run, corrected against bundled sources): `set pickCallback` delivers `(htmlName, strInfo, atomIndex, map)` — the page function is applied to the data array. Each atom click fires twice (bitset echo with index -1, then the authoritative 0-based index); each bond click fires once with index -3 and a `["bond", identity, x, y, z]` payload, but only with `set bondPicking true` (the reporting path needs the flag; without it bond clicks are silent). `show picked` reads back empty; drag-rotate emits no callback.
+- `window.__mulerPickCb` (`molview-57.js`): armed/draft/Present/molecule guards; the page function receives `(htmlName, strInfo, atomIndex, map)` — `>= 0` toggles that atom, `-1` is the bitset echo (ignored, exactly-once per click), `-3` reports a bond with a `["bond", identity, x, y, z]` payload (identity head = 1-based bond position, `#N` pair = endpoint atomnos, cross-validated against `bondList3D`). Bond picks mirror into `bonds2D` and are ignored by atoms-only quizzes; H mirrors to its heavy parent (quiz-armed: same fold as 2D).
+- Mirror-at-toggle both directions through the cached heavy map (`fMulerHeavyMapCached`, same discipline as `fTranslateChain2D3D`): 3D picks land in `atoms2D/bonds2D` too, so quiz compare/refresh/verdicts work unchanged. Unmappable atoms fail closed (3D-only record, documented).
+- Paint: `fMulerSelectPush3D` full-rebuild cyan (`MULER_SELECT_CYAN`) atoms + both-ends bonds; empty state is a no-op (never auto-resets, reward-green safe); skipped when off/Present. Picking scoped to armed sessions (`set picking atom` + `set bondPicking true`), appended to both `fLoadMol3D` scripts so `init-3-57.spt` (`picking OFF`) cannot override; restored on disarm.
+- 3D background double-tap clear: single silent taps do nothing (bond tap vs background is unknowable page-side); a second silent tap within ~450ms/~8px clears via the 2D empty-canvas path. Any genuine pick breaks the chain, so fast atom picking can never misfire it; empty state never fires (mirrors the Esc guard), so no spurious `select all` console echoes.
+- Static verification only (brace/paren/bracket skew identical to v56, no `node` here). Browser re-test pending: atom click → cyan + state, re-click clears, bond click → `bonds3D` + mirrored `bonds2D` + cyan both viewers (re-click clears; ignored by atoms-only quizzes; bond quiz exact via 3D bond line), mid-bond beyond radius stays silent, double-tap empty clears, single tap never clears, rotate never clears, SDF unchanged, quiz exact from 3D atoms, full regression.
+
 ## [v56] (2D atom/bond selection entry; authoring-only, `index.html` → v55)
 
 Forked from v55 (`mulermoc-nom-56.html` + `js/*-56.js` + `css/*-56.css` + `jsme-nick-nomeclature-moc2-data_56.js`, `?v=56.0`; `ui-icons.js` stays shared). v55 files untouched, v55 stays live.
