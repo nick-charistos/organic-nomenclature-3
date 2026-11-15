@@ -1169,12 +1169,17 @@ function fToggleAtomSelect() {
     } catch (eD) {}
     try { if (!makeActive && typeof fMulerSelectClear === "function") fMulerSelectClear(); } catch (eC) {}
     try { if (!makeActive && typeof fMulerQuizDisarm === "function") fMulerQuizDisarm(); } catch (eQD) {}
+    // v57 quiz rounds: leaving select mode clears solved progress (fresh
+    // round next arm); the paint call below strips the tints (inactive).
+    try { if (!makeActive && typeof window !== "undefined") window.__mulerQuizSolved = {}; } catch (eQS) {}
     // v57 3D: disarm erases 3D paint directly (mode flag is already off, so
     // the guarded clear would skip); both paths re-assert picking state.
     try { if (!makeActive && typeof fMulerSelectClear3DPaint === "function") fMulerSelectClear3DPaint(); } catch (eC3) {}
     try { if (typeof fMulerSelectSync3DPicking === "function") fMulerSelectSync3DPicking(); } catch (eS3) {}
     try { if (typeof fMulerSelectRepaint === "function") fMulerSelectRepaint(); } catch (eR) {}
     try { if (typeof fUpdateSVG === "function") fUpdateSVG(); } catch (eU) {}
+    // v57 quiz rounds: (re-)paint to-do tints on arm; strip them on exit.
+    try { if (typeof fMulerQuizPaintSolved === "function") fMulerQuizPaintSolved(); } catch (ePS4) {}
   } catch (e) {}
 }
 
@@ -1330,8 +1335,10 @@ function fMulerSelectClear() {
     if (s) { s.atoms2D = []; s.bonds2D = []; s.atoms3D = []; s.bonds3D = []; s.groups = []; }
   } catch (e) {}
   // v57 3D: erase 3D paint while armed (reward-green lives only under an
-  // armed-but-empty state, which never reaches this clear path).
+  // armed-but-empty state, which never reaches this clear path). Sequence
+  // echoes go with it (same guard: no chain echoes can be live here).
   try { if ((typeof fMulerSelectActive === "function" && fMulerSelectActive()) && typeof fMulerSelectClear3DPaint === "function") fMulerSelectClear3DPaint(); } catch (e3) {}
+  try { if ((typeof fMulerSelectActive === "function" && fMulerSelectActive()) && typeof removeEcho3D === "function") removeEcho3D(); } catch (e4) {}
   try { fMulerSelectClearLayer(); } catch (e2) {}
 }
 
@@ -2465,9 +2472,11 @@ function fMulerSelectToggle(px) {
 // accumulates) the applet selection, so every push rebuilds from state and
 // native accumulation cannot skew paint.
 // 3D picks mirror into atoms2D/bonds2D through the heavy map, so the quiz
-// compare (2D-state only) works unchanged. A 3D H mirrors to its heavy
-// parent (quiz-armed: same fold as 2D via fMulerQuizHydrogenParent); 2D
-// expanded-H to 3D-H is best-effort (first H on the mapped parent).
+// compare (2D-state only) works unchanged. An armed pick on a 3D H folds
+// onto its heavy parent in state and paint (mirrors the 2D armed pick,
+// which folds before the toggle); a target hydroxyl/aldehyde H stays
+// atomic (same keep-if-target rule). Free selection keeps the H atomic.
+// 2D expanded-H to 3D-H is best-effort (first H on the mapped parent).
 function fMulerHeavyMapCached() {
   try {
     if (typeof selectedMol === "undefined" || !selectedMol) return null;
@@ -2591,6 +2600,30 @@ function fMulerSelectSyncBondPair2D3D(b2, b3) {
   } catch (e) {}
 }
 
+// Armed-quiz target-H lookup (v57 3D H fold): a 3D H has no direct 2D
+// counterpart, so a target hydroxyl/aldehyde H is found through its heavy
+// parent — returns the 2D H atom attached to heavy p2 that is itself in the
+// armed quiz target set, or -1. Mirrors the keep-if-target half of
+// fMulerQuizHydrogenParent (which runs on 2D atoms and can never see a 3D
+// pick). Free selection (no target) always folds.
+function fMulerPickTargetHOnParent(p2) {
+  try {
+    if (typeof window === "undefined" || !window.MulerQuizTarget) return -1;
+    var tgt = [];
+    try { tgt = (typeof fMulerQuizTargetSet === "function") ? fMulerQuizTargetSet() : []; } catch (eT) { tgt = []; }
+    if (!tgt || !tgt.length) return -1;
+    if (typeof atomConnectivityList === "undefined" || !atomConnectivityList) return -1;
+    if (typeof allAtomsTypeList === "undefined" || !allAtomsTypeList) return -1;
+    var nb = atomConnectivityList[p2 - 1] || [];
+    for (var i = 0; i < nb.length; i++) {
+      var h = nb[i] + 1;
+      if (String(allAtomsTypeList[h - 1] || "").toUpperCase() !== "H") continue;
+      if (tgt.indexOf(h) >= 0) return h;
+    }
+  } catch (e) {}
+  return -1;
+}
+
 // JSmol pick entry: armed via `set pickCallback "__mulerPickCb"`. Guards
 // mirror the 2D click path (armed, no draft, no Present, molecule set).
 // JSmol applies the page function to the PICK data array, i.e. this runs as
@@ -2700,10 +2733,23 @@ window.__mulerPickCb = function () {
           }
           // H mirrors to its heavy parent (quiz fold target form).
           if (p3 > 0) m2a = fMulerMap3D2D(p3);
+          // Armed quiz: fold the H pick onto its heavy parent so state AND
+          // paint carry the parent (mirrors the 2D armed pick, where the
+          // fold happens before the toggle). A target hydroxyl/aldehyde H
+          // stays atomic (same keep-if-target rule as 2D expanded picks).
+          var _armedFold = false;
+          try { _armedFold = (typeof window !== "undefined" && !!window.MulerQuizTarget); } catch (eAF) { _armedFold = false; }
+          if (_armedFold && p3 > 0) {
+            var _hT = -1;
+            try { if (m2a > 0 && typeof fMulerPickTargetHOnParent === "function") _hT = fMulerPickTargetHOnParent(m2a); } catch (eHT) { _hT = -1; }
+            if (_hT > 0) { m2a = _hT; }
+            else { a3 = p3; }
+          }
         } else m2a = fMulerMap3D2D(a3);
       }
     } catch (eM2) { m2a = -1; }
-      // Quiz-armed H fold on the 2D side (same as 2D armed picks).
+      // Quiz-armed H fold on the 2D side (same as 2D armed picks; covers the
+    // rare case where the mirror itself lands on a non-target 2D H).
       try {
         if (m2a > 0 && typeof fMulerQuizHydrogenParent === "function") {
           var _h = fMulerQuizHydrogenParent(m2a);
@@ -3850,10 +3896,9 @@ function fMulerQuizVerdictEl() {
     if (!host || !host.parentNode) return null;
     el = document.createElement("div");
     el.setAttribute("id", "mulerQuizVerdict");
-    // Layout lives in css/jsme-nick-56.css; keep the inline style as fallback
-    // for cached CSS (same values, harmless duplication).
-    try { el.setAttribute("style", "margin-top:6px;font-weight:bold;"); } catch (eS) {}
-    try { el.className = "mulerQuiz-empty"; } catch (eC) {}
+    // Layout lives in css/jsme-nick-57.css; hidden until first use so no
+    // empty box occupies layout.
+    try { el.className = "mulerQuiz-hidden"; } catch (eC) {}
     host.parentNode.insertBefore(el, host.nextSibling);
     return el;
   } catch (e) { return null; }
@@ -3899,14 +3944,13 @@ function fMulerQuizVerdict(kind, cmp) {
     // (final, full-set) plus hetero/gap/more/fewer/wrong (live, numberless —
     // no counts, no pick positions). FG/locant targets reuse the set-only
     // kinds with their own strings (direction/order/gap/hetero never fire).
-    // Color is set inline (immediate) + via CSS class (skinnable, see
-    // css/jsme-nick-56.css #mulerQuizVerdict.*).
+    // Class-only styling (owner skins in css/jsme-nick-57.css
+    // #mulerQuizVerdict.*): text + glyph here, no inline presentation.
     var el = (typeof fMulerQuizVerdictEl === "function") ? fMulerQuizVerdictEl() : null;
     if (!el) return;
     var T = function (k) { try { return (typeof fMulerT === "function") ? fMulerT(k) : ""; } catch (eT) { return ""; } };
-    if (!kind || kind === "clear") { try { el.textContent = ""; el.style.display = "none"; } catch (eC) {} return; }
-    try { el.style.display = ""; } catch (eD) {}
-    var txt = "", col = "#555555", glyph = "○", cls = "mulerQuiz-empty";
+    if (!kind || kind === "clear") { try { el.textContent = ""; el.className = "mulerQuiz-hidden"; } catch (eC) {} return; }
+    var txt = "", glyph = "○", cls = "mulerQuiz-empty";
     // FG/locant/bond/branch targets use their own strings (never main-chain words).
     // The exact verdict renders after Refresh clears the target, so it reads
     // the one-shot __mulerQuizFgVerdict flag ("fg"/"loc"/"bond"/"bondSingle"/"branchLoc"/"branchName") first, then live purpose.
@@ -3943,22 +3987,21 @@ function fMulerQuizVerdict(kind, cmp) {
       } catch (eP) {}
     }
     var keyFor = function (base) { return fgTxt ? base + "Fg" : (locTxt ? base + "Loc" : (bondSingleTxt ? base + "BondSingle" : (bondTxt ? base + "Bond" : (branchTxt ? base + "Branch" : (branchNameTxt ? base + "Branch" : base))))); };
-    if (kind === "exact") { col = "#1a7a3c"; glyph = "✓"; txt = T(branchNameTxt ? "quizExactBranchName" : keyFor("quizExact")); cls = "mulerQuiz-exact"; }
-    else if (kind === "more") { col = "#8a6d00"; glyph = "◐"; txt = T(keyFor("quizMore")); cls = "mulerQuiz-more"; }
-    else if (kind === "fewer") { col = "#8a6d00"; glyph = "◐"; txt = T(keyFor("quizFewer")); cls = "mulerQuiz-fewer"; }
-    else if (kind === "hetero") { col = "#b3261e"; glyph = "✕"; txt = T("quizHetero"); cls = "mulerQuiz-hetero"; }
-    else if (kind === "gap") { col = "#8a6d00"; glyph = "⇄"; txt = T("quizGap"); cls = "mulerQuiz-gap"; }
-    else if (kind === "subset") { col = "#8a6d00"; glyph = "◐"; txt = T(keyFor("quizMore")); cls = "mulerQuiz-subset"; }
-    else if (kind === "wrong") { col = "#b3261e"; glyph = "✕"; txt = T(keyFor("quizWrong")); cls = "mulerQuiz-wrong"; }
-    else if (kind === "disjoint") { col = "#555555"; glyph = "○"; txt = T(keyFor("quizDisjoint")); cls = "mulerQuiz-disjoint"; }
+    if (kind === "exact") { glyph = "✓"; txt = T(branchNameTxt ? "quizExactBranchName" : keyFor("quizExact")); cls = "mulerQuiz-exact"; }
+    else if (kind === "more") { glyph = "◐"; txt = T(keyFor("quizMore")); cls = "mulerQuiz-more"; }
+    else if (kind === "fewer") { glyph = "◐"; txt = T(keyFor("quizFewer")); cls = "mulerQuiz-fewer"; }
+    else if (kind === "hetero") { glyph = "✕"; txt = T("quizHetero"); cls = "mulerQuiz-hetero"; }
+    else if (kind === "gap") { glyph = "⇄"; txt = T("quizGap"); cls = "mulerQuiz-gap"; }
+    else if (kind === "subset") { glyph = "◐"; txt = T(keyFor("quizMore")); cls = "mulerQuiz-subset"; }
+    else if (kind === "wrong") { glyph = "✕"; txt = T(keyFor("quizWrong")); cls = "mulerQuiz-wrong"; }
+    else if (kind === "disjoint") { glyph = "○"; txt = T(keyFor("quizDisjoint")); cls = "mulerQuiz-disjoint"; }
     else if (kind === "order") {
-      col = "#8a6d00"; glyph = "⇄"; cls = "mulerQuiz-order";
+      glyph = "⇄"; cls = "mulerQuiz-order";
       var _op = (cmp && cmp.orderPair) || [0, 0];
       try { txt = T("quizOrder").replace("{a}", String(_op[0])).replace("{b}", String(_op[1])); } catch (eO) { txt = T("quizOrder"); }
     }
-    else if (kind === "direction") { col = "#8a6d00"; glyph = "↩"; txt = T("quizDirection"); cls = "mulerQuiz-direction"; }
-    else { col = "#555555"; glyph = "·"; txt = T("quizEmpty"); cls = "mulerQuiz-empty"; }
-    try { el.style.color = col; } catch (eC2) {}
+    else if (kind === "direction") { glyph = "↩"; txt = T("quizDirection"); cls = "mulerQuiz-direction"; }
+    else { glyph = "·"; txt = T("quizEmpty"); cls = "mulerQuiz-empty"; }
     try { el.className = cls; } catch (eC3) {}
     try { el.textContent = glyph + " " + txt; } catch (eT2) {}
   } catch (e) {}
@@ -3992,6 +4035,76 @@ function fMulerQuizDisarm() {
   try { if (typeof window !== "undefined") window.MulerQuizTarget = null; } catch (eT) {}
   try { if (typeof window !== "undefined") window.__mulerQuizReturnTo = null; } catch (eR) {}
   try { if (typeof fMulerQuizVerdict === "function") fMulerQuizVerdict("clear", null); } catch (eV) {}
+  // v57: drop the armed numbering aid with the target (2D badges die on the
+  // next re-render; 3D echoes need explicit removal).
+  try { if (typeof removeEcho3D === "function") removeEcho3D(); } catch (eR2) {}
+  try { numberingAtomOverride3D = null; } catch (eO) {}
+  try { numberingFlag = false; } catch (eF) {}
+}
+
+// Quiz progress (v57 quizzes with variants): per-molecule solved set.
+// A solved box renders default white and falls back to the classic path
+// (green highlight on click, never re-arms). Cleared when select mode
+// toggles off (fresh round); per-molecule sets persist across molecule
+// switches while armed.
+function fMulerQuizSolvedKey() {
+  try {
+    var m = (typeof selectedMol !== "undefined" && selectedMol) ? String(selectedMol) : "";
+    return m || "";
+  } catch (e) { return ""; }
+}
+function fMulerQuizIsSolved(mode) {
+  try {
+    var k = (typeof fMulerQuizSolvedKey === "function") ? fMulerQuizSolvedKey() : "";
+    if (!k || !mode || mode === "none") return false;
+    var map = (typeof window !== "undefined") ? window.__mulerQuizSolved : null;
+    return !!(map && map[k] && map[k][mode]);
+  } catch (e) { return false; }
+}
+function fMulerQuizMarkSolved(mode) {
+  try {
+    var k = (typeof fMulerQuizSolvedKey === "function") ? fMulerQuizSolvedKey() : "";
+    if (!k || !mode || mode === "none") return;
+    if (typeof window === "undefined") return;
+    if (!window.__mulerQuizSolved) window.__mulerQuizSolved = {};
+    if (!window.__mulerQuizSolved[k]) window.__mulerQuizSolved[k] = {};
+    window.__mulerQuizSolved[k][mode] = true;
+  } catch (e) {}
+}
+// Paint quiz to-do tints: quiz-capable unsolved boxes get .quizTodo while
+// select mode is armed; everything else renders default. Capability uses
+// the same resolver as the arm gate, so tint and quiz can never disagree
+// (hydrocarbon -io and other atom-less boxes stay default).
+function fMulerQuizPaintSolved() {
+  try {
+    var armed = false;
+    try { armed = (typeof fMulerSelectActive === "function" && fMulerSelectActive()); } catch (eA) { armed = false; }
+    var boxes = [];
+    try { boxes = Array.prototype.slice.call(document.querySelectorAll("#nameAnalysis .nameCompBox")); } catch (eB) {}
+    for (var i = 0; i < boxes.length; i++) {
+      (function (b) {
+        try {
+          var id = (b && b.getAttribute) ? b.getAttribute("id") : null;
+          if (!id || !b.classList) return;
+          if (!armed) { try { b.classList.remove("quizTodo"); } catch (eR0) {} return; }
+          if (b.classList.contains("comp-hidden")) { try { b.classList.remove("quizTodo"); } catch (eR1) {} return; }
+          var compMode = "none";
+          try { compMode = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId(id) : "none"; } catch (eM) { compMode = "none"; }
+          if (!compMode || compMode === "none") { try { b.classList.remove("quizTodo"); } catch (eR2) {} return; }
+          var solved = false, capable = false;
+          try { solved = (typeof fMulerQuizIsSolved === "function") ? fMulerQuizIsSolved(compMode) : false; } catch (eS) { solved = false; }
+          if (!solved) {
+            try {
+              var tgt = (typeof fMulerQuizResolveTarget === "function") ? fMulerQuizResolveTarget(compMode) : [];
+              capable = !!(tgt && tgt.length);
+            } catch (eT) { capable = false; }
+          }
+          if (capable && !solved) { try { b.classList.add("quizTodo"); } catch (eA2) {} }
+          else { try { b.classList.remove("quizTodo"); } catch (eR3) {} }
+        } catch (e) {}
+      })(boxes[i]);
+    }
+  } catch (e) {}
 }
 
 // Sticky-quiz re-arm on molecule switch (v56): sticky selection restores the
@@ -4048,6 +4161,8 @@ function fMulerQuizRearmSticky() {
       if (bEl.classList && bEl.classList.contains("comp-hidden")) return false;
       if (typeof fNameCompHidden === "function" && fNameCompHidden(boxId)) return false;
     } catch (eH) { return false; }
+    // Solved for this molecule: stay disarmed (classic path on click).
+    try { if (typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved(mode)) return false; } catch (eS2) { return false; }
     try { window.MulerQuizTarget = mode; } catch (eT) {}
     try { if (typeof fMulerSelectNormalizeMainChainCompacts === "function") fMulerSelectNormalizeMainChainCompacts(); } catch (eN) {}
     try { if (typeof fClearHighlights === "function") fClearHighlights(); } catch (eCH) {}
@@ -4060,6 +4175,7 @@ function fMulerQuizRearmSticky() {
     try { if (typeof fUpdateSVG === "function") fUpdateSVG(); } catch (eU) {}
     try { if (typeof fFitNameComponents === "function") fFitNameComponents(); } catch (eF) {}
     try { if (window.nameExplainAll && typeof fNameExplainTableRender === "function") fNameExplainTableRender(); } catch (eET) {}
+    try { if (typeof fMulerQuizPaintSolved === "function") fMulerQuizPaintSolved(); } catch (ePS) {}
     return true;
   } catch (e) { return false; }
 }
@@ -4179,6 +4295,9 @@ function fMulerQuizArmForBox(boxId, $box) {
         return false;
       }
     } catch (eD) { return false; }
+    // Solved components fall through to the classic path (green on click,
+    // never re-arm) — same contract as the atom-less hydrocarbon case above.
+    try { if (typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved(mode)) return false; } catch (eS) { return false; }
     try { window.MulerQuizTarget = mode; } catch (eT) {}
     // Main-chain purpose: an earlier compacted-carbon fragment pick is now a
     // carbon-only pick. NOx/SOx fragment picks are left untouched.
@@ -4209,6 +4328,7 @@ function fMulerQuizArmForBox(boxId, $box) {
     try { if (window.nameExplainAll && typeof fNameExplainTableRender === "function") fNameExplainTableRender(); } catch (eET) {}
     // Stale return-to must not survive a direct (non-chain) arm.
     try { if (mode !== "compCarbonsCount" && typeof window !== "undefined") window.__mulerQuizReturnTo = null; } catch (eRT) {}
+    try { if (typeof fMulerQuizPaintSolved === "function") fMulerQuizPaintSolved(); } catch (ePS2) {}
     return true;
   } catch (e) { return false; }
 }
@@ -4278,7 +4398,10 @@ function fMulerQuizRefresh() {
           window.__mulerQuizFgVerdict = (_wv === "fg" || _wv === "loc" || _wv === "bond" || _wv === "bondSingle" || _wv === "branch" || _wv === "branchLoc" || _wv === "branchName") ? _wv : "";
         }
       } catch (eF) {}
+      var _qm = null;
+      try { _qm = (typeof window !== "undefined") ? window.MulerQuizTarget : null; } catch (eQm) { _qm = null; }
       try { if (typeof window !== "undefined") window.MulerQuizTarget = null; } catch (eT) {}
+      try { if (_qm && typeof fMulerQuizMarkSolved === "function") fMulerQuizMarkSolved(_qm); } catch (eMS) {}
       try {
         if (_wasMain && typeof selectedMol !== "undefined" && selectedMol && typeof window !== "undefined") {
           if (!window.__mulerChainSolved) window.__mulerChainSolved = {};
@@ -4288,6 +4411,7 @@ function fMulerQuizRefresh() {
       // Green wins outright: drop the selection itself (not just its paint)
       // so no later clear can resurrect cyan from stale state.
       try { if (sel) { sel.atoms2D = []; sel.bonds2D = []; sel.atoms3D = []; sel.bonds3D = []; sel.groups = []; } } catch (eS2) {}
+      try { if (typeof removeEcho3D === "function") removeEcho3D(); } catch (eEq) {}
       // Exact is the one moment selection mode allows a component highlight:
       // opt the viewer-owning guard in fExplainNameComp through for this call.
       // try/finally: the flag must clear even if the explain path throws.
@@ -4298,6 +4422,8 @@ function fMulerQuizRefresh() {
         try { if (typeof window !== "undefined") window.__mulerQuizReward = false; } catch (eRw2) {}
       }
       try { if (typeof fMulerQuizVerdict === "function") fMulerQuizVerdict("exact", r.cmp || r); } catch (eV) {}
+      // Solved box drops its tint (classic white + green reward stays).
+      try { if (typeof fMulerQuizPaintSolved === "function") fMulerQuizPaintSolved(); } catch (ePS3) {}
       // Explain-all panel stays the overview table when it is open.
       try { if (window.nameExplainAll && typeof fNameExplainTableRender === "function") fNameExplainTableRender(); } catch (eET) {}
       // Chain-first return: a locant/bond click armed this chain quiz; solving it
@@ -4314,7 +4440,8 @@ function fMulerQuizRefresh() {
           var _rel = null;
           try { _rel = (_rb &&typeof document !== "undefined") ? document.getElementById(_rb) : null; } catch (eRE) { _rel = null; }
           if (_rt.length && _rb && _rel && !_rel.classList.contains("comp-hidden") &&
-              (typeof fNameCompHidden !== "function" || !fNameCompHidden(_rb))) {
+              (typeof fNameCompHidden !== "function" || !fNameCompHidden(_rb)) &&
+              !(typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved(_ret))) {
             try { if (typeof window !== "undefined") window.MulerQuizTarget = _ret; } catch (eT2) {}
             try { if (typeof fClearHighlights === "function") fClearHighlights(); } catch (eCH) {}
             try {
@@ -4331,6 +4458,7 @@ function fMulerQuizRefresh() {
             try { if (typeof fMulerSelectRepaint === "function") fMulerSelectRepaint(); } catch (eR4) {}
             try { if (typeof fUpdateSVG === "function") fUpdateSVG(); } catch (eU) {}
             try { if (typeof fFitNameComponents === "function") fFitNameComponents(); } catch (eF) {}
+            try { if (typeof fMulerQuizPaintSolved === "function") fMulerQuizPaintSolved(); } catch (ePS6) {}
           }
         }
       } catch (eRet) {}
@@ -4549,8 +4677,9 @@ function fMulerSelectPushState() {
       sel.atoms2D = []; sel.bonds2D = []; sel.atoms3D = []; sel.bonds3D = []; sel.groups = [];
       // v57 3D: dropped paint is stale — erase it (empty post-drop state
       // never auto-resets, and a reward-green live here implies empty
-      // arrays, so the green is never touched).
+      // arrays, so the green is never touched). Sequence echoes go too.
       try { if (_dropHad3D && typeof fMulerSelectClear3DPaint === "function") fMulerSelectClear3DPaint(); } catch (eC3D) {}
+      try { if (_dropHad3D && typeof removeEcho3D === "function") removeEcho3D(); } catch (eC3E) {}
       // A main-chain quiz target is a molecule-level atom set, so a 2D-style
       // switch keeps it armed (the user can pick in the new style and still
       // get the verdict); only an actual molecule change disarms.
@@ -4748,7 +4877,49 @@ function fMulerSelectRepaint() {
     try { if (typeof fMulerSelectPushState === "function") fMulerSelectPushState(); } catch (eP2) {}
     // v57 3D: repaint selection paint from state (no-op when off/empty/hidden).
     try { if (typeof fMulerSelectPush3D === "function") fMulerSelectPush3D(); } catch (eP3) {}
+    // v57 3D pick-sequence numbers (cyan), mirroring the 2D mulerSelNum badges.
+    try { if (typeof fMulerSelectSeq3D === "function") fMulerSelectSeq3D(); } catch (eS3) {}
     try { fMulerSelectCompactPaintPass(); } catch (eCP) {}
+  } catch (e) {}
+}
+
+// Selection-sequence numbers in 3D (v57): pick-order cyan echoes on the
+// picked atoms, mirroring the 2D mulerSelNum badges exactly (same gating:
+// armed main-chain purpose only; same order: position in atoms3D, which
+// tracks atoms2D pick order). Rebuilt from state on every repaint, so
+// toggle/re-pick/exact-clear renumber automatically — like the badges.
+// Single script: `set echo off` first clears stale tails (safe: no chain
+// echoes can be live while armed), then one cyan + one black shadow echo
+// per picked atom. Present/unpaired/disabled states paint nothing.
+function fMulerSelectSeq3D() {
+  try {
+    if (!(typeof fMulerSelectActive === "function" && fMulerSelectActive())) return;
+    if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return;
+    // Main-chain purpose only (mirrors the 2D badges). This gate also
+    // protects the exact reward: the target is cleared before the reward
+    // paints chain echoes, so a no-op here can never wipe them.
+    try { if (typeof fMulerSelectPurpose === "function" && fMulerSelectPurpose() !== "mainChain") return; } catch (eP) { return; }
+    if (typeof fJSmolLive === "function" && !fJSmolLive()) return;
+    if (typeof jmolAppletNomeclature === "undefined" || !jmolAppletNomeclature) return;
+    var sel = (typeof fMulerSelectState === "function") ? fMulerSelectState() : null;
+    if (!sel) return;
+    var atoms = (Array.isArray(sel.atoms3D)) ? sel.atoms3D : [];
+    // Always rebuild (never early-return on empty): deselecting the last
+    // pick must erase its echo instead of leaving a stale number behind.
+    // Safe: no chain echoes can be live while armed (classic path blocked,
+    // settings toggles guarded, no arm-time numbering).
+    var cyan = "X7DDFFF";
+    try {
+      if (typeof MULER_SELECT_CYAN === "string" && /^#[0-9a-fA-F]{6}$/.test(MULER_SELECT_CYAN)) cyan = "X" + MULER_SELECT_CYAN.slice(1).toUpperCase();
+    } catch (eC) {}
+    var d = 0.01, script = "set echo off;";
+    for (var i = 0; i < atoms.length; i++) {
+      var a = atoms[i], n = i + 1, id = "mulerSelSeq3D" + n;
+      if (!(a > 0)) continue;
+      script += " set echo " + id + " {atomno = " + a + "}; set echo offset {-1.1 1.1 3}; font echo 42 sansSerif bold; color echo [" + cyan + "]; echo " + n + ";";
+      script += " set echo " + id + "s1 {atomno = " + a + "}; set echo offset {" + (-1.1 + d) + " " + (1.1 - d) + " 3}; font echo 42 sansSerif bold; color echo black; echo " + n + ";";
+    }
+    if (typeof fJSmolScript === "function") fJSmolScript(jmolAppletNomeclature, script);
   } catch (e) {}
 }
 
@@ -11460,7 +11631,11 @@ function showAtomSymbols3D(restoreNumbering) {
   }
 
   if (restoreNumbering !== false && nameAnalysisMode == "compCarbonsCount") {
-    fShowNumbering3D();
+    // Selection owns the viewer while armed: a settings toggle must not
+    // resurrect classic 3D numbering over the quiz prompt.
+    var _selArmedS = false;
+    try { _selArmedS = (typeof fMulerSelectActive === "function") && fMulerSelectActive(); } catch (eS3) {}
+    if (!_selArmedS) fShowNumbering3D();
   }
 }
 
@@ -11477,7 +11652,11 @@ function showHydrogens3D() {
   }
 
   if (nameAnalysisMode == "compCarbonsCount") {
-    fShowNumbering3D();
+    // Same viewer-owns-viewer guard as above: no classic 3D numbers while
+    // a quiz is armed.
+    var _selArmedH = false;
+    try { _selArmedH = (typeof fMulerSelectActive === "function") && fMulerSelectActive(); } catch (eS4) {}
+    if (!_selArmedH) fShowNumbering3D();
   }
 }
 
@@ -13033,6 +13212,9 @@ function fShowNameAnalysis() {
   // funnels through here, so re-render the table from a fresh build. The
   // single explain above already restored the live selection's paint.
   try { if (typeof window !== "undefined" && window.nameExplainAll && typeof fNameExplainTableShow === "function") fNameExplainTableShow(); } catch (eEA) {}
+  // v57 quiz rounds: boxes were just rebuilt — re-apply to-do tints (or
+  // strip them when select mode is off).
+  try { if (typeof fMulerQuizPaintSolved === "function") fMulerQuizPaintSolved(); } catch (ePS5) {}
 }
 
 // While open, viewport/column changes can alter the wrapped height:
@@ -13657,7 +13839,17 @@ function fExplainNameComp() {
     // otherwise the table nests its own previous markup or repeats the quiz
     // prompt in every cell.
     var _quietExplainBuild = (typeof window !== "undefined") && window.__mulerExplainQuiet === true;
-    if (_selOwnsViewer && !_rewardPaint && !_quietExplainBuild) return;
+    if (_selOwnsViewer && !_rewardPaint && !_quietExplainBuild) {
+      // Solved components behave classically even while armed (quiz
+      // progress): the arm gate already declined to quiz them, so let the
+      // classic path paint. Deselect (mode "none") and unsolved modes stay
+      // quiet under an armed viewer.
+      var _boxMode = "none";
+      try { _boxMode = (typeof nameAnalysisMode !== "undefined") ? nameAnalysisMode : "none"; } catch (eBM) { _boxMode = "none"; }
+      var _boxSolved = false;
+      try { _boxSolved = !!(_boxMode && _boxMode !== "none" && typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved(_boxMode)); } catch (eBS) { _boxSolved = false; }
+      if (!_boxSolved) return;
+    }
   } catch (eSelOwn) {}
   let myText, myClass, nStyle, countSubs, myCountText, myFG0, myFG1, myHTML;
   switch (nameAnalysisMode) {

@@ -1959,6 +1959,15 @@ header {
   white-space: nowrap;
 
 
+
+}
+
+/* Quiz to-do tint (v57 quiz variants): quiz-capable but unsolved boxes while
+   select mode is armed. Placed before :hover/.selected so both keep their
+   feedback/precedence; .boxed/.unboxed lose on specificity. Stripped on
+   disarm (classic look restored). */
+.nameCompBox.quizTodo {
+  background-color: var(--veryLightEarth);
 }
 
 
@@ -3166,22 +3175,30 @@ color: var(--veryLightEarth);
 }
 
 /* ── v56 quiz verdict + sequence badges ─────────────────────────────── */
-/* Verdict line owns layout; JS sets only color + text (no inline layout). */
+/* Verdict line: class-only styling (manual skinning area). JS sets text +
+   kind class only; all presentation lives here. Kind classes mirror the
+   fMulerQuizVerdict kinds; colors below match the pre-migration rendered
+   output (inline #333 / #b3261e), restyle freely. */
+#mulerQuizVerdict.mulerQuiz-hidden { display: none; }
 #mulerQuizVerdict {
-  margin-top: 6px;
-  font-weight: bold;
+	margin-top: 6px;
+	/* font-weight: bold; */
+	background: #fff;
+	padding: 10px;
+	border: 1px solid var(--lightBlue);
+	border-radius: 4px;
 }
-#mulerQuizVerdict.mulerQuiz-empty { color: #555555; }
-#mulerQuizVerdict.mulerQuiz-exact { color: #1a7a3c; }
+#mulerQuizVerdict.mulerQuiz-empty { color: #333;font-weight: normal; }
+#mulerQuizVerdict.mulerQuiz-exact { color: var(--vibrantGreen); font-weight: bold; border-color: var(--vibrantGreen); }
 #mulerQuizVerdict.mulerQuiz-subset,
 #mulerQuizVerdict.mulerQuiz-more,
 #mulerQuizVerdict.mulerQuiz-fewer,
 #mulerQuizVerdict.mulerQuiz-gap,
 #mulerQuizVerdict.mulerQuiz-direction,
-#mulerQuizVerdict.mulerQuiz-order { color: #8a6d00; }
+#mulerQuizVerdict.mulerQuiz-order { color: var(--redAlert); font-weight: normal;border-color: var(--redAlert); }
 #mulerQuizVerdict.mulerQuiz-hetero,
-#mulerQuizVerdict.mulerQuiz-wrong { color: #b3261e; }
-#mulerQuizVerdict.mulerQuiz-disjoint { color: #555555; }
+#mulerQuizVerdict.mulerQuiz-wrong { color: var(--redAlert); font-weight: normal; border-color: var(--redAlert);}
+#mulerQuizVerdict.mulerQuiz-disjoint { color: var(--redAlert); font-weight: normal;border-color: var(--redAlert); }
 
 /* Sequence badges: white text + dark outline painted as SVG text.
    Fill comes from MULER_SELECT_CYAN via the `fill` attribute (JS-owned);
