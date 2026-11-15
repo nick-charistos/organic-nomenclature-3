@@ -105,3 +105,7 @@ node_modules/
 *.png
 tools/muler-harness/package.json
 tools/muler-harness/package-lock.json
+tools/muler-harness/compare55-56.jsonl
+tools/muler-harness/probe-compare55-56.js
+tools/muler-harness/triage-compare55-56.py
+tools/muler-harness/__pycache__/triage-compare55-56.cpython-314.pyc
