@@ -2522,32 +2522,109 @@ function fMulerMap3D2D(a3) {
 
 // 2D atom → 3D counterpart for mirroring: heavy atoms via the map; expanded
 // 2D H (no map entry) best-effort to the first H on the mapped parent.
+// H rank mapping for expanded-mode free selection (v57): a 2D H with rank
+// k among its parent's H neighbors (bond-list order) pairs with the k-th H
+// of the mapped 3D parent. Deterministic and symmetric, so toggling from
+// either viewer stays in step. Expanded only (other 2D modes have no H
+// atoms to click); fail-closed on count mismatch. Quiz-armed picks never
+// reach here — the armed H→parent fold in the pick callback runs instead.
+function fMulerSelectHRank2D3D(a2) {
+  try {
+    if (typeof mode2D === "undefined" || mode2D !== "expanded") return -1;
+    if (typeof allAtomsTypeList === "undefined" || !allAtomsTypeList) return -1;
+    if (String(allAtomsTypeList[a2 - 1] || "").toUpperCase() !== "H") return -1;
+    // bondList is the live per-mode list (unlike atomConnectivityList,
+    // which has no H rows): parent + rank both come from it.
+    if (typeof bondList === "undefined" || !bondList) return -1;
+    var p2 = -1;
+    for (var pb = 0; pb < bondList.length; pb++) {
+      var pb0 = bondList[pb];
+      if (!pb0) continue;
+      if (pb0[0] === a2 && String(allAtomsTypeList[pb0[1] - 1] || "").toUpperCase() !== "H") { p2 = pb0[1]; break; }
+      if (pb0[1] === a2 && String(allAtomsTypeList[pb0[0] - 1] || "").toUpperCase() !== "H") { p2 = pb0[0]; break; }
+    }
+    if (!(p2 > 0)) return -1;
+    var hlist = [];
+    for (var i = 0; i < bondList.length; i++) {
+      var bl = bondList[i];
+      if (!bl) continue;
+      var o = -1;
+      if (bl[0] === p2) o = bl[1];
+      else if (bl[1] === p2) o = bl[0];
+      if (o > 0 && String(allAtomsTypeList[o - 1] || "").toUpperCase() === "H" && hlist.indexOf(o) < 0) hlist.push(o);
+    }
+    var k = hlist.indexOf(a2);
+    if (k < 0 || typeof fMulerMap2D3D !== "function") return -1;
+    var p3 = fMulerMap2D3D(p2);
+    if (!(p3 > 0) || typeof bondList3D === "undefined" || !bondList3D) return -1;
+    if (typeof allAtomsTypeList3D === "undefined" || !allAtomsTypeList3D) return -1;
+    var h3 = [];
+    for (var b = 0; b < bondList3D.length; b++) {
+      var bl = bondList3D[b];
+      if (!bl) continue;
+      var o = -1;
+      if (bl[0] === p3) o = bl[1];
+      else if (bl[1] === p3) o = bl[0];
+      if (o > 0 && String(allAtomsTypeList3D[o - 1] || "").toUpperCase() === "H" && h3.indexOf(o) < 0) h3.push(o);
+    }
+    if (k >= h3.length) return -1;
+    return h3[k];
+  } catch (e) { return -1; }
+}
+
+// Mirror image: 3D H (1-based atomno) → 2D H (1-based), or -1. Same rank
+// rule, so 2D→3D and 3D→2D agree atom-for-atom and re-clicking from either
+// viewer toggles the same pair off.
+function fMulerSelectHRank3D2D(a3) {
+  try {
+    if (typeof mode2D === "undefined" || mode2D !== "expanded") return -1;
+    if (typeof allAtomsTypeList3D === "undefined" || !allAtomsTypeList3D) return -1;
+    if (String(allAtomsTypeList3D[a3 - 1] || "").toUpperCase() !== "H") return -1;
+    if (typeof bondList3D === "undefined" || !bondList3D) return -1;
+    var p3 = -1;
+    for (var b = 0; b < bondList3D.length; b++) {
+      var bl = bondList3D[b];
+      if (!bl) continue;
+      if (bl[0] === a3) { p3 = bl[1]; break; }
+      if (bl[1] === a3) { p3 = bl[0]; break; }
+    }
+    if (!(p3 > 0)) return -1;
+    var h3 = [];
+    for (var c = 0; c < bondList3D.length; c++) {
+      var cl = bondList3D[c];
+      if (!cl) continue;
+      var o = -1;
+      if (cl[0] === p3) o = cl[1];
+      else if (cl[1] === p3) o = cl[0];
+      if (o > 0 && String(allAtomsTypeList3D[o - 1] || "").toUpperCase() === "H" && h3.indexOf(o) < 0) h3.push(o);
+    }
+    var k = h3.indexOf(a3);
+    if (k < 0 || typeof fMulerMap3D2D !== "function") return -1;
+    var p2 = fMulerMap3D2D(p3);
+    if (!(p2 > 0) || typeof bondList === "undefined" || !bondList) return -1;
+    if (typeof allAtomsTypeList === "undefined" || !allAtomsTypeList) return -1;
+    var h2 = [];
+    for (var i = 0; i < bondList.length; i++) {
+      var bl2 = bondList[i];
+      if (!bl2) continue;
+      var h = -1;
+      if (bl2[0] === p2) h = bl2[1];
+      else if (bl2[1] === p2) h = bl2[0];
+      if (h > 0 && String(allAtomsTypeList[h - 1] || "").toUpperCase() === "H" && h2.indexOf(h) < 0) h2.push(h);
+    }
+    if (k >= h2.length) return -1;
+    return h2[k];
+  } catch (e) { return -1; }
+}
+
 function fMulerSelectPairFor2D(a2) {
   try {
     if (typeof fMulerMap2D3D === "function") {
       var d = fMulerMap2D3D(a2);
       if (d > 0) return d;
     }
-    try {
-      if (typeof mode2D !== "undefined" && mode2D === "expanded" &&
-          typeof allAtomsTypeList !== "undefined" && allAtomsTypeList &&
-          String(allAtomsTypeList[a2 - 1] || "").toUpperCase() === "H" &&
-          typeof atomConnectivityList !== "undefined" && atomConnectivityList) {
-        var nb = atomConnectivityList[a2 - 1] || [];
-        if (nb.length && typeof fMulerMap2D3D === "function") {
-          var p3 = fMulerMap2D3D(nb[0] + 1);
-          if (p3 > 0 && typeof bondList3D !== "undefined" && bondList3D &&
-              typeof allAtomsTypeList3D !== "undefined" && allAtomsTypeList3D) {
-            for (var b = 0; b < bondList3D.length; b++) {
-              var bl = bondList3D[b];
-              if (!bl) continue;
-              var o = (bl[0] === p3) ? bl[1] : ((bl[1] === p3) ? bl[0] : -1);
-              if (o > 0 && String(allAtomsTypeList3D[o - 1] || "").toUpperCase() === "H") return o;
-            }
-          }
-        }
-      }
-    } catch (eH2) {}
+    // Expanded-mode H: rank-matched counterpart (symmetric with 3D→2D).
+    try { if (typeof fMulerSelectHRank2D3D === "function") { var _h3 = fMulerSelectHRank2D3D(a2); if (_h3 > 0) return _h3; } } catch (eH2) {}
   } catch (e) {}
   return -1;
 }
@@ -2612,12 +2689,15 @@ function fMulerPickTargetHOnParent(p2) {
     var tgt = [];
     try { tgt = (typeof fMulerQuizTargetSet === "function") ? fMulerQuizTargetSet() : []; } catch (eT) { tgt = []; }
     if (!tgt || !tgt.length) return -1;
-    if (typeof atomConnectivityList === "undefined" || !atomConnectivityList) return -1;
+    if (typeof bondList === "undefined" || !bondList) return -1;
     if (typeof allAtomsTypeList === "undefined" || !allAtomsTypeList) return -1;
-    var nb = atomConnectivityList[p2 - 1] || [];
-    for (var i = 0; i < nb.length; i++) {
-      var h = nb[i] + 1;
-      if (String(allAtomsTypeList[h - 1] || "").toUpperCase() !== "H") continue;
+    for (var i = 0; i < bondList.length; i++) {
+      var bl = bondList[i];
+      if (!bl) continue;
+      var h = -1;
+      if (bl[0] === p2) h = bl[1];
+      else if (bl[1] === p2) h = bl[0];
+      if (h <= 0 || String(allAtomsTypeList[h - 1] || "").toUpperCase() !== "H") continue;
       if (tgt.indexOf(h) >= 0) return h;
     }
   } catch (e) {}
@@ -2731,19 +2811,27 @@ window.__mulerPickCb = function () {
               if (bhl[1] === a3) { p3 = bhl[0]; break; }
             }
           }
-          // H mirrors to its heavy parent (quiz fold target form).
-          if (p3 > 0) m2a = fMulerMap3D2D(p3);
-          // Armed quiz: fold the H pick onto its heavy parent so state AND
-          // paint carry the parent (mirrors the 2D armed pick, where the
-          // fold happens before the toggle). A target hydroxyl/aldehyde H
-          // stays atomic (same keep-if-target rule as 2D expanded picks).
-          var _armedFold = false;
-          try { _armedFold = (typeof window !== "undefined" && !!window.MulerQuizTarget); } catch (eAF) { _armedFold = false; }
-          if (_armedFold && p3 > 0) {
+          var _armed = false;
+          try { _armed = (typeof window !== "undefined" && !!window.MulerQuizTarget); } catch (eAQ) { _armed = false; }
+          if (_armed) {
+            // Armed quiz: fold onto the heavy parent so state and paint
+            // carry the parent (mirrors the 2D armed pick, where the fold
+            // happens before the toggle). A target hydroxyl/aldehyde H
+            // stays atomic instead (same keep-if-target rule as 2D).
+            var _mp = -1;
+            try { if (p3 > 0) _mp = fMulerMap3D2D(p3); } catch (eMP) { _mp = -1; }
             var _hT = -1;
-            try { if (m2a > 0 && typeof fMulerPickTargetHOnParent === "function") _hT = fMulerPickTargetHOnParent(m2a); } catch (eHT) { _hT = -1; }
+            try { if (_mp > 0 && typeof fMulerPickTargetHOnParent === "function") _hT = fMulerPickTargetHOnParent(_mp); } catch (eHT) { _hT = -1; }
             if (_hT > 0) { m2a = _hT; }
-            else { a3 = p3; }
+            else if (p3 > 0) { a3 = p3; m2a = _mp; }
+          } else {
+            // Free selection in expanded mode: rank-matched H pair, so the
+            // H itself is selected and highlighted on both sides. Condensed
+            // (no 2D H) falls back to the parent mirror.
+            var _h2 = -1;
+            try { if (typeof fMulerSelectHRank3D2D === "function") _h2 = fMulerSelectHRank3D2D(a3); } catch (eHR) { _h2 = -1; }
+            if (_h2 > 0) { m2a = _h2; }
+            else if (p3 > 0) { m2a = fMulerMap3D2D(p3); }
           }
         } else m2a = fMulerMap3D2D(a3);
       }
