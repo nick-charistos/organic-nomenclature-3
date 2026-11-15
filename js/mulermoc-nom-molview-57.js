@@ -2629,7 +2629,28 @@ function fMulerSelectPairFor2D(a2) {
   return -1;
 }
 
-// 2D bond (1-based position) → 3D bond (1-based position) via mapped endpoints.
+// Rank-aware single-endpoint mappers (v57 C-H bonds): H endpoints resolve
+// by sibling rank in expanded mode, heavy endpoints via the heavy map.
+// Fail-closed (-1) where no counterpart exists (e.g. condensed 2D has no H).
+function fMulerSelectMapEnd2D3D(a2) {
+  try {
+    if (!(a2 > 0)) return -1;
+    try { if (typeof fMulerSelectHRank2D3D === "function") { var h = fMulerSelectHRank2D3D(a2); if (h > 0) return h; } } catch (eH) {}
+    if (typeof fMulerMap2D3D === "function") return fMulerMap2D3D(a2);
+  } catch (e) {}
+  return -1;
+}
+function fMulerSelectMapEnd3D2D(a3) {
+  try {
+    if (!(a3 > 0)) return -1;
+    try { if (typeof fMulerSelectHRank3D2D === "function") { var h = fMulerSelectHRank3D2D(a3); if (h > 0) return h; } } catch (eH) {}
+    if (typeof fMulerMap3D2D === "function") return fMulerMap3D2D(a3);
+  } catch (e) {}
+  return -1;
+}
+
+// 2D bond (1-based position) → 3D bond (1-based position) via rank-aware
+// mapped endpoints (C-H bonds included in expanded mode).
 function fMulerSelectBondPairFor2D(b2) {
   try {
     if (typeof bondList === "undefined" || !bondList) return -1;
@@ -2637,7 +2658,8 @@ function fMulerSelectBondPairFor2D(b2) {
     if (!bl) return -1;
     var e1 = -1, e2 = -1;
     try {
-      if (typeof fMulerMap2D3D === "function") { e1 = fMulerMap2D3D(bl[0]); e2 = fMulerMap2D3D(bl[1]); }
+      if (typeof fMulerSelectMapEnd2D3D === "function") { e1 = fMulerSelectMapEnd2D3D(bl[0]); e2 = fMulerSelectMapEnd2D3D(bl[1]); }
+      else if (typeof fMulerMap2D3D === "function") { e1 = fMulerMap2D3D(bl[0]); e2 = fMulerMap2D3D(bl[1]); }
     } catch (eM) { return -1; }
     if (!(e1 > 0) || !(e2 > 0)) return -1;
     if (typeof bondList3D === "undefined" || !bondList3D) return -1;
@@ -2675,6 +2697,253 @@ function fMulerSelectSyncBondPair2D3D(b2, b3) {
     if (in2 && ix < 0) sel.bonds3D.push(b3);
     if (!in2 && ix >= 0) sel.bonds3D.splice(ix, 1);
   } catch (e) {}
+}
+
+// Compacted-fragment lookup for a 2D atom (condensed): the comp entry whose
+// members include a2, or null. Members are 1-based (anchor 0-based).
+function fMulerSelectCompFor2D(a2) {
+  try {
+    if (!(a2 > 0)) return null;
+    if (typeof mode2D === "undefined" || mode2D !== "condensed") return null;
+    if (typeof fMulerSelectCompacted !== "function") return null;
+    var comps = fMulerSelectCompacted() || [];
+    for (var i = 0; i < comps.length; i++) {
+      var cm = comps[i];
+      if (!cm || !Array.isArray(cm.members)) continue;
+      if (cm.members.indexOf(a2) >= 0) return cm;
+    }
+  } catch (e) {}
+  return null;
+}
+
+// H neighbors of a 3D atom (1-based atomno): explicit Hs bonded to a3 plus
+// the C-H bond positions (1-based), via bondList3D scan (the connectivity
+// tables carry no H rows). Empty when no 3D model is loaded.
+function fMulerSelectH3For(a3) {
+  var out = { atoms: [], bonds: [] };
+  try {
+    if (!(a3 > 0)) return out;
+    if (typeof bondList3D === "undefined" || !bondList3D) return out;
+    if (typeof allAtomsTypeList3D === "undefined" || !allAtomsTypeList3D) return out;
+    var isH3 = false;
+    try { isH3 = String(allAtomsTypeList3D[a3 - 1] || "").toUpperCase() === "H"; } catch (eT) { isH3 = false; }
+    var self = a3, parent = -1;
+    if (isH3) {
+      for (var b = 0; b < bondList3D.length; b++) {
+        var bl0 = bondList3D[b];
+        if (!bl0) continue;
+        if (bl0[0] === a3) { parent = bl0[1]; break; }
+        if (bl0[1] === a3) { parent = bl0[0]; break; }
+      }
+      if (!(parent > 0)) return out;
+      self = parent;
+    }
+    for (var c = 0; c < bondList3D.length; c++) {
+      var bl = bondList3D[c];
+      if (!bl) continue;
+      var h = -1;
+      if (bl[0] === self) h = bl[1];
+      else if (bl[1] === self) h = bl[0];
+      else continue;
+      try { if (String(allAtomsTypeList3D[h - 1] || "").toUpperCase() !== "H") continue; } catch (eH) { continue; }
+      if (out.atoms.indexOf(h) < 0) out.atoms.push(h);
+      if (out.bonds.indexOf(c + 1) < 0) out.bonds.push(c + 1);
+    }
+    if (isH3 && out.atoms.indexOf(self) < 0) {
+      out.atoms.push(self);
+    }
+  } catch (e) {}
+  return out;
+}
+
+// Skeletal branch groups in 3D (alkyl substituents off the main chain):
+// each group is a sorted array of 1-based heavy atomnos forming one
+// attachment-rooted carbon component. Built from bondList3D C-C adjacency
+// (connectivity tables are not trusted for this), so it works headless as
+// long as the model globals are present. Empty when no chain is set.
+function fMulerSelectBranchGroups3D() {
+  var groups = [];
+  try {
+    if (typeof mainChainAtoms3D === "undefined" || !Array.isArray(mainChainAtoms3D) || !mainChainAtoms3D.length) return groups;
+    if (typeof bondList3D === "undefined" || !bondList3D) return groups;
+    if (typeof allAtomsTypeList3D === "undefined" || !allAtomsTypeList3D) return groups;
+    var mainSet = {};
+    for (var mi = 0; mi < mainChainAtoms3D.length; mi++) mainSet[mainChainAtoms3D[mi]] = true;
+    var adj = {};
+    for (var b = 0; b < bondList3D.length; b++) {
+      var bl = bondList3D[b];
+      if (!bl) continue;
+      var x = bl[0], y = bl[1];
+      var tx = "", ty = "";
+      try { tx = String(allAtomsTypeList3D[x - 1] || "").toUpperCase(); } catch (eX) { tx = ""; }
+      try { ty = String(allAtomsTypeList3D[y - 1] || "").toUpperCase(); } catch (eY) { ty = ""; }
+      if (tx !== "C" || ty !== "C") continue;
+      if (mainSet[x] && mainSet[y]) continue;
+      if (!adj[x]) adj[x] = [];
+      if (!adj[y]) adj[y] = [];
+      adj[x].push(y); adj[y].push(x);
+    }
+    var seen = {};
+    for (var k in adj) {
+      if (!Object.prototype.hasOwnProperty.call(adj, k)) continue;
+      var root = parseInt(k, 10);
+      if (seen[root]) continue;
+      if (mainSet[root]) continue;
+      var touchesMain = false;
+      var stack = [root], comp = [];
+      seen[root] = true;
+      while (stack.length) {
+        var n = stack.pop();
+        comp.push(n);
+        var nbs = adj[n] || [];
+        for (var ni = 0; ni < nbs.length; ni++) {
+          var nb = nbs[ni];
+          if (mainSet[nb]) { touchesMain = true; continue; }
+          if (seen[nb]) continue;
+          seen[nb] = true;
+          stack.push(nb);
+        }
+        try {
+          var bl2 = null;
+          for (var q = 0; q < bondList3D.length; q++) {
+            var qb = bondList3D[q];
+            if (!qb) continue;
+            if ((qb[0] === n && mainSet[qb[1]]) || (qb[1] === n && mainSet[qb[0]])) { touchesMain = true; break; }
+          }
+        } catch (eQ) {}
+      }
+      if (touchesMain && comp.length) {
+        comp.sort(function (a, b2) { return a - b2; });
+        groups.push(comp);
+      }
+    }
+  } catch (e) {}
+  return groups;
+}
+
+// Paint sets for Push3D (strict + group completion, state untouched):
+// atoms-only picks paint atoms (+H/branch/group completion) and the
+// completion bonds; bond-only picks paint exactly the picked bonds.
+function fMulerSelectPaintSets3D() {
+  var out = { atoms: [], bonds: [] };
+  try {
+    var sel = (typeof fMulerSelectState === "function") ? fMulerSelectState() : null;
+    if (!sel) return out;
+    var baseA = Array.isArray(sel.atoms3D) ? sel.atoms3D.slice() : [];
+    var baseB = Array.isArray(sel.bonds3D) ? sel.bonds3D.slice() : [];
+    if (baseA.length) {
+      var aSet = {}, bSet = {};
+      for (var i = 0; i < baseA.length; i++) if (baseA[i] > 0) aSet[baseA[i]] = true;
+      var md = "";
+      try { md = (typeof mode2D !== "undefined" && mode2D) ? String(mode2D) : ""; } catch (eM) { md = ""; }
+      if (md === "condensed" || md === "skeletal") {
+        var snapshot = [];
+        for (var k in aSet) {
+          if (!Object.prototype.hasOwnProperty.call(aSet, k)) continue;
+          snapshot.push(parseInt(k, 10));
+        }
+        for (var si = 0; si < snapshot.length; si++) {
+          var hres = null;
+          try { if (typeof fMulerSelectH3For === "function") hres = fMulerSelectH3For(snapshot[si]); } catch (eH) { hres = null; }
+          if (hres) {
+            for (var hi = 0; hi < hres.atoms.length; hi++) aSet[hres.atoms[hi]] = true;
+            for (var bj = 0; bj < hres.bonds.length; bj++) bSet[hres.bonds[bj]] = true;
+          }
+        }
+        if (md === "condensed") {
+          try {
+            var comps = (typeof fMulerSelectCompacted === "function") ? fMulerSelectCompacted() : [];
+            var sel2 = {};
+            var a2list = Array.isArray(sel.atoms2D) ? sel.atoms2D : [];
+            for (var a2i = 0; a2i < a2list.length; a2i++) sel2[a2list[a2i]] = true;
+            for (var ci = 0; ci < comps.length; ci++) {
+              var cm = comps[ci];
+              if (!cm || !Array.isArray(cm.members) || !cm.members.length) continue;
+              var carbonOnly = false;
+              try { if (typeof fMulerSelectCompactCarbonOnly === "function") carbonOnly = !!fMulerSelectCompactCarbonOnly(cm); } catch (eC) { carbonOnly = false; }
+              if (carbonOnly) continue;
+              var full = true;
+              for (var mi2 = 0; mi2 < cm.members.length; mi2++) {
+                if (!sel2[cm.members[mi2]]) { full = false; break; }
+              }
+              if (!full) continue;
+              var m3 = [];
+              for (var mj = 0; mj < cm.members.length; mj++) {
+                var t3 = -1;
+                try { if (typeof fMulerMap2D3D === "function") t3 = fMulerMap2D3D(cm.members[mj]); } catch (eM3) { t3 = -1; }
+                if (t3 > 0) { m3.push(t3); aSet[t3] = true; }
+              }
+              if (m3.length > 1 && typeof bondList3D !== "undefined" && bondList3D) {
+                var inset = {};
+                for (var q2 = 0; q2 < m3.length; q2++) inset[m3[q2]] = true;
+                for (var bb = 0; bb < bondList3D.length; bb++) {
+                  var tb = bondList3D[bb];
+                  if (!tb) continue;
+                  if (inset[tb[0]] && inset[tb[1]]) bSet[bb + 1] = true;
+                }
+              }
+            }
+          } catch (eC2) {}
+        } else if (md === "skeletal") {
+          try {
+            var branches = (typeof fMulerSelectBranchGroups3D === "function") ? fMulerSelectBranchGroups3D() : [];
+            for (var bi3 = 0; bi3 < snapshot.length; bi3++) {
+              var pick3 = snapshot[bi3];
+              for (var gi = 0; gi < branches.length; gi++) {
+                var br = branches[gi];
+                if (!br || br.indexOf(pick3) < 0) continue;
+                for (var bi4 = 0; bi4 < br.length; bi4++) aSet[br[bi4]] = true;
+                if (typeof bondList3D !== "undefined" && bondList3D) {
+                  var bset2 = {};
+                  for (var q3 = 0; q3 < br.length; q3++) bset2[br[q3]] = true;
+                  for (var bb2 = 0; bb2 < bondList3D.length; bb2++) {
+                    var tb2 = bondList3D[bb2];
+                    if (!tb2) continue;
+                    if (bset2[tb2[0]] && bset2[tb2[1]]) bSet[bb2 + 1] = true;
+                  }
+                  for (var hb = 0; hb < br.length; hb++) {
+                    var hr2 = null;
+                    try { if (typeof fMulerSelectH3For === "function") hr2 = fMulerSelectH3For(br[hb]); } catch (eH2) { hr2 = null; }
+                    if (hr2) {
+                      for (var h2i = 0; h2i < hr2.atoms.length; h2i++) aSet[hr2.atoms[h2i]] = true;
+                      for (var b2i = 0; b2i < hr2.bonds.length; b2i++) bSet[hr2.bonds[b2i]] = true;
+                    }
+                  }
+                }
+                break;
+              }
+            }
+          } catch (eB) {}
+        }
+      }
+      var pa = [], pb = [];
+      for (var ka in aSet) {
+        if (!Object.prototype.hasOwnProperty.call(aSet, ka)) continue;
+        var va = parseInt(ka, 10);
+        if (va > 0) pa.push(va);
+      }
+      for (var kb in bSet) {
+        if (!Object.prototype.hasOwnProperty.call(bSet, kb)) continue;
+        var vb = parseInt(kb, 10);
+        if (vb > 0) pb.push(vb);
+      }
+      pa.sort(function (x, y) { return x - y; });
+      pb.sort(function (x, y) { return x - y; });
+      out.atoms = pa; out.bonds = pb;
+    } else if (baseB.length) {
+      var sb = {};
+      for (var j = 0; j < baseB.length; j++) if (baseB[j] > 0) sb[baseB[j]] = true;
+      var ob = [];
+      for (var ko in sb) {
+        if (!Object.prototype.hasOwnProperty.call(sb, ko)) continue;
+        var vo = parseInt(ko, 10);
+        if (vo > 0) ob.push(vo);
+      }
+      ob.sort(function (x, y) { return x - y; });
+      out.atoms = []; out.bonds = ob;
+    }
+  } catch (e) {}
+  return out;
 }
 
 // Armed-quiz target-H lookup (v57 3D H fold): a 3D H has no direct 2D
@@ -2768,7 +3037,8 @@ window.__mulerPickCb = function () {
       if (!(b3 > 0) || !(e1 > 0) || !(e2 > 0)) return;
       var m1 = -1, m2 = -1, b2 = -1;
       try {
-        if (typeof fMulerMap3D2D === "function") { m1 = fMulerMap3D2D(e1); m2 = fMulerMap3D2D(e2); }
+        if (typeof fMulerSelectMapEnd3D2D === "function") { m1 = fMulerSelectMapEnd3D2D(e1); m2 = fMulerSelectMapEnd3D2D(e2); }
+        else if (typeof fMulerMap3D2D === "function") { m1 = fMulerMap3D2D(e1); m2 = fMulerMap3D2D(e2); }
         if (m1 > 0 && m2 > 0 && typeof fFindBondIndexByAtoms === "function") {
           var _bi = fFindBondIndexByAtoms(m1 - 1, m2 - 1);
           if (_bi >= 0) b2 = _bi + 1;
@@ -2844,6 +3114,32 @@ window.__mulerPickCb = function () {
           if (_h > 0) m2a = _h;
         }
       } catch (eHF) {}
+      // Condensed group delegation (C): the 3D hit resolves to the same 2D
+      // pick unit a 2D click would give — whole compacted fragment, or the
+      // anchor atom alone for carbon-anchored compacts under main-chain
+      // purpose. Routes through the shared toggle so kinds-exclusivity,
+      // groups record and 2D->3D mirror stay identical by construction.
+      try {
+        if (m2a > 0 && typeof fMulerSelectCompFor2D === "function") {
+          var _cm = fMulerSelectCompFor2D(m2a);
+          if (_cm) {
+            var _pick = null;
+            try {
+              if (typeof fMulerSelectCompactCarbonOnly === "function" && fMulerSelectCompactCarbonOnly(_cm)) {
+                _pick = { kind: "atom", atom: _cm.anchor + 1, compactAnchor: true };
+              } else {
+                _pick = { kind: "fragment", atoms: (_cm.members || []).slice() };
+              }
+            } catch (ePk2) { _pick = null; }
+            if (_pick && typeof fMulerSelectToggle === "function") {
+              fMulerSelectToggle(_pick);
+              try { if (typeof fMulerSelectRepaint === "function") fMulerSelectRepaint(); } catch (eR2) {}
+              try { if (typeof fUpdateSVG === "function") fUpdateSVG(); } catch (eU2) {}
+              return;
+            }
+          }
+        }
+      } catch (eCG) {}
       if (sel.bonds2D.length || sel.bonds3D.length) {
         sel.bonds2D = []; sel.bonds3D = [];
         sel.atoms3D = [a3]; sel.atoms2D = (m2a > 0) ? [m2a] : [];
@@ -2869,8 +3165,11 @@ window.__mulerPickCb = function () {
   try { if (typeof fUpdateSVG === "function") fUpdateSVG(); } catch (eU) {}
 };
 
-// 3D selection paint (cyan): full rebuild from state — JSmol `select`
+// 3D selection paint (cyan, strict): full rebuild from state — JSmol `select`
 // replaces (never accumulates), so native accumulation cannot skew paint.
+// Strict 2D parity: atom picks paint atoms only (plus condensed/skeletal
+// group/H completion from fMulerSelectPaintSets3D), bond picks paint exactly
+// the picked bonds — never the endpoints, never an auto cross-highlight.
 // Empty state is a no-op (never auto-reset); the explicit clear path owns
 // that, so a reward-green live under an armed-but-empty state is never
 // wiped. Skipped when select mode is off (classic paths own the viewer)
@@ -2881,45 +3180,37 @@ function fMulerSelectPush3D() {
     if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return;
     if (typeof fJSmolLive === "function" && !fJSmolLive()) return;
     if (typeof jmolAppletNomeclature === "undefined" || !jmolAppletNomeclature) return;
-    var sel = (typeof fMulerSelectState === "function") ? fMulerSelectState() : null;
-    if (!sel) return;
-    var set = {}, out = [];
-    var push = function (a) { try { if (typeof a === "number" && a > 0 && !set[a]) { set[a] = true; out.push(a); } } catch (eP) {} };
-    try {
-      var sa = Array.isArray(sel.atoms3D) ? sel.atoms3D : [];
-      for (var i = 0; i < sa.length; i++) push(sa[i]);
-      var sb = Array.isArray(sel.bonds3D) ? sel.bonds3D : [];
-      if (sb.length && typeof bondList3D !== "undefined" && bondList3D) {
-        for (var j = 0; j < sb.length; j++) {
-          var bl = bondList3D[sb[j] - 1];
-          if (!bl) continue;
-          push(bl[0]); push(bl[1]);
-        }
-      }
-    } catch (eS) {}
-    if (!out.length) return;
+    var paint = null;
+    try { if (typeof fMulerSelectPaintSets3D === "function") paint = fMulerSelectPaintSets3D(); } catch (ePS) { paint = null; }
+    if (!paint) return;
+    var pa = Array.isArray(paint.atoms) ? paint.atoms.slice() : [];
+    var pb = Array.isArray(paint.bonds) ? paint.bonds.slice() : [];
+    if (!pa.length && !pb.length) return;
     var cyan = "X7DDFFF";
     try {
       if (typeof MULER_SELECT_CYAN === "string" && /^#[0-9a-fA-F]{6}$/.test(MULER_SELECT_CYAN)) cyan = "X" + MULER_SELECT_CYAN.slice(1).toUpperCase();
     } catch (eC) {}
-    out.sort(function (a, b) { return a - b; });
-    var arg = "select ";
-    for (var k = 0; k < out.length; k++) arg += (k ? "," : "") + "atomno=" + out[k];
-    var script = "select all; selectionHalos off; color bonds none; color atoms none;" + arg + ";";
-    script += "color selectionHalos [" + cyan + "]; selectionHalos on; color atoms [" + cyan + "];";
+    var script = "select all; selectionHalos off; color bonds none; color atoms none;";
     try {
-      if (typeof bondList3D !== "undefined" && bondList3D) {
-        for (var m = 0; m < bondList3D.length; m++) {
-          var mb = bondList3D[m];
-          if (!mb) continue;
-          if (set[mb[0]] && set[mb[1]]) script += "select atomno=" + mb[0] + ", atomno=" + mb[1] + "; color bond [" + cyan + "];";
+      if (pb.length && typeof bondList3D !== "undefined" && bondList3D) {
+        for (var j = 0; j < pb.length; j++) {
+          var bl = bondList3D[pb[j] - 1];
+          if (!bl || !(bl[0] > 0) || !(bl[1] > 0)) continue;
+          script += "select atomno=" + bl[0] + ", atomno=" + bl[1] + "; color bond [" + cyan + "];";
         }
       }
     } catch (eB) {}
-    // Halos follow the current selection (not color): the bond loop above
-    // leaves only the last pair selected, so re-select the full picked set
-    // or halos would cover just those two atoms.
-    script += arg + ";";
+    var arg = "select none";
+    if (pa.length) {
+      pa.sort(function (a, b) { return a - b; });
+      arg = "select ";
+      for (var k = 0; k < pa.length; k++) arg += (k ? "," : "") + "atomno=" + pa[k];
+      script += arg + ";";
+      script += "color selectionHalos [" + cyan + "]; selectionHalos on; color atoms [" + cyan + "];";
+      script += arg + ";";
+    } else {
+      script += "select none;";
+    }
     if (typeof fJSmolScript === "function") fJSmolScript(jmolAppletNomeclature, script);
     try { JmolSelection = arg; } catch (eJ) {}
   } catch (e) {}
