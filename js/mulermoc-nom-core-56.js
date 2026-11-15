@@ -987,10 +987,16 @@ function fOrientChainPath(path) {
         }
     }
 
-    // Two eligible terminal CHO/COOH groups tie: compare bonds, then alkyl locants.
-    if ((fIsAcyclicAldehydeGraph(atomConnectivityList, allAtomsTypeList, bondList) ||
-        fIsAcyclicUnsaturatedAcidGraph(atomConnectivityList, allAtomsTypeList, bondList)) &&
-        termFgKeys.filter(k => oriented.includes(Number(k)) && terminalFgCarbons[k] === forcedC1Priority).length === 2) forcedC1 = -1
+    // Two eligible terminal FG carbons of equal top priority tie (diacids,
+    // dialdehydes, dinitriles — any graph): no forced C1; the locant tiers
+    // below decide, and full ties keep the input order, i.e. the chain is
+    // direction-free. (The old aldehyde/unsaturated-acid-only condition
+    // missed saturated diacids such as propanedioic and
+    // 2,3-dihydroxybutanedioic acid, pinning an arbitrary direction.)
+    // Single-terminal and mixed-priority (oxo-acid) cases are untouched: the
+    // === forcedC1Priority filter still isolates exactly those.
+    if (forcedC1 >= 0 &&
+        termFgKeys.filter(k => oriented.includes(Number(k)) && terminalFgCarbons[k] === forcedC1Priority).length >= 2) forcedC1 = -1
     if (forcedC1 >= 0) {
         // Forced-C1 must be at index 0
         if (oriented[oriented.length - 1] === forcedC1) {

@@ -1218,11 +1218,17 @@ function fMulerQuizPurposeFor(mode) {
   try {
     if (!mode || mode === "none") return "free";
     // Branch first (classic paints branch groups before bond/FG fallthroughs),
+    // then secondary hetero prefixes (same paint as fHighlightFG(1)/(2)),
     // then bond dual-use, then the static map. One FG-first rule for the
     // whole dispatch: arm gates, prompts, verdicts and guards.
     if (typeof fMulerBranchAtomsForMode === "function") {
       var _br = fMulerBranchAtomsForMode(mode) || [];
       if (_br.length) return "branch";
+    }
+    if ((mode === "compNumber1" || mode === "compSecondSub1" || mode === "compNumber2" || mode === "compSecondSub2") &&
+        typeof fMulerHeteroPrefixAtomsForMode === "function") {
+      var _hg = fMulerHeteroPrefixAtomsForMode(mode) || [];
+      if (_hg.length) return "branch";
     }
     if ((mode === "compBondPos" || mode === "compEndNumber" || mode === "compNumber1") &&
         typeof fMulerBondAtomsForMode === "function") {
@@ -2807,6 +2813,40 @@ function fMulerBranchAtomsForMode(mode) {
   } catch (e) { return []; }
 }
 
+// Secondary hetero prefix boxes ([bromo]/[2-], [nitro]/[2-], [hydroxy]/[2-],
+// [amino]/[3-], [oxo]/...): the prefix group atoms, matching the classic
+// fHighlightFG(1)/(2) green. Any hetero type qualifies; the prefix-name slot
+// (s1/s3) must be non-empty, which is exactly disjoint from the registry
+// loc paths (fMulerNumber1Resolved needs empty s1), so principal-FG boxes
+// can never be shadowed. Gated on bearing-C locants (fMulerFGPositionAtoms),
+// so a bond locant in the box falls through to the bond family instead.
+// Slot 1 → compSecondSub1/compNumber1, slot 2 → compSecondSub2/compNumber2.
+function fMulerHeteroPrefixAtomsForMode(mode) {
+  try {
+    var slot = 0;
+    if (mode === "compSecondSub1" || mode === "compNumber1") slot = 1;
+    else if (mode === "compSecondSub2" || mode === "compNumber2") slot = 2;
+    else return [];
+    try {
+      var _nm = (typeof nameComponentsList !== "undefined" && nameComponentsList) ?
+        (slot === 1 ? nameComponentsList[1] : nameComponentsList[3]) : null;
+      if (_nm === null || _nm === undefined || String(_nm).length === 0) return [];
+    } catch (eN) { return []; }
+    var inst = null;
+    try { inst = (typeof fMulerFGInstances === "function") ? fMulerFGInstances() : []; } catch (eI) { inst = []; }
+    if (!inst || !inst[slot - 1]) return [];
+    var atoms = [];
+    try { atoms = ((typeof fMulerFGHeavyAtoms === "function") ? fMulerFGHeavyAtoms(slot) : []) || []; } catch (eA) { atoms = []; }
+    if (!atoms.length) return [];
+    try {
+      var pos = (typeof fMulerFGPositionAtoms === "function") ? fMulerFGPositionAtoms(slot) : [];
+      if (pos && pos.length && typeof fMulerBoxMatchesTarget === "function" && !fMulerBoxMatchesTarget(mode, pos)) return [];
+    } catch (eG) {}
+    atoms.sort(function (a, b) { return a - b; });
+    return atoms;
+  } catch (e) { return []; }
+}
+
 // Prerequisite state (v56 locant phase): per-molecule main-chain solves.
 // Locant tasks show the chain numbering aid only for solved molecules.
 function fMulerChainSolved() {
@@ -3045,19 +3085,24 @@ function fMulerQuizTargetSet() {
   } catch (e) { return []; }
 }
 
-// Effective quiz target for a mode: branch atoms win on branch boxes,
-// then bond atoms on dual-use boxes holding a bond position, otherwise the
-// registry resolver (FG-or-[]). Single FG-first rule shared by the arm gates
-// and fMulerQuizTargetSet.
+// Effective quiz target for a mode: branch atoms win on branch boxes, then
+// secondary hetero prefixes, then bond atoms on dual-use boxes holding a
+// bond position, otherwise the registry resolver (FG-or-[]). Single FG-first
+// rule shared by the arm gates and fMulerQuizTargetSet.
 function fMulerQuizResolveTarget(mode) {
   try {
     if (!mode || mode === "none") return [];
     // Branch first (classic paints branch groups before bond/FG fallthroughs),
-    // then bond dual-use, then the registry. Single FG-first rule shared by
-    // the arm gates and fMulerQuizTargetSet.
+    // then secondary hetero prefixes, then bond dual-use, then the registry.
+    // Single FG-first rule shared by the arm gates and fMulerQuizTargetSet.
     if (typeof fMulerBranchAtomsForMode === "function") {
       var _br = fMulerBranchAtomsForMode(mode) || [];
       if (_br.length) return _br.slice();
+    }
+    if ((mode === "compNumber1" || mode === "compSecondSub1" || mode === "compNumber2" || mode === "compSecondSub2") &&
+        typeof fMulerHeteroPrefixAtomsForMode === "function") {
+      var _hg = fMulerHeteroPrefixAtomsForMode(mode) || [];
+      if (_hg.length) return _hg.slice();
     }
     if ((mode === "compBondPos" || mode === "compEndNumber" || mode === "compNumber1") &&
         typeof fMulerBondAtomsForMode === "function") {
@@ -3387,6 +3432,17 @@ function fMulerBranchTargetIsLocant(mode) {
     var m = String(mode == null ? "" : mode);
     if (m === "compNumber1" || m === "compNumber2") return true;
     if (/^compBranchLoc\d+$/.test(m)) return true;
+    return false;
+  } catch (e) { return false; }
+}
+
+// Bond target split for the numbering aid: bond-position (locant) boxes
+// need the chain scale; bond-type name boxes (compBondType/compBondType2)
+// do not — same rule as branch names vs locants.
+function fMulerBondTargetIsLocant(mode) {
+  try {
+    var m = String(mode == null ? "" : mode);
+    if (m === "compBondPos" || m === "compEndNumber" || m === "compNumber1") return true;
     return false;
   } catch (e) { return false; }
 }
@@ -10453,9 +10509,9 @@ function fUpdateSVG() {
 }
 
 // ── Numbering aid (v56 locant/bond phases) ───────────────────────────────────
-// Chain numbers as a position reference while a locant or bond quiz is armed
-// — only for molecules whose main chain is already solved. Branch name boxes
-// use the short wording and get no numbers; branch locant boxes do.
+// Chain numbers as a position reference while a locant or bond-position quiz
+// is armed — only for molecules whose main chain is already solved. Name
+// boxes (branch names, bond types) get no numbers; locant boxes do.
 // Numbers only (the aid never paints highlights), same number* ids,
 // repaint-driven lifecycle.
 function fMulerNumberAid() {
@@ -10468,6 +10524,12 @@ function fMulerNumberAid() {
         var _bt = (typeof window !== "undefined") ? window.MulerQuizTarget : "";
         if ((typeof fMulerBranchTargetIsLocant !== "function") || !fMulerBranchTargetIsLocant(_bt)) return;
       } catch (eB) { return; }
+    }
+    if (_ap === "bond") {
+      try {
+        var _bd = (typeof window !== "undefined") ? window.MulerQuizTarget : "";
+        if ((typeof fMulerBondTargetIsLocant !== "function") || !fMulerBondTargetIsLocant(_bd)) return;
+      } catch (eBo) { return; }
     }
     if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return;
     if (typeof fMulerChainSolved !== "function" || !fMulerChainSolved()) return;

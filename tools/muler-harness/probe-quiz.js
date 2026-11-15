@@ -14,6 +14,9 @@
 //   4. 2-methylpentane — non-adjacent picks (C1 then C3): live gap line.
 //   5. 2-methylpentane — whole chain backwards: direction feedback.
 //   6. 2-methylpentane — whole chain scrambled: order feedback.
+//   7. symmetric diacids (propanedioic_acid, dihydroxybutanedioic_acid_2_3):
+//      the orienter ties, so live and reverse orders both exact (never
+//      direction); the oracle reports symmetric.
 const { chromium } = require("playwright-core");
 const CHROME = process.env.MULER_CHROME || "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const BASE = process.env.MULER_BASE || "http://localhost:8901";
@@ -315,6 +318,35 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
   }
   s = await state();
   check(/Wrong order/i.test(s.verdict) && !s.hidden, "scrambled full set should report order, got " + JSON.stringify(s.verdict));
+
+  // 7. symmetric diacids: both directions exact, never direction.
+  for (const mol of ["propanedioic_acid", "dihydroxybutanedioic_acid_2_3"]) {
+    await open(mol);
+    await armQuiz();
+    ch = await chain();
+    check(ch.length > 0, mol + ": chain should resolve, got " + JSON.stringify(ch));
+    const sym = await p.evaluate((c) => {
+      try { return (typeof fMulerQuizSymmetricChain === "function") ? fMulerQuizSymmetricChain(c) : null; }
+      catch (e) { return "eval-error"; }
+    }, ch);
+    check(sym === true, mol + ": oracle should report symmetric, got " + JSON.stringify(sym));
+    for (const a of ch) check(await clickAtom(a), mol + ": missing anchor for atom " + a);
+    await p.waitForTimeout(400);
+    s = await state();
+    check(/Correct/.test(s.verdict) && !s.hidden, mol + ": live order should exact, got " + JSON.stringify(s.verdict));
+    check(!s.target, mol + ": exact should clear the target");
+    // Fresh page: re-arming in place would toggle select mode off (it stays
+    // armed after exact), so reload and arm cleanly for the reverse run.
+    await open(mol);
+    await armQuiz();
+    ch = await chain();
+    for (const a of ch.slice().reverse()) check(await clickAtom(a), mol + ": missing anchor for atom " + a);
+    await p.waitForTimeout(400);
+    s = await state();
+    check(/Correct/.test(s.verdict) && !/direction/i.test(s.verdict) && !s.hidden,
+      mol + ": reverse order should exact, never direction, got " + JSON.stringify(s.verdict));
+    check(!s.target, mol + ": reverse exact should clear the target");
+  }
 
   console.log(JSON.stringify({ failures, errs }, null, 1));
   await b.close();

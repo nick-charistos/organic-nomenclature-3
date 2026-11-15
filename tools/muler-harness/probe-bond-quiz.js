@@ -151,6 +151,26 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
     "butene_1: full pick should show the Bond success line, got " + JSON.stringify(s.verdict));
   check(!s.target && s.badges === 0, "butene_1: exact should clear the target, stay numberless");
 
+  // 1b. numbering aid on a solved molecule: bond type (name) shows none,
+  // bond locant does. Direct box clicks: select stays armed after the chain
+  // exact, so no select-button toggle (that would disarm).
+  await open("butene_1");
+  await toExpanded();
+  check(await armSelectAndBox("comp5"), "butene_1: comp5 chain box should exist");
+  await solveChain();
+  await p.evaluate(() => { try { document.getElementById("comp6").click(); } catch (e) {} });
+  await p.waitForTimeout(800);
+  s = await state();
+  check(s.target === "compBondType" && s.purpose === "bond",
+    "butene_1 type: solved type click should arm bond, got " + JSON.stringify(s.target));
+  check(s.numbers === 0, "butene_1 type: bond name must show no aid, got " + s.numbers);
+  await p.evaluate(() => { try { document.getElementById("comp4").click(); } catch (e) {} });
+  await p.waitForTimeout(800);
+  s = await state();
+  check(s.target === "compBondPos" && s.purpose === "bond",
+    "butene_1 locant: solved locant click should arm bond, got " + JSON.stringify(s));
+  check(s.numbers > 0, "butene_1 locant: bond locant must show the aid, got " + s.numbers);
+
   // 2. bond line click selects the bond and exacts alone; bonds hover.
   await open("butene_1");
   await toExpanded();

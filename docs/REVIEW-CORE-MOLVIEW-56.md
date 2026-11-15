@@ -53,3 +53,20 @@ Expanded-mode hydrogen selections remain hydrogen selections in the quiz as well
 - Ester and carboxylic-acid pairing in `fDetectMolType` for the supported scope; formate and lactone guards in `fIsAcyclicSaturatedMonoesterGraph`.
 - Condensed-formula renderer (`fMolDraftRenderNode` / `fMolDraftExpandedFormula`): standard valence, acid/aldehyde/nitrile/ester forms.
 - `ALKYL_SYS_NUMBERING` and `GR_SYST_SUBST` are consistent with each other.
+
+## v56 review addendum — selection/quiz flows (2026-11-15)
+
+Scope: v55 base `6b726e5` through v56 `e75a37b`, plus the current working-tree edits in `js/mulermoc-nom-molview-56.js` and `tools/muler-harness/`. Existing chemistry findings above are unchanged.
+
+### Findings
+
+- No actionable functional regression was confirmed in the reviewed selection/quiz changes or the current secondary-hetero-prefix resolver edits.
+- Test-coverage note: the new secondary-prefix cases in `probe-branch-quiz.js` derive their expected set from `fMulerFGHeavyAtoms(1)`, the same helper used by the resolver. That assertion is not an independent fixture oracle. Manual comparison of the resolver set with the classic component highlight in expanded mode matched for eight prefix fixtures.
+
+### Verification
+
+- `zz-test-core56.html` in Chrome: **PASS** — 31/31 draft probes, all 141 curated names, and all 141 3D records; no failed probes, unnamed curated entries, or 3D errors.
+- Browser interaction checks: ethanol suffix exact; triple-bond locant redirect → chain solve → bond-line exact; secondary hydroxy-nitrile locant redirect → chain solve → prefix exact; and direct methyl-branch exact.
+- Classic-highlight parity check for eight secondary-prefix fixtures in expanded mode: **8/8 matched** the resolver atom sets.
+- `probe-branch-quiz.js`: **PASS** — run with Node v26.13.1 and Playwright Core 1.65.1 against local Chrome; `failures: []`, `errs: []`. Node and npm v11.20.0 are installed under `C:\Program Files\nodejs` but are not on this shell's `PATH`. The full set of harness probes was not run.
+- `git diff --check` is clean for the current uncommitted edits. Across the full v55-to-v56 range it reports trailing whitespace in copied/new v56 files and SPT/CSS content; this is formatting-only and was not changed.

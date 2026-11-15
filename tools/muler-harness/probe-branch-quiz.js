@@ -11,6 +11,17 @@
 //   5b. systematic ether alkoxy boxes (e.g. 2-ethoxypropane comp1/comp0):
 //       O + alkoxy chain as branch; name direct (short, no aid), locant
 //       redirect (long, aid).
+//   5d. principal halide (bromopropane_2): name direct (short), locant
+//       redirect (long); same Br atoms classic paints.
+//   5e. secondary Br beside a double bond (bromo_4_butene_1): halogen boxes
+//       arm halogen, bond boxes still arm bond.
+//   5f. two halogens (bromo_3_chloropentane_1): slots resolve distinct
+//       Br/Cl singletons.
+//   5g. nitro prefix (nitropropane_2): name direct (short), locant
+//       redirect (long); N+O atoms.
+//   5h. secondary hetero prefixes arm the prefix group (hydroxy acids and
+//       nitriles, amino acid, oxo acid, dihydroxy acid); 2-hydroxypropionitrile
+//       full name + locant flows.
 const { chromium } = require("playwright-core");
 const CHROME = process.env.MULER_CHROME || "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const BASE = process.env.MULER_BASE || "http://localhost:8901";
@@ -374,8 +385,6 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
     { mol: "methyl_4_pentanol_2", id: "comp4", atoms: [7], purpose: "loc" },
     { mol: "butyne_2", id: "comp4", atoms: [2, 3], purpose: "bond" },
     { mol: "sec_butyl_ethanoate", id: "comp10", atoms: [3, 4, 5, 6], purpose: "branch" },
-    { mol: "hydroxypropanoic_acid_2", id: "comp1", atoms: [], purpose: "free" },
-    { mol: "hydroxypropanenitrile_2", id: "comp1", atoms: [], purpose: "free" },
   ]) {
     await open(c.mol, "en");
     const result = await p.evaluate((id) => {
@@ -384,6 +393,23 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
     }, c.id);
     check(result.purpose === c.purpose && sameAtoms(result.target, c.atoms),
       c.mol + " " + c.id + ": non-branch precedence changed " + JSON.stringify(result));
+  }
+  // 5h. secondary hetero prefixes arm the prefix group (classic paints the
+  // same fHighlightFG(1) atoms): hydroxy acids/nitriles, amino acid, oxo acid,
+  // dihydroxy acid. Hydrocarbon-branch and other precedence rows above stay.
+  for (const mol of ["hydroxypropanoic_acid_2", "hydroxypropanenitrile_2", "hydroxybutanenitrile_2", "aminobutanoic_acid_3", "oxobutanoic_acid", "dihydroxybutanedioic_acid_2_3"]) {
+    await open(mol, "en");
+    await toExpanded();
+    const r = await p.evaluate(() => {
+      try {
+        var t1 = (typeof fMulerQuizResolveTarget === "function" ? fMulerQuizResolveTarget("compSecondSub1") : []);
+        var p1 = (typeof fMulerQuizPurposeFor === "function" ? fMulerQuizPurposeFor("compSecondSub1") : null);
+        var heavy = (typeof fMulerFGHeavyAtoms === "function" ? fMulerFGHeavyAtoms(1) : []);
+        return { t1: t1, p1: p1, heavy: heavy };
+      } catch (e) { return { err: String(e && e.message || e).slice(0, 120) }; }
+    });
+    check(r.p1 === "branch" && r.t1.length > 0 && sameAtoms(r.t1, r.heavy),
+      mol + ": secondary prefix should arm the FG(1) atoms as branch, got " + JSON.stringify(r));
   }
   // 5b. systematic ether alkoxy boxes resolve O + alkoxy chain as branch
   // (classic paints the same via fHighlightFG(1); quiz is heavy-only).
@@ -461,6 +487,183 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
   await open("ethyl_4_isopropyl_3_methyl_2_hexanal", "en");
   check(sameAtoms(await p.evaluate(() => fMulerBranchAtomsForMode("compBranchSub99")), []),
     "an unmatched split piece must not take the whole branch slot");
+
+  // 5d. principal halide: bromopropane_2 name direct (short, no aid),
+  // locant redirect (long, aid). Same atoms classic paints (the Br).
+  await open("bromopropane_2", "en");
+  await toExpanded();
+  check(await armSelectAndBox("comp1"), "bromopropane_2: comp1 bromo box should exist");
+  s = await state();
+  check(s.target === "compSecondSub1" && s.purpose === "branch" && !s.returnTo,
+    "bromopropane_2: bromo name should arm directly, got " + JSON.stringify({ target: s.target, returnTo: s.returnTo }));
+  check(/Select the atoms of the substituent\./.test(s.prompt) && !/indicated position/i.test(s.prompt),
+    "bromopropane_2: name prompt must be short, got " + JSON.stringify(s.prompt));
+  check(s.numbers === 0, "bromopropane_2: name arm must show no aid, got " + s.numbers);
+  {
+    const tgtB = await p.evaluate(() => (typeof fMulerQuizTargetSet === "function" ? fMulerQuizTargetSet() : []));
+    check(tgtB.length > 0, "bromopropane_2: halogen target should be non-empty, got " + JSON.stringify(tgtB));
+    for (const a of tgtB) check(await clickAtom(a), "bromopropane_2: missing anchor for halogen atom " + a);
+    await p.waitForTimeout(400);
+    s = await state();
+    check(/Correct! These are the atoms of the substituent\./.test(s.verdict) && !s.hidden,
+      "bromopropane_2: name exact must show the short Branch line, got " + JSON.stringify(s.verdict));
+    check(!s.target && s.badges === 0, "bromopropane_2: exact should clear the target, stay numberless");
+  }
+  await open("bromopropane_2", "en");
+  await toExpanded();
+  check(await armSelectAndBox("comp0"), "bromopropane_2: comp0 locant box should exist");
+  s = await state();
+  check(s.target === "compCarbonsCount",
+    "bromopropane_2 locant: unsolved click should redirect to chain, got " + JSON.stringify(s.target));
+  await solveChain();
+  s = await state();
+  check(s.target === "compNumber1" && s.purpose === "branch",
+    "bromopropane_2 locant: chain exact should auto-arm branch, got " + JSON.stringify(s));
+  check(/at the indicated position/i.test(s.prompt), "bromopropane_2 locant: prompt must be long, got " + JSON.stringify(s.prompt));
+  check(s.numbers > 0, "bromopropane_2 locant: numbering aid should be visible, got " + s.numbers);
+  {
+    const tgtL = await p.evaluate(() => (typeof fMulerQuizTargetSet === "function" ? fMulerQuizTargetSet() : []));
+    check(tgtL.length > 0, "bromopropane_2 locant: target should be non-empty, got " + JSON.stringify(tgtL));
+    for (const a of tgtL) check(await clickAtom(a), "bromopropane_2 locant: missing anchor for atom " + a);
+    await p.waitForTimeout(400);
+    s = await state();
+    check(/at the indicated position/i.test(s.verdict) && !s.hidden,
+      "bromopropane_2 locant: exact must show the long Branch line, got " + JSON.stringify(s.verdict));
+    check(!s.target, "bromopropane_2 locant: exact should clear the target");
+  }
+
+  // 5e. secondary Br beside a double bond: halogen boxes arm halogen, the
+  // bond boxes still arm bond (no shadowing either way).
+  await open("bromo_4_butene_1", "en");
+  await toExpanded();
+  {
+    const r = await p.evaluate(() => ({
+      h1: (typeof fMulerQuizResolveTarget === "function" ? fMulerQuizResolveTarget("compSecondSub1") : []),
+      h0: (typeof fMulerQuizResolveTarget === "function" ? fMulerQuizResolveTarget("compNumber1") : []),
+      p1: (typeof fMulerQuizPurposeFor === "function" ? fMulerQuizPurposeFor("compSecondSub1") : null),
+      bt: (typeof fMulerQuizResolveTarget === "function" ? fMulerQuizResolveTarget("compBondType") : []),
+      bp: (typeof fMulerQuizPurposeFor === "function" ? fMulerQuizPurposeFor("compBondType") : null),
+    }));
+    check(r.p1 === "branch" && r.h1.length > 0, "bromo_4_butene_1: compSecondSub1 should arm halogen branch, got " + JSON.stringify(r));
+    check(r.h0.length > 0, "bromo_4_butene_1: compNumber1 should resolve halogen, got " + JSON.stringify(r));
+    check(r.bp === "bond" && r.bt.length > 0, "bromo_4_butene_1: compBondType should still arm bond, got " + JSON.stringify(r));
+    check(JSON.stringify(r.h1.slice().sort()) === JSON.stringify(r.h0.slice().sort()),
+      "bromo_4_butene_1: name and locant boxes should share the halogen target, got " + JSON.stringify(r));
+  }
+
+  // 5f. two halogens resolve per slot: Br vs Cl are distinct singletons.
+  await open("bromo_3_chloropentane_1", "en");
+  await toExpanded();
+  {
+    const r = await p.evaluate(() => ({
+      t1: (typeof fMulerQuizResolveTarget === "function" ? fMulerQuizResolveTarget("compSecondSub1") : []),
+      t2: (typeof fMulerQuizResolveTarget === "function" ? fMulerQuizResolveTarget("compSecondSub2") : []),
+      p1: (typeof fMulerQuizPurposeFor === "function" ? fMulerQuizPurposeFor("compSecondSub1") : null),
+      p2: (typeof fMulerQuizPurposeFor === "function" ? fMulerQuizPurposeFor("compSecondSub2") : null),
+    }));
+    check(r.p1 === "branch" && r.p2 === "branch", "bromo-chloro: both prefix boxes should be branch, got " + JSON.stringify(r));
+    check(r.t1.length === 1 && r.t2.length === 1 && r.t1[0] !== r.t2[0],
+      "bromo-chloro: slots must resolve distinct halogen singletons, got " + JSON.stringify(r));
+  }
+
+  // 5g. nitro prefix (nitropropane_2): name direct (short, no aid), locant
+  // redirect (long, aid); N+O atoms, same as classic.
+  await open("nitropropane_2", "en");
+  await toExpanded();
+  check(await armSelectAndBox("comp1"), "nitropropane_2: comp1 nitro box should exist");
+  s = await state();
+  check(s.target === "compSecondSub1" && s.purpose === "branch" && !s.returnTo,
+    "nitropropane_2: nitro name should arm directly, got " + JSON.stringify({ target: s.target, returnTo: s.returnTo }));
+  check(/Select the atoms of the substituent\./.test(s.prompt) && !/indicated position/i.test(s.prompt),
+    "nitropropane_2: name prompt must be short, got " + JSON.stringify(s.prompt));
+  check(s.numbers === 0, "nitropropane_2: name arm must show no aid, got " + s.numbers);
+  {
+    const tgtN = await p.evaluate(() => (typeof fMulerQuizTargetSet === "function" ? fMulerQuizTargetSet() : []));
+    check(tgtN.length > 0, "nitropropane_2: nitro target should be non-empty, got " + JSON.stringify(tgtN));
+    for (const a of tgtN) check(await clickAtom(a), "nitropropane_2: missing anchor for nitro atom " + a);
+    await p.waitForTimeout(400);
+    s = await state();
+    check(/Correct! These are the atoms of the substituent\./.test(s.verdict) && !s.hidden,
+      "nitropropane_2: name exact must show the short Branch line, got " + JSON.stringify(s.verdict));
+    check(!s.target && s.badges === 0, "nitropropane_2: exact should clear the target, stay numberless");
+  }
+  await open("nitropropane_2", "en");
+  await toExpanded();
+  check(await armSelectAndBox("comp0"), "nitropropane_2: comp0 locant box should exist");
+  s = await state();
+  check(s.target === "compCarbonsCount",
+    "nitropropane_2 locant: unsolved click should redirect to chain, got " + JSON.stringify(s.target));
+  await solveChain();
+  s = await state();
+  check(s.target === "compNumber1" && s.purpose === "branch",
+    "nitropropane_2 locant: chain exact should auto-arm branch, got " + JSON.stringify(s));
+  check(/at the indicated position/i.test(s.prompt), "nitropropane_2 locant: prompt must be long, got " + JSON.stringify(s.prompt));
+  check(s.numbers > 0, "nitropropane_2 locant: numbering aid should be visible, got " + s.numbers);
+  {
+    const tgtL = await p.evaluate(() => (typeof fMulerQuizTargetSet === "function" ? fMulerQuizTargetSet() : []));
+    check(tgtL.length > 0, "nitropropane_2 locant: target should be non-empty, got " + JSON.stringify(tgtL));
+    for (const a of tgtL) check(await clickAtom(a), "nitropropane_2 locant: missing anchor for atom " + a);
+    await p.waitForTimeout(400);
+    s = await state();
+    check(/at the indicated position/i.test(s.verdict) && !s.hidden,
+      "nitropropane_2 locant: exact must show the long Branch line, got " + JSON.stringify(s.verdict));
+    check(!s.target, "nitropropane_2 locant: exact should clear the target");
+  }
+
+  // 5h2. 2-hydroxypropionitrile full flow (hydroxypropanenitrile_2).
+  await open("hydroxypropanenitrile_2", "en");
+  await toExpanded();
+  check(await armSelectAndBox("comp1"), "hydroxypropanenitrile_2: comp1 hydroxy box should exist");
+  s = await state();
+  check(s.target === "compSecondSub1" && s.purpose === "branch" && !s.returnTo,
+    "hydroxypropanenitrile_2: hydroxy name should arm directly, got " + JSON.stringify({ target: s.target, returnTo: s.returnTo }));
+  check(/Select the atoms of the substituent\./.test(s.prompt) && !/indicated position/i.test(s.prompt),
+    "hydroxypropanenitrile_2: name prompt must be short, got " + JSON.stringify(s.prompt));
+  check(s.numbers === 0, "hydroxypropanenitrile_2: name arm must show no aid, got " + s.numbers);
+  {
+    const tgtH = await p.evaluate(() => (typeof fMulerQuizTargetSet === "function" ? fMulerQuizTargetSet() : []));
+    check(tgtH.length > 0, "hydroxypropanenitrile_2: hydroxy target should be non-empty, got " + JSON.stringify(tgtH));
+    for (const a of tgtH) check(await clickAtom(a), "hydroxypropanenitrile_2: missing anchor for hydroxy atom " + a);
+    await p.waitForTimeout(400);
+    s = await state();
+    check(/Correct! These are the atoms of the substituent\./.test(s.verdict) && !s.hidden,
+      "hydroxypropanenitrile_2: name exact must show the short Branch line, got " + JSON.stringify(s.verdict));
+    check(!s.target && s.badges === 0, "hydroxypropanenitrile_2: exact should clear the target, stay numberless");
+  }
+  await open("hydroxypropanenitrile_2", "en");
+  await toExpanded();
+  {
+    const locBox = await p.evaluate(() => {
+      try {
+        for (const id of ["comp0", "comp2"]) {
+          const b = document.getElementById(id);
+          if (b && /^\s*\d/.test((b.textContent || "").replace(/^[-\s]+/, ""))) return id;
+        }
+        return null;
+      } catch (e) { return null; }
+    });
+    check(!!locBox, "hydroxypropanenitrile_2: a digit-led locant box should exist");
+    if (locBox) {
+      await armSelectAndBox(locBox);
+      s = await state();
+      check(s.target === "compCarbonsCount",
+        "hydroxypropanenitrile_2 locant: unsolved click should redirect to chain, got " + JSON.stringify(s.target));
+      await solveChain();
+      s = await state();
+      check(s.target && s.purpose === "branch",
+        "hydroxypropanenitrile_2 locant: chain exact should auto-arm branch, got " + JSON.stringify(s));
+      check(/at the indicated position/i.test(s.prompt), "hydroxypropanenitrile_2 locant: prompt must be long, got " + JSON.stringify(s.prompt));
+      check(s.numbers > 0, "hydroxypropanenitrile_2 locant: numbering aid should be visible, got " + s.numbers);
+      const tgtL = await p.evaluate(() => (typeof fMulerQuizTargetSet === "function" ? fMulerQuizTargetSet() : []));
+      check(tgtL.length > 0, "hydroxypropanenitrile_2 locant: target should be non-empty, got " + JSON.stringify(tgtL));
+      for (const a of tgtL) check(await clickAtom(a), "hydroxypropanenitrile_2 locant: missing anchor for atom " + a);
+      await p.waitForTimeout(400);
+      s = await state();
+      check(/at the indicated position/i.test(s.verdict) && !s.hidden,
+        "hydroxypropanenitrile_2 locant: exact must show the long Branch line, got " + JSON.stringify(s.verdict));
+      check(!s.target, "hydroxypropanenitrile_2 locant: exact should clear the target");
+    }
+  }
 
   // 6. molecule switch: quiz disarms; a digit-led locant box must not stick,
   // while component boxes may (sticky restore is the feature).
