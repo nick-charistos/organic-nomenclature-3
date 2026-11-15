@@ -99,3 +99,9 @@ docs/OPENCODE-V1-TO-V2-MIGRATION-WSL.md
 docs/OPENCODE-V1-TO-V2-MIGRATION-WSL.md
 iupac/
 js/MULERMOC_methyl_4_ethoxybutanoate_data.js
+
+# Local harness deps + probe screenshots (never commit)
+node_modules/
+*.png
+tools/muler-harness/package.json
+tools/muler-harness/package-lock.json
