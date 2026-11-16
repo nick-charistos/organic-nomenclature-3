@@ -33,7 +33,7 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
   const errs = [];
   p.on("pageerror", (e) => errs.push(String(e.message).slice(0, 160)));
 
-  await p.goto(BASE + "/mulermoc-nom-56.html?lang=en&mol=butanoic_acid", { waitUntil: "load", timeout: 60000 });
+  await p.goto(BASE + "/mulermoc-nom-57.html?lang=en&mol=butanoic_acid", { waitUntil: "load", timeout: 60000 });
   await waitReady(p, (typeof failures !== "undefined" ? failures : []));
   await p.evaluate(() => document.getElementById("selectAtomsBtn").click());
   await p.waitForTimeout(400);

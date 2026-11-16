@@ -11,7 +11,7 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
   const p = await b.newPage({ viewport: { width: 1500, height: 900 } });
   const errs = [];
   p.on("pageerror", (e) => errs.push(String(e.message).slice(0, 120)));
-  await p.goto(BASE + "/mulermoc-nom-56.html?mol=butanoic_acid", { waitUntil: "load", timeout: 60000 });
+  await p.goto(BASE + "/mulermoc-nom-57.html?mol=butanoic_acid", { waitUntil: "load", timeout: 60000 });
   try {
     await p.waitForFunction(() => {
       try { return !!document.querySelector("#jsmeNomeclatureSVG svg") && typeof fMulerSelectCompacted === "function" && !!window.MulerUserSelection; }

@@ -13,10 +13,21 @@
 //   Esc clears. Ethane: main-chain quiz exact from two discovered carbon spots.
 //   Butene_1: bond quiz exact from a discovered bond-line spot (skip if grid
 //     missed the C=C line; fail if NO bond pick was logged at all).
-const { chromium } = require("playwright-core");
+const { chromium, firefox } = require("playwright-core");
 const CHROME = process.env.MULER_CHROME || "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
+// Engine switch: MULER_BROWSER=firefox drives Playwright's own Firefox build
+// (`playwright install firefox`, version-matched to playwright-core).
+// Branded firefox.exe is NOT supported (Playwright relies on patches), so
+// MULER_FIREFOX should stay unset unless pointing at a Playwright build.
+const BROWSER = String(process.env.MULER_BROWSER || "chrome").toLowerCase();
+const FIREFOX_EXE = process.env.MULER_FIREFOX || "";
 const BASE = process.env.MULER_BASE || "http://localhost:8901";
-const PAGE = "/mulermoc-nom-57.html?lang=en&mol=";
+// JSmol libs: blank Playwright profiles re-download the 47MB CDN j2s tree
+// on every run (no cache, maybe no proxy) — default to the vendored local
+// copy (?libs=local, same-origin off the harness server). App default for
+// real users stays CDN; set MULER_LIBS=cdn for a CDN-parity run.
+const LIBS = String(process.env.MULER_LIBS || "local").toLowerCase() === "cdn" ? "cdn" : "local";
+const PAGE = "/mulermoc-nom-57.html?lang=en&libs=" + LIBS + "&mol=";
 const failures = [];
 const warnings = [];
 const check = (ok, msg) => { if (!ok) failures.push(msg); };
@@ -60,21 +71,27 @@ async function openMol(p, mol) {
   // pass vacuously, so fail loudly instead.
   // One explicit load (covers a skipped page-load one), then a patient poll
   // with NO further loads: rapid re-loads cancel the in-flight one and the
-  // model can never settle. Fail loudly if nothing arrives.
+  // model can never settle. Headless Firefox needs a longer budget (software
+  // init); if the model is still empty afterwards the molecule is SKIPPED
+  // (return false) — sweeping a dead applet only produces noise. Callers
+  // must check the return before sweeping.
   let n = 0;
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 6; i++) {
     n = await modelCount(p);
     if (n > 0) break;
-    await p.waitForTimeout(2000);
+    await p.waitForTimeout(5000);
   }
   if (!(n > 0)) {
     await p.evaluate(() => { try { if (typeof fLoadMol3D === "function") fLoadMol3D(); } catch (e) {} });
-    for (let i = 0; i < 30 && !(n > 0); i++) {
-      await p.waitForTimeout(2000);
+    for (let i = 0; i < 36 && !(n > 0); i++) {
+      await p.waitForTimeout(5000);
       n = await modelCount(p);
     }
   }
-  check(n > 0, mol + ": 3D model never loaded (applet empty after ~70s)");
+  if (!(n > 0)) {
+    check(false, mol + ": 3D model never loaded (applet empty after ~210s) — molecule skipped");
+    return false;
+  }
   await p.evaluate(() => {
     try {
       window.__mulerPickLog = [];
@@ -92,6 +109,7 @@ async function openMol(p, mol) {
   await p.waitForTimeout(500);
   const on = await p.evaluate(() => { try { return !!(window.MulerUserSelection && window.MulerUserSelection.active); } catch (e) { return false; } });
   check(on === true, "select mode did not arm for " + mol);
+  return true;
 }
 
 async function state(p) {
@@ -191,14 +209,25 @@ function pickFromLogEntry(e) {
 }
 
 (async () => {
-  const b = await chromium.launch(await (async () => { try { const fs = require("fs"); if (fs.existsSync(CHROME)) return { executablePath: CHROME }; } catch (e) {} return {}; })());
+  const engine = (BROWSER === "firefox") ? firefox : chromium;
+  const exe = (BROWSER === "firefox") ? FIREFOX_EXE : CHROME;
+  const headed = String(process.env.MULER_HEADED || "").toLowerCase();
+  const wantHeaded = headed === "1" || headed === "true" || headed === "yes";
+  const launchOpts = await (async () => { try { const fs = require("fs"); if (exe && fs.existsSync(exe)) return { executablePath: exe }; } catch (e) {} return {}; })();
+  // Local JSmol file loads need the non-strict file-URI policy; Playwright
+  // launches a blank profile, so the owner's about:config tweak never
+  // applies — set it in-profile (Firefox only, ignored by Chromium).
+  if (BROWSER === "firefox") launchOpts.firefoxUserPrefs = { "security.fileuri.strict_origin_policy": false };
+  if (wantHeaded) launchOpts.headless = false;
+  const b = await engine.launch(launchOpts);
   const p = await b.newPage({ viewport: { width: 1500, height: 900 } });
   const errs = [];
   p.on("pageerror", (e) => errs.push(String(e.message).slice(0, 150)));
 
   for (const mol of ["ethane", "ethanol", "butene_1"]) {
     const N = 7;
-    await openMol(p, mol);
+    const ready = await openMol(p, mol);
+    if (!ready) continue; // gate already recorded the failure; never sweep a dead applet
     const raw = await raw3D(p);
     check(raw && raw.t3 && raw.b3, mol + ": 3D globals missing");
     const sig0 = await modelSig(p);
@@ -208,20 +237,37 @@ function pickFromLogEntry(e) {
     const pts = await gridPts(p, N);
     check(pts.length === N * N, mol + ": grid failed");
 
-    // Headless JSmol can deliver picks late; settle each point (log entry or
-    // state change) before snapshotting so late callbacks can't pollute the
-    // next point. State change without any log entry is a hard fail (it
-    // would mean untracked selection mutation).
+    // Slow applets deliver picks late; settle each point to quiescence
+    // (log entry or state change, then one empty drain) before snapshotting
+    // so late callbacks can't pollute the next point. State change without
+    // any log entry is a hard fail (untracked selection mutation).
     async function settleClick(pt, pre) {
       const t0 = Date.now();
+      let seen = false, lg = [];
       for (;;) {
-        const lg = await takeLog(p);
-        if (lg.length) return { log: lg, late: false };
-        const st = await state(p);
-        if (JSON.stringify([st.a3, st.b3]) !== JSON.stringify([pre.a3, pre.b3])) return { log: [], late: true, st: st };
-        if (Date.now() - t0 > 3000) return { log: [], late: false, st: st };
+        const chunk = await takeLog(p);
+        if (chunk.length) { seen = true; lg = lg.concat(chunk); }
+        else if (seen) break; // quiescent after activity: drain once more below
+        else {
+          const st = await state(p);
+          if (JSON.stringify([st.a3, st.b3]) !== JSON.stringify([pre.a3, pre.b3])) return { log: [], late: true, st: st };
+          if (Date.now() - t0 > 3000) { const st2 = await state(p); return { log: [], late: false, st: st2 }; }
+        }
+        if (seen && Date.now() - t0 > 9000) break; // cap the post-activity drain
         await p.waitForTimeout(250);
       }
+      // Final drain: a second callback (bitset echo + authoritative index)
+      // may still be in flight right after the first activity.
+      try {
+        for (let d = 0; d < 4; d++) {
+          await p.waitForTimeout(250);
+          const tail = await takeLog(p);
+          if (!tail.length) break;
+          lg = lg.concat(tail);
+        }
+      } catch (eD) {}
+      const st = await state(p);
+      return { log: lg, late: false, st: st };
     }
 
     for (const pt of pts) {
@@ -229,8 +275,8 @@ function pickFromLogEntry(e) {
       expA = []; expB = [];
       await takeLog(p);
       const pre = await state(p);
-      const elTag = await p.evaluate((x, y) => {
-        try { var el = document.elementFromPoint(x, y); return el ? (el.tagName + "#" + (el.id || "")) : "none"; }
+      const elTag = await p.evaluate(([ex, ey]) => {
+        try { var el = document.elementFromPoint(ex, ey); return el ? (el.tagName + "#" + (el.id || "")) : "none"; }
         catch (e) { return "err"; }
       }, pt);
       check(/CANVAS/.test(elTag || ""), mol + " click target not the 3D canvas at " + JSON.stringify(pt) + ": " + elTag);

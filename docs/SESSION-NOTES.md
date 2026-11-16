@@ -2976,3 +2976,32 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * Implements the review's recommendations except the three live-gated items (branch paint-vs-verdict needs the owner's read; double-fire and H-rank identity need live observation first).
 * `molview-57.js`: (1) explicit `fMulerSelectClear3DPaint` on exact after state-empty (before the green reward) and on draft entry; Present entry erases 3D in `fMulerSelectPushState` (repaint restores on exit). (2) Heavy-map cache key is `selectedMol|mode2D` (was molecule-only). (3) Fail-closed 3D picks: armed/free H with an unmappable parent returns (no-op); a 3D bond with no 2D counterpart returns instead of storing 3D-only state. (4) Bond-head validation: payload `#N` endpoints must match a `bondList3D` entry or the pick fails (head-only/map-index picks still adopt). (5) `condensedZigZag` joins the condensed 3D completion family (H/C-H; `fMulerSelectCompacted` stays condensed-only so no-op there). (6) Esc guarded out in draft/Present.
 * No `node --check` here (owner verifies manually). Browser check: exact → no cyan ghost under green; draft entry/exit → 3D clean then restored; condensed→skeletal same-molecule switch → mirror identity holds; condensed 3D C-H tap → nothing (no 3D-only bond); zigzag vs condensed same pick → same cyan family; Esc in Present → selection kept.
+
+## 2026-11-16 — probe-3d-pick runs on Firefox too (working tree)
+
+* JSmol needs Firefox on the owner's machine: `probe-3d-pick.js` now takes `MULER_BROWSER=firefox` (Playwright's own `firefox` build via version-matched `playwright install firefox`; branded firefox.exe unsupported — `MULER_FIREFOX` stays unset for the bundled build). Chrome remains the default; sweep/settle/mirror logic untouched. No `node --check` here (owner verifies manually).
+
+## 2026-11-16 — probe-3d-pick Firefox hardening (working tree)
+
+* Owner's Firefox run failed everywhere with the model arriving mid-sweep (`rawlen:1 → full`): the load gate gave up at ~70s but the sweep ran on the dead applet anyway, plus a probe-side arg bug (`(x, y)` received the whole point array → every CANVAS guard failed) and 3s settle misattributing lagged callbacks (`got [1] want [5]`).
+* Fix: CANVAS check destructures `([ex, ey])`; load budget ~210s and molecules that never load are skipped, never swept; settle drains to quiescence (3s silent cap, 9s post-activity cap + tail drain); `MULER_BROWSER=firefox` (Playwright's own build; branded unsupported) with `security.fileuri.strict_origin_policy=false` set in-profile; `MULER_HEADED=1` for a watched headed run. No `node --check` here (owner verifies manually).
+
+## 2026-11-16 — probe defaults to vendored JSmol (?libs=local) (working tree)
+
+* Playwright Firefox never loaded a model in 210s while manual Firefox works: the probe used the app's CDN default, so every blank profile re-downloaded the 47MB j2s tree (no cache, maybe no proxy). New `MULER_LIBS` env (default `local` → vendored `JSmol.min.js` + `j2s/` off the harness server; `cdn` for parity runs); app default for real users unchanged. If local still stalls, next step is applet console + `show info` capture, not more budget.
+
+## 2026-11-16 — Stage 2: 2D probes retargeted to v57 (working tree)
+
+* All 15 headless-Chrome 2D probes now open `mulermoc-nom-57.html` (`-56.html` kept only in `probe-compare55-56.js`, which is explicitly cross-version). Harness README/package.json describe the live tree.
+* Static triage (4 parallel tracks + verdict-text diff): verdict texts/glyphs byte-identical v56→v57; style asserts are display-only; bond/group/branch/locant/compact/quiz probes need no logic changes (fresh `open()` per section resets per-molecule solved sets; no post-exact canvas picks without reload; solve-then-click blocks use distinct unsolved modes).
+* One intended-change fix: `probe-mode-quiz.js:124` now expects the solved classic green after a post-exact style switch (was: must stay clean — predates the solved fallthrough). No `node --check` here (owner verifies manually with the probe runs).
+
+## 2026-11-16 — 2D probe failures triaged: probe bugs, no app changes (working tree)
+
+* Owner run: 11/14 green (all 7 quiz probes, frag2, final, skel-joints, compact-main, coverage56). Two failures, both version-independent probe bugs confirmed in code (v56 behaves identically — pick/toggle/mode-label paths untouched by v57):
+* `probe-smoke56`: (1) step 2 opened the bare landing page with no molecule, so `LineGroups` is empty — now opens `?mol=ethene`. (2) The mode switch used a Greek-only regex on an EN page (`probe-final` passes with the same pattern only because it opens the Greek-default page) — now bilingual `/^(expanded|ανεπτυγ)/i`.
+* `probe-shift`: ethene condensed has a single bond group, so the fallback anchor click kinds-replaces by design (total stays 1) — now runs on butane (3 C-C groups) to exercise accumulation. Same Greek/EN note applies to `probe-pick7`'s MODE regex, left alone (Greek-default page, works).
+
+## 2026-11-16 — Stage 2 done: 2D suite green on v57 (working tree)
+
+* Owner runs: all 13 automated 2D probes pass on `mulermoc-nom-57.html` (quiz/fg/bond/branch/locant/mode-quiz/explain-all/coverage56/compact-main/skel-joints/shift/final/smoke56/frag2); `probe-pick7` (manual args) and `compare55-56` (cross-version by design) untouched. The two failures found were version-independent probe bugs (smoke56: molecule-less landing + Greek-only mode regex on EN page; shift: single-group ethene kinds-replaces by design → butane) — no app changes. `MULER_LIBS=local` default + `MULER_BROWSER=firefox` + `MULER_HEADED` + skip-dead-molecule hardening landed in `probe-3d-pick.js`; the 3D probe itself stays parked (model never loads under Playwright Firefox; manual matrix is the gate).

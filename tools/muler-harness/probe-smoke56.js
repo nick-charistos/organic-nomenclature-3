@@ -25,7 +25,7 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
     await p.waitForTimeout(800);
   }
   // 1. v56 loads, button first in title bar, tooltip + icon present
-  await p.goto(BASE + "/mulermoc-nom-56.html?lang=en", { waitUntil: "load", timeout: 60000 });
+  await p.goto(BASE + "/mulermoc-nom-57.html?lang=en&mol=ethene", { waitUntil: "load", timeout: 60000 });
   await waitReady();
   out.button = await p.evaluate(() => {
     const btns = Array.from(document.querySelectorAll("#viewerSettingsBtnDiv .settingsBtn")).map((x) => x.id);
@@ -62,7 +62,7 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
   });
   check(out.afterBond.s && out.afterBond.s.length > 0, "condensed bond pick should select, got " + JSON.stringify(out.afterBond));
   // 3. compacted pick via geometry center (no hardcoded screen coords)
-  await p.goto(BASE + "/mulermoc-nom-56.html?mol=butanoic_acid", { waitUntil: "load", timeout: 60000 });
+  await p.goto(BASE + "/mulermoc-nom-57.html?mol=butanoic_acid", { waitUntil: "load", timeout: 60000 });
   await waitReady();
   await p.evaluate(() => { try { document.getElementById("selectAtomsBtn").click(); } catch (e) {} });
   await p.waitForTimeout(300);
@@ -87,7 +87,7 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
   out.compact = await p.evaluate(() => { try { const s = window.MulerUserSelection || {}; return { a: s.atoms2D || [], halo: !!document.querySelector("#jsmeNomeclatureSVG path[data-muler-sel], #jsmeNomeclatureSVG .mulerSelHalo") }; } catch (e) { return {}; } });
   check(out.compact.a && out.compact.a.length > 0, "compacted pick should select, got " + JSON.stringify(out.compact));
   // 4. mode switch invalidates
-  await p.evaluate(() => { try { const o = Array.from(document.querySelectorAll("#radio2DMode .mode2DOption")).find((x) => /ανεπτυγ/i.test(x.textContent || "")); if (o) o.click(); } catch (e) {} });
+  await p.evaluate(() => { try { const o = Array.from(document.querySelectorAll("#radio2DMode .mode2DOption")).find((x) => /^(expanded|ανεπτυγ)/i.test(x.textContent || "")); if (o) o.click(); } catch (e) {} });
   await p.waitForTimeout(2500);
   out.afterMode = await p.evaluate(() => { try { const s = window.MulerUserSelection || {}; return { a: s.atoms2D || [], haloGone: !document.querySelector("#jsmeNomeclatureSVG path[data-muler-sel], #jsmeNomeclatureSVG .mulerSelHalo") }; } catch (e) { return {}; } });
   check(out.afterMode.a && out.afterMode.a.length === 0, "mode switch should drop contents, got " + JSON.stringify(out.afterMode));

@@ -1,6 +1,8 @@
 # muler-harness (headless verification)
 
-Playwright + installed Chrome probes for the MuLERMoC v56 working tree.
+Playwright + installed Chrome probes for the MuLERMoC live working tree
+(currently v57 — the suite targets `mulermoc-nom-57.html`; v56 pages stay
+in the repo but are frozen, so the probes follow the live build).
 Run from the repo root. Requires node + Playwright (`npm i playwright-core`
 once, anywhere on NODE_PATH or in this dir) and a Chrome binary.
 
@@ -10,6 +12,18 @@ Assumptions (edit the constant at the top of each probe if yours differ):
 - Chrome at `C:\Program Files\Google\Chrome\Application\chrome.exe`
   (override via `MULER_CHROME`; if the path does not exist the probe lets
   Playwright resolve the browser on its own).
+- Firefox via `MULER_BROWSER=firefox` (Playwright's own `firefox` build:
+  `npx playwright install firefox` with a CLI version matching
+  `playwright-core`; branded firefox.exe is unsupported — leave
+  `MULER_FIREFOX` unset to use the bundled build). The probe sets
+  `security.fileuri.strict_origin_policy=false` in the Playwright Firefox
+  profile (blank profiles don't inherit about:config tweaks).
+- `MULER_LIBS=local|cdn` (default `local`): vendored `JSmol.min.js` + `j2s/`
+  off the harness server instead of the CDN default — blank profiles would
+  otherwise re-download the 47MB tree every run. Real users stay on CDN.
+- `MULER_HEADED=1` runs the browser headed (watch the 3D pane on slow
+  machines); default is headless. Molecules whose model never loads are
+  skipped after the (generous) load budget instead of swept dead.
 - Cold-load waits use `waitForFunction` on the JSME SVG + selection API
   (30 s timeout) + short settle, not fixed 14 s sleeps.
 

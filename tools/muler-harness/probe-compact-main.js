@@ -32,7 +32,7 @@ const isSelFillColor = (fill, hex) => {
   p.on("pageerror", (e) => errs.push(String(e.message).slice(0, 200)));
 
   async function open(mol) {
-    await p.goto(BASE + "/mulermoc-nom-56.html?mol=" + mol, { waitUntil: "load", timeout: 60000 });
+    await p.goto(BASE + "/mulermoc-nom-57.html?mol=" + mol, { waitUntil: "load", timeout: 60000 });
     await waitReady(p, (typeof failures !== "undefined" ? failures : []));
     await p.evaluate(() => document.getElementById("selectAtomsBtn").click());
     await p.waitForTimeout(250);

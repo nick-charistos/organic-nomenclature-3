@@ -1,5 +1,7 @@
 const { chromium } = require("playwright-core");
-// probe-shift: shift-accumulate on ethene, now hard-fail + CTM-derived 2nd pick.
+// probe-shift: shift-accumulate on butane (3 C-C line groups), hard-fail +
+// CTM-derived 2nd pick. Ethene has a single bond group, so its fallback
+// anchor click would kinds-replace by design — butane exercises accumulation.
 const CHROME = process.env.MULER_CHROME || "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const BASE = process.env.MULER_BASE || "http://localhost:8901";
 const failures = [];
@@ -11,7 +13,7 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
   const p = await b.newPage({ viewport: { width: 1500, height: 900 } });
   const errs = [];
   p.on("pageerror", (e) => errs.push(String(e.message).slice(0, 120)));
-  await p.goto(BASE + "/mulermoc-nom-56.html?mol=ethene", { waitUntil: "load", timeout: 60000 });
+  await p.goto(BASE + "/mulermoc-nom-57.html?mol=butane", { waitUntil: "load", timeout: 60000 });
   try {
     await p.waitForFunction(() => {
       try { return !!document.querySelector("#jsmeNomeclatureSVG svg") && typeof fMulerSelectLineGroups === "function" && !!window.MulerUserSelection; }

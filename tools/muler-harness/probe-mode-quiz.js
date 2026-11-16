@@ -26,7 +26,7 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
   const errs = [];
   p.on("pageerror", (e) => errs.push(String(e.message).slice(0, 160)));
 
-  await p.goto(BASE + "/mulermoc-nom-56.html?lang=en&mol=butanoic_acid", { waitUntil: "load", timeout: 60000 });
+  await p.goto(BASE + "/mulermoc-nom-57.html?lang=en&mol=butanoic_acid", { waitUntil: "load", timeout: 60000 });
   await waitReady(p, (typeof failures !== "undefined" ? failures : []));
   await p.evaluate(() => document.getElementById("selectAtomsBtn").click());
   await p.waitForTimeout(400);
@@ -117,11 +117,12 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
   check(s.greenShapes > 0, "exact should paint the green reward, got " + s.greenShapes);
   check(!s.target, "exact should clear the target");
 
-  // After the reward, a style switch must not resurrect a highlight.
+  // After the reward, a style switch rebuilds the solved box's classic
+  // highlight (solved fallthrough paints while armed) — selection stays empty.
   await setMode(1);
   s = await state();
   check(s.mode === "expanded", "post-exact mode should be expanded, got " + s.mode);
-  check(s.greenShapes === 0, "post-exact style switch must not paint green, got " + s.greenShapes);
+  check(s.greenShapes > 0, "post-exact style switch keeps the solved classic highlight, got " + s.greenShapes);
   check(s.sel.length === 0, "post-exact selection should stay empty, got " + JSON.stringify(s.sel));
 
   // Leaving selection mode restores the classic component highlight, including
