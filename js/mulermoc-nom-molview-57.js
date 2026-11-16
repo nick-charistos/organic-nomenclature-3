@@ -2509,11 +2509,16 @@ function fMulerHeavyMapCached() {
     var M = null, K = null;
     try { M = molAtomMap2D3D; } catch (eG) { M = null; }
     try { K = molAtomMapKey; } catch (eK) { K = null; }
-    if (!M || !M.arr || K !== selectedMol || M.n2 !== n2 || M.n3 !== n3) {
+    // Mode is part of the key: condensed<->skeletal switches with equal
+    // heavy counts but different bondList orders must not reuse a stale map.
+    var _md = "";
+    try { _md = (typeof mode2D !== "undefined" && mode2D) ? String(mode2D) : ""; } catch (eMd) {}
+    var _key = selectedMol + "|" + _md;
+    if (!M || !M.arr || K !== _key || M.n2 !== n2 || M.n3 !== n3) {
       M = null;
       try { if (typeof fBuildHeavyMap2D3D === "function") M = fBuildHeavyMap2D3D(false); } catch (eB) { M = null; }
       if (!M) { try { if (typeof fBuildHeavyMap2D3D === "function") M = fBuildHeavyMap2D3D(true); } catch (eB2) { M = null; } }
-      try { molAtomMap2D3D = M; molAtomMapKey = selectedMol; } catch (eS) {}
+      try { molAtomMap2D3D = M; molAtomMapKey = _key; } catch (eS) {}
     }
     if (!M || !M.arr) return null;
     return M;
@@ -2859,7 +2864,10 @@ function fMulerSelectPaintSets3D() {
       for (var i = 0; i < baseA.length; i++) if (baseA[i] > 0) aSet[baseA[i]] = true;
       var md = "";
       try { md = (typeof mode2D !== "undefined" && mode2D) ? String(mode2D) : ""; } catch (eM) { md = ""; }
-      if (md === "condensed" || md === "skeletal") {
+      // condensedZigZag joins the condensed family: its 2D adds H labels
+      // like condensed (fUpdateSVG) while H stays out of the pick maps, so
+      // the same H/C-H completion applies (compacts stay condensed-only).
+      if (md === "condensed" || md === "condensedZigZag" || md === "skeletal") {
         var snapshot = [];
         for (var k in aSet) {
           if (!Object.prototype.hasOwnProperty.call(aSet, k)) continue;
@@ -3048,15 +3056,20 @@ window.__mulerPickCb = function () {
       try {
         if (typeof bondList3D !== "undefined" && bondList3D) {
           var _bl = bondList3D[b3 - 1];
-          var _ok = _bl && e1 > 0 && e2 > 0 && ((_bl[0] === e1 && _bl[1] === e2) || (_bl[0] === e2 && _bl[1] === e1));
-          if (!_ok && e1 > 0 && e2 > 0) {
+          var _hadPair = (e1 > 0 && e2 > 0);
+          var _ok = _bl && _hadPair && ((_bl[0] === e1 && _bl[1] === e2) || (_bl[0] === e2 && _bl[1] === e1));
+          if (!_ok && _hadPair) {
             for (var _fb = 0; _fb < bondList3D.length; _fb++) {
               var _ft = bondList3D[_fb];
               if (!_ft) continue;
               if ((_ft[0] === e1 && _ft[1] === e2) || (_ft[0] === e2 && _ft[1] === e1)) { b3 = _fb + 1; _ok = true; break; }
             }
           }
-          if (!_ok && b3 > 0 && bondList3D[b3 - 1]) { e1 = bondList3D[b3 - 1][0]; e2 = bondList3D[b3 - 1][1]; }
+          // Fail-closed: payload endpoints that match nothing are a wrong
+          // pick, never the entry at a wrong head number. Head-only picks
+          // (map-index fallback) still adopt the entry's endpoints.
+          if (!_ok && _hadPair) { b3 = -1; e1 = -1; e2 = -1; }
+          else if (!_ok && b3 > 0 && bondList3D[b3 - 1]) { e1 = bondList3D[b3 - 1][0]; e2 = bondList3D[b3 - 1][1]; }
           else if (!_ok) { b3 = -1; e1 = -1; e2 = -1; }
         } else { b3 = -1; e1 = -1; e2 = -1; }
       } catch (eV) { b3 = -1; e1 = -1; e2 = -1; }
@@ -3074,6 +3087,9 @@ window.__mulerPickCb = function () {
       try { purposeB = (typeof fMulerSelectPurpose === "function") ? fMulerSelectPurpose() : "free"; } catch (eP) { purposeB = "free"; }
       try { qtB = (typeof window !== "undefined") ? window.MulerQuizTarget : null; } catch (eQ2) { qtB = null; }
       if (qtB && purposeB !== "bond") return; // atoms-only quiz: ignore, never clear
+      // Fail-closed: a 3D bond with no 2D counterpart (condensed/skeletal
+      // C-H, stale map) is a no-op, never 3D-only cyan the quiz cannot judge.
+      if (!(b2 > 0)) return;
       try { if (typeof window !== "undefined") { window.__muler3DPickSeen = true; window.__muler3DSilentT = 0; } } catch (ePSB) {}
       if (sel.atoms2D.length || sel.atoms3D.length) {
         sel.atoms2D = []; sel.atoms3D = [];
@@ -3119,15 +3135,24 @@ window.__mulerPickCb = function () {
             var _hT = -1;
             try { if (_mp > 0 && typeof fMulerPickTargetHOnParent === "function") _hT = fMulerPickTargetHOnParent(_mp); } catch (eHT) { _hT = -1; }
             if (_hT > 0) { m2a = _hT; }
-            else if (p3 > 0) { a3 = p3; m2a = _mp; }
+            // Fail-closed: an unmappable parent is a no-op, never 3D-only
+            // cyan (quiz compare is 2D-state-only).
+            else if (p3 > 0 && _mp > 0) { a3 = p3; m2a = _mp; }
+            else return;
           } else {
             // Free selection in expanded mode: rank-matched H pair, so the
-            // H itself is selected and highlighted on both sides. Condensed
-            // (no 2D H) falls back to the parent mirror.
+            // H itself is selected and highlighted on both sides. Otherwise
+            // fold onto the mapped heavy parent (symmetric both viewers;
+            // condensed has no 2D H, rank mismatch is fail-closed above).
             var _h2 = -1;
             try { if (typeof fMulerSelectHRank3D2D === "function") _h2 = fMulerSelectHRank3D2D(a3); } catch (eHR) { _h2 = -1; }
             if (_h2 > 0) { m2a = _h2; }
-            else if (p3 > 0) { m2a = fMulerMap3D2D(p3); }
+            else if (p3 > 0) {
+              var _mp2 = -1;
+              try { _mp2 = fMulerMap3D2D(p3); } catch (eM21) { _mp2 = -1; }
+              if (_mp2 > 0) { a3 = p3; m2a = _mp2; }
+              else return;
+            } else return;
           }
         } else m2a = fMulerMap3D2D(a3);
       }
@@ -4820,6 +4845,10 @@ function fMulerQuizRefresh() {
       // so no later clear can resurrect cyan from stale state.
       try { if (sel) { sel.atoms2D = []; sel.bonds2D = []; sel.atoms3D = []; sel.bonds3D = []; sel.groups = []; } } catch (eS2) {}
       try { if (typeof removeEcho3D === "function") removeEcho3D(); } catch (eEq) {}
+      // Pre-exact cyan must not survive the reward: Push3D no-ops on empty,
+      // so erase explicitly before the green paints (reward repaints only 2D
+      // plus its own 3D highlight calls).
+      try { if (typeof fMulerSelectClear3DPaint === "function") fMulerSelectClear3DPaint(); } catch (eC3) {}
       // Exact is the one moment selection mode allows a component highlight:
       // opt the viewer-owning guard in fExplainNameComp through for this call.
       // try/finally: the flag must clear even if the explain path throws.
@@ -5124,7 +5153,10 @@ function fMulerSelectPushState() {
     try { presenting = (typeof fMulerSelectPresenting === "function") ? !!fMulerSelectPresenting() : false; } catch (ePr) { presenting = false; }
     if (presenting) {
       // Hidden in Present: merge() already degrades to component-only when
-      // presenting, so a plain push hides the selection (state kept).
+      // presenting, so a plain push hides the selection (state kept). 3D cyan
+      // is erased outright (repaint restores it on exit); Esc stays guarded
+      // out in Present (see the document keydown handler).
+      try { if (typeof fMulerSelectClear3DPaint === "function") fMulerSelectClear3DPaint(); } catch (ePC) {}
       try { if (typeof fMulerSelectPush === "function") fMulerSelectPush(); } catch (ePP) {}
       return;
     }
@@ -5442,6 +5474,9 @@ function fMulerSelectBindOnce() {
             if (t && ((t.tagName && /^(INPUT|TEXTAREA|SELECT)$/i.test(t.tagName)) || t.isContentEditable)) return;
           } catch (eT) {}
           if (!(typeof fMulerSelectActive === "function" && fMulerSelectActive())) return;
+          // Present/draft own the keyboard: Esc must not wipe kept state.
+          if (typeof window !== "undefined" && window.MulerDraft) return;
+          if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return;
           try {
             var s = (typeof fMulerSelectState === "function") ? fMulerSelectState() : null;
             // v57 3D: 3D picks participate through their 2D mirror.
@@ -5700,6 +5735,9 @@ function fMolDraftEnter(mode) {
       try { window.MulerUserSelection.atoms2D = []; window.MulerUserSelection.bonds2D = []; window.MulerUserSelection.atoms3D = []; window.MulerUserSelection.bonds3D = []; window.MulerUserSelection.groups = []; } catch (eClr) {}
       try { if (typeof fMulerSelectPush === "function") fMulerSelectPush(); } catch (ePush) {}
       try { if (typeof fMulerHoverClear === "function") fMulerHoverClear(); } catch (eHC2) {}
+      // Draft hides the viewers: erase 3D paint outright (toggle-off does the
+      // same; guarded clear would skip since the flag is already off here).
+      try { if (typeof fMulerSelectClear3DPaint === "function") fMulerSelectClear3DPaint(); } catch (eC33) {}
       try { if (typeof fMulerQuizDisarm === "function") fMulerQuizDisarm(); } catch (eQD3) {}
     }
   } catch (eSel) {}
