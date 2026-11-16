@@ -1312,6 +1312,27 @@ function fMulerSelectPresenting() {
   return false;
 }
 
+// Reps-lock (solved/target-less display): while select mode is armed but no
+// live quiz target exists and a name box is displayed (solved component
+// classic view, or a target-less box like hydrocarbon -ιο), the 2D/3D
+// representations are not selectable — picks are total no-ops, hover off,
+// default cursor. Free picking (nothing selected) and armed quizzes (live
+// target) stay pickable. Draft/Present keep their own guards (unlocked here).
+function fMulerSelectRepsLocked() {
+  try {
+    if (typeof fMulerSelectActive !== "function" || !fMulerSelectActive()) return false;
+    if (typeof window !== "undefined" && window.MulerDraft) return false;
+    if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return false;
+    if (typeof window !== "undefined" && window.MulerQuizTarget) return false;
+    try {
+      var s = document.querySelector("#nameAnalysis .nameCompBox.selected");
+      if (s) return true;
+    } catch (eS) {}
+    try { if (typeof nameAnalysisMode !== "undefined" && nameAnalysisMode && nameAnalysisMode !== "none") return true; } catch (eM) {}
+  } catch (e) {}
+  return false;
+}
+
 // Remove the selection halos (DOM only; state untouched — callers own that).
 // Halos are <path data-muler-sel> inside the main JSME SVG; the legacy
 // sibling-overlay selector is kept so one repaint clears either generation.
@@ -2201,6 +2222,8 @@ function fMulerHoverTick() {
     if (typeof window !== "undefined" && window.MulerDraft) return;
     if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return;
     if (typeof selectedMol === "undefined" || !selectedMol) return;
+    // Solved/target-less display: no hover ring (cursor class synced by repaint).
+    try { if (typeof fMulerSelectRepsLocked === "function" && fMulerSelectRepsLocked()) { try { fMulerHoverClear(); } catch (eC0) {} return; } } catch (eRL) {}
     var svg = null;
     try { svg = document.querySelector("#jsmeNomeclatureSVG svg"); } catch (eS) { svg = null; }
     if (!svg) return;
@@ -2988,6 +3011,9 @@ window.__mulerPickCb = function () {
     if (typeof window !== "undefined" && window.MulerDraft) return;
     if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return;
     if (typeof selectedMol === "undefined" || !selectedMol) return;
+    // Solved/target-less display: reps are not selectable (covers the applet
+    // mode round-trip window).
+    if (typeof fMulerSelectRepsLocked === "function" && fMulerSelectRepsLocked()) return;
     var idx = -2, sInfo = null, mArg = null;
     try {
       if (typeof arguments !== "undefined" && arguments !== null) {
@@ -3258,6 +3284,9 @@ function fMulerSelectPickingScript() {
     try { if (typeof window !== "undefined" && window.MulerDraft) armed = false; } catch (eD) {}
     try { if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) armed = false; } catch (eP) {}
     try { if (typeof selectedMol === "undefined" || !selectedMol) armed = false; } catch (eM) {}
+    // Solved/target-less display: reps are not selectable (locked) — the
+    // applet itself ignores hits; the page callback guards the race window.
+    try { if (typeof fMulerSelectRepsLocked === "function" && fMulerSelectRepsLocked()) armed = false; } catch (eL) {}
     if (armed) return 'set pickCallback "__mulerPickCb"; set picking atom; set bondPicking true;';
     return "set picking OFF; set bondPicking false;";
   } catch (e) { return ""; }
@@ -5246,13 +5275,41 @@ function fMulerSelectCompactPaintPass() {
   } catch (e) {}
 }
 
-// Selection repaint entry (tail of fUpdateSVG + every selection change):
-// legacy DOM cleanup, then the state push. Rendering itself is owned by the
-// caller (fUpdateSVG renders right after its head push).
+// Reps-lock sync: cursor class now, 3D picking script on change only
+// (idempotent sets, no per-repaint traffic). Called from repaint (covers arm,
+// classic box clicks via the fUpdateSVG tail, exact via caller tails, toggle,
+// re-arm) and directly from the teaching-layer classic select, which paints
+// without a repaint.
+function fMulerSelectSyncRepsLock() {
+  try {
+    var locked = (typeof fMulerSelectRepsLocked === "function") ? !!fMulerSelectRepsLocked() : false;
+    try {
+      var host = document.getElementById("jsmeNomeclatureSVG");
+      if (host && host.classList) {
+        if (locked) host.classList.add("repsLocked"); else host.classList.remove("repsLocked");
+      }
+    } catch (eLC) {}
+    try {
+      if (typeof window !== "undefined" && window.__mulerRepsLockSync !== locked) {
+        window.__mulerRepsLockSync = locked;
+        if (typeof fMulerSelectSync3DPicking === "function") fMulerSelectSync3DPicking();
+      }
+    } catch (eLS) {}
+  } catch (eL) {}
+}
+
 function fMulerSelectRepaint() {
   try {
     try { fMulerSelectClearLayer(); } catch (eC) {}
     try { if (typeof fMulerHoverClear === "function") fMulerHoverClear(); } catch (eHC) {}
+    // Selection repaint entry (tail of fUpdateSVG + every selection change):
+    // legacy DOM cleanup, then the state push. Rendering itself is owned by
+    // the caller (fUpdateSVG renders right after its head push).
+    // Reps-lock sync (solved/target-less display). Every lock transition
+    // flows through here (arm, classic box clicks via the fUpdateSVG tail,
+    // exact via caller tails, toggle, re-arm), so the applet mode self-heals
+    // without touching N call sites.
+    try { if (typeof fMulerSelectSyncRepsLock === "function") fMulerSelectSyncRepsLock(); } catch (eSL) {}
     try { if (typeof fMulerSelectPushState === "function") fMulerSelectPushState(); } catch (eP2) {}
     // v57 3D: repaint selection paint from state (no-op when off/empty/hidden).
     try { if (typeof fMulerSelectPush3D === "function") fMulerSelectPush3D(); } catch (eP3) {}
@@ -5318,6 +5375,9 @@ function fMulerSelectBindOnce() {
           if (typeof window !== "undefined" && window.MulerDraft) return;
           if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return;
           if (typeof selectedMol === "undefined" || !selectedMol) return;
+          // Solved/target-less display: reps are not selectable (total no-op,
+          // not even empty-canvas clear). Free picking and armed quizzes pass.
+          if (typeof fMulerSelectRepsLocked === "function" && fMulerSelectRepsLocked()) return;
           if (typeof window !== "undefined") { try { window.__mulerSelShift = !!(e && e.shiftKey); } catch (eS) {} }
           var svg = null;
           try { svg = document.querySelector("#jsmeNomeclatureSVG svg"); } catch (eS2) { svg = null; }
@@ -5424,6 +5484,8 @@ function fMulerSelect3DSilentSettle(px, py) {
     if (typeof window !== "undefined" && window.MulerDraft) return "skip";
     if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return "skip";
     if (typeof selectedMol === "undefined" || !selectedMol) return "skip";
+    // Solved/target-less display: pointer gestures on reps are no-ops.
+    if (typeof fMulerSelectRepsLocked === "function" && fMulerSelectRepsLocked()) return "skip";
     var dblMs = 450, dblPx = 8;
     try { if (typeof MULER_SELECT_3D_DBL_MS === "number" && MULER_SELECT_3D_DBL_MS > 0) dblMs = MULER_SELECT_3D_DBL_MS; } catch (eDM) {}
     try { if (typeof MULER_SELECT_3D_DBL_PX === "number" && MULER_SELECT_3D_DBL_PX > 0) dblPx = MULER_SELECT_3D_DBL_PX; } catch (eDP) {}

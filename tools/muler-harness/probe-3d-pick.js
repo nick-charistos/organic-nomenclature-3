@@ -379,6 +379,21 @@ function pickFromLogEntry(e) {
         const fin = await state(p);
         check(fin.target === null && /Correct/.test(fin.verdict || "") && !fin.hidden,
           mol + ": chain exact from 3D failed: " + JSON.stringify({ t: fin.target, v: (fin.verdict || "").slice(0, 80) }));
+        // v57 reps lock: solved display (comp5 selected, no live target) must
+        // ignore 3D picks entirely (total no-op, stateless).
+        await clickPt(p, carbons[keys[0]]);
+        const locked = await state(p);
+        check(locked.a3.length === 0 && locked.b3.length === 0 && locked.a2.length === 0 && locked.b2.length === 0,
+          mol + ": solved display must lock reps (3D pick ignored): " + JSON.stringify([locked.a3, locked.b3, locked.a2, locked.b2]));
+        // Deselecting the solved box returns to free picking (nothing
+        // selected, no target) — the same spot must pick again.
+        await p.evaluate(() => { try { document.getElementById("comp5").click(); } catch (e) {} });
+        await p.waitForTimeout(800);
+        await clickPt(p, carbons[keys[0]]);
+        const free = await state(p);
+        check(free.a3.length === 1 && free.a2.length === 1,
+          mol + ": deselecting solved box should restore free picking: " + JSON.stringify([free.a3, free.a2]));
+        await escClear(p);
       }
     }
     if (mol === "butene_1") {

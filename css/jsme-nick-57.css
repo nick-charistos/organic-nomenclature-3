@@ -3169,6 +3169,13 @@ color: var(--veryLightEarth);
   cursor: crosshair;
 }
 
+/* v57 reps lock (solved/target-less display): reps are not selectable —
+   default cursor while select mode stays armed (see fMulerSelectRepsLocked). */
+#jsmeNomeclatureSVG.selecting.repsLocked,
+#jsmeNomeclatureSVG.selecting.repsLocked * {
+  cursor: default;
+}
+
 #selectAtomsBtn svg {
   width: 20px;
   height: 20px;

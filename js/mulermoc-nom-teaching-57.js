@@ -1425,6 +1425,9 @@ $(document).ready(function () {
       if (nameAnalysisMode === "none") numberingFlag = false;
 
       fExplainNameComp();
+      // v57 reps lock (solved/target-less display): this classic path paints
+      // without a repaint, so sync the lock explicitly (cursor + 3D picking).
+      try { if (typeof fMulerSelectSyncRepsLock === "function") fMulerSelectSyncRepsLock(); } catch (eSL) {}
       if (narrateAnalysisFlag) {
         const explainText = $("#nameAnalysisExplain")
           .text()
