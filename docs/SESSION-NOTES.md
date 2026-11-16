@@ -3005,3 +3005,13 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 ## 2026-11-16 — Stage 2 done: 2D suite green on v57 (working tree)
 
 * Owner runs: all 13 automated 2D probes pass on `mulermoc-nom-57.html` (quiz/fg/bond/branch/locant/mode-quiz/explain-all/coverage56/compact-main/skel-joints/shift/final/smoke56/frag2); `probe-pick7` (manual args) and `compare55-56` (cross-version by design) untouched. The two failures found were version-independent probe bugs (smoke56: molecule-less landing + Greek-only mode regex on EN page; shift: single-group ethene kinds-replaces by design → butane) — no app changes. `MULER_LIBS=local` default + `MULER_BROWSER=firefox` + `MULER_HEADED` + skip-dead-molecule hardening landed in `probe-3d-pick.js`; the 3D probe itself stays parked (model never loads under Playwright Firefox; manual matrix is the gate).
+
+## 2026-11-16 — v58 fork for the scenario quiz contract (working tree)
+
+* Serious upgrade → new version per convention: forked v57 → v58 (html + 8 js + data_58 + 2 css + init-3-58.spt + zz-test-core58.html, `?v=58.0` uniform). Surgical ref rename only (`nom-57`/`nick-57`/`data_57`/`init-3-57`/`?v=57.x`/`CORE57`/`-57.js`/`.css`; historical `v56`/`v57` code comments and IUPAC `P-57.1` untouched). `index.html` stays on v57 (live); probes stay on v57 until the flip; no chemistry changes.
+* Next: the 9-question audit (step schema, apply path, Present guards, nameClick chain, step-change vs quiz state, solved sets vs steps, capture requirements, drafts, probe surface) → findings note → schema → snapshots → student mode.
+
+## 2026-11-16 — v58 fork + scenario×quiz audit (working tree)
+
+* Forked v57 → v58 (authoring-only; index stays on v57): html + 8 js + data_58 + 2 css + init-3-58.spt + zz-test-core58.html, `?v=58.0`, surgical rename only (historical version comments and IUPAC `P-57.1` untouched). Harness stays on v57 until the flip.
+* Audit findings (`docs/REVIEW-SCENARIO-QUIZ-58.md`, 9 questions): steps store the box (`nameAnalysisMode`) but never the task (no target/selection/solved) — applying a mid-quiz step yields the reps-locked display by accident, not contract; 18 Present guards inventoried (entry/picks/arm/hover/paint/Esc all dead); Present box clicks can only classic-select (student mode needs an explicit exception); step-change quizz-determinism is accidental (sticky by luck); solved sets have no step dimension; capture needs target+mode+mol+prompt+selection snapshot; drafts already trump everything; no probe covers Present/scenario-quiz. Recommended schema: `step.quiz` (live task) + `step.quizSnapshot` (worked example) + per-run completion ledger + single-chokepoint student-mode exception.
