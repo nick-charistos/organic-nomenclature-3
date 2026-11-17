@@ -1388,6 +1388,23 @@ $(document).ready(function () {
     }
     // Hidden (dash) boxes are inert: no highlight, no explanation change.
     if ($(this).hasClass("comp-hidden")) return;
+    // v58 student mode: re-clicking the selected armed task box keeps the
+    // quiz (no deselect, so the task can't be lost). Every other unsolved
+    // box flows to the arm below (task re-arm or ungraded practice);
+    // solved boxes fall through to the classic highlight. The gate — not
+    // the click — enforces solving the step's own task.
+    try {
+      if (typeof fScenarioStudentTask === "function") {
+        var _st = fScenarioStudentTask();
+        if (_st && _st.quiz && _st.quiz.mode) {
+          var _bm = "none";
+          try { _bm = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId($(this).attr("id")) : "none"; } catch (eM2) { _bm = "none"; }
+          if (_bm === _st.quiz.mode) {
+            try { if ($(this).hasClass && $(this).hasClass("selected")) return; } catch (eS2) {}
+          }
+        }
+      }
+    } catch (eST) {}
     // Quiz mode (v56 1C selection aid): armed select + resolvable component
     // arms the quiz target instead of highlighting (prompt, no paint).
     // Stored-highlight replay ($(box).trigger, untrusted) never quiz-arms;
@@ -1396,7 +1413,12 @@ $(document).ready(function () {
       if (typeof window !== "undefined" && !window.__mulerQuizReplayBypass &&
           typeof fMulerSelectActive === "function" && fMulerSelectActive() && !window.MulerDraft &&
           typeof fMulerQuizArmForBox === "function" && fMulerQuizArmForBox($(this).attr("id"), $(this))) return;
-      if (typeof fMulerSelectActive === "function" && fMulerSelectActive() && !window.MulerDraft &&
+      // v58: classic viewing never kills an in-progress quiz — viewing a
+      // solved comp mid-task must leave the task target intact (re-arming a
+      // Blocked task box afterwards would otherwise deadlock).
+      var _liveQ = null;
+      try { _liveQ = (typeof window !== "undefined") ? window.MulerQuizTarget : null; } catch (eLQ) { _liveQ = null; }
+      if (!_liveQ && typeof fMulerSelectActive === "function" && fMulerSelectActive() && !window.MulerDraft &&
           typeof fMulerQuizDisarm === "function") fMulerQuizDisarm();
     } catch (eQ) {}
     const scrollX = window.scrollX;
@@ -1520,13 +1542,67 @@ $(document).ready(function () {
   $(document).on("click", ".menuLi", function (event) {
     // Scenario pick checkboxes live inside rows — they manage themselves.
     if (event && event.target && $(event.target).closest(".scPickBox").length) return;
+    var _prevMol = "";
+    try { _prevMol = (typeof selectedMol !== "undefined" && selectedMol) ? String(selectedMol) : ""; } catch (ePM) {}
     selectedMol = $(this).attr("id");
+    // v58 scenario quizzes: reselecting the current molecule starts it
+    // fresh in authoring — a solved quiz can be taken again (re-arm below).
+    // In Present the solved display owns re-picks (going back never
+    // re-quizzes); switches keep each molecule's progress; toggle-off
+    // still clears everything.
+    var _authRe = true;
+    try { _authRe = !(typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()); } catch (eAR) { _authRe = true; }
+    try {
+      if (_authRe && _prevMol && String(selectedMol) === _prevMol &&
+          typeof window !== "undefined" && window.__mulerQuizSolved) {
+        delete window.__mulerQuizSolved[String(selectedMol)];
+      }
+      // v58: the just-solved capture record is per-molecule too — reselect
+      // drops it so a later Update can't store a stale answer. Quiz intent
+      // goes with it (fresh round).
+      try {
+        if (_authRe && _prevMol && String(selectedMol) === _prevMol &&
+            typeof window !== "undefined" && window.__mulerJustSolved &&
+            String(window.__mulerJustSolved.mol || "") === String(selectedMol)) {
+          window.__mulerJustSolved = null;
+        }
+      } catch (eJS3) {}
+      try {
+        if (_authRe && _prevMol && String(selectedMol) === _prevMol &&
+            typeof window !== "undefined" && window.__mulerQuizIntent &&
+            String(window.__mulerQuizIntent.mol || "") === String(selectedMol)) {
+          window.__mulerQuizIntent = null;
+        }
+      } catch (eQI5) {}
+    } catch (eQS) {}
     // Explicit user choice (vs the silent methane boot default): the header
     // language toggle carries ?mol= only for explicitly chosen molecules.
     try { window.__mulerUserPickedMol = true; } catch (eUp) { /* best-effort */ }
 
     $(".menuLi").removeClass("selectedLi");
     $(this).addClass("selectedLi");
+
+    // v58 menu quizzes (Present, deferred task only): cross-molecule picks
+    // start blank — drop the previous molecule's mode/box/paint/prompt/
+    // verdict/target so the fresh load never inherits a preselected
+    // component. Same-molecule re-clicks keep the retake path; pinned-molecule
+    // steps and authoring keep sticky behavior.
+    var _swMenu = false, _swMode0 = "", _swFresh = false;
+    try {
+      if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting() &&
+          typeof fScenarioPresent === "function" &&
+          (!_prevMol || String(selectedMol) !== _prevMol)) {
+        var _p0 = fScenarioPresent();
+        var _s0 = _p0 && _p0.steps ? _p0.steps[_p0.index] : null;
+        if (_s0 && _s0.quiz && _s0.quiz.mode && _s0.quiz.mode !== "none" && !_s0.quiz.mol) {
+          _swMenu = true; _swMode0 = String(_s0.quiz.mode); _swFresh = true;
+          try { if (typeof fMulerQuizDisarm === "function") fMulerQuizDisarm(); } catch (eSW1) {}
+          try { nameAnalysisMode = "none"; } catch (eSW2) {}
+          try { if (typeof jQuery !== "undefined") jQuery(".nameCompBox").removeClass("selected"); } catch (eSW3) {}
+          try { if (typeof fClearHighlights === "function") fClearHighlights(); } catch (eSW4) {}
+        }
+      }
+    } catch (eSW0) {}
 
     fSelectMol();
     // Scenario subset hook (additive, guarded): in pick mode, selecting a
@@ -1536,6 +1612,18 @@ $(document).ready(function () {
     } catch (e) {
       /* scenario absent */
     }
+    // v58 menu quizzes: the apply above either armed fresh (unsolved) or
+    // showed the solved display — blank only the armed case (prompt + live
+    // target ask; no preselected box or paint).
+    try {
+      if (typeof fScenarioStudentAutoArm === "function") fScenarioStudentAutoArm();
+      if (_swFresh && typeof window !== "undefined" && window.MulerQuizTarget &&
+          typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) {
+        try { if (typeof jQuery !== "undefined") jQuery(".nameCompBox").removeClass("selected"); } catch (eSW7) {}
+        try { if (typeof fClearHighlights === "function") fClearHighlights(); } catch (eSW8) {}
+        try { if (typeof fUpdateSVG === "function") fUpdateSVG(); } catch (eSW9) {}
+      }
+    } catch (eSA2) {}
     // Scenario present hook (additive, guarded): in a menu-only step with
     // interaction on, re-show the naming hint after free-browse selection.
     try {

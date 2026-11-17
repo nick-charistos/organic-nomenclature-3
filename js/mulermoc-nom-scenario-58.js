@@ -630,6 +630,110 @@ function fScenarioCapture() {
   };
   if (spin) fScenarioToast("Note: 3D spin is on — stored view may drift.");
   MuLERMoCScenario.lastCaptureNote = adopted ? "Single pick adopted as the step molecule." : null;
+  // v58 scenario quizzes: an armed quiz at capture time makes this a quiz
+  // step; a disarmed capture stays (or becomes) classic. Quiz steps force
+  // nameClick on (the task box must stay clickable in Present).
+  // Just-solved answers count too (the target clears on exact): solving and
+  // then Updating is the natural authoring flow. Consumed on use so a later
+  // disarmed Update can still remove the quiz. Any menu-carrying capture
+  // stores a deferred task (mol ""): the quiz follows whatever gets picked.
+  try {
+    var _liveT = (typeof window !== "undefined") ? window.MulerQuizTarget : null;
+    var _liveA = false;
+    try { _liveA = (typeof fMulerSelectActive === "function") && fMulerSelectActive(); } catch (eA2) {}
+    if (_liveT && _liveA && mol && typeof nameExamples !== "undefined" && nameExamples[mol]) {
+      // Menu-carrying captures store a deferred task (mol ""): the quiz
+      // follows whatever gets picked; menu-less steps pin the molecule.
+      step.quiz = { kind: "nameComp", mode: String(_liveT), mol: ((typeof showMenu !== "undefined" && showMenu) || (typeof menuOnly !== "undefined" && menuOnly)) ? "" : String(mol), prompt: "" };
+      step.show = step.show || {};
+      step.show.nameClick = true;
+    } else if (!_liveT && mol && typeof nameExamples !== "undefined" && nameExamples[mol]) {
+      var _js = (typeof window !== "undefined") ? window.__mulerJustSolved : null;
+      if (_js && _js.mode && _js.mol && String(_js.mol) === String(mol)) {
+        step.quiz = { kind: "nameComp", mode: String(_js.mode), mol: ((typeof showMenu !== "undefined" && showMenu) || (typeof menuOnly !== "undefined" && menuOnly)) ? "" : String(mol), prompt: "" };
+        step.show = step.show || {};
+        step.show.nameClick = true;
+        try { if (typeof window !== "undefined") window.__mulerJustSolved = null; } catch (eJC) {}
+      }
+    }
+    // v58: select-ON + Add with no armed or solved quiz still makes a quiz
+    // step — the task is the currently shown component when it resolves for
+    // this molecule, else the main-chain count when the molecule has one.
+    // Unresolvable molecules stay classic (a modeless quiz could never arm).
+    if (!step.quiz && _liveA && mol && typeof nameExamples !== "undefined" && nameExamples[mol]) {
+      var _fbMode = "";
+      try {
+        var _nm = (typeof nameAnalysisMode !== "undefined") ? String(nameAnalysisMode) : "none";
+        if (_nm && _nm !== "none") {
+          var _preN = (typeof fMulerQuizResolveTarget === "function") ? fMulerQuizResolveTarget(_nm) : null;
+          if (_preN && _preN.length) _fbMode = _nm;
+        }
+      } catch (eFB1) { _fbMode = ""; }
+      if (!_fbMode) {
+        try {
+          var _preC = (typeof fMulerQuizResolveTarget === "function") ? fMulerQuizResolveTarget("compCarbonsCount") : null;
+          if (_preC && _preC.length) _fbMode = "compCarbonsCount";
+        } catch (eFB2) { _fbMode = ""; }
+      }
+      if (_fbMode) {
+        step.quiz = { kind: "nameComp", mode: String(_fbMode), mol: ((typeof showMenu !== "undefined" && showMenu) || (typeof menuOnly !== "undefined" && menuOnly)) ? "" : String(mol), prompt: "" };
+        step.show = step.show || {};
+        step.show.nameClick = true;
+      }
+    }
+    // v58 menu quizzes: menu-only captures carry no molecule, so the task
+    // follows whatever gets picked (mol ""). Mode comes from the just-solved
+    // answer or the surviving quiz intent when that molecule is in the menu
+    // (previewing/deselecting while menu-building disarms the live target,
+    // but the intent record outlives teardown, mol-guarded). No select-mode
+    // requirement: the records below are only ever written from an armed
+    // quiz, so their presence already proves author intent.
+    if (!step.quiz && (typeof menuOnly !== "undefined" && menuOnly) && Array.isArray(subset) && subset.length) {
+      var _mm = "";
+      try {
+        var _jsM = (typeof window !== "undefined") ? window.__mulerJustSolved : null;
+        if (_jsM && _jsM.mode && _jsM.mol && subset.indexOf(String(_jsM.mol)) >= 0) _mm = String(_jsM.mode);
+      } catch (eMM1) { _mm = ""; }
+      if (!_mm) {
+        try {
+          var _qi = (typeof window !== "undefined") ? window.__mulerQuizIntent : null;
+          if (_qi && _qi.mode && _qi.mol && subset.indexOf(String(_qi.mol)) >= 0) _mm = String(_qi.mode);
+        } catch (eMM2) { _mm = ""; }
+      }
+      if (_mm) {
+        step.quiz = { kind: "nameComp", mode: _mm, mol: "", prompt: "" };
+        step.show = step.show || {};
+        step.show.nameClick = true;
+      }
+    }
+    if (step.quiz) {
+      try { if (typeof fScenarioToast === "function") fScenarioToast(fMulerPre("Το κουίζ αποθηκεύτηκε στο βήμα.", "Quiz saved into the step.") + " (" + String(step.quiz.mode) + (step.quiz.mol ? "" : ", menu") + ")"); } catch (eQT0) {}
+    }
+    // v58: quiz steps own their display (auto-arm / solved display) — never
+    // replay a stale component highlight, so capture a clean naming mode.
+    // The step also saves the exact comp state: authoring solved modes per
+    // molecule (that mol, plus any picked menu molecules).
+    try {
+      if (step.quiz) {
+        step.nameAnalysisMode = "none";
+        var _pre = {};
+        var _putSolved = function (m) {
+          try {
+            var e = (typeof window !== "undefined" && window.__mulerQuizSolved && window.__mulerQuizSolved[m]) || null;
+            if (!e) return;
+            var arr = [];
+            for (var k in e) { if (e[k] && typeof k === "string" && k && k !== "none" && arr.indexOf(k) < 0) arr.push(k); }
+            if (arr.length) _pre[String(m)] = arr;
+          } catch (eP1) {}
+        };
+        if (mol && typeof nameExamples !== "undefined" && nameExamples[mol]) _putSolved(String(mol));
+        if (typeof menuOnly !== "undefined" && menuOnly && Array.isArray(subset)) {
+          for (var _si = 0; _si < subset.length; _si++) { if (subset[_si] && subset[_si] !== mol) _putSolved(String(subset[_si])); }
+        }
+        step.quiz.preSolved = _pre;
+      }
+    } catch (ePS) { try { if (step.quiz) step.quiz.preSolved = {}; } catch (ePS2) {} }
+  } catch (eQ) {}
   return step;
 }
 
@@ -1201,6 +1305,65 @@ function fScenarioValidate(obj) {
     if (_rawChain !== null && st.chainIdx === 0 && String(_rawChain) !== "0") {
       warnings.push("Step " + (i + 1) + ": invalid chain step discarded (default used).");
     }
+    // v58 scenario quizzes (additive, no version bump): optional live task.
+    // Anything malformed is dropped with a warning; the step stays a plain
+    // classic step. Forward-compatible: unknown quiz kinds are kept as-is
+    // (future activity types). Worked-example snapshots are retired —
+    // classic replay shows solved steps — and are dropped with a warning.
+    (function () {
+      try {
+        var qz = (s && typeof s.quiz !== "undefined") ? s.quiz : undefined;
+        if (qz === undefined || qz === null) return;
+        if (typeof qz !== "object" || Array.isArray(qz)) {
+          warnings.push("Step " + (i + 1) + ": invalid quiz task discarded (classic step kept).");
+          return;
+        }
+        var qm = (qz.mode === null || qz.mode === undefined) ? "" : String(qz.mode);
+        var qmol = (qz.mol === null || qz.mol === undefined) ? "" : String(qz.mol);
+        if (!qm || qm === "none") {
+          warnings.push("Step " + (i + 1) + ": quiz task without a mode discarded (classic step kept).");
+          return;
+        }
+        if (qmol && hasMol && qmol !== st.selectedMol) {
+          warnings.push("Step " + (i + 1) + ": quiz molecule differs from the step molecule — kept, will not arm there.");
+        }
+        st.quiz = {
+          kind: (qz.kind === null || qz.kind === undefined) ? "nameComp" : String(qz.kind),
+          mode: qm,
+          mol: qmol,
+          prompt: (qz.prompt === null || qz.prompt === undefined) ? "" : String(qz.prompt),
+        };
+        st.requireSolution = (s.requireSolution === false) ? false : true;
+        // v58 preSolved: authored solved baseline {mol: [modes]}. Anything
+        // malformed is dropped (empty baseline); the task itself is kept.
+        (function () {
+          try {
+            var _pv = (qz && typeof qz.preSolved !== "undefined") ? qz.preSolved : undefined;
+            if (_pv === undefined || _pv === null) return;
+            var _pm = {};
+            if (typeof _pv === "object" && !Array.isArray(_pv)) {
+              for (var _pk in _pv) {
+                if (!_pk || typeof _pk !== "string") continue;
+                var _pa = _pv[_pk];
+                if (!Array.isArray(_pa)) continue;
+                var _pc = [];
+                for (var _pi = 0; _pi < _pa.length && _pc.length < 40; _pi++) {
+                  var _ms = (_pa[_pi] === null || _pa[_pi] === undefined) ? "" : String(_pa[_pi]);
+                  if (_ms && _ms !== "none" && _pc.indexOf(_ms) < 0) _pc.push(_ms);
+                }
+                if (_pc.length) _pm[_pk] = _pc;
+              }
+            }
+            st.quiz.preSolved = _pm;
+          } catch (ePV) { try { st.quiz.preSolved = {}; } catch (ePV2) {} }
+        })();
+        if (s && typeof s.quizSnapshot !== "undefined" && s.quizSnapshot !== null) {
+          warnings.push("Step " + (i + 1) + ": worked-example snapshots are retired (classic replay shows solved steps) — dropped.");
+        }
+      } catch (eQV) {
+        try { warnings.push("Step " + (i + 1) + ": invalid quiz data discarded (classic step kept)."); } catch (eW) {}
+      }
+    })();
     // Step language: en|gr kept, legacy/unknown → Greek default.
     var _rawLang = s && typeof s.lang !== "undefined" ? s.lang : null;
     if (_rawLang !== "en" && _rawLang !== "gr" && _rawLang !== null && _rawLang !== "" && typeof _rawLang !== "undefined") {
@@ -1898,6 +2061,217 @@ function fScenarioClickNameBox(step, token) {
   }
 }
 
+// ── v58 scenario quizzes ────────────────────────────────────────────────
+// A step may carry a quiz task (step.quiz: {kind, mode, mol}); an armed quiz
+// at capture time stores it, a disarmed Update clears it. Solved display
+// needs no machinery: classic replay shows the solved state. requireSolution
+// (default on) gates forward moves; unchecked steps never gate. Worked
+// examples are just solved steps — no snapshot layer.
+
+// Live student task, if any: Present + quiz step + live target for that
+// step's mode. Solved/quiescent steps (no target) return null — the reps
+// lock and the classic display own those states. Menu steps (no quiz.mol)
+// arm on whatever molecule gets picked (see the menu-pick hook below).
+function fScenarioStudentTask() {
+  try {
+    if (typeof MuLERMoCScenario === "undefined" || !MuLERMoCScenario.present) return null;
+    var ps = (typeof fScenarioPresent === "function") ? fScenarioPresent() : null;
+    if (!ps || !ps.steps || !ps.steps.length) return null;
+    var i = ps.index;
+    var st = ps.steps[i];
+    if (!st || !st.quiz || !st.quiz.mode || st.quiz.mode === "none") return null;
+    if (st.quiz.mol && st.selectedMol && st.quiz.mol !== st.selectedMol) return null;
+    var t = null;
+    try { t = (typeof window !== "undefined") ? window.MulerQuizTarget : null; } catch (eT) {}
+    if (!t) return null;
+    // A practice target for another component is not the task (it never
+    // gates and never narrows box clicks — see the solved-unlock below).
+    try { if (String(t) !== String(st.quiz.mode)) return null; } catch (eTM) { return null; }
+    return { quiz: st.quiz, idx: i };
+  } catch (e) { return null; }
+}
+
+// Navigation gate: leaving a gated step forward requires the step's own
+// task solved — not merely a live target. Ungraded practice never gates;
+// a task that was never armed (broken auto-arm, toasted on apply) fails
+// open instead of deadlocking. Back/present always allowed;
+// requireSolution:false never gates.
+function fScenarioNavAllowed(idx) {
+  try {
+    if (typeof MuLERMoCScenario === "undefined" || !MuLERMoCScenario.present) return true;
+    var ps = (typeof fScenarioPresent === "function") ? fScenarioPresent() : null;
+    if (!ps || !ps.steps || !ps.steps.length) return true;
+    var cur = ps.index;
+    if (!(idx > cur)) return true;
+    var st = ps.steps[cur];
+    if (!st || !st.quiz || !st.quiz.mode || st.quiz.mode === "none") return true;
+    if (st.requireSolution === false) return true;
+    var key = "";
+    try { key = String((typeof MuLERMoCScenario !== "undefined" && MuLERMoCScenario.presentId) || "live") + "#" + cur; } catch (eK) { key = ""; }
+    // Stale pin (quiz molecule vs loaded molecule): fail open — classic
+    // step. The mismatch toast already fired on apply.
+    try {
+      var _lm = (typeof selectedMol !== "undefined" && selectedMol) ? String(selectedMol) : "";
+      if (st.quiz.mol && _lm && st.quiz.mol !== _lm) return true;
+    } catch (eMM) { return true; }
+    // Solved for the relevant molecule (pinned, or current pick when
+    // deferred): free to advance.
+    var done = false;
+    try { done = !!(typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved(String(st.quiz.mode))); } catch (eD) {}
+    if (done) return true;
+    // Never armed this visit: fail open (auto-arm toasts its own reason).
+    var ao = false;
+    try { ao = !!(typeof window !== "undefined" && window.__mulerTaskArmed && key && window.__mulerTaskArmed[key]); } catch (eAO) {}
+    if (!ao) return true;
+    try {
+      if (typeof fScenarioToast === "function") fScenarioToast(fMulerPre("Λύσε πρώτα το κουίζ για να συνεχίσεις.", "Solve the quiz first to continue."));
+    } catch (eT2) {}
+    return false;
+  } catch (e) { return true; }
+}
+
+// Step-applied quiz handling (called at the end of fScenarioApply).
+// Present auto-arms the step's task (student mode); authoring preview of a
+// task step stays disarmed classic. Picks are cleared per entry; solved
+// state (run progress + authored baseline) is kept — solved molecules show
+// their display instead of re-arming, so revisits never re-quiz.
+// Solved steps need no other machinery: classic replay shows the state.
+function fScenarioApplyQuiz(step) {
+  try {
+    if (!step) return;
+    var task = step.quiz || null;
+    var hasTask = !!(task && task.mode && task.mode !== "none");
+    if (!hasTask) return;
+    // Never fight a later apply: kill the pending stored-highlight replay
+    // (timer + 3D-parse paths both honor `done`).
+    try { if (typeof MuLERMoCScenario !== "undefined" && MuLERMoCScenario.pending3D) MuLERMoCScenario.pending3D.done = true; } catch (eP) {}
+    var isP = false;
+    try { isP = (typeof fMulerSelectPresenting === "function") && fMulerSelectPresenting(); } catch (eP3) {}
+    if (!isP) return;
+    // Armed-once accounting for the gate: each visit starts unarmed; only
+    // a successful task arm below flips it (manual task-box arms count
+    // too — see fMulerQuizArmForBox).
+    var _aoKey = "";
+    try {
+      var _psA = (typeof fScenarioPresent === "function") ? fScenarioPresent() : null;
+      if (_psA) _aoKey = String((typeof MuLERMoCScenario !== "undefined" && MuLERMoCScenario.presentId) || "live") + "#" + _psA.index;
+      if (_aoKey && typeof window !== "undefined") {
+        if (!window.__mulerTaskArmed) window.__mulerTaskArmed = {};
+        window.__mulerTaskArmed[_aoKey] = false;
+      }
+    } catch (eAO0) { _aoKey = ""; }
+    // Naming hidden = unanswerable task: fall back to classic (gate passes
+    // with no live target).
+    try { if (step.show && step.show.naming === false) return; } catch (eN) {}
+    var molNow = "";
+    try { molNow = (typeof selectedMol !== "undefined" && selectedMol) ? String(selectedMol) : ""; } catch (eM) {}
+    // Stale task (quiz pins a molecule the step no longer loads): classic
+    // fallback — say so, or Present silently shows a non-quiz step.
+    if (task.mol && molNow && task.mol !== molNow) {
+      try { if (typeof fScenarioToast === "function") fScenarioToast(fMulerPre("Το κουίζ δείχνει άλλο μόριο — το βήμα παίζει κλασικά.", "Quiz points at another molecule — classic step.")); } catch (eMM) {}
+      return;
+    }
+    // Pure-deferred menu quiz (no molecule loaded yet): fresh picks, no
+    // stale-DOM arm — the menu-pick hook arms for the picked molecule.
+    // Solved marks are untouched (molecule unknown); the pick-time arm
+    // clears them for the picked molecule.
+    if (!molNow && !task.mol) {
+      try { if (typeof fMulerQuizDisarm === "function") fMulerQuizDisarm(); } catch (eD0) {}
+      try {
+        var s0 = (typeof fMulerSelectState === "function") ? fMulerSelectState() : null;
+        if (s0) { s0.atoms2D = []; s0.bonds2D = []; s0.atoms3D = []; s0.bonds3D = []; s0.groups = []; }
+      } catch (eC0) {}
+      return;
+    }
+    // Debounce: menu picks call auto-arm right after the load it triggers;
+    // without this a re-pick within the window would restart the task.
+    try {
+      var _now = (new Date()).getTime();
+      var _key = (task.mode || "") + "|" + (task.mol || molNow || "");
+      if (typeof window !== "undefined" && window.__mulerStudentArmAt && (_now - window.__mulerStudentArmAt) < 1500 &&
+          window.__mulerStudentArmKey === _key) return;
+      if (typeof window !== "undefined") { window.__mulerStudentArmAt = _now; window.__mulerStudentArmKey = _key; }
+    } catch (eD) {}
+    try { if (typeof window !== "undefined" && window.MulerUserSelection) window.MulerUserSelection.active = true; } catch (eA2) {}
+    try {
+      var host = (typeof document !== "undefined") ? document.getElementById("jsmeNomeclatureSVG") : null;
+      if (host && host.classList) host.classList.add("selecting");
+    } catch (eSV) {}
+    try { if (typeof fMulerQuizDisarm === "function") fMulerQuizDisarm(); } catch (eD2) {}
+    try {
+      var s2 = (typeof fMulerSelectState === "function") ? fMulerSelectState() : null;
+      if (s2) { s2.atoms2D = []; s2.bonds2D = []; s2.atoms3D = []; s2.bonds3D = []; s2.groups = []; }
+    } catch (eC3) {}
+    // v58: the step's authored solved baseline seeds the run (union only —
+    // student progress is never erased). A solved molecule shows its
+    // display instead of re-arming (no re-quiz on revisit or re-pick).
+    try {
+      if (typeof window !== "undefined" && molNow && task && task.mode) {
+        var _ps0 = (task.preSolved && typeof task.preSolved === "object" && !Array.isArray(task.preSolved)) ? task.preSolved[molNow] : null;
+        if (_ps0 && _ps0.length) {
+          if (!window.__mulerQuizSolved) window.__mulerQuizSolved = {};
+          if (!window.__mulerQuizSolved[molNow]) window.__mulerQuizSolved[molNow] = {};
+          for (var _pi0 = 0; _pi0 < _ps0.length; _pi0++) {
+            var _pm0 = String(_ps0[_pi0] || "");
+            if (_pm0 && _pm0 !== "none") window.__mulerQuizSolved[molNow][_pm0] = true;
+          }
+        }
+      }
+    } catch (ePS0) {}
+    var _doneNow = false;
+    try { _doneNow = !!(typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved(String(task.mode))); } catch (eDN) {}
+    if (_doneNow) {
+      try { if (typeof fMulerQuizShowSolved === "function") fMulerQuizShowSolved(String(task.mode)); } catch (eSD) {}
+      return;
+    }
+    try {
+      var boxId = (typeof fMulerQuizBoxIdForMode === "function") ? fMulerQuizBoxIdForMode(task.mode) : null;
+      var bel = (boxId && typeof document !== "undefined") ? document.getElementById(boxId) : null;
+      // Deferred menu quizzes (no molecule loaded yet) re-arm on the pick —
+      // silent. A missing/hidden box WITH a molecule is a broken task: say so.
+      if (!bel || (bel.classList && bel.classList.contains("comp-hidden"))) {
+        if (molNow) {
+          try { if (typeof fScenarioToast === "function") fScenarioToast(fMulerPre("Το κουτί του κουίζ λείπει — το βήμα παίζει κλασικά.", "Quiz box unavailable — classic step.")); } catch (eMB) {}
+        }
+        return;
+      }
+      try { if (typeof jQuery !== "undefined") jQuery(".nameCompBox").removeClass("selected"); } catch (eR4) {}
+      // The PresentBlocked guard would refuse the arm (no target yet):
+      // lift it for this call only.
+      var _armed = false;
+      try { if (typeof window !== "undefined") window.__mulerStudentArming = true; } catch (eF) {}
+      try { if (typeof fMulerQuizArmForBox === "function" && typeof jQuery !== "undefined") _armed = !!fMulerQuizArmForBox(boxId, jQuery("#" + boxId)); } finally { try { if (typeof window !== "undefined") window.__mulerStudentArming = false; } catch (eF2) {} }
+      try { if (_armed && _aoKey && typeof window !== "undefined" && window.__mulerTaskArmed) window.__mulerTaskArmed[_aoKey] = true; } catch (eAO1) {}
+      // A failed arm here is a stuck student (reps dead, no prompt, no gate
+      // task) — name it instead of dying silently.
+      if (!_armed) {
+        try { if (typeof fScenarioToast === "function") fScenarioToast(fMulerPre("Το κουίζ δεν όπλισε για αυτό το μόριο.", "Quiz did not arm for this molecule.") + " (" + String(task.mode) + ", " + String(molNow) + ")"); } catch (eAF) {}
+      }
+    } catch (eB) {
+      try { if (typeof window !== "undefined") window.__mulerLastQuizError = { where: "apply", err: String((eB && eB.message) || eB) }; } catch (eSE) {}
+    }
+  } catch (e) {
+    try { if (typeof window !== "undefined") window.__mulerLastQuizError = { where: "apply-outer", err: String((e && e.message) || e) }; } catch (eSE2) {}
+  }
+}
+
+// Menu quizzes (no task.mol): arm on whatever molecule gets picked, via the
+// menu-pick hook. Unlike fScenarioStudentTask (which needs a live target),
+// this path is allowed to CREATE the target. requireSolution only gates
+// advancing — unchecked steps still arm for practice.
+function fScenarioStudentAutoArm() {
+  try {
+    if (!(typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting())) return;
+    if (typeof fScenarioPresent !== "function") return;
+    var _ps = fScenarioPresent();
+    if (!_ps || !_ps.steps || !_ps.steps.length) return;
+    var _st = _ps.steps[_ps.index];
+    if (!_st || !_st.quiz || !_st.quiz.mode || _st.quiz.mode === "none") return;
+    fScenarioApplyQuiz(_st);
+  } catch (e) {
+    try { if (typeof window !== "undefined") window.__mulerLastQuizError = { where: "autoarm", err: String((e && e.message) || e) }; } catch (eSE3) {}
+  }
+}
 function fScenarioApply(step) {
   if (!MuLERMoCScenario.ready || !step) return false;
   // Step language: the step shows naming + UI in its creation language.
@@ -1937,6 +2311,11 @@ function fScenarioApply(step) {
     // author's live selectedRule untouched on menu-only steps
     fScenarioChrome(step.show);
     try { if (typeof fMulerRefreshStepChrome === "function") fMulerRefreshStepChrome(); } catch (e) {}
+    // v58 scenario quizzes: menu steps arm on the picked molecule (deferred —
+    // nothing loaded yet, so this usually no-ops until the menu-pick hook
+    // fires fScenarioStudentAutoArm). Run it here so the step-apply path
+    // never skips the quiz block.
+    try { if (typeof fScenarioApplyQuiz === "function") fScenarioApplyQuiz(step); } catch (eQm) {}
     return true;
   }
   // 1. state globals (same scope as molview/teaching layers)
@@ -2136,6 +2515,9 @@ function fScenarioApply(step) {
   // 7. chrome per show.*
   fScenarioChrome(step.show);
   try { if (typeof fMulerRefreshStepChrome === "function") fMulerRefreshStepChrome(); } catch (e) {}
+  // 8. v58 scenario quizzes: Present auto-arms the step's task (student
+  // mode). No-ops without quiz fields.
+  try { if (typeof fScenarioApplyQuiz === "function") fScenarioApplyQuiz(step); } catch (eQ) {}
   return true;
 }
 
@@ -4581,6 +4963,17 @@ function fScenarioExitPresent() {
   }
   // Leave the step language behind: authoring continues in session language.
   try { window.__mulerStepLang = null; } catch (e) {}
+  // Student mode may have armed select mode without the entry button (its UI
+  // stays hidden in Present): sync the button + canvas class to the live
+  // state on exit so authoring never shows an unlit-but-armed mode.
+  try {
+    var _act = false;
+    try { _act = !!(typeof fMulerSelectActive === "function" && fMulerSelectActive()); } catch (eA) {}
+    var _sb2 = (typeof document !== "undefined") ? document.getElementById("selectAtomsBtn") : null;
+    if (_sb2 && _sb2.classList) { if (_act) _sb2.classList.add("active"); else _sb2.classList.remove("active"); }
+    var _sv2 = (typeof document !== "undefined") ? document.getElementById("jsmeNomeclatureSVG") : null;
+    if (_sv2 && _sv2.classList) { if (_act) _sv2.classList.add("selecting"); else _sv2.classList.remove("selecting"); }
+  } catch (eSS) {}
   try { if (typeof fMulerRefreshStepChrome === "function") fMulerRefreshStepChrome(); } catch (e2) {}
 }
 
@@ -4641,6 +5034,12 @@ function fScenarioPresentBegin(id, startIdx) {
   fScenarioStashAuthorSettings();
   MuLERMoCScenario.present = true;
   MuLERMoCScenario.presentId = scen.id;
+  // v58 scenario quizzes: each presentation starts fresh — solved progress
+  // is cleared so gated steps re-arm on entry instead of deadlocking.
+  // Quiz intent + armed-once go with it (Present arms from step tasks only).
+  try { if (typeof window !== "undefined") window.__mulerQuizSolved = {}; } catch (eQS) {}
+  try { if (typeof window !== "undefined") window.__mulerQuizIntent = null; } catch (eQI6) {}
+  try { if (typeof window !== "undefined") window.__mulerTaskArmed = {}; } catch (eAO3) {}
   scen.index = start;
   fScenarioSyncLegacy();
   var applied = false;
@@ -5280,7 +5679,7 @@ function fScenarioRenderOne(scen) {
       "<button class='scGo' data-tooltip='" + ((typeof fMulerT === "function") ? fMulerT("preview") : "Προεπισκόπηση") + "'>Go</button>" +
       "<button class='scPresentStep' data-tooltip='" + ((typeof fMulerPre === "function") ? fMulerPre("Παρουσίαση από το βήμα ", "Present from step ", st.n) : ("Παρουσίαση από το βήμα " + st.n)) + "'>▶</button>" +
       "<button class='scUpdate' data-tooltip='" + ((typeof fMulerT === "function") ? fMulerT("updateStep") : "Ενημέρωση βήματος από την τρέχουσα προβολή") + "'>Update</button><button class='scDupe' data-tooltip='" + ((typeof fMulerT === "function") ? fMulerT("dupeStep") : "Διπλασιασμός βήματος") + "'>⧉</button><button class='scUp' data-tooltip='" + ((typeof fMulerT === "function") ? fMulerT("moveUp") : "Επάνω") + "'>↑</button><button class='scDown' data-tooltip='" + ((typeof fMulerT === "function") ? fMulerT("moveDown") : "Κάτω") + "'>↓</button>" +
-      "<button class='delete' data-tooltip='" + ((typeof fMulerT === "function") ? fMulerT("deleteStep") : "Διαγραφή") + "'>✕</button>";
+      "<button class='delete scIconBtn' data-tooltip='" + ((typeof fMulerT === "function") ? fMulerT("deleteStep") : "Διαγραφή") + "'>✕</button>";
     // Grip first so it leads the row; mousedown on it arms HTML5 drag
     // (row stays non-draggable otherwise so inputs/textareas keep working).
     if (row.firstChild) row.insertBefore(grip, row.firstChild);
@@ -5330,6 +5729,28 @@ function fScenarioRenderOne(scen) {
     var numWrap = row.querySelector(".scStepNumberWrap");
     if (numWrap) { numWrap.appendChild(molBadge); numWrap.appendChild(langBadge); }
     else { row.insertBefore(langBadge, row.firstChild.nextSibling); row.insertBefore(molBadge, row.firstChild.nextSibling); }
+    // Quiz badge: directly below the molecule/menu badge (lang badge is
+    // absolutely positioned, so this lands right under MolBadge).
+    try {
+      if (st.quiz && st.quiz.mode && st.quiz.mode !== "none") {
+        var quizBadge = document.createElement("span");
+        var _qk = "is-quiz";
+        try {
+          var _kk = String((st.quiz.kind || "nameComp")).toLowerCase().replace(/[^a-z0-9]+/g, "");
+          if (_kk && _kk !== "namecomp") _qk += " is-quiz-" + _kk;
+        } catch (eK) {}
+        quizBadge.className = "scQuizBadge " + _qk;
+        quizBadge.textContent = "quiz";
+        try {
+          quizBadge.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("quizStepBadge") : "Βήμα κουίζ") + ": " + String(st.quiz.mode));
+          quizBadge.setAttribute("aria-label", ((typeof fMulerT === "function") ? fMulerT("quizStepBadge") : "Βήμα κουίζ"));
+        } catch (eQB) {}
+        if (numWrap) {
+          try { numWrap.insertBefore(quizBadge, langBadge); } catch (eQI) { numWrap.appendChild(quizBadge); }
+        }
+        else row.insertBefore(quizBadge, row.firstChild.nextSibling);
+      }
+    } catch (eQB2) {}
     var titleInput = row.querySelector("input.scStepTitle");
     titleInput.value = st.title || "";
     titleInput.onchange = function () {
@@ -5733,19 +6154,26 @@ function fScenarioRenderOne(scen) {
     nameRow.appendChild(nameCtlLabel);
     // Name-box interaction (user clicks only; stored highlight always
     // replays). Absent = allowed (legacy files); capture stores false.
+    // Quiz steps force it on (task boxes must stay clickable) + lock it.
     var nameClickLabel = document.createElement("label");
     nameClickLabel.className = "sshow";
     nameClickLabel.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("nameClickTip") : "Allow clicking the name boxes in presentation"));
     var nameClickCheck = document.createElement("input");
     nameClickCheck.type = "checkbox";
-    nameClickCheck.checked = !!(st.show && st.show.nameClick === true);
+    var _isQuizStep = !!(st.quiz && st.quiz.mode && st.quiz.mode !== "none");
+    if (_isQuizStep) { st.show = st.show || {}; st.show.nameClick = true; }
+    nameClickCheck.checked = _isQuizStep ? true : !!(st.show && st.show.nameClick === true);
     nameClickCheck.onchange = function () {
+      if (_isQuizStep) { try { nameClickCheck.checked = true; } catch (eQZ) {} return; }
       st.show = st.show || {};
       st.show.nameClick = nameClickCheck.checked;
     };
     nameClickLabel.appendChild(nameClickCheck);
     nameClickLabel.appendChild(document.createTextNode(" " + ((typeof fMulerT === "function") ? fMulerT("nameInteract") : "Διάδραση ονομασίας")));
     nameRow.appendChild(nameClickLabel);
+    // Quiz steps: interaction is forced on (task boxes must stay clickable),
+    // so the row is hidden rather than showing a locked checkbox.
+    if (_isQuizStep) { try { nameClickLabel.style.display = "none"; } catch (eQH) {} }
     // Per-component eye toggles in presentation (Ορατότητα συνθετικών):
     // checked → the master eye switch starts lit and the small eye buttons
     // above each name box stay live during presentation (visibility itself
@@ -5770,13 +6198,32 @@ function fScenarioRenderOne(scen) {
     nameEyeLabel.appendChild(nameEyeCheck);
     nameEyeLabel.appendChild(document.createTextNode(" " + ((typeof fMulerT === "function") ? fMulerT("compVisibility") : "Ορατότητα συνθετικών")));
     nameRow.appendChild(nameEyeLabel);
+    // Quiz gate (v58 scenario quizzes): whether advancing requires solving
+    // the step's quiz. Only meaningful on quiz steps — disabled otherwise.
+    var quizReqLabel = document.createElement("label");
+    quizReqLabel.className = "sshow";
+    quizReqLabel.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("requireSolution") : "Απαίτηση λύσης κουίζ για συνέχεια"));
+    var quizReqCheck = document.createElement("input");
+    quizReqCheck.type = "checkbox";
+    quizReqCheck.checked = (st.requireSolution !== false);
+    if (!_isQuizStep) {
+      quizReqCheck.checked = false;
+      quizReqCheck.disabled = true;
+      quizReqLabel.classList.add("disabled");
+    }
+    quizReqCheck.onchange = function () {
+      st.requireSolution = quizReqCheck.checked;
+    };
+    quizReqLabel.appendChild(quizReqCheck);
+    quizReqLabel.appendChild(document.createTextNode(" " + ((typeof fMulerT === "function") ? fMulerT("requireSolution") : "Απαίτηση λύσης")));
+    nameRow.appendChild(quizReqLabel);
     var _syncNameRow = function (write) {
       var on = namingCheck.checked;
       if (write !== false) {
         st.show = st.show || {};
         st.show.naming = on;
       }
-      [[nameCtlCheck, nameCtlLabel, false], [nameClickCheck, nameClickLabel, false], [nameEyeCheck, nameEyeLabel, !st.selectedMol]].forEach(function (t) {
+      [[nameCtlCheck, nameCtlLabel, false], [nameClickCheck, nameClickLabel, _isQuizStep], [nameEyeCheck, nameEyeLabel, !st.selectedMol]].forEach(function (t) {
         var chk = t[0], lbl = t[1], locked = t[2];
         var dis = !on || locked;
         chk.disabled = dis;
@@ -6097,6 +6544,9 @@ function fScenarioGo(i) {
   if (!ps.steps.length) return;
   if (i < 0) i = 0;
   if (i >= ps.steps.length) i = ps.steps.length - 1;
+  // v58 quiz gate: leaving a gated step forward requires a completed quiz
+  // (Present only — authoring preview always passes).
+  try { if (typeof fScenarioNavAllowed === "function" && !fScenarioNavAllowed(i)) return; } catch (eG) {}
   ps.index = i;
   fScenarioSyncLegacy();
   try {
@@ -6180,6 +6630,17 @@ function fScenarioUpdateStep(scenId, idx) {
   fresh.show.naming = oldShow.naming !== false;
   fresh.show.nameClick = oldShow.nameClick === true;
   fresh.show.nameEye = oldShow.nameEye === true;
+  // v58 quiz steps: capture above owns the task (armed → set, disarmed →
+  // cleared with a toast so the loss is explicit, never silent).
+  // requireSolution is authored (default on); nameClick is forced on.
+  try {
+    if (fresh.quiz) {
+      if (typeof old.requireSolution !== "undefined") fresh.requireSolution = !!old.requireSolution;
+      fresh.show.nameClick = true;
+    } else if (old.quiz && old.quiz.mode) {
+      try { if (typeof fScenarioToast === "function") fScenarioToast(fMulerPre("Το κουίζ αφαιρέθηκε — το βήμα είναι κλασικό.", "Quiz removed — step is classic now.")); } catch (eQT) {}
+    }
+  } catch (eQ) {}
   fresh.menuGroups = fScenarioValidMenuGroups(old.menuGroups);
   s.steps[idx] = fresh;
   fScenarioSyncLegacy();
@@ -6376,6 +6837,14 @@ function fScenarioBoot() {
     if (m) {
       var i = Math.max(1, parseInt(m[1], 10)) - 1;
       if (i !== hps.index) {
+        // v58 quiz gate: forward hash jumps need a completed quiz; re-pin
+        // the hash to the current step on block.
+        try {
+          if (typeof fScenarioNavAllowed === "function" && !fScenarioNavAllowed(Math.min(i, hps.steps.length - 1))) {
+            try { history.replaceState(null, "", "#step=" + (hps.index + 1)); } catch (eH2) {}
+            return;
+          }
+        } catch (eG) {}
         hps.index = Math.min(i, hps.steps.length - 1);
         fScenarioSyncLegacy();
         var hok = false;

@@ -56,6 +56,21 @@ Methyl Hs interchangeable by definition — "any methyl H" tasks are
 well-posed and turn the rank-ordering caveat into a non-issue.
 
 ## Build plan
+- **Stage 0 — scenario quiz contract (v58, done, live-verified).** Steps
+  carry quiz tasks (`step.quiz {kind, mode, mol}` + `requireSolution`,
+  default on). Capture precedence: live target → just-solved → shown
+  comp (if resolvable) → main-chain default (if resolvable) → classic;
+  any menu-carrying step stores a deferred task (`mol: ""`) so the quiz
+  follows every picked molecule. Present auto-arms with fresh picks; any
+  unsolved component arms (task or ungraded practice), solved ones
+  highlight classically without killing a live task; the gate holds while
+  the step task is unsolved once armed (fail-open when never armed),
+  unlocks free exploration once solved, locks reps otherwise. Steps save
+  the exact authoring comp state (`preSolved`) and restore it as solved
+  display, so revisits never re-quiz. Quiz intent
+  (`__mulerQuizIntent {mode, mol}`) bridges menu-building teardown.
+  This *is* the activity shell for name-component quizzes — new activity
+  types plug the same path (kind/resolver/prompt/pick-unit).
 - **Stage 1 — activity shell.** Prompt mode arming branch/group targets
   (reuse target-resolver family; new activity purpose or reuse `branch`);
   verdict through existing compare + numberless hints; exact replays

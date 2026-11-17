@@ -3015,3 +3015,67 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 
 * Forked v57 → v58 (authoring-only; index stays on v57): html + 8 js + data_58 + 2 css + init-3-58.spt + zz-test-core58.html, `?v=58.0`, surgical rename only (historical version comments and IUPAC `P-57.1` untouched). Harness stays on v57 until the flip.
 * Audit findings (`docs/REVIEW-SCENARIO-QUIZ-58.md`, 9 questions): steps store the box (`nameAnalysisMode`) but never the task (no target/selection/solved) — applying a mid-quiz step yields the reps-locked display by accident, not contract; 18 Present guards inventoried (entry/picks/arm/hover/paint/Esc all dead); Present box clicks can only classic-select (student mode needs an explicit exception); step-change quizz-determinism is accidental (sticky by luck); solved sets have no step dimension; capture needs target+mode+mol+prompt+selection snapshot; drafts already trump everything; no probe covers Present/scenario-quiz. Recommended schema: `step.quiz` (live task) + `step.quizSnapshot` (worked example) + per-run completion ledger + single-chokepoint student-mode exception.
+
+## 2026-11-16 — Stage B: scenario quiz contract (v58 working tree)
+
+* Schema (additive, validated, fail-soft): `step.quiz {kind, mode, mol, prompt}` + `step.quizSnapshot {mode, atoms, bonds, verdictText, verdictKind}` + `step.allowSkip`. 14 Present-blocked pick/arm/paint/hover/Esc guards now route through `fMulerSelectPresentBlocked()` (student exception when the current step has an unresolved quiz task); chrome/panel guards untouched. Capture via new drawer Quiz button (live task or post-exact worked example, stamps the step's box mode). Present auto-arms the task; worked-example replay paints reward-green + verdict without arming. Ledger per (run, step); gate blocks forward moves (skip allowed); exact marks solved + "continue" toast. Probe `probe-scenario-quiz.js` (capture, gate, auto-arm, solve, skip, replay — 2D only). No `node --check` here (owner verifies manually).
+
+## 2026-11-16 — selection reset on reload/restart (v58 working tree, owner report)
+
+* Owner: solving any name quiz by picking, then reloading the molecule, must reset; same in Present (solved step + restarted presentation deadlocked the gate: ledger fresh but per-molecule solved blocked re-arm, no target, no way forward).
+* Fix: menu reselect of the current molecule clears its solved entry (switches keep per-molecule progress; toggle-off still clears all); `fScenarioPresentBegin` clears solved sets alongside the ledger reset. Narrowed after review: NOT in `fSelectMol` (runs on every same-molecule step apply — would wipe mid-run progress/tints). Probe extended: restart re-arms the gated task; reselect clears solved and re-arms.
+
+## 2026-11-16 — consolidated Stage B per owner review (v58 working tree)
+
+* Owner review of Stage B: quiz capture rides Update (no button; armed→set, disarmed→clear-with-toast); numbered badge row gains an `is-quiz` badge under the molecule/menu badge; `requireSolution` checkbox (default on) replaces allowSkip; nameClick forced on + disabled for quiz steps; menu quizzes arm on whatever gets picked (empty task.mol + fSelectMol hook with debounce); fresh attempt per entry (picks + solved cleared on auto-arm); gate keys on live target (no ledger); solved displays fall back to the classic lock (no replay machinery).
+* Removed again: Quiz button + wiring/CSS/lang, __mulerLastExact, StudentComplete hook, snapshot validation/replay, run ledger. PresentBegin + menu-reselect clear solved sets (restart/re-take re-arms).
+* Probe rewritten: capture via Update, gate, auto-arm, solve, requireSolution opt-out, menu-quiz deferred arm, reselect reset, restart re-arm, solved-display reps lock.
+
+## 2026-11-16 — Stage B hardening (v58 working tree, uncommitted)
+* Removed dead `var __mulerStudentArmAt/Key` globals (window-scoped debounce only); fixed stale comments (menu-pick hook, auto-arm note); CHANGELOG hook/count/wording corrected (menu-pick, 15 guards, free).
+* Probe: `ensureArmed` toggle-proof arming helper (box selected-state after reload is uncertain); reselect/re-arm phases use it; dropped the nested `armSelectUnused` dup. Drawer requireSolution checkbox now unchecked+disabled on classic steps.
+* Not yet verified here (no node/browser in agent env): owner runs `node --check`, probe-scenario-quiz, and the Present matrix before commit.
+
+## 2026-11-16 — just-solved capture (v58 working tree, owner cons)
+* Owner cons: requireSolution inactive, nameClick not forced, Present reps dead with no prompts, no quiz badge. Common root: `st.quiz` never stored — the natural flow (arm → solve to verify → Update) captures nothing, because exact clears the target and capture only honored a live one. Silently classic steps → dead Present.
+* Fix: exact records `__mulerJustSolved {mode, mol}` (consumed on capture-use; reselect/toggle-off clears it); capture stores from it with a "saved" toast. Mismatch/missing-box auto-arm skips now toast; naming-hidden/menu-deferred stay silent. Drawer Διάδραση row hidden (not locked) on quiz steps.
+
+## 2026-11-16 — menu-only early return + cache-bust (v58 working tree)
+* Found by reading: menu-only steps returned before `fScenarioApplyQuiz` — the step-apply path never ran the quiz block for them. Now called in the menu branch too (usually a no-op until the menu-pick hook fires).
+* `mulermoc-nom-58.html`: `?v=58.0` → `?v=58.1` on all v58 assets (never bumped since fork; stale-JS doubt removed).
+
+## 2026-11-16 — select-ON capture + post-solve freedom (v58 working tree)
+* Owner: whole chain verified live (arm → store → Present auto-arm all read back correctly). New asks: quiz step even with no box clicked (select-ON Add), and post-solve other-comp arming in Present.
+* Capture precedence: live target → just-solved → shown comp if resolvable → main-chain default if resolvable → classic. Store toast names the mode.
+* Present: `fScenarioStudentTask`/gate are mode-matched (practice targets never gate); `fMulerSelectPresentBlocked` unlocks completed quiz steps (solved mark for loaded mol) — reps pickable, other boxes arm as practice. `RepsLocked` already returns false in Present. Revisit still re-quizzes (auto-arm clears solved).
+
+## 2026-11-16 — menu quiz steps (v58 working tree)
+* Owner: select-in-pick-flow dies and Add never stores a menu quiz step. Found: menu-only captures structurally can't carry quizzes (all branches need a loaded mol), and menu-step preview/deselect disarms the live target via fDeselectMol.
+* Fix: `__mulerQuizIntent {mode, mol}` recorded on every successful arm (incl. RearmSticky); cleared on toggle-off, explicit box-deselect, reselect, Present entry — preserved across teardown/switches, mol-guarded at use. Menu-only capture with select ON stores `{mode, mol: ""}` from just-solved/intent when that mol is in the subset. Pure-deferred apply clears picks and returns before any box lookup. `?v=58.2`.
+
+## 2026-11-16 — handback: v58 scenario quizzes complete (uncommitted)
+* Final contract (all owner-reviewed, arm→store→Present chain verified live by owner): capture precedence live → just-solved → shown-comp → chain-default → classic; deferred menu quizzes via intent; mode-matched task/gate; solved-unlock free exploration; Διάδραση hidden on quiz steps; `?v=58.2`.
+* Tree state: 9 modified (`mulermoc-nom-58.html`, `css/mulermoc-nom-scenario-58.css`, `js/mulermoc-nom-{molview,teaching,scenario,lang}-58.js`, `docs/{CHANGELOG,SESSION-NOTES,learning-activities-Plan}.md`) + 1 untracked (`tools/muler-harness/probe-scenario-quiz.js`). v57 files untouched.
+* Owner-side before commit: `node --check` all v58 JS + probe, Present matrix (gate, revisit re-quiz, menu deferred arm, post-solve freedom). Then commit; v58 stays authoring-only until the flip (2D suite retarget to `-58.html` only then).
+
+## 2026-11-16 — menu-quiz follow-ups (v58 working tree)
+* Owner: select button must stay usable with no molecule (menu building), menu quiz must save then, and each newly picked molecule must arm its own task.
+* Fix: `fMolDraftSyncButtons` no longer forces `btnInactive` on the select button in scenario pick mode; menu capture drops the blanket select-ON requirement (records below only ever come from armed quizzes). Switch path reads correct; added failure toasts (mode + molecule) + `__mulerLastQuizError` stash so a stuck switch names itself; probe 6b covers solve-propane → pick-ethane → re-arm → solve. `?v=58.3`.
+
+## 2026-11-16 — deferred quiz for all menu-carrying steps (v58 working tree)
+* Owner: mismatch toast ("δείχνει άλλο μόριο") on every non-preloaded pick — quiz pinned the loaded molecule. Fix: all three capture branches store `mol: ""` whenever the capture carries a menu (molecule+menu included); task follows every pick. Fail-closed mismatch kept for menu-less steps. Probe 2e: molecule+menu authoring → deferred quiz → Present arms pinned mol on apply → propane pick re-arms → solve. `?v=58.4`.
+
+## 2026-11-16 — blank slate + persistent solved display (v58 working tree)
+* Owner: new molecule preselected chain comp (leak via fShowNameAnalysis restoring stale nameAnalysisMode); solved comp should stay green while browsing.
+* Fix (Present deferred menu quizzes only): cross-mol menu picks reset mode/box/paint/verdict/target before load; unsolved picks arm then blank the box/paint (prompt + target live); solved picks show solved display via new fMulerQuizShowSolved (green + explanation, no target). Same-mol re-click = retake; authoring sticky untouched. Probe: blank-slate asserts + 6c solved-display return (display + gate pass). `?v=58.5`.
+
+## 2026-11-16 — free practice + gate v2 (v58 working tree)
+* Owner: every unsolved comp selectable+solvable in quiz steps (menu + molecule); solved comps default-highlight.
+* Teaching box gate shrunk to re-click-keep; ArmForBox same-box re-click no longer dismisses someone else's live target; classic fallback only disarms with no live target; PresentBlocked unblocks on any live target; gate = task-unsolved-for-relevant-mol AND armed-once-this-visit (`__mulerTaskArmed`, reset per apply, set on task arm incl. manual, cleared per run; fail-open when never armed). Probe phase 9 on methyl_2_propene (practice arm/solve, gate hold, solved-box toggle w/o killing task, task solve, advance). `?v=58.6`.
+
+## 2026-11-16 — exact comp-state save/restore (v58 working tree)
+* Owner: menu revisit reselects solved comp + requires re-solve; new molecules inherit preselected chain comp (ghost green from stale comp-arg records surviving fClearHighlights).
+* Fix: fClearHighlights resets __mulerCompAtomArg/BondArg; quiz captures force nameAnalysisMode "none" + snapshot authoring solved sets (quiz.preSolved, validated); ApplyQuiz seeds (union) then shows display instead of re-arming; same-mol reselect reset is authoring-only. Probe: 3c stay-solved revisit, phase 10 preSolved capture/restore. `?v=58.7`.
+
+## 2026-11-16 — env note: Node lives on Windows (`node.exe`)
+* Agent env has no `node`, but the Windows install is reachable from here: `/mnt/c/Program Files/nodejs/node.exe`. All 9 v58 files (`core/molview/teaching/note/scenario/iupac/lang/name-en-58.js` + `probe-scenario-quiz.js`) pass `node.exe --check`. Use that path for future syntax checks; browser/server runs stay owner-side.

@@ -1171,7 +1171,10 @@ function fToggleAtomSelect() {
     try { if (!makeActive && typeof fMulerQuizDisarm === "function") fMulerQuizDisarm(); } catch (eQD) {}
     // v57 quiz rounds: leaving select mode clears solved progress (fresh
     // round next arm); the paint call below strips the tints (inactive).
+    // v58: the just-solved capture record goes with it.
     try { if (!makeActive && typeof window !== "undefined") window.__mulerQuizSolved = {}; } catch (eQS) {}
+    try { if (!makeActive && typeof window !== "undefined") window.__mulerJustSolved = null; } catch (eJS2) {}
+    try { if (!makeActive && typeof window !== "undefined") window.__mulerQuizIntent = null; } catch (eQI4) {}
     // v57 3D: disarm erases 3D paint directly (mode flag is already off, so
     // the guarded clear would skip); both paths re-assert picking state.
     try { if (!makeActive && typeof fMulerSelectClear3DPaint === "function") fMulerSelectClear3DPaint(); } catch (eC3) {}
@@ -1310,6 +1313,42 @@ function fMulerSelectPresenting() {
     if (typeof window !== "undefined" && window.MuLERMoCScenario && window.MuLERMoCScenario.present) return true;
   } catch (e2) {}
   return false;
+}
+
+// Student mode (v58 scenario quizzes): Present blocks picking everywhere
+// EXCEPT while the current step owns a live quiz task. Single chokepoint
+// for every pick/arm/paint/hover/Esc guard below — chrome/panel code keeps
+// the raw fMulerSelectPresenting() check.
+function fMulerSelectPresentBlocked() {
+  try {
+    // Student-mode arming lifts the block for its own call chain.
+    try { if (typeof window !== "undefined" && window.__mulerStudentArming) return false; } catch (eA) {}
+    if (!(typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting())) return false;
+    try { if (typeof fScenarioStudentTask === "function" && fScenarioStudentTask()) return false; } catch (eS) {}
+    // Any live quiz target (task or ungraded practice) unblocks picks —
+    // practice in progress must stay playable. Target-less steps stay
+    // locked (fail-closed); the gate owns advancement.
+    try { if (typeof window !== "undefined" && window.MulerQuizTarget) return false; } catch (eLT) {}
+    // Solved task: the step is completed — free exploration (reps pickable,
+    // other components armable as ungraded practice). Mismatched molecules
+    // stay blocked (fail-closed); practice targets never gate by themselves
+    // (fScenarioNavAllowed + fScenarioStudentTask are mode-matched).
+    try {
+      if (typeof fScenarioPresent === "function" && typeof fMulerQuizIsSolved === "function") {
+        var _ps = fScenarioPresent();
+        var _st = _ps && _ps.steps ? _ps.steps[_ps.index] : null;
+        if (_st && _st.quiz && _st.quiz.mode && _st.quiz.mode !== "none") {
+          var _mk = (typeof selectedMol !== "undefined" && selectedMol) ? String(selectedMol) : "";
+          // Mismatched molecules stay blocked (fail-closed); menu quizzes
+          // (empty quiz.mol) unlock for whatever is loaded.
+          if (!(_st.quiz.mol && _mk && _st.quiz.mol !== _mk)) {
+            if (_mk && fMulerQuizIsSolved(String(_st.quiz.mode))) return false;
+          }
+        }
+      }
+    } catch (eSU) {}
+    return true;
+  } catch (e) { return false; }
 }
 
 // Reps-lock (solved/target-less display): while select mode is armed but no
@@ -2224,6 +2263,8 @@ function fMulerHoverTick() {
     if (typeof selectedMol === "undefined" || !selectedMol) return;
     // Solved/target-less display: no hover ring (cursor class synced by repaint).
     try { if (typeof fMulerSelectRepsLocked === "function" && fMulerSelectRepsLocked()) { try { fMulerHoverClear(); } catch (eC0) {} return; } } catch (eRL) {}
+    // Present (no student task): no hover ring either.
+    try { if (typeof fMulerSelectPresentBlocked === "function" && fMulerSelectPresentBlocked()) { try { fMulerHoverClear(); } catch (eC1) {} return; } } catch (ePB) {}
     var svg = null;
     try { svg = document.querySelector("#jsmeNomeclatureSVG svg"); } catch (eS) { svg = null; }
     if (!svg) return;
@@ -3017,7 +3058,7 @@ window.__mulerPickCb = function () {
   try {
     if (!(typeof fMulerSelectActive === "function" && fMulerSelectActive())) return;
     if (typeof window !== "undefined" && window.MulerDraft) return;
-    if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return;
+    if (typeof fMulerSelectPresentBlocked === "function" && fMulerSelectPresentBlocked()) return;
     if (typeof selectedMol === "undefined" || !selectedMol) return;
     // Solved/target-less display: reps are not selectable (covers the applet
     // mode round-trip window).
@@ -3228,7 +3269,7 @@ window.__mulerPickCb = function () {
 function fMulerSelectPush3D() {
   try {
     if (!(typeof fMulerSelectActive === "function" && fMulerSelectActive())) return;
-    if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return;
+    if (typeof fMulerSelectPresentBlocked === "function" && fMulerSelectPresentBlocked()) return;
     if (typeof fJSmolLive === "function" && !fJSmolLive()) return;
     if (typeof jmolAppletNomeclature === "undefined" || !jmolAppletNomeclature) return;
     var paint = null;
@@ -3307,7 +3348,7 @@ function fMulerSelectPickingScript() {
     var armed = false;
     try { armed = (typeof fMulerSelectActive === "function" && fMulerSelectActive()); } catch (eA) { armed = false; }
     try { if (typeof window !== "undefined" && window.MulerDraft) armed = false; } catch (eD) {}
-    try { if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) armed = false; } catch (eP) {}
+    try { if (typeof fMulerSelectPresentBlocked === "function" && fMulerSelectPresentBlocked()) armed = false; } catch (eP) {}
     try { if (typeof selectedMol === "undefined" || !selectedMol) armed = false; } catch (eM) {}
     // Solved/target-less display: reps are not selectable (locked) — the
     // applet itself ignores hits; the page callback guards the race window.
@@ -4597,6 +4638,10 @@ function fMulerQuizRearmSticky() {
     // Solved for this molecule: stay disarmed (classic path on click).
     try { if (typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved(mode)) return false; } catch (eS2) { return false; }
     try { window.MulerQuizTarget = mode; } catch (eT) {}
+    // v58 scenario quizzes: quiz intent survives molecule teardown (menu
+    // building deselects), mol-guarded at capture use; cleared on explicit
+    // disarm, toggle-off, reselect, and Present entry (see below).
+    try { if (typeof selectedMol !== "undefined" && selectedMol && typeof window !== "undefined") window.__mulerQuizIntent = { mode: String(mode), mol: String(selectedMol) }; } catch (eQI) {}
     try { if (typeof fMulerSelectNormalizeMainChainCompacts === "function") fMulerSelectNormalizeMainChainCompacts(); } catch (eN) {}
     try { if (typeof fClearHighlights === "function") fClearHighlights(); } catch (eCH) {}
     try { numberingFlag = false; } catch (eN2) {}
@@ -4668,11 +4713,35 @@ function fMulerBoxMatchesTarget(mode, atoms) {
   } catch (e) { return true; }
 }
 
+// Solved display (v58 menu quizzes): re-show a solved component without
+// arming — classic green + explanation, no target, no verdict, no prompt.
+function fMulerQuizShowSolved(mode) {
+  try {
+    if (!mode || mode === "none") return false;
+    if (typeof window !== "undefined" && window.MulerDraft) return false;
+    try { if (typeof fMulerQuizDisarm === "function") fMulerQuizDisarm(); } catch (eD) {}
+    var boxId = null;
+    try { boxId = (typeof fMulerQuizBoxIdForMode === "function") ? fMulerQuizBoxIdForMode(mode) : null; } catch (eB) {}
+    try {
+      if (typeof jQuery !== "undefined") {
+        jQuery(".nameCompBox").removeClass("selected");
+        if (boxId) jQuery("#" + boxId).addClass("selected");
+      }
+    } catch (eC) {}
+    try { nameAnalysisMode = mode; } catch (eM) {}
+    try { numberingFlag = false; } catch (eN) {}
+    try { if (typeof fMulerQuizVerdict === "function") fMulerQuizVerdict("clear", null); } catch (eV) {}
+    try { if (typeof fExplainNameComp === "function") fExplainNameComp(); } catch (eE) {}
+    try { if (typeof fUpdateSVG === "function") fUpdateSVG(); } catch (eU) {}
+    return true;
+  } catch (e) { return false; }
+}
+
 function fMulerQuizArmForBox(boxId, $box) {
   try {
     if (typeof window === "undefined" || window.MulerDraft) return false;
     if (typeof fMulerSelectActive === "function" && !fMulerSelectActive()) return false;
-    if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return false;
+    if (typeof fMulerSelectPresentBlocked === "function" && fMulerSelectPresentBlocked()) return false;
     var mode = "none";
     try { mode = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId(boxId) : "none"; } catch (eM) { mode = "none"; }
     if (!mode || mode === "none") return false;
@@ -4721,10 +4790,19 @@ function fMulerQuizArmForBox(boxId, $box) {
       }
     } catch (eRedir) {}
     // Same-box re-click always deselects through the classic path (disarm
-    // first); a fresh click afterwards can re-arm.
+    // first); a fresh click afterwards can re-arm. Explicit user disarm:
+    // the scenario quiz intent goes with the target.
+    // Never dismiss someone else's live quiz here: when the box being
+    // toggled is not the running target's box (a solved/other comp viewed
+    // mid-task), fall through to the classic highlight with the target
+    // intact — the teaching layer relies on this in Present.
     try {
       if ($box && $box.hasClass && $box.hasClass("selected")) {
-        if (typeof fMulerQuizDisarm === "function") fMulerQuizDisarm();
+        var _ltT = null;
+        try { _ltT = (typeof window !== "undefined") ? window.MulerQuizTarget : null; } catch (eLT) { _ltT = null; }
+        var _ownQ = !_ltT || (String(_ltT) === String(mode));
+        try { if (_ownQ && typeof fMulerQuizDisarm === "function") fMulerQuizDisarm(); } catch (eD2) {}
+        try { if (_ownQ && typeof window !== "undefined") window.__mulerQuizIntent = null; } catch (eQI2b) {}
         return false;
       }
     } catch (eD) { return false; }
@@ -4732,6 +4810,21 @@ function fMulerQuizArmForBox(boxId, $box) {
     // never re-arm) — same contract as the atom-less hydrocarbon case above.
     try { if (typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved(mode)) return false; } catch (eS) { return false; }
     try { window.MulerQuizTarget = mode; } catch (eT) {}
+    // v58 gate: a task-mode arm in Present counts as armed-once (manual
+    // recovery when auto-arm failed) — the gate fails open only when the
+    // task was never armed this visit.
+    try {
+      if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting() &&
+          typeof fScenarioPresent === "function" && typeof MuLERMoCScenario !== "undefined") {
+        var _psm = fScenarioPresent();
+        if (_psm && _psm.steps && _psm.steps[_psm.index] && _psm.steps[_psm.index].quiz &&
+            String(_psm.steps[_psm.index].quiz.mode || "") === String(mode)) {
+          var _km = String(MuLERMoCScenario.presentId || "live") + "#" + _psm.index;
+          if (typeof window !== "undefined") { window.__mulerTaskArmed = window.__mulerTaskArmed || {}; window.__mulerTaskArmed[_km] = true; }
+        }
+      }
+    } catch (eAO2) {}
+    try { if (typeof selectedMol !== "undefined" && selectedMol && typeof window !== "undefined") window.__mulerQuizIntent = { mode: String(mode), mol: String(selectedMol) }; } catch (eQI3) {}
     // Main-chain purpose: an earlier compacted-carbon fragment pick is now a
     // carbon-only pick. NOx/SOx fragment picks are left untouched.
     try { if (typeof fMulerSelectNormalizeMainChainCompacts === "function") fMulerSelectNormalizeMainChainCompacts(); } catch (eNorm) {}
@@ -4835,6 +4928,10 @@ function fMulerQuizRefresh() {
       try { _qm = (typeof window !== "undefined") ? window.MulerQuizTarget : null; } catch (eQm) { _qm = null; }
       try { if (typeof window !== "undefined") window.MulerQuizTarget = null; } catch (eT) {}
       try { if (_qm && typeof fMulerQuizMarkSolved === "function") fMulerQuizMarkSolved(_qm); } catch (eMS) {}
+      // v58 scenario capture: remember the just-solved answer (target is
+      // cleared above) so Update can store the quiz afterwards. Consumed on
+      // capture-use; reselect/toggle-off clears it (see teaching + toggle).
+      try { if (_qm && typeof selectedMol !== "undefined" && selectedMol && typeof window !== "undefined") window.__mulerJustSolved = { mode: String(_qm), mol: String(selectedMol) }; } catch (eJS) {}
       try {
         if (_wasMain && typeof selectedMol !== "undefined" && selectedMol && typeof window !== "undefined") {
           if (!window.__mulerChainSolved) window.__mulerChainSolved = {};
@@ -4959,7 +5056,7 @@ function fMulerSelectMergeBgArg(compArg, kind) {
     var selIdx = [];
     try {
       var s = (typeof fMulerSelectState === "function") ? fMulerSelectState() : null;
-      if (s && s.active === true && !fMulerSelectPresenting()) selIdx = ((kind === "bond") ? s.bonds2D : s.atoms2D) || [];
+      if (s && s.active === true && !(typeof fMulerSelectPresentBlocked === "function" && fMulerSelectPresentBlocked())) selIdx = ((kind === "bond") ? s.bonds2D : s.atoms2D) || [];
     } catch (eS) { selIdx = []; }
     var compSet = {}, out = [];
     try {
@@ -5150,7 +5247,7 @@ function fMulerSelectPushState() {
       try { sel.molName = molName; } catch (eMN2) {}
     }
     var presenting = false;
-    try { presenting = (typeof fMulerSelectPresenting === "function") ? !!fMulerSelectPresenting() : false; } catch (ePr) { presenting = false; }
+    try { presenting = (typeof fMulerSelectPresentBlocked === "function") ? !!fMulerSelectPresentBlocked() : !!fMulerSelectPresenting(); } catch (ePr) { presenting = false; }
     if (presenting) {
       // Hidden in Present: merge() already degrades to component-only when
       // presenting, so a plain push hides the selection (state kept). 3D cyan
@@ -5258,7 +5355,8 @@ function fMulerSelectCompactPaintPass() {
   try {
     // Present keeps the selection state but never shows it (pushState degrades
     // to component-only); the rectless branch below must not leak a cyan path.
-    if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return;
+    // Student mode re-enables paint via the normal merge above.
+    if (typeof fMulerSelectPresentBlocked === "function" && fMulerSelectPresentBlocked()) return;
     var sel = fMulerSelectState();
     if (!sel || sel.active !== true || !Array.isArray(sel.atoms2D) || !sel.atoms2D.length) return;
     var comps = (typeof fMulerSelectCompacted === "function") ? fMulerSelectCompacted() : [];
@@ -5362,7 +5460,7 @@ function fMulerSelectRepaint() {
 function fMulerSelectSeq3D() {
   try {
     if (!(typeof fMulerSelectActive === "function" && fMulerSelectActive())) return;
-    if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return;
+    if (typeof fMulerSelectPresentBlocked === "function" && fMulerSelectPresentBlocked()) return;
     // Main-chain purpose only (mirrors the 2D badges). This gate also
     // protects the exact reward: the target is cleared before the reward
     // paints chain echoes, so a no-op here can never wipe them.
@@ -5405,7 +5503,7 @@ function fMulerSelectBindOnce() {
         try {
           if (!(typeof fMulerSelectActive === "function" && fMulerSelectActive())) return;
           if (typeof window !== "undefined" && window.MulerDraft) return;
-          if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return;
+          if (typeof fMulerSelectPresentBlocked === "function" && fMulerSelectPresentBlocked()) return;
           if (typeof selectedMol === "undefined" || !selectedMol) return;
           // Solved/target-less display: reps are not selectable (total no-op,
           // not even empty-canvas clear). Free picking and armed quizzes pass.
@@ -5475,8 +5573,9 @@ function fMulerSelectBindOnce() {
           } catch (eT) {}
           if (!(typeof fMulerSelectActive === "function" && fMulerSelectActive())) return;
           // Present/draft own the keyboard: Esc must not wipe kept state.
+          // (Student mode re-enables Esc: clearing your own picks is safe.)
           if (typeof window !== "undefined" && window.MulerDraft) return;
-          if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return;
+          if (typeof fMulerSelectPresentBlocked === "function" && fMulerSelectPresentBlocked()) return;
           try {
             var s = (typeof fMulerSelectState === "function") ? fMulerSelectState() : null;
             // v57 3D: 3D picks participate through their 2D mirror.
@@ -5517,7 +5616,7 @@ function fMulerSelect3DSilentSettle(px, py) {
     }
     if (!(typeof fMulerSelectActive === "function" && fMulerSelectActive())) return "skip";
     if (typeof window !== "undefined" && window.MulerDraft) return "skip";
-    if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return "skip";
+    if (typeof fMulerSelectPresentBlocked === "function" && fMulerSelectPresentBlocked()) return "skip";
     if (typeof selectedMol === "undefined" || !selectedMol) return "skip";
     // Solved/target-less display: pointer gestures on reps are no-ops.
     if (typeof fMulerSelectRepsLocked === "function" && fMulerSelectRepsLocked()) return "skip";
@@ -5570,7 +5669,7 @@ function fMulerSelectBind3DClear() {
       try {
         if (!(typeof fMulerSelectActive === "function" && fMulerSelectActive())) return false;
         if (typeof window !== "undefined" && window.MulerDraft) return false;
-        if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return false;
+        if (typeof fMulerSelectPresentBlocked === "function" && fMulerSelectPresentBlocked()) return false;
         if (typeof selectedMol === "undefined" || !selectedMol) return false;
         return true;
       } catch (eL) { return false; }
@@ -8512,7 +8611,12 @@ function fMolDraftSyncButtons() {
         hasMolSel = (typeof selectedMol !== "undefined") && !!selectedMol &&
           (typeof nameExamples !== "undefined") && !!nameExamples[selectedMol];
       } catch (eM2) { hasMolSel = false; }
-      if (hasMolSel) sab.classList.remove("btnInactive");
+      // v58 menu quizzes: menu building happens with no molecule loaded, and
+      // the quiz intent is armed beforehand — keep the button usable in
+      // scenario pick mode instead of forcing it inactive on empty canvas.
+      var _pickBuilding = false;
+      try { _pickBuilding = !!(typeof window !== "undefined" && window.MuLERMoCScenario && window.MuLERMoCScenario.menuPickMode); } catch (ePM) {}
+      if (hasMolSel || _pickBuilding) sab.classList.remove("btnInactive");
       else sab.classList.add("btnInactive");
     }
   } catch (eS2) {}
@@ -11619,7 +11723,7 @@ var MULER_SELECT_SEQ_DY = 300;  // selection badge baseline below label bottom, 
 // Main-chain only: FG and free selections paint the highlight with no numbers.
 function fMulerSelectSeqBadges() {
   try {
-    if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return;
+    if (typeof fMulerSelectPresentBlocked === "function" && fMulerSelectPresentBlocked()) return;
     try { if (typeof fMulerSelectPurpose === "function" && fMulerSelectPurpose() !== "mainChain") return; } catch (eP) { return; }
     var sel = (typeof fMulerSelectState === "function") ? fMulerSelectState() : null;
     var atoms = (sel && sel.active === true && Array.isArray(sel.atoms2D)) ? sel.atoms2D : [];
@@ -11772,7 +11876,7 @@ function fMulerNumberAid() {
         if ((typeof fMulerBondTargetIsLocant !== "function") || !fMulerBondTargetIsLocant(_bd)) return;
       } catch (eBo) { return; }
     }
-    if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return;
+    if (typeof fMulerSelectPresentBlocked === "function" && fMulerSelectPresentBlocked()) return;
     if (typeof fMulerChainSolved !== "function" || !fMulerChainSolved()) return;
     if (typeof molSvg === "undefined" || !molSvg) return;
     var keep = false;
@@ -13755,6 +13859,11 @@ function fClearHighlights() {
   if (!jsmeNomeclatureApplet) return;
   jsmeNomeclatureApplet.resetAtomColors(0);
   jsmeNomeclatureApplet.resetBondColors(0);
+  // v58: the component-green records must die with the paint — the merge
+  // reads them on every push, so stale args resurrect the previous
+  // molecule's highlight on the fresh one (ghost preselect). Exact-reward
+  // order is safe: it paints after its last clear.
+  try { if (typeof window !== "undefined") { window.__mulerCompAtomArg = ""; window.__mulerCompBondArg = ""; } } catch (eCA) {}
   fJSmolScript(
     jmolAppletNomeclature,
     "select all;  selectionHalos off; color bonds none; color atoms none;",

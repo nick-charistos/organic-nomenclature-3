@@ -178,6 +178,8 @@ var MULER_STRINGS = {
   deleteStep: { gr: "Διαγραφή", en: "Delete step" },
   deleteScenario: { gr: "Διαγραφή σεναρίου", en: "Delete scenario" },
   updateStep: { gr: "Ενημέρωση βήματος από την τρέχουσα προβολή", en: "Update step from current view" },
+  requireSolution: { gr: "Απαίτηση λύσης κουίζ για συνέχεια", en: "Require solving the quiz to continue" },
+  quizStepBadge: { gr: "Βήμα κουίζ", en: "Quiz step" },
   dupeStep: { gr: "Διπλασιασμός βήματος", en: "Duplicate step" },
   addStep: { gr: "Αποθήκευση προβολής ως βήμα", en: "Add step" },
   scenarios: { gr: "Σενάρια Παρουσίασης", en: "Presentation scenarios" },

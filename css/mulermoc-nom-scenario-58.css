@@ -742,6 +742,20 @@
    color: var(--darkBlue);
 }
 
+/* Quiz badge: second row badge under molecule/menu for quiz steps
+   (is-quiz today; is-quiz-<kind> later per activity type). */
+.scenarioDrawer .scQuizBadge {
+   font-size: .7rem;
+   font-weight: bold;
+   color: var(--darkBlue);
+   background: var(--veryLightEarth, #fff1de);
+   border: 1px solid currentColor;
+   border-radius: 4px;
+   padding: 0 6px;
+   white-space: nowrap;
+   font-family: "Roboto Condensed", sans-serif;
+}
+
 .scenarioDrawer .scLangBadge {
 	font-size: .65rem;
 	font-weight: bold;
