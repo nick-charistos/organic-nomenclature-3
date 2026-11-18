@@ -6200,6 +6200,7 @@ function fScenarioRenderOne(scen) {
     // viewer is visible — viewers are set live via [2D][3D] before saving).
     var viewersRow = document.createElement("div");
     viewersRow.className = "scShowRow scStepViewersSettings";
+    viewersRow.setAttribute("data-sc-row", "viewers");
     var _s23 = ((typeof fMulerIsEN === "function") && fMulerIsEN()) ? [["2D settings", "2D"], ["3D settings", "3D"]] : [["2D ρυθμίσεις", "2D"], ["3D ρυθμίσεις", "3D"]];
     _s23.forEach(function (pair) {
       var label = document.createElement("label");
@@ -6208,6 +6209,7 @@ function fScenarioRenderOne(scen) {
       var viewerOn = !st.show || !st.show.viewers || st.show.viewers[kind] !== false;
       var ctlCheck = document.createElement("input");
       ctlCheck.type = "checkbox";
+      ctlCheck.setAttribute("data-sc-role", "ctl-" + kind);
       ctlCheck.checked = !!(st.show && st.show.controls && st.show.controls[kind] === true);
       ctlCheck.disabled = !viewerOn;
       if (!viewerOn) {
@@ -6232,11 +6234,13 @@ function fScenarioRenderOne(scen) {
     var _isQuizStep = !!(st.quiz && st.quiz.mode && st.quiz.mode !== "none");
     var nameRow = document.createElement("div");
     nameRow.className = "scShowRow scStepNameSettings";
+    nameRow.setAttribute("data-sc-row", "naming");
     var namingLabel = document.createElement("label");
     namingLabel.className = "sshow";
     namingLabel.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("showNamingTip") : "Show naming in presentation"));
     var namingCheck = document.createElement("input");
     namingCheck.type = "checkbox";
+    namingCheck.setAttribute("data-sc-role", "naming");
     if (_isQuizStep) { st.show = st.show || {}; st.show.naming = true; }
     namingCheck.checked = _isQuizStep ? true : !(st.show && st.show.naming === false);
     if (_isQuizStep) { try { namingCheck.disabled = true; } catch (eND) {} }
@@ -6252,6 +6256,7 @@ function fScenarioRenderOne(scen) {
     nameCtlLabel.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("nameSettingsTip") : "Show the naming settings gear + panel in presentation"));
     var nameCtlCheck = document.createElement("input");
     nameCtlCheck.type = "checkbox";
+    nameCtlCheck.setAttribute("data-sc-role", "name-settings");
     nameCtlCheck.checked = !!(st.show && st.show.nameSettings === true);
     nameCtlCheck.onchange = function () {
       st.show = st.show || {};
@@ -6268,6 +6273,7 @@ function fScenarioRenderOne(scen) {
     nameClickLabel.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("nameClickTip") : "Allow clicking the name boxes in presentation"));
     var nameClickCheck = document.createElement("input");
     nameClickCheck.type = "checkbox";
+    nameClickCheck.setAttribute("data-sc-role", "name-click");
     if (_isQuizStep) { st.show = st.show || {}; st.show.nameClick = true; }
     nameClickCheck.checked = _isQuizStep ? true : !!(st.show && st.show.nameClick === true);
     nameClickCheck.onchange = function () {
@@ -6292,6 +6298,7 @@ function fScenarioRenderOne(scen) {
     nameEyeLabel.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("nameEyeTip") : "Show per-component eye toggles in presentation"));
     var nameEyeCheck = document.createElement("input");
     nameEyeCheck.type = "checkbox";
+    nameEyeCheck.setAttribute("data-sc-role", "name-eye");
     nameEyeCheck.checked = !!(st.show && st.show.nameEye === true);
     if (!st.selectedMol) {
       nameEyeCheck.disabled = true;
@@ -6305,25 +6312,6 @@ function fScenarioRenderOne(scen) {
     nameEyeLabel.appendChild(nameEyeCheck);
     nameEyeLabel.appendChild(document.createTextNode(" " + ((typeof fMulerT === "function") ? fMulerT("compVisibility") : "Ορατότητα συνθετικών")));
     nameRow.appendChild(nameEyeLabel);
-    // Quiz gate (v58 scenario quizzes): whether advancing requires solving
-    // the step's quiz. Only meaningful on quiz steps — disabled otherwise.
-    var quizReqLabel = document.createElement("label");
-    quizReqLabel.className = "sshow";
-    quizReqLabel.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("requireSolution") : "Απαίτηση λύσης κουίζ για συνέχεια"));
-    var quizReqCheck = document.createElement("input");
-    quizReqCheck.type = "checkbox";
-    quizReqCheck.checked = (st.requireSolution !== false);
-    if (!_isQuizStep) {
-      quizReqCheck.checked = false;
-      quizReqCheck.disabled = true;
-      quizReqLabel.classList.add("disabled");
-    }
-    quizReqCheck.onchange = function () {
-      st.requireSolution = quizReqCheck.checked;
-    };
-    quizReqLabel.appendChild(quizReqCheck);
-    quizReqLabel.appendChild(document.createTextNode(" " + ((typeof fMulerT === "function") ? fMulerT("requireSolution") : "Απαίτηση λύσης")));
-    nameRow.appendChild(quizReqLabel);
     var _syncNameRow = function (write) {
       // Quiz steps: naming is structurally on (the task lives in the name
       // boxes) — never let a hidden/locked master write false.
@@ -6342,6 +6330,28 @@ function fScenarioRenderOne(scen) {
     namingCheck.onchange = function () { _syncNameRow(true); };
     try { _syncNameRow(false); } catch (eSync) {}
     bodyDiv.appendChild(nameRow);
+    // Quiz settings row (v58 scenario quizzes): no quiz, no quiz settings.
+    // Classic steps render nothing here so future quiz options (attempts,
+    // hints, order) drop in without layout churn.
+    if (_isQuizStep) {
+      var quizRow = document.createElement("div");
+      quizRow.className = "scShowRow scStepQuizSettings";
+      quizRow.setAttribute("data-sc-row", "quiz");
+      var quizReqLabel = document.createElement("label");
+      quizReqLabel.className = "sshow";
+      quizReqLabel.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("requireSolution") : "Απαίτηση λύσης κουίζ για συνέχεια"));
+      var quizReqCheck = document.createElement("input");
+      quizReqCheck.type = "checkbox";
+      quizReqCheck.setAttribute("data-sc-role", "require-solution");
+      quizReqCheck.checked = (st.requireSolution !== false);
+      quizReqCheck.onchange = function () {
+        st.requireSolution = quizReqCheck.checked;
+      };
+      quizReqLabel.appendChild(quizReqCheck);
+      quizReqLabel.appendChild(document.createTextNode(" " + ((typeof fMulerT === "function") ? fMulerT("requireSolution") : "Απαίτηση λύσης")));
+      quizRow.appendChild(quizReqLabel);
+      bodyDiv.appendChild(quizRow);
+    }
     // Menu grouping (presentation only, menu-carrying steps only): which
     // menu views the step offers. Μόρια = flat list (default); Τάξεις/Σειρές
     // classify the picked subset. 2+ checked → grouping switcher in
@@ -6352,6 +6362,7 @@ function fScenarioRenderOne(scen) {
       // wrapping row can never split them across lines.
       var menuGroupsRow = document.createElement("div");
       menuGroupsRow.className = "scMenuGroupsRow";
+      menuGroupsRow.setAttribute("data-sc-row", "menu-groups");
       var menuGroupTitle = document.createElement("span");
       menuGroupTitle.className = "sshow scMenuGroupsTitle";
       menuGroupTitle.appendChild(document.createTextNode(((typeof fMulerT === "function") ? fMulerT("menuGroupsTitle") : "Ταξινομήσεις Μένου:")));
@@ -6362,6 +6373,7 @@ function fScenarioRenderOne(scen) {
         var gKind = pair[1];
         var gCheck = document.createElement("input");
         gCheck.type = "checkbox";
+        gCheck.setAttribute("data-sc-role", "menu-group-" + gKind);
         // Stored state shown as-is (all-off is valid → flat fallback); only a
         // missing field (legacy) displays the molecules default.
         var _mgShown = Array.isArray(st.menuGroups) ? st.menuGroups : ["molecules"];

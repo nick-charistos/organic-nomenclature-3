@@ -3116,3 +3116,8 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * Owner: in the drawer a quiz step must not offer the naming master — hiding the name in a quiz has no meaning. Decision on hidden components (`.comp-hidden` exempts a comp from the todo set): leave as-is; revisit when activity types land.
 * Fix: `_isQuizStep` computed before the naming row; the master label is hidden (also checkbox disabled) and `show.naming` is forced true on render and in `_syncNameRow`. Capture + Update + validate (imported/legacy files coerce silently) + `fScenarioApplyQuiz` (replaces the old “naming off → classic” fallback) all force `naming`/`nameClick` on. Probe asserts hidden + checked + stored on. `?v=58.8` → `?v=58.9`.
 
+## 2026-11-18 — drawer row architecture: roles + dedicated quiz row (v58 working tree, owner request)
+* Owner: `.scShowRow.scStepViewersSettings` checkboxes had no ids/classes; `requireSolution` sat in the name row. Asked for ids + three distinct row classes and a dedicated quiz row for a growing settings surface.
+* Decision (no ids): ids repeat across scenario cards (invalid HTML, `getElementById` hits the wrong card); the stable scope is `.scenarioPanel[data-scenario-id] .srow[data-idx]`. Rows get `data-sc-row` + class (`viewers|naming|quiz|menu-groups`), every checkbox a `data-sc-role` (`ctl-2D/3D`, `naming`, `name-settings`, `name-click`, `name-eye`, `require-solution`, `menu-group-*`).
+* Fix: `requireSolution` moves into its own `.scShowRow.scStepQuizSettings` (`data-sc-row="quiz"`), rendered only on quiz steps — classic steps render no quiz row. Probe prefers roles (text fallback kept) and asserts quiz-row presence on quiz steps, absence on classic ones. `?v=58.9` → `?v=58.10`.
+

@@ -161,37 +161,44 @@ async function rowButton(p, scenId, cls) {
   const reqBox = await p.evaluate((id) => {
     try {
       const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      const hit = row ? row.querySelector('input[data-sc-role="require-solution"]') : null;
+      if (hit) {
+        const quizRow = row.querySelector('[data-sc-row="quiz"]');
+        return { checked: !!hit.checked, disabled: !!hit.disabled, quizRow: !!quizRow, via: "role" };
+      }
       const boxes = row ? Array.prototype.slice.call(row.querySelectorAll('input[type="checkbox"]')) : [];
-      const hit = boxes.find((x) => /Απαίτηση|Require/.test((x.parentNode && x.parentNode.textContent) || ""));
-      return hit ? { checked: !!hit.checked, disabled: !!hit.disabled } : "missing";
+      const fb = boxes.find((x) => /Απαίτηση|Require/.test((x.parentNode && x.parentNode.textContent) || ""));
+      return fb ? { checked: !!fb.checked, disabled: !!fb.disabled, via: "text" } : "missing";
     } catch (e) { return "err"; }
   }, scid);
-  check(reqBox && reqBox.checked === true && reqBox.disabled === false,
-    "requireSolution should default checked on quiz steps, got " + JSON.stringify(reqBox));
+  check(reqBox && reqBox.checked === true && reqBox.disabled === false && reqBox.quizRow === true,
+    "requireSolution should default checked on quiz steps in its own quiz row, got " + JSON.stringify(reqBox));
   const ncBox = await p.evaluate((id) => {
     try {
       const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      const hit = row ? row.querySelector('input[data-sc-role="name-click"]') : null;
+      if (hit) return { checked: !!hit.checked, disabled: !!hit.disabled, display: getComputedStyle(hit.closest("label")).display, via: "role" };
       const boxes = row ? Array.prototype.slice.call(row.querySelectorAll('input[type="checkbox"]')) : [];
-      const hit = boxes.find((x) => /Διάδραση|interact/i.test((x.parentNode && x.parentNode.textContent) || ""));
-      return hit ? { checked: !!hit.checked, disabled: !!hit.disabled } : "missing";
+      const fb = boxes.find((x) => /Διάδραση|interact/i.test((x.parentNode && x.parentNode.textContent) || ""));
+      return fb ? { checked: !!fb.checked, disabled: !!fb.disabled, via: "text" } : "missing";
     } catch (e) { return "err"; }
   }, scid);
-  check(ncBox && ncBox.checked === true && ncBox.disabled === true,
-    "nameClick should be forced on + disabled for quiz steps, got " + JSON.stringify(ncBox));
+  check(ncBox && ncBox.checked === true && (ncBox.display === "none" || ncBox.disabled === true),
+    "nameClick should be forced on + hidden/disabled for quiz steps, got " + JSON.stringify(ncBox));
   // Master "Show naming" is hidden on quiz steps (nothing to hide in a quiz)
   // and stored naming stays on.
   const namingRow = await p.evaluate((id) => {
     try {
       const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
-      const labels = row ? Array.prototype.slice.call(row.querySelectorAll("label.sshow")) : [];
-      const hit = labels.find((x) => /Show naming|Εμφάνιση ονομασίας/.test((x.textContent || "")));
-      if (!hit) return "missing";
-      const chk = hit.querySelector('input[type="checkbox"]');
+      const hit = row ? row.querySelector('input[data-sc-role="naming"]') : null;
+      const label = hit ? hit.closest("label") : null;
+      if (!hit || !label) return "missing";
       const sc = fScenarioGet(id);
       return {
-        hidden: getComputedStyle(hit).display === "none",
-        checked: chk ? !!chk.checked : null,
+        hidden: getComputedStyle(label).display === "none",
+        checked: !!hit.checked, disabled: !!hit.disabled,
         stored: !!((sc && sc.steps[0] && sc.steps[0].show || {}).naming),
+        via: "role",
       };
     } catch (e) { return "err"; }
   }, scid);
@@ -216,6 +223,13 @@ async function rowButton(p, scenId, cls) {
     catch (e) { return "err"; }
   }, scid);
   check(!cleared, "disarmed Update should drop the quiz (classic step), got " + JSON.stringify(cleared));
+  const noQuizRow = await p.evaluate((id) => {
+    try {
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      return row ? !!row.querySelector('[data-sc-row="quiz"]') : "missing";
+    } catch (e) { return "err"; }
+  }, scid);
+  check(noQuizRow === false, "classic steps should render no quiz row, got " + JSON.stringify(noQuizRow));
 
   // --- 2b. solve-then-Update stores the quiz (just-solved capture) ---
   check(await ensureArmed(p, "comp5", "compCarbonsCount"), "setup arm failed");

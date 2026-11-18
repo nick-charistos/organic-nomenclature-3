@@ -6,7 +6,7 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ## [v58] (scenario quiz contract; LIVE, `index.html` → v58)
 
-Forked from v57 (`mulermoc-nom-58.html` + `js/*-58.js` + `css/*-58.css` + `jsme-nick-nomeclature-moc2-data_58.js` + `spt/init-3-58.spt` + `zz-test-core58.html`, `?v=58.9`; `ui-icons.js` stays shared). v57 files untouched (frozen). No chemistry changes.
+Forked from v57 (`mulermoc-nom-58.html` + `js/*-58.js` + `css/*-58.css` + `jsme-nick-nomeclature-moc2-data_58.js` + `spt/init-3-58.spt` + `zz-test-core58.html`, `?v=58.10`; `ui-icons.js` stays shared). v57 files untouched (frozen). No chemistry changes.
 
 ### Scenario authoring (v58 working tree)
 - Audit first: step schema vs quiz state, Present-guard inventory, `nameClick=true` chain, step-change vs quiz state, solved sets vs steps, capture requirements, draft interplay, probe surface. Findings note → schema → consolidated contract (see `docs/learning-activities-Plan.md`, Stage 0).
@@ -16,6 +16,7 @@ Forked from v57 (`mulermoc-nom-58.html` + `js/*-58.js` + `css/*-58.css` + `jsme-
 - Went live 2026-11-18: `index.html` redirect (meta + script + fallback link) → `mulermoc-nom-58.html`; the 15 headless 2D probes retargeted to `-58.html` (`probe-compare55-56.js` stays cross-version by design), harness README describes the v58 live tree. v57 files untouched/frozen. Browser Present matrix remains owner-side.
 
 - Quiz steps hide the drawer's “Εμφάνιση ονομασίας” master (a quiz with hidden naming is unanswerable) and force `show.naming`/`nameClick` on at capture, Update, validate (imported/legacy files coerce silently) and apply; the master can no longer store `false`. `?v=58.9`.
+- Drawer rows carry `data-sc-row` (`viewers|naming|quiz|menu-groups`) and every checkbox a `data-sc-role` (`ctl-2D`, `ctl-3D`, `naming`, `name-settings`, `name-click`, `name-eye`, `require-solution`, `menu-group-*`); no ids (drawers repeat per card). `requireSolution` moves out of the name row into its own `.scShowRow.scStepQuizSettings` row (`data-sc-row="quiz"`), rendered only on quiz steps — classic steps show no quiz settings. Probe prefers the roles (text match kept as fallback) and asserts quiz-row presence/absence. `?v=58.10`.
 
 ## [v57] (3D atom/bond picking via JSmol pickCallback; LIVE, `index.html` → v57)
 
