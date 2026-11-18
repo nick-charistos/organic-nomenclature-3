@@ -1,7 +1,7 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
 > **Resume pointer (cross-machine):** 2026-11-18 — **v58 is LIVE**
-> (`index.html` → `mulermoc-nom-58.html`, `?v=58.12`, review follow-ups +
+> (`index.html` → `mulermoc-nom-58.html`, `?v=58.13`, review follow-ups +
 > student hover/3D fixes).
 > Scenario quiz contract: steps store their required component set
 > (`quiz.modes` + labels), Update never destroys an authored task (explicit
@@ -3135,6 +3135,12 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * Hover root cause: `fMulerHoverTick` and its `mousemove` binder kept the pre-student-mode raw `fMulerSelectPresenting()` returns. 58.7 added the student-aware check *below* the tick's raw one, so it was dead code and the ring never ran (the pick/paint internals paint fine — verified). Fix: both sites use `fMulerSelectPresentBlocked()`; authoring/passive/reps-lock behavior unchanged.
 * 3D root cause: the applet picking mode is written by the 3D load tail — computed *before* `fScenarioApplyQuiz` arms and while select is off after a non-quiz teardown — and by `fMulerSelectSyncRepsLock` on a lock transition, which cannot happen in Present (reps lock is disabled there). So every Present quiz step kept `picking OFF`; the first step only looked right when it inherited the authoring-loaded model. Fix: `fMulerSelectSync3DPicking` is idempotent (script-string marker) and is called from the repaint tail, `fMulerQuizDisarm`, and the `jmol_isReady` hook; the 3D load writers record the appended tail so a reload can't leave the marker stale. Jmol queues scripts, so the post-arm sync executes after the load's `picking OFF` tail.
 * Verified headless: `show picking` = `atom` on quiz steps, `off` on passive, 0 commands on idle repaints; hover ring present on quiz steps and absent on passive. `probe-scenario-quiz` extended with both assertions (plus `probe-quiz`/`probe-mode-quiz`/`probe-final`/`probe-compact-main`/`probe-coverage56` green).
+
+## 2026-11-18 — clearing picks erased the solved 3D green (`?v=58.13`, owner report)
+* Owner: clicking empty space in 2D clears the green highlights in 3D in a quiz step, after a component was solved.
+* Root cause: 3D selection cyan and the classic green share the atom-color channel. `fMulerSelectClear()` wiped 3D unconditionally while select mode was active, on the (v57) assumption that the green only lives under an armed-but-empty state that never reaches the clear path. In student mode a solved step *is* armed + no target + green, so the empty-canvas clear (and Esc) erased it. 2D kept its component channel, hence the 2D/3D mismatch. Toggle-to-empty (`fMulerSelectClear3DIfEmpty`) had the same gap.
+* Fix: `fMulerSelectClear` only wipes when there was 3D pick paint, and after any wipe re-asserts the classic display with the exact-reward opt-in (`fMulerRestoreClassic3D`: no-op with a live target, no live component paint, or no selected box/naming mode). `fMulerSelectClear3DIfEmpty` restores the same way. Armed quizzes still wipe cyan and paint no green.
+* Verified headless via script capture: no-pick empty click sends no 3D paint script; a wipe with picks is followed by `X79dc6d`; toggle-to-empty restores; armed clear does not. `probe-scenario-quiz` extended; `probe-quiz`/`probe-mode-quiz`/`probe-final`/`probe-compact-main`/`probe-coverage56`/`probe-explain-all` green.
 
 ## 2026-11-18 — drawer row architecture: roles + dedicated quiz row (v58 working tree, owner request)
 * Owner: `.scShowRow.scStepViewersSettings` checkboxes had no ids/classes; `requireSolution` sat in the name row. Asked for ids + three distinct row classes and a dedicated quiz row for a growing settings surface.

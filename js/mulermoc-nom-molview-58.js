@@ -1396,15 +1396,26 @@ function fMulerSelectClearLayer() {
 
 // Empty the selection (atoms + bonds + groups), paint cleared by repaint.
 function fMulerSelectClear() {
+  var _had3D = false;
   try {
     var s = (typeof fMulerSelectState === "function") ? fMulerSelectState() : null;
-    if (s) { s.atoms2D = []; s.bonds2D = []; s.atoms3D = []; s.bonds3D = []; s.groups = []; }
+    if (s) {
+      _had3D = !!((Array.isArray(s.atoms3D) && s.atoms3D.length) || (Array.isArray(s.bonds3D) && s.bonds3D.length));
+      s.atoms2D = []; s.bonds2D = []; s.atoms3D = []; s.bonds3D = []; s.groups = [];
+    }
   } catch (e) {}
-  // v57 3D: erase 3D paint while armed (reward-green lives only under an
-  // armed-but-empty state, which never reaches this clear path). Sequence
-  // echoes go with it (same guard: no chain echoes can be live here).
-  try { if ((typeof fMulerSelectActive === "function" && fMulerSelectActive()) && typeof fMulerSelectClear3DPaint === "function") fMulerSelectClear3DPaint(); } catch (e3) {}
-  try { if ((typeof fMulerSelectActive === "function" && fMulerSelectActive()) && typeof removeEcho3D === "function") removeEcho3D(); } catch (e4) {}
+  // v57 3D: erase the cyan paint while armed. v58.13: only when there was
+  // 3D pick paint to erase (a bare clear on a solved display must not touch
+  // the green), and re-assert the classic display afterwards — the wipe
+  // shares the atom-color channel with the solved/classic green.
+  // Sequence echoes go with it (same guard: no chain echoes can be live here).
+  try {
+    if (_had3D && typeof fMulerSelectActive === "function" && fMulerSelectActive()) {
+      if (typeof fMulerSelectClear3DPaint === "function") fMulerSelectClear3DPaint();
+      if (typeof removeEcho3D === "function") removeEcho3D();
+      if (typeof fMulerRestoreClassic3D === "function") fMulerRestoreClassic3D();
+    }
+  } catch (e3) {}
   try { fMulerSelectClearLayer(); } catch (e2) {}
 }
 
@@ -3327,9 +3338,35 @@ function fMulerSelectClear3DPaint() {
   } catch (e) {}
 }
 
+// v58.13: re-assert the classic component display after a user pick-clear.
+// 3D green and selection cyan share one atom-color channel, so erasing cyan
+// also erases a live solved/classic highlight (the 2D viewer keeps it via the
+// component channel — that mismatch is what showed up as "empty click kills
+// the 3D green"). Guarded: never during an armed quiz and only when a
+// component paint is actually live; fail-closed.
+function fMulerRestoreClassic3D() {
+  try {
+    if (typeof window === "undefined") return;
+    if (window.MulerQuizTarget) return;
+    if (!window.__mulerCompAtomArg && !window.__mulerCompBondArg) return;
+    var _m = (typeof nameAnalysisMode !== "undefined") ? String(nameAnalysisMode || "none") : "none";
+    var _hasBox = false;
+    try { _hasBox = !!document.querySelector("#nameAnalysis .nameCompBox.selected"); } catch (eB) { _hasBox = false; }
+    if ((!_m || _m === "none") && !_hasBox) return;
+    var _prevReward = window.__mulerQuizReward === true;
+    window.__mulerQuizReward = true;
+    try {
+      if (typeof fExplainNameComp === "function") fExplainNameComp();
+    } finally {
+      window.__mulerQuizReward = _prevReward;
+    }
+  } catch (e) {}
+}
+
 // Toggle-to-empty 3D erase. Push3D no-ops on empty state (reward-green
 // protection), so a toggle that empties the pick must erase explicitly.
 // Called before quiz refresh (the green is painted after, so always safe).
+// v58.13: the erase also removes a live solved/classic green — restore it.
 function fMulerSelectClear3DIfEmpty() {
   try {
     var sel = (typeof fMulerSelectState === "function") ? fMulerSelectState() : null;
@@ -3339,7 +3376,10 @@ function fMulerSelectClear3DIfEmpty() {
       empty = !(Array.isArray(sel.atoms3D) && sel.atoms3D.length) &&
               !(Array.isArray(sel.bonds3D) && sel.bonds3D.length);
     } catch (eE) { empty = false; }
-    if (empty && typeof fMulerSelectClear3DPaint === "function") fMulerSelectClear3DPaint();
+    if (empty && typeof fMulerSelectClear3DPaint === "function") {
+      fMulerSelectClear3DPaint();
+      try { if (typeof fMulerRestoreClassic3D === "function") fMulerRestoreClassic3D(); } catch (eRC) {}
+    }
   } catch (e) {}
 }
 

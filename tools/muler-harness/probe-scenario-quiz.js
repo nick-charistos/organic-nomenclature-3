@@ -110,6 +110,42 @@ async function pickingState(p) {
   });
 }
 
+// v58.13: record the 3D paint scripts (green/cyan/wipe) so the probe can
+// assert that clearing picks does not leave the solved green erased.
+async function install3DLog(p) {
+  await p.evaluate(() => {
+    try {
+      window.__muler3DLog = [];
+      if (window.__muler3DLogInstalled) return;
+      window.__muler3DLogInstalled = true;
+      var orig = window.fJSmolScript;
+      window.fJSmolScript = function (app, s) {
+        try { var t = String(s || ""); if (/color atoms|selectionHalos/.test(t)) window.__muler3DLog.push(t); } catch (e) {}
+        return orig.apply(this, arguments);
+      };
+    } catch (e) {}
+  });
+}
+
+async function emptyCanvasPoint(p) {
+  return await p.evaluate(() => {
+    try {
+      const svg = document.querySelector("#jsmeNomeclatureSVG svg");
+      const r = svg.getBoundingClientRect();
+      const g = svg.getElementsByTagName("g")[0];
+      const inv = g.getScreenCTM().inverse();
+      const cands = [[r.left + 15, r.top + r.height - 20], [r.left + 15, r.top + 20], [r.right - 15, r.bottom - 20], [r.right - 15, r.top + 20]];
+      for (const c of cands) {
+        const q = new DOMPoint(c[0], c[1]).matrixTransform(inv);
+        let pick = null;
+        try { pick = fMulerSelectPick(q.x, q.y); } catch (e) { pick = { err: 1 }; }
+        if (!pick) return { x: c[0], y: c[1] };
+      }
+    } catch (e) {}
+    return null;
+  });
+}
+
 async function rowButton(p, scenId, cls) {
   const ok = await p.evaluate(([id, c]) => {
     try {
@@ -453,6 +489,39 @@ const clickBtn = async (p, id) => {
   check(await clickAtom(p, 1), "post-solve pick should land");
   st = await state(p);
   check(st.sel.length === 1, "reps should be pickable while required comps remain, got " + JSON.stringify(st.sel));
+  // v58.13: clearing picks must not erase the solved green in 3D (the cyan
+  // selection and the classic green share the atom-color channel; the
+  // empty-canvas clear used to wipe both while 2D kept its component channel).
+  await install3DLog(p);
+  const emptyPt = await emptyCanvasPoint(p);
+  check(!!emptyPt, "could not find an empty canvas point");
+  const _wipeRe = /^\s*select all;\s*selectionHalos off; color bonds none; color atoms none;\s*$/;
+  if (emptyPt) {
+    await p.evaluate(() => { window.__muler3DLog = []; });
+    await p.mouse.click(emptyPt.x, emptyPt.y);
+    await p.waitForTimeout(700);
+    const clearLog = await p.evaluate(() => window.__muler3DLog);
+    const wipeIdx = clearLog.findIndex((s) => _wipeRe.test(s));
+    if (wipeIdx >= 0) {
+      check(clearLog.slice(wipeIdx).some((s) => /X79dc6d/.test(s)),
+        "a 3D wipe on a solved display must be followed by the green restore, got " + JSON.stringify(clearLog.slice(wipeIdx, wipeIdx + 2)));
+    }
+    // A second empty click has nothing to erase: it must not touch the paint.
+    await p.evaluate(() => { window.__muler3DLog = []; });
+    await p.mouse.click(emptyPt.x, emptyPt.y);
+    await p.waitForTimeout(600);
+    const clearLog2 = await p.evaluate(() => window.__muler3DLog);
+    check(!clearLog2.some((s) => _wipeRe.test(s)),
+      "empty-canvas clear with no picks must not wipe the 3D paint, got " + JSON.stringify(clearLog2.slice(0, 2)));
+  }
+  // Same contract for toggle-to-empty (free practice pick, clicked off).
+  await p.evaluate(() => { window.__muler3DLog = []; });
+  await clickAtom(p, 1);
+  await clickAtom(p, 1);
+  await p.waitForTimeout(600);
+  const toggleLog = await p.evaluate(() => window.__muler3DLog);
+  check(toggleLog.some((s) => /X79dc6d/.test(s)),
+    "toggle-to-empty on a solved display should restore the 3D green, got " + JSON.stringify(toggleLog.slice(-2)));
   await clickBtn(p, "scNext");
   st = await state(p);
   check(st.step === 1, "gate must hold while a required comp remains, got index " + st.step);

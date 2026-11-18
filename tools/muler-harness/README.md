@@ -66,7 +66,9 @@ working directory.
   Also asserts the student-mode 2D hover ring (present on quiz steps, absent
   on passive ones) and the applet-side picking mode (`Jmol ... "show
   picking"` → `atom` on quiz steps, `off` on passive steps, no traffic on
-  idle repaints). Hard-fail; covers the Present path no other probe enters.
+  idle repaints), plus the solved 3D green surviving a pick clear (a wipe
+  must be followed by the green restore; a no-pick clear sends no 3D paint
+  script). Hard-fail; covers the Present path no other probe enters.
 - `probe-skel-joints.js` — skeletal vertex→atom assignment: for 16 molecules across aldehydes, ketones, acids, ester, alkene, alkyne, nitrile and nitro, asserts every vertex pick is an endpoint of all its incident bonds, no offset multi-line end is left unmerged, and every carbonyl carbon's incident-bond line endpoints (the old "click the carbon, get the oxygen" spot) select the carbon. Guards the C=O offset-end merge in `fMulerSelectVertices`.
 - `audit.js <port> <query|- > <width> <out>` — tooltip clip audit:
   measures every `[data-tooltip]` bubble against overflow ancestors and the
