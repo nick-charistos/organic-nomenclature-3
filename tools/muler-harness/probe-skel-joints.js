@@ -37,7 +37,7 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
   p.on("pageerror", (e) => errs.push(String(e.message).slice(0, 200)));
 
   for (const mol of MOLS) {
-    await p.goto(BASE + "/mulermoc-nom-57.html?lang=en&mol=" + mol, { waitUntil: "load", timeout: 60000 });
+    await p.goto(BASE + "/mulermoc-nom-58.html?lang=en&mol=" + mol, { waitUntil: "load", timeout: 60000 });
     await p.waitForTimeout(9000);
     await p.evaluate(() => {
       const opts = Array.from(document.querySelectorAll("#radio2DMode .mode2DOption"));

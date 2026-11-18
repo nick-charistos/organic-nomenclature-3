@@ -27,7 +27,7 @@ const BASE = process.env.MULER_BASE || "http://localhost:8901";
 // copy (?libs=local, same-origin off the harness server). App default for
 // real users stays CDN; set MULER_LIBS=cdn for a CDN-parity run.
 const LIBS = String(process.env.MULER_LIBS || "local").toLowerCase() === "cdn" ? "cdn" : "local";
-const PAGE = "/mulermoc-nom-57.html?lang=en&libs=" + LIBS + "&mol=";
+const PAGE = "/mulermoc-nom-58.html?lang=en&libs=" + LIBS + "&mol=";
 const failures = [];
 const warnings = [];
 const check = (ok, msg) => { if (!ok) failures.push(msg); };

@@ -23,7 +23,7 @@ async function waitReady(p) {
   p.on("pageerror", (e) => errs.push(String(e.message).slice(0, 150)));
 
   // 1. H is its own pick in expanded mode (ethane has explicit H there).
-  await p.goto(BASE + "/mulermoc-nom-57.html?mol=ethane", { waitUntil: "load", timeout: 60000 });
+  await p.goto(BASE + "/mulermoc-nom-58.html?mol=ethane", { waitUntil: "load", timeout: 60000 });
   await waitReady(p);
   await p.evaluate(() => {
     try {
@@ -118,7 +118,7 @@ async function waitReady(p) {
   // 2. Molecule switch drops contents, stays armed, re-arms sticky quiz.
   // Sticky selection keeps comp5 selected, so the quiz must re-arm (not
   // disarm) — otherwise condensed CHO/COOH clicks fall back to whole-fragment.
-  await p.goto(BASE + "/mulermoc-nom-57.html?lang=en&mol=butanoic_acid", { waitUntil: "load", timeout: 60000 });
+  await p.goto(BASE + "/mulermoc-nom-58.html?lang=en&mol=butanoic_acid", { waitUntil: "load", timeout: 60000 });
   await waitReady(p);
   await p.evaluate(() => { try { document.getElementById("selectAtomsBtn").click(); } catch (e) {} });
   await p.waitForTimeout(300);

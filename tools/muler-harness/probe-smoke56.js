@@ -25,7 +25,7 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
     await p.waitForTimeout(800);
   }
   // 1. v56 loads, button first in title bar, tooltip + icon present
-  await p.goto(BASE + "/mulermoc-nom-57.html?lang=en&mol=ethene", { waitUntil: "load", timeout: 60000 });
+  await p.goto(BASE + "/mulermoc-nom-58.html?lang=en&mol=ethene", { waitUntil: "load", timeout: 60000 });
   await waitReady();
   out.button = await p.evaluate(() => {
     const btns = Array.from(document.querySelectorAll("#viewerSettingsBtnDiv .settingsBtn")).map((x) => x.id);
@@ -62,7 +62,7 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
   });
   check(out.afterBond.s && out.afterBond.s.length > 0, "condensed bond pick should select, got " + JSON.stringify(out.afterBond));
   // 3. compacted pick via geometry center (no hardcoded screen coords)
-  await p.goto(BASE + "/mulermoc-nom-57.html?mol=butanoic_acid", { waitUntil: "load", timeout: 60000 });
+  await p.goto(BASE + "/mulermoc-nom-58.html?mol=butanoic_acid", { waitUntil: "load", timeout: 60000 });
   await waitReady();
   await p.evaluate(() => { try { document.getElementById("selectAtomsBtn").click(); } catch (e) {} });
   await p.waitForTimeout(300);

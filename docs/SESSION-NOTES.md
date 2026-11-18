@@ -1,6 +1,24 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** HEAD `b247b98` (2026-11-11) — v55
+> **Resume pointer (cross-machine):** 2026-11-18 — **v58 is LIVE**
+> (`index.html` → `mulermoc-nom-58.html`, `?v=58.8`). Scenario quiz contract:
+> multi-comp steps (quiz done = every `.quizTodo` solved), author pre-solved
+> comps in `.freeComp` (normal classic), post-solve next-box arming, non-quiz
+> steps tear down student mode, `step.quiz.preSolved` baselines, deferred menu
+> quizzes. The 2D probe suite was retargeted to `-58.html`
+> (`probe-scenario-quiz.js` for the Present path). Remaining owner-side: run
+> the 2D suite against v58, then the Present matrix (all-todo gate, revisit
+> re-quiz, menu deferred arm, post-solve freedom, non-quiz step after quiz),
+> plus the parked v55 sweeps below (overview table both languages, narration
+> voices, menu rail), P3 blessing of Greek word forms, completion-callback
+> wait spike, energy comparison, settings tabs. Full record:
+> `docs/CHANGELOG.md` [v58]/[v57], `docs/SESSION-NOTES.md` 2026-11-16/17/18
+> entries, `docs/learning-activities-Plan.md` Stage 0, audit
+> `docs/REVIEW-SCENARIO-QUIZ-58.md`. Routine on the other machine: pull first,
+> hard-reload (Ctrl+Shift+R), then resume from `git log --oneline -5` +
+> `git status`. OpenCode sessions stay machine-local.
+>
+> Previous pointer (2026-11-11): HEAD `b247b98` — v55
 > overview toggle relabel (Explain naming) + docs; tree clean. Remaining: browser sweep
 > `css/jsme-nick-55.css` `.explainTable` `gap` 4px → 6px. Remaining: browser sweep (overview table both languages + row clicks, EN boxes, narration voices, menu rail, Present round-trips) + P3 blessing of Greek word forms,
 > completion-callback wait (spike), energy comparison for true convergence,
@@ -3088,3 +3106,9 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 ## 2026-11-18 — multi-comp quiz steps: all `.quizTodo` must solve (v58 working tree, owner request)
 * Owner: quiz solution is when every quiz name comp is solved, not only carbon count; pre-solved comps (no `.quizTodo`) behave normal; suggested `.freeComp` marker for default behavior.
 * Fix: new `fMulerQuizTodoModes()` (capable − solved − hidden, mirrors paint). Gate/task/unlock/auto-arm all use the todo set: gate passes only when todo empty; `StudentTask` accepts any live todo; auto-arm prefers primary else first todo; full-done shows solved display; `PresentBlocked` unblocks while todos remain (post-solve next-box arm works) and on full-done (free exploration), stays fail-closed on mismatch. `ArmForBox` counts any todo arm toward `__mulerTaskArmed` and starts fresh arms with blank picks. Teaching re-click keep protects the live target. Paint adds `.freeComp` for capable+solved (classic white, marker only) alongside `.quizTodo`. `?v=58.7` → `?v=58.8` on all v58 assets. `node --check` clean (molview/scenario/teaching).
+
+## 2026-11-18 — v58 went live (`index.html` → v58)
+* `index.html` redirect (meta + JS `location.replace` + fallback link) now points to `mulermoc-nom-58.html`. CHANGELOG v58 header flipped to LIVE; harness README describes the v58 live tree.
+* 2D probe suite retargeted: the 15 probes that hardcoded `mulermoc-nom-57.html` now target `-58.html` (`probe-compare55-56.js` intentionally cross-version; `probe-scenario-quiz.js` already targeted 58). Probes are URL-string-only changes — no assertions touched.
+* v57 files untouched/frozen. Owner-side before/after the flip: hard reload, run the 2D suite against v58 (it now exercises the live tree), then the Present matrix (quiz gate all-todo, revisit re-quiz, menu deferred arm, post-solve freedom, non-quiz step after quiz).
+

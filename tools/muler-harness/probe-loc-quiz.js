@@ -33,7 +33,7 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
 
   async function open(mol, lang) {
     const q = "?lang=" + (lang || "en") + "&mol=" + mol;
-    await p.goto(BASE + "/mulermoc-nom-57.html" + q, { waitUntil: "load", timeout: 60000 });
+    await p.goto(BASE + "/mulermoc-nom-58.html" + q, { waitUntil: "load", timeout: 60000 });
     await waitReady(p, (typeof failures !== "undefined" ? failures : []));
   }
   async function toExpanded() {
