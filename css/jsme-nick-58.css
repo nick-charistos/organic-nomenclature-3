@@ -1970,11 +1970,9 @@ header {
   background-color: var(--veryLightEarth);
 }
 
-/* v58 multi-comp: author/run-solved capable boxes in a quiz step behave as
-   normal classic (marker only, no tint — white default restored). */
-.nameCompBox.freeComp {
-  /* background-color: transparent; */
-}
+/* v58 multi-comp: `.freeComp` is a state marker on capable+solved name boxes
+   (normal classic behavior — white default, no tint). It intentionally has no
+   rule of its own; queries/probes use the class. */
 
 
 

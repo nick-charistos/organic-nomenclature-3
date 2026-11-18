@@ -1329,49 +1329,32 @@ function fMulerSelectPresentBlocked() {
     // practice in progress must stay playable. Target-less steps stay
     // locked (fail-closed); the gate owns advancement.
     try { if (typeof window !== "undefined" && window.MulerQuizTarget) return false; } catch (eLT) {}
-    // Multi-comp: work remains — unblock so the next .quizTodo can arm.
-    // After one exact the target is null but todos remain; without this the
-    // next box arm is refused and the classic guard eats the highlight.
+    // Multi-comp: one todo set decides both "work remains" (unblock so the
+    // next .quizTodo can arm) and "step completed" (free exploration).
+    // v58.11: the set is the step's stored quiz.modes, so a component that
+    // is merely capable (not authored into the step) never changes this.
+    // Mismatched molecules stay blocked (fail-closed); menu quizzes (empty
+    // quiz.mol) unlock for whatever is loaded. A null set means the naming
+    // panel is not built yet: stay locked (documented fail-closed posture).
     try {
-      if (typeof fScenarioPresent === "function" && typeof fMulerQuizTodoModes === "function") {
-        var _psT = fScenarioPresent();
-        var _stT = _psT && _psT.steps ? _psT.steps[_psT.index] : null;
-        if (_stT && _stT.quiz && _stT.quiz.mode && _stT.quiz.mode !== "none") {
-          var _mkT = (typeof selectedMol !== "undefined" && selectedMol) ? String(selectedMol) : "";
-          if (!(_stT.quiz.mol && _mkT && _stT.quiz.mol !== _mkT)) {
-            try { if (_mkT && ((fMulerQuizTodoModes() || []).length > 0)) return false; } catch (eTT) {}
-          }
-        }
-      }
-    } catch (eSTT) {}
-    // Solved task: the step is completed — free exploration (reps pickable,
-    // other components armable as ungraded practice). Mismatched molecules
-    // stay blocked (fail-closed); practice targets never gate by themselves
-    // (fScenarioNavAllowed + fScenarioStudentTask are mode-matched).
-    try {
-      if (typeof fScenarioPresent === "function" && typeof fMulerQuizIsSolved === "function") {
-        var _ps = fScenarioPresent();
-        var _st = _ps && _ps.steps ? _ps.steps[_ps.index] : null;
-        if (_st && _st.quiz && _st.quiz.mode && _st.quiz.mode !== "none") {
-          var _mk = (typeof selectedMol !== "undefined" && selectedMol) ? String(selectedMol) : "";
-          // Mismatched molecules stay blocked (fail-closed); menu quizzes
-          // (empty quiz.mol) unlock for whatever is loaded.
-          if (!(_st.quiz.mol && _mk && _st.quiz.mol !== _mk)) {
-            // Multi-comp: the step is completed when every todo is solved.
-            var _allDone = false;
+      if (typeof fScenarioPresent === "function") {
+        var _psB = fScenarioPresent();
+        var _stB = _psB && _psB.steps ? _psB.steps[_psB.index] : null;
+        if (_stB && _stB.quiz && _stB.quiz.mode && _stB.quiz.mode !== "none") {
+          var _mkB = (typeof selectedMol !== "undefined" && selectedMol) ? String(selectedMol) : "";
+          if (!(_stB.quiz.mol && _mkB && _stB.quiz.mol !== _mkB)) {
+            var _todoB = null;
             try {
-              if (typeof fMulerQuizTodoModes === "function") _allDone = !!_mk && ((fMulerQuizTodoModes() || []).length === 0);
-              else _allDone = !!_mk && !!fMulerQuizIsSolved(String(_st.quiz.mode));
-            } catch (eAD) {
-              try { _allDone = !!_mk && !!fMulerQuizIsSolved(String(_st.quiz.mode)); } catch (eAD2) { _allDone = false; }
-            }
-            if (_allDone) return false;
+              _todoB = (typeof fScenarioQuizTodo === "function") ? fScenarioQuizTodo(_stB) : null;
+              if (_todoB === null && typeof fMulerQuizTodoModes === "function") _todoB = fMulerQuizTodoModes();
+            } catch (eTB) { _todoB = null; }
+            if (_mkB && _todoB !== null) return false;
           }
         }
       }
-    } catch (eSU) {}
+    } catch (eSTB) {}
     return true;
-  } catch (e) { return false; }
+  } catch (e) { return true; }
 }
 
 // Reps-lock (solved/target-less display): while select mode is armed but no
@@ -4568,14 +4551,26 @@ function fMulerQuizMarkSolved(mode) {
     window.__mulerQuizSolved[k][mode] = true;
   } catch (e) {}
 }
-// Quiz todo set (v58 multi-comp): capable + unsolved + visible modes for the
-// current molecule. Mirrors the paint below so gate/task and tint can never
-// disagree. Author pre-solved modes (preSolved) are excluded via IsSolved.
-function fMulerQuizTodoModes() {
+// Quiz todo set (v58 multi-comp): required + capable + unsolved + visible
+// modes for the current molecule. Mirrors the paint below so gate/task and
+// tint can never disagree. Author pre-solved modes (preSolved) are excluded
+// via IsSolved.
+// v58.11: `required` is the step's stored quiz.modes (author intent); absent
+// or empty means "whatever is capable" (deferred menu quizzes + legacy
+// files). Returns null when the naming panel is not built yet, so callers
+// can tell "unknown" from "nothing left to do".
+function fMulerQuizTodoModes(required) {
   try {
+    var panel = null;
+    try { panel = document.getElementById("nameAnalysis"); } catch (eP) { panel = null; }
+    if (!panel) return null;
+    var req = null;
+    try {
+      if (Object.prototype.toString.call(required) === "[object Array]" && required.length) req = required;
+    } catch (eR) { req = null; }
     var out = [];
     var boxes = [];
-    try { boxes = Array.prototype.slice.call(document.querySelectorAll("#nameAnalysis .nameCompBox")); } catch (eB) { return []; }
+    try { boxes = Array.prototype.slice.call(panel.querySelectorAll(".nameCompBox")); } catch (eB) { return []; }
     for (var i = 0; i < boxes.length; i++) {
       (function (b) {
         try {
@@ -4586,6 +4581,7 @@ function fMulerQuizTodoModes() {
           var compMode = "none";
           try { compMode = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId(id) : "none"; } catch (eM) { compMode = "none"; }
           if (!compMode || compMode === "none") return;
+          if (req && req.indexOf(compMode) < 0) return;
           if (out.indexOf(compMode) >= 0) return;
           var solved = false;
           try { solved = (typeof fMulerQuizIsSolved === "function") ? fMulerQuizIsSolved(compMode) : false; } catch (eS) { solved = false; }
@@ -4600,7 +4596,21 @@ function fMulerQuizTodoModes() {
       })(boxes[i]);
     }
     return out;
-  } catch (e) { return []; }
+  } catch (e) { return null; }
+}
+
+// Required-mode filter for the paint: only Present quiz steps with a stored
+// set narrow the tint; authoring keeps the capable-only view.
+function fMulerQuizPaintFilter() {
+  try {
+    if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting() &&
+        typeof fScenarioQuizRequiredModes === "function" && typeof fScenarioPresent === "function") {
+      var ps = fScenarioPresent();
+      var st = ps && ps.steps ? ps.steps[ps.index] : null;
+      return fScenarioQuizRequiredModes(st);
+    }
+  } catch (e) {}
+  return null;
 }
 
 // Paint quiz to-do tints: quiz-capable unsolved boxes get .quizTodo while
@@ -4608,10 +4618,12 @@ function fMulerQuizTodoModes() {
 // (normal classic behavior, marker only); incapable stays default.
 // Capability uses the same resolver as the arm gate, so tint and quiz can
 // never disagree (hydrocarbon -io and other atom-less boxes stay default).
+// v58.11: Present quiz steps tint only their stored quiz.modes.
 function fMulerQuizPaintSolved() {
   try {
     var armed = false;
     try { armed = (typeof fMulerSelectActive === "function" && fMulerSelectActive()); } catch (eA) { armed = false; }
+    var req = (typeof fMulerQuizPaintFilter === "function") ? fMulerQuizPaintFilter() : null;
     var boxes = [];
     try { boxes = Array.prototype.slice.call(document.querySelectorAll("#nameAnalysis .nameCompBox")); } catch (eB) {}
     for (var i = 0; i < boxes.length; i++) {
@@ -4624,6 +4636,7 @@ function fMulerQuizPaintSolved() {
           var compMode = "none";
           try { compMode = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId(id) : "none"; } catch (eM) { compMode = "none"; }
           if (!compMode || compMode === "none") { try { b.classList.remove("quizTodo"); } catch (eR2) {} try { b.classList.remove("freeComp"); } catch (eR2b) {} return; }
+          if (req && req.indexOf(compMode) < 0) { try { b.classList.remove("quizTodo"); } catch (eRQ1) {} try { b.classList.remove("freeComp"); } catch (eRQ2) {} return; }
           var solved = false, capable = false;
           try { solved = (typeof fMulerQuizIsSolved === "function") ? fMulerQuizIsSolved(compMode) : false; } catch (eS) { solved = false; }
           try {
@@ -4791,6 +4804,10 @@ function fMulerQuizShowSolved(mode) {
     try { if (typeof fMulerQuizVerdict === "function") fMulerQuizVerdict("clear", null); } catch (eV) {}
     try { if (typeof fExplainNameComp === "function") fExplainNameComp(); } catch (eE) {}
     try { if (typeof fUpdateSVG === "function") fUpdateSVG(); } catch (eU) {}
+    // v58.11: the classic path leaves the tint classes stale (they are painted
+    // by the arm/disarm tails, neither of which runs here) — re-mark the
+    // solved comps so `.freeComp`/`quizTodo` match the actual progress.
+    try { if (typeof fMulerQuizPaintSolved === "function") fMulerQuizPaintSolved(); } catch (ePS) {}
     return true;
   } catch (e) { return false; }
 }
@@ -4868,16 +4885,23 @@ function fMulerQuizArmForBox(boxId, $box) {
     // never re-arm) — same contract as the atom-less hydrocarbon case above.
     try { if (typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved(mode)) return false; } catch (eS) { return false; }
     try { window.MulerQuizTarget = mode; } catch (eT) {}
-    // Fresh arm starts blank: free picks made while unblocked (no live
-    // target, todos remain) must not pollute the new quiz compare.
+    // Fresh arm starts blank (student mode only): free picks made while
+    // unblocked (no live target, todos remain) must not pollute the new quiz
+    // compare. Authoring keeps the v56 contract — a fragment picked before
+    // the arm normalizes to its anchor and stays selected.
     try {
-      var _cs = (typeof fMulerSelectState === "function") ? fMulerSelectState() : null;
-      if (_cs) { _cs.atoms2D = []; _cs.bonds2D = []; _cs.atoms3D = []; _cs.bonds3D = []; _cs.groups = []; }
+      var _isPresentArm = false;
+      try { _isPresentArm = !!(typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()); } catch (ePA) { _isPresentArm = false; }
+      if (_isPresentArm) {
+        var _cs = (typeof fMulerSelectState === "function") ? fMulerSelectState() : null;
+        if (_cs) { _cs.atoms2D = []; _cs.bonds2D = []; _cs.atoms3D = []; _cs.bonds3D = []; _cs.groups = []; }
+      }
     } catch (eCS) {}
     // v58 gate: any todo arm in Present counts as armed-once (manual
     // recovery when auto-arm failed) — the gate fails open only when the
     // task was never armed this visit. Multi-comp: every todo mode counts,
-    // not just the primary auto-arm mode.
+    // not just the primary auto-arm mode. v58.11: only modes the step
+    // requires count; an unrelated capable comp is ungraded practice.
     try {
       if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting() &&
           typeof fScenarioPresent === "function" && typeof MuLERMoCScenario !== "undefined") {
@@ -4887,12 +4911,14 @@ function fMulerQuizArmForBox(boxId, $box) {
           var _isTodoArm = (String(_sq.mode || "") === String(mode));
           try {
             if (!_isTodoArm && typeof fMulerQuizTodoModes === "function") {
-              var _tl = fMulerQuizTodoModes() || [];
+              var _reqA = (typeof fScenarioQuizRequiredModes === "function") ? fScenarioQuizRequiredModes(_psm.steps[_psm.index]) : null;
+              var _tl = fMulerQuizTodoModes(_reqA) || [];
               // Live target just set above is still unsolved, so todo still
               // contains it unless the helper ran after marking solved (it
-              // didn't — solving happens on exact). Fall back to capable.
+              // didn't — solving happens on exact).
               if (_tl.indexOf(String(mode)) >= 0) _isTodoArm = true;
-              else if (typeof fMulerQuizResolveTarget === "function") {
+              else if (!_reqA && typeof fMulerQuizResolveTarget === "function") {
+                // Legacy/deferred step (no stored set): any capable arm counts.
                 var _rt = fMulerQuizResolveTarget(String(mode)) || [];
                 if (_rt && _rt.length) _isTodoArm = true;
               }

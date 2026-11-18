@@ -57,18 +57,25 @@ well-posed and turn the rank-ordering caveat into a non-issue.
 
 ## Build plan
 - **Stage 0 — scenario quiz contract (v58, done, live-verified).** Steps
-  carry quiz tasks (`step.quiz {kind, mode, mol}` + `requireSolution`,
-  default on). Capture precedence: live target → just-solved → shown
-  comp (if resolvable) → main-chain default (if resolvable) → classic;
-  any menu-carrying step stores a deferred task (`mol: ""`) so the quiz
-  follows every picked molecule. Present auto-arms with fresh picks (primary
-  else first todo); done = every `.quizTodo` solved (`fMulerQuizTodoModes()`
-  = capable − solved − hidden). Author/run-solved capable boxes get
-  `.freeComp` (normal classic, marker only) and never block the gate.
-  Non-quiz steps tear down student mode (no tint stall). Quiz intent
-  (`__mulerQuizIntent {mode, mol}`) bridges menu-building teardown.
-  This *is* the activity shell for name-component quizzes — new activity
-  types plug the same path (kind/resolver/prompt/pick-unit).
+  carry quiz tasks (`step.quiz {kind, mode, modes, modeLabels, mol,
+  preSolved}` + `requireSolution`, default on). Capture precedence: live
+  target → just-solved → shown comp (if resolvable) → main-chain default (if
+  resolvable) → classic; any menu-carrying step stores a deferred task
+  (`mol: ""`) so the quiz follows every picked molecule. The required
+  component set is captured with the step (`modes`, author labels) and
+  filtered through `fMulerQuizTodoModes(required)` for gate/tint/auto-arm;
+  deferred steps compute it per picked molecule. `Update` keeps an authored
+  task unless the capture carries a quiz signal — removal is the drawer's
+  explicit Remove action. Present auto-arms with fresh picks (primary else
+  first required); done = every required `.quizTodo` solved. Author/run-solved
+  capable boxes get `.freeComp` (normal classic, marker only) and never block
+  the gate. Non-quiz steps tear down student mode (no tint stall). Esc on a
+  quiz step clears picks (it no longer exits Present). Quiz intent
+  (`__mulerQuizIntent {mode, mol}`) bridges menu-building teardown. Forward
+  jumps land on the next step and menu steps gate until a molecule is picked,
+  so a gated step cannot be skipped. This *is* the activity shell for
+  name-component quizzes — new activity types plug the same path
+  (kind/resolver/prompt/pick-unit).
 - **Stage 1 — activity shell.** Prompt mode arming branch/group targets
   (reuse target-resolver family; new activity purpose or reuse `branch`);
   verdict through existing compare + numberless hints; exact replays

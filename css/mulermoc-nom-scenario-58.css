@@ -756,6 +756,36 @@
    font-family: "Roboto Condensed", sans-serif;
 }
 
+/* Quiz row (v58.11): required components + explicit removal. The row itself
+   reuses .scShowRow; these are the two additions. */
+.scenarioDrawer .scStepQuizSettings .scQuizReq {
+   font-size: .72rem;
+   color: var(--darkBlue);
+   opacity: .85;
+   margin-left: auto;
+   padding-right: 4px;
+   white-space: nowrap;
+   overflow: hidden;
+   text-overflow: ellipsis;
+   max-width: 46%;
+}
+
+.scenarioDrawer .scStepQuizSettings .scQuizRemove {
+   font-size: .68rem;
+   line-height: 1.1;
+   padding: 2px 7px;
+   border: 1px solid currentColor;
+   border-radius: 4px;
+   background: transparent;
+   color: var(--darkBlue);
+   cursor: pointer;
+   font-family: "Roboto Condensed", sans-serif;
+}
+
+.scenarioDrawer .scStepQuizSettings .scQuizRemove:hover {
+   background: var(--veryLightEarth, #fff1de);
+}
+
 .scenarioDrawer .scLangBadge {
 	font-size: .65rem;
 	font-weight: bold;

@@ -1,7 +1,12 @@
 // probe-scenario-quiz: v58 scenario quizzes, headless Chrome (2D only).
-// Capture rides Update (armed→set, disarmed→clear); gate blocks on live
-// targets; Present auto-arms (fresh attempt per entry); menu picks arm
-// deferred quizzes; reselect/restart resets re-arm; solved displays lock reps.
+// Contract (v58.11, ?v=58.11):
+//  - a step stores {kind, mode, modes, modeLabels, mol, preSolved}; `modes` is
+//    the required component set captured from the step's molecule (empty for
+//    deferred menu quizzes);
+//  - Update never destroys an authored task (removal is an explicit button);
+//  - Present auto-arms a fresh attempt, the gate holds until every required
+//    comp is solved, solved steps show their display, menu steps defer to the
+//    picked molecule, and no forward jump can skip a gated step.
 const { chromium } = require("playwright-core");
 const CHROME = process.env.MULER_CHROME || "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const BASE = process.env.MULER_BASE || "http://localhost:8901";
@@ -18,6 +23,7 @@ async function waitReady(p) {
           typeof fMulerQuizResolveTarget === "function" &&
           typeof fScenarioNew === "function" &&
           typeof fScenarioStudentTask === "function" &&
+          typeof fScenarioQuizTodo === "function" &&
           !!window.MulerUserSelection;
       } catch (e) { return false; }
     }, { timeout: 30000 });
@@ -29,18 +35,24 @@ async function state(p) {
   return await p.evaluate(() => {
     try {
       const el = document.getElementById("mulerQuizVerdict");
+      const ps = (typeof fScenarioPresent === "function") ? fScenarioPresent() : null;
+      const st = ps && ps.steps ? ps.steps[ps.index] : null;
+      let todo = null;
+      try { todo = st ? fScenarioQuizTodo(st) : null; } catch (e) { todo = "err"; }
       return {
         target: window.MulerQuizTarget || null,
         sel: ((window.MulerUserSelection || {}).atoms2D || []).slice(),
-        bonds: ((window.MulerUserSelection || {}).bonds2D || []).slice(),
         verdict: el ? (el.textContent || "").trim() : "",
         hidden: !el || getComputedStyle(el).display === "none",
         present: !!(window.MuLERMoCScenario && window.MuLERMoCScenario.present),
-        step: (() => { try { return fScenarioPresent().index; } catch (e) { return -1; } })(),
+        step: ps ? ps.index : -1,
+        quiz: st ? (st.quiz || null) : null,
+        todo: todo,
         task: (() => { try { const t = fScenarioStudentTask(); return t ? t.quiz.mode : null; } catch (e) { return "?"; } })(),
-        solved: (() => { try { return !!fMulerQuizIsSolved("compCarbonsCount"); } catch (e) { return "?"; } })(),
+        solved: (() => { try { return JSON.parse(JSON.stringify(window.__mulerQuizSolved || {})); } catch (e) { return "?"; } })(),
+        blocked: (() => { try { return fMulerSelectPresentBlocked(); } catch (e) { return "?"; } })(),
       };
-    } catch (e) { return { err: String(e && e.message || e).slice(0, 120) }; }
+    } catch (e) { return { err: String((e && e.message) || e).slice(0, 140) }; }
   });
 }
 
@@ -57,47 +69,13 @@ async function clickAtom(p, atom1) {
   }, atom1);
   if (!sc) return false;
   await p.mouse.click(sc[0], sc[1]);
-  await p.waitForTimeout(500);
+  await p.waitForTimeout(420);
   return true;
 }
 
 async function openMol(p, mol) {
   await p.goto(BASE + "/mulermoc-nom-58.html?lang=en&mol=" + mol, { waitUntil: "load", timeout: 60000 });
   await waitReady(p);
-}
-
-// Solve whatever quiz is live by clicking its resolved target atoms
-// (1-based, same convention as the stored selection).
-async function solveLiveTarget(p) {
-  const atoms = await p.evaluate(() => {
-    try {
-      const set = (typeof fMulerQuizTargetSet === "function") ? fMulerQuizTargetSet() : [];
-      return (set || []).map((x) => Number(x)).filter((x) => x > 0);
-    } catch (e) { return null; }
-  });
-  if (!atoms || !atoms.length) return "noset";
-  for (const a of atoms) { if (!await clickAtom(p, a)) return "noanchor:" + a; }
-  await p.waitForTimeout(600);
-  const s2 = await state(p);
-  return (!s2.target && /Correct/.test(s2.verdict || "")) ? true : "noexact:" + JSON.stringify(s2.verdict);
-}
-
-async function armSelect(p) {
-  await p.evaluate(() => { try { document.getElementById("selectAtomsBtn").click(); } catch (e) {} });
-  await p.waitForTimeout(400);
-}
-
-// Arming is toggle-based (click selected box = disarm), and a molecule
-// reload may or may not preserve the selected visual — so click until the
-// target reads back, bounded. Deterministic from any box state.
-async function ensureArmed(p, box, mode) {
-  for (let i = 0; i < 3; i++) {
-    const t = await p.evaluate(() => { try { return window.MulerQuizTarget || null; } catch (e) { return "err"; } });
-    if (t === mode) return true;
-    await p.evaluate((b) => { try { document.getElementById(b).click(); } catch (e) {} }, box);
-    await p.waitForTimeout(600);
-  }
-  return false;
 }
 
 async function rowButton(p, scenId, cls) {
@@ -108,661 +86,478 @@ async function rowButton(p, scenId, cls) {
       if (!btns.length) return "missing";
       btns[btns.length - 1].click();
       return true;
-    } catch (e) { return "err:" + String(e && e.message || e).slice(0, 60); }
+    } catch (e) { return "err:" + String((e && e.message) || e).slice(0, 60); }
   }, [scenId, cls]);
   await p.waitForTimeout(700);
   return ok;
 }
 
+// Build a scenario from plain step specs (lang en so Present texts are
+// assertable; show.menu/menuSubset fields are honoured).
+async function makeScenario(p, id, specs) {
+  return await p.evaluate(([sid, list]) => {
+    try {
+      const scen = fScenarioNew(sid, true);
+      for (let i = 0; i < list.length; i++) {
+        const spec = list[i];
+        const st = fScenarioDefaults({}, i);
+        st.lang = "en";
+        st.nameAnalysisMode = "none";
+        for (const k in spec) {
+          if (k === "showExtra" || k === "menuSubset") continue;
+          st[k] = spec[k];
+        }
+        if (spec.selectedMol === null) st.selectedMol = null;
+        if (spec.menuSubset) { st.show.menu = true; st.menuSubset = spec.menuSubset.slice(); }
+        if (spec.showExtra) {
+          for (const k in spec.showExtra) st.show[k] = spec.showExtra[k];
+        }
+        scen.steps.push(st);
+      }
+      if (typeof fScenarioBuildPanels === "function") fScenarioBuildPanels();
+      if (typeof fScenarioRenderList === "function") fScenarioRenderList(scen.id);
+      return scen.id;
+    } catch (e) { return "err:" + String((e && e.message) || e).slice(0, 80); }
+  }, [id, specs]);
+}
+
+async function armBox(p, boxId, mode) {
+  for (let i = 0; i < 4; i++) {
+    const t = await p.evaluate(() => window.MulerQuizTarget || null);
+    if (t === mode) return true;
+    await p.evaluate((b) => { try { const el = document.getElementById(b); if (el) el.click(); } catch (e) {} }, boxId);
+    await p.waitForTimeout(450);
+  }
+  return false;
+}
+
+// Solve one quiz mode: arm its box, click the resolved target atoms, verify
+// the target cleared and the mode is marked solved.
+async function solveMode(p, mode) {
+  const boxId = await p.evaluate((m) => {
+    try { return (typeof fMulerQuizBoxIdForMode === "function") ? fMulerQuizBoxIdForMode(m) : null; } catch (e) { return null; }
+  }, mode);
+  if (!boxId) return "nobox:" + mode;
+  if (!await armBox(p, boxId, mode)) return "noarm:" + mode;
+  const atoms = await p.evaluate(() => {
+    try { return (fMulerQuizTargetSet() || []).map((x) => Number(x)).filter((x) => x > 0); } catch (e) { return []; }
+  });
+  if (!atoms.length) return "noset:" + mode;
+  for (const a of atoms) { if (!await clickAtom(p, a)) return "noanchor:" + a; }
+  await p.waitForTimeout(500);
+  const ok = await p.evaluate((m) => {
+    try { return !window.MulerQuizTarget && !!fMulerQuizIsSolved(m); } catch (e) { return false; }
+  }, mode);
+  return ok ? true : "nosolve:" + mode;
+}
+
+// Solve every currently required comp (chain first, then the rest).
+async function solveAllTodos(p) {
+  for (let round = 0; round < 8; round++) {
+    const todo = await p.evaluate(() => {
+      try { const ps = fScenarioPresent(); return fScenarioQuizTodo(ps.steps[ps.index]); } catch (e) { return null; }
+    });
+    if (todo === null) return "nodom";
+    if (!todo.length) return true;
+    const ordered = todo.slice().sort((a, b) =>
+      (a === "compCarbonsCount" ? 0 : 1) - (b === "compCarbonsCount" ? 0 : 1));
+    const r = await solveMode(p, ordered[0]);
+    if (r !== true) return r;
+  }
+  return "loop";
+}
+
+async function menuPick(p, mol) {
+  const ok = await p.evaluate((m) => {
+    try {
+      const items = Array.from(document.querySelectorAll(".menuLi"));
+      const hit = items.find((x) => (x.getAttribute("id") || "") === m);
+      if (!hit) return "nomenuitem";
+      hit.click();
+      return true;
+    } catch (e) { return "err:" + String((e && e.message) || e).slice(0, 60); }
+  }, mol);
+  await p.waitForTimeout(1500);
+  return ok;
+}
+
+const clickBtn = async (p, id) => {
+  await p.evaluate((x) => { try { const el = document.getElementById(x); if (el) el.click(); } catch (e) {} }, id);
+  await p.waitForTimeout(900);
+};
+
 (async () => {
-  const b = await chromium.launch(await (async () => { try { const fs = require("fs"); if (fs.existsSync(CHROME)) return { executablePath: CHROME }; } catch (e) { return {}; } })());
+  const b = await chromium.launch(await (async () => {
+    try { const fs = require("fs"); if (fs.existsSync(CHROME)) return { executablePath: CHROME }; } catch (e) { return {}; }
+  })());
   const p = await b.newPage({ viewport: { width: 1500, height: 900 } });
   const errs = [];
   p.on("pageerror", (e) => errs.push(String(e.message).slice(0, 150)));
 
-  // --- 1. Update captures the armed quiz (badge + forced nameClick) ---
+  // --- 1. capture: armed quiz stores the required set + labels ---
   await openMol(p, "ethane");
-  await armSelect(p);
-  await p.evaluate(() => { try { document.getElementById("comp5").click(); } catch (e) {} });
-  await p.waitForTimeout(700);
-  let s = await state(p);
-  check(s.target === "compCarbonsCount", "arm should set the chain target, got " + JSON.stringify(s.target));
-  check(await clickAtom(p, 1), "missing anchor for ethane C1");
-  const scid = await p.evaluate(() => {
-    try {
-      const scen = fScenarioNew("probeq-cap", true);
-      scen.steps.push(fScenarioDefaults({ selectedMol: "ethane", nameAnalysisMode: "none" }, 0));
-      try { if (typeof fScenarioBuildPanels === "function") fScenarioBuildPanels(); } catch (e) {}
-      try { if (typeof fScenarioRenderList === "function") fScenarioRenderList(scen.id); } catch (e) {}
-      return scen.id;
-    } catch (e) { return null; }
-  });
-  check(!!scid, "scenario creation failed");
+  await p.evaluate(() => { document.getElementById("selectAtomsBtn").click(); });
+  await p.waitForTimeout(400);
+  const scid = await makeScenario(p, "probeq-cap", [{ selectedMol: "ethane" }]);
+  check(typeof scid === "string" && scid.indexOf("err:") !== 0, "scenario creation failed: " + scid);
+  check(await armBox(p, "comp5", "compCarbonsCount"), "setup arm failed");
   check(await rowButton(p, scid, ".scUpdate") === true, "Update button should capture");
-  const cap = await p.evaluate((id) => {
-    try {
-      const sc = fScenarioGet(id);
-      const st = sc && sc.steps[0];
-      return st ? { quiz: st.quiz || null, nameClick: (st.show || {}).nameClick } : null;
-    } catch (e) { return { err: 1 }; }
-  }, scid);
-  check(cap && cap.quiz && cap.quiz.mode === "compCarbonsCount" && cap.quiz.mol === "ethane",
-    "Update while armed should store the quiz, got " + JSON.stringify(cap && cap.quiz));
-  check(cap && cap.nameClick === true, "quiz capture should force nameClick on");
-  const badge = await p.evaluate((id) => {
-    try {
-      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
-      const bq = row ? row.querySelector(".scQuizBadge") : null;
-      return bq ? { text: (bq.textContent || "").trim(), cls: String(bq.className || "") } : null;
-    } catch (e) { return null; }
-  }, scid);
-  check(badge && badge.text === "quiz" && /is-quiz/.test(badge.cls || ""),
-    "quiz badge should read quiz with is-quiz, got " + JSON.stringify(badge));
-  const reqBox = await p.evaluate((id) => {
+  let st = await state(p);
+  let cap = st.quiz;
+  check(cap && cap.mode === "compCarbonsCount" && cap.mol === "ethane",
+    "Update while armed should store the quiz, got " + JSON.stringify(cap));
+  check(cap && Array.isArray(cap.modes) && cap.modes.indexOf("compCarbonsCount") >= 0 &&
+    cap.modes.indexOf("compBondType") >= 0,
+    "capture should store the required set, got " + JSON.stringify(cap && cap.modes));
+  check(cap && Array.isArray(cap.modeLabels) && cap.modeLabels.length === cap.modes.length,
+    "capture should store one label per required mode, got " + JSON.stringify(cap && cap.modeLabels));
+  const rowInfo = await p.evaluate((id) => {
     try {
       const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
-      const hit = row ? row.querySelector('input[data-sc-role="require-solution"]') : null;
-      if (hit) {
-        const quizRow = row.querySelector('[data-sc-row="quiz"]');
-        return { checked: !!hit.checked, disabled: !!hit.disabled, quizRow: !!quizRow, via: "role" };
-      }
-      const boxes = row ? Array.prototype.slice.call(row.querySelectorAll('input[type="checkbox"]')) : [];
-      const fb = boxes.find((x) => /Απαίτηση|Require/.test((x.parentNode && x.parentNode.textContent) || ""));
-      return fb ? { checked: !!fb.checked, disabled: !!fb.disabled, via: "text" } : "missing";
-    } catch (e) { return "err"; }
-  }, scid);
-  check(reqBox && reqBox.checked === true && reqBox.disabled === false && reqBox.quizRow === true,
-    "requireSolution should default checked on quiz steps in its own quiz row, got " + JSON.stringify(reqBox));
-  const ncBox = await p.evaluate((id) => {
-    try {
-      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
-      const hit = row ? row.querySelector('input[data-sc-role="name-click"]') : null;
-      if (hit) return { checked: !!hit.checked, disabled: !!hit.disabled, display: getComputedStyle(hit.closest("label")).display, via: "role" };
-      const boxes = row ? Array.prototype.slice.call(row.querySelectorAll('input[type="checkbox"]')) : [];
-      const fb = boxes.find((x) => /Διάδραση|interact/i.test((x.parentNode && x.parentNode.textContent) || ""));
-      return fb ? { checked: !!fb.checked, disabled: !!fb.disabled, via: "text" } : "missing";
-    } catch (e) { return "err"; }
-  }, scid);
-  check(ncBox && ncBox.checked === true && (ncBox.display === "none" || ncBox.disabled === true),
-    "nameClick should be forced on + hidden/disabled for quiz steps, got " + JSON.stringify(ncBox));
-  // Master "Show naming" is hidden on quiz steps (nothing to hide in a quiz)
-  // and stored naming stays on.
-  const namingRow = await p.evaluate((id) => {
-    try {
-      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
-      const hit = row ? row.querySelector('input[data-sc-role="naming"]') : null;
-      const label = hit ? hit.closest("label") : null;
-      if (!hit || !label) return "missing";
-      const sc = fScenarioGet(id);
+      const badge = row ? row.querySelector(".scQuizBadge") : null;
+      const req = row ? row.querySelector('input[data-sc-role="require-solution"]') : null;
+      const quizRow = row ? row.querySelector('[data-sc-row="quiz"]') : null;
+      const info = row ? row.querySelector('[data-sc-role="quiz-requirements"]') : null;
+      const remove = row ? row.querySelector('[data-sc-role="quiz-remove"]') : null;
+      const naming = row ? row.querySelector('input[data-sc-role="naming"]') : null;
+      const nameClick = row ? row.querySelector('input[data-sc-role="name-click"]') : null;
       return {
-        hidden: getComputedStyle(label).display === "none",
-        checked: !!hit.checked, disabled: !!hit.disabled,
-        stored: !!((sc && sc.steps[0] && sc.steps[0].show || {}).naming),
-        via: "role",
+        badge: badge ? (badge.textContent || "").trim() : null,
+        badgeTip: badge ? (badge.getAttribute("data-tooltip") || "") : "",
+        req: req ? { checked: !!req.checked, disabled: !!req.disabled } : null,
+        quizRow: !!quizRow,
+        info: info ? (info.textContent || "").trim() : null,
+        remove: !!remove,
+        namingHidden: naming ? getComputedStyle(naming.closest("label")).display === "none" : null,
+        nameClickHidden: nameClick ? getComputedStyle(nameClick.closest("label")).display === "none" : null,
       };
     } catch (e) { return "err"; }
   }, scid);
-  check(namingRow && namingRow.hidden === true && namingRow.checked === true && namingRow.stored === true,
-    "Show naming should be hidden+on for quiz steps, got " + JSON.stringify(namingRow));
+  check(rowInfo && rowInfo.quizRow && rowInfo.req && rowInfo.req.checked && !rowInfo.req.disabled,
+    "quiz row should offer require-solution checked, got " + JSON.stringify(rowInfo));
+  check(rowInfo && rowInfo.info && /comp|αλυσ|chain|eth|an/i.test(rowInfo.info),
+    "quiz row should describe the required components, got " + JSON.stringify(rowInfo && rowInfo.info));
+  check(rowInfo && rowInfo.remove === true, "quiz row should offer explicit removal");
+  check(rowInfo && rowInfo.namingHidden === true && rowInfo.nameClickHidden === true,
+    "naming master + interaction should be hidden on quiz steps, got " + JSON.stringify(rowInfo));
+  check(rowInfo && rowInfo.badge && /quiz|κουίζ/i.test(rowInfo.badge),
+    "quiz badge should be localized, got " + JSON.stringify(rowInfo && rowInfo.badge));
+  check(rowInfo && rowInfo.badgeTip && !/compCarbonsCount/.test(rowInfo.badgeTip),
+    "quiz badge tooltip should use labels, not mode ids, got " + JSON.stringify(rowInfo && rowInfo.badgeTip));
 
-  // --- 2. disarmed Update clears the quiz (with toast) ---
-  // (one click: deselects the armed box; a second click would re-arm)
-  await p.evaluate(() => { try { document.getElementById("comp5").click(); } catch (e) {} });
-  await p.waitForTimeout(500);
-  s = await state(p);
-  check(!s.target, "deselect should disarm, got " + JSON.stringify(s.target));
-  await p.evaluate((id) => {
-    try {
-      const sc = fScenarioGet(id);
-      if (sc && sc.steps[0]) { sc.steps[0].quiz = { kind: "nameComp", mode: "compCarbonsCount", mol: "ethane" }; }
-    } catch (e) {}
+  // --- 2. Update with no quiz signal keeps the authored task ---
+  check(await armBox(p, "comp5", "compCarbonsCount"), "deselect/re-arm setup failed");
+  await p.evaluate(() => { try { document.getElementById("selectAtomsBtn").click(); } catch (e) {} });
+  await p.waitForTimeout(400);
+  const beforeKept = await p.evaluate((id) => {
+    try { const q = fScenarioGet(id).steps[0].quiz; return q ? { mode: q.mode, modes: q.modes } : null; } catch (e) { return "err"; }
   }, scid);
   await rowButton(p, scid, ".scUpdate");
-  const cleared = await p.evaluate((id) => {
-    try { const sc = fScenarioGet(id); return (sc && sc.steps[0] && sc.steps[0].quiz) || null; }
-    catch (e) { return "err"; }
+  const afterKept = await p.evaluate((id) => {
+    try { const q = fScenarioGet(id).steps[0].quiz; return q ? { mode: q.mode, modes: q.modes } : null; } catch (e) { return "err"; }
   }, scid);
-  check(!cleared, "disarmed Update should drop the quiz (classic step), got " + JSON.stringify(cleared));
-  const noQuizRow = await p.evaluate((id) => {
+  check(afterKept && beforeKept && afterKept.mode === beforeKept.mode &&
+    JSON.stringify(afterKept.modes) === JSON.stringify(beforeKept.modes),
+    "Update without a quiz signal must keep the task, got " + JSON.stringify({ before: beforeKept, after: afterKept }));
+
+  // --- 3. explicit removal makes it classic ---
+  await p.evaluate((id) => {
     try {
       const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
-      return row ? !!row.querySelector('[data-sc-row="quiz"]') : "missing";
+      const btn = row ? row.querySelector('[data-sc-role="quiz-remove"]') : null;
+      if (btn) btn.click();
+    } catch (e) {}
+  }, scid);
+  await p.waitForTimeout(800);
+  const afterRemove = await p.evaluate((id) => {
+    try {
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      return {
+        quiz: fScenarioGet(id).steps[0].quiz || null,
+        quizRow: !!(row && row.querySelector('[data-sc-row="quiz"]')),
+        namingHidden: (() => {
+          const n = row && row.querySelector('input[data-sc-role="naming"]');
+          return n ? getComputedStyle(n.closest("label")).display === "none" : null;
+        })(),
+      };
     } catch (e) { return "err"; }
   }, scid);
-  check(noQuizRow === false, "classic steps should render no quiz row, got " + JSON.stringify(noQuizRow));
+  check(afterRemove && afterRemove.quiz === null && afterRemove.quizRow === false && afterRemove.namingHidden === false,
+    "explicit removal should clear the quiz and restore classic rows, got " + JSON.stringify(afterRemove));
 
-  // --- 2b. solve-then-Update stores the quiz (just-solved capture) ---
-  check(await ensureArmed(p, "comp5", "compCarbonsCount"), "setup arm failed");
-  check(await clickAtom(p, 1), "missing anchor for ethane C1");
-  check(await clickAtom(p, 2), "missing anchor for ethane C2");
-  await p.waitForTimeout(600);
-  s = await state(p);
-  check(/Correct/.test(s.verdict) && !s.target && s.solved === true,
-    "exact should succeed, got " + JSON.stringify(s.verdict));
-  check(await rowButton(p, scid, ".scUpdate") === true, "Update button should capture");
-  const cap2 = await p.evaluate((id) => {
-    try {
-      const sc = fScenarioGet(id);
-      const st = sc && sc.steps[0];
-      return st ? { quiz: st.quiz || null, nameClick: (st.show || {}).nameClick } : null;
-    } catch (e) { return { err: 1 }; }
+  // --- 4. just-solved capture stores the task + authored baseline ---
+  await p.evaluate(() => { try { document.getElementById("selectAtomsBtn").click(); } catch (e) {} });
+  await p.waitForTimeout(400);
+  check(await armBox(p, "comp5", "compCarbonsCount"), "setup arm failed");
+  const r4 = await solveMode(p, "compCarbonsCount");
+  check(r4 === true, "chain solve should succeed, got " + JSON.stringify(r4));
+  check(await rowButton(p, scid, ".scUpdate") === true, "Update should capture the just-solved answer");
+  const cap4 = await p.evaluate((id) => {
+    try { return fScenarioGet(id).steps[0].quiz || null; } catch (e) { return "err"; }
   }, scid);
-  check(cap2 && cap2.quiz && cap2.quiz.mode === "compCarbonsCount" && cap2.quiz.mol === "ethane",
-    "solve-then-Update should store the quiz, got " + JSON.stringify(cap2 && cap2.quiz));
-  check(cap2 && cap2.nameClick === true, "just-solved capture should force nameClick on");
+  check(cap4 && cap4.mode === "compCarbonsCount" && cap4.preSolved && cap4.preSolved.ethane &&
+    cap4.preSolved.ethane.indexOf("compCarbonsCount") >= 0,
+    "just-solved capture should store the mode + baseline, got " + JSON.stringify(cap4));
+  check(cap4 && cap4.preSolved && cap4.preSolved.ethane.indexOf("compBondType") < 0,
+    "baseline should only carry modes solved for this step, got " + JSON.stringify(cap4 && cap4.preSolved));
 
-  // --- 2c. select-ON + Add with no box clicked stores a quiz (default task) ---
+  // --- 5. select-ON Add with nothing armed stores a default quiz ---
   await openMol(p, "ethane");
-  await armSelect(p);
-  const addId = await p.evaluate(() => {
-    try {
-      const scen = fScenarioNew("probeq-add", true);
-      try { if (typeof fScenarioBuildPanels === "function") fScenarioBuildPanels(); } catch (e) {}
-      try { if (typeof fScenarioRenderList === "function") fScenarioRenderList(scen.id); } catch (e) {}
-      const btn = document.querySelector('.scenarioPanel[data-scenario-id="' + scen.id + '"] .scSave');
-      if (btn) btn.click();
-      return scen.id;
-    } catch (e) { return null; }
-  });
+  await p.evaluate(() => { document.getElementById("selectAtomsBtn").click(); });
+  await p.waitForTimeout(400);
+  const addId = await makeScenario(p, "probeq-add", []);
+  await p.evaluate((id) => {
+    try { const btn = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .scSave'); if (btn) btn.click(); } catch (e) {}
+  }, addId);
   await p.waitForTimeout(800);
   const added = await p.evaluate((id) => {
-    try {
-      const sc = fScenarioGet(id);
-      const st = sc && sc.steps[sc.steps.length - 1];
-      return st ? { quiz: st.quiz || null, nameClick: (st.show || {}).nameClick } : null;
-    } catch (e) { return { err: 1 }; }
+    try { const sc = fScenarioGet(id); const s = sc.steps[sc.steps.length - 1]; return s ? (s.quiz || null) : null; } catch (e) { return "err"; }
   }, addId);
-  check(added && added.quiz && added.quiz.mode === "compCarbonsCount" && added.quiz.mol === "ethane",
-    "select-ON Add should store a default quiz, got " + JSON.stringify(added && added.quiz));
-  check(added && added.nameClick === true, "default capture should force nameClick on");
+  check(added && added.mode === "compCarbonsCount" && Array.isArray(added.modes) && added.modes.length >= 2,
+    "select-ON Add should store the default task + set, got " + JSON.stringify(added));
 
-  // --- 2d. menu quiz: arm, build menu, deselect, Add → quiz.mol "" ---
+  // --- 6. menu capture (intent) + Present: gate before the first pick ---
   await openMol(p, "ethane");
-  await armSelect(p);
-  check(await ensureArmed(p, "comp5", "compCarbonsCount"), "setup arm failed");
-  await p.evaluate(() => {
+  await p.evaluate(() => { document.getElementById("selectAtomsBtn").click(); });
+  await p.waitForTimeout(400);
+  check(await armBox(p, "comp5", "compCarbonsCount"), "menu setup arm failed");
+  const menuAuthId = await p.evaluate(() => {
     try {
       const scen = fScenarioNew("probeq-menu-auth", true);
       window.__probeMenuAuth = scen.id;
-      try { if (typeof fScenarioBuildPanels === "function") fScenarioBuildPanels(); } catch (e) {}
-      try { if (typeof fScenarioRenderList === "function") fScenarioRenderList(scen.id); } catch (e) {}
-      if (typeof fScenarioSetPick === "function") { fScenarioSetPick("ethane", true); fScenarioSetPick("propane", true); }
-      if (typeof fDeselectMol === "function") fDeselectMol();
-    } catch (e) {}
+      fScenarioBuildPanels(); fScenarioRenderList(scen.id);
+      fScenarioSetPick("ethane", true); fScenarioSetPick("propane", true);
+      fDeselectMol();
+      return scen.id;
+    } catch (e) { return "err"; }
   });
-  await p.waitForTimeout(600);
-  const intent = await p.evaluate(() => { try { return window.__mulerQuizIntent || null; } catch (e) { return "err"; } });
-  check(intent && intent.mode === "compCarbonsCount" && intent.mol === "ethane",
-    "deselect should preserve quiz intent, got " + JSON.stringify(intent));
+  await p.waitForTimeout(700);
   await p.evaluate((id) => {
+    try { const btn = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .scSave'); if (btn) btn.click(); } catch (e) {}
+  }, menuAuthId);
+  await p.waitForTimeout(900);
+  const menuCap = await p.evaluate((id) => {
     try {
-      const btn = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .scSave');
-      if (btn) btn.click();
-    } catch (e) {}
-  }, await p.evaluate(() => window.__probeMenuAuth));
-  await p.waitForTimeout(800);
-  const menuCap = await p.evaluate(() => {
-    try {
-      const sc = fScenarioGet(window.__probeMenuAuth);
-      const st = sc && sc.steps[sc.steps.length - 1];
-      return st ? { quiz: st.quiz || null, mol: st.selectedMol, menu: (st.show || {}).menu, subset: st.menuSubset || [] } : null;
-    } catch (e) { return { err: 1 }; }
-  });
-  check(menuCap && menuCap.quiz && menuCap.quiz.mode === "compCarbonsCount" && menuCap.quiz.mol === "",
-    "menu Add should store a deferred quiz, got " + JSON.stringify(menuCap && menuCap.quiz));
+      const sc = fScenarioGet(id); const s = sc.steps[sc.steps.length - 1];
+      return s ? { quiz: s.quiz || null, mol: s.selectedMol, menu: !!(s.show && s.show.menu), subset: s.menuSubset || [] } : null;
+    } catch (e) { return "err"; }
+  }, menuAuthId);
+  check(menuCap && menuCap.quiz && menuCap.quiz.mol === "" && !menuCap.quiz.modes,
+    "menu Add should store a deferred task without a set, got " + JSON.stringify(menuCap && menuCap.quiz));
   check(menuCap && menuCap.mol === null && menuCap.menu === true && (menuCap.subset || []).length === 2,
     "menu step should be molecule-less with a 2-pick menu, got " + JSON.stringify(menuCap));
-  // Present the authored menu step: no arm until a molecule is picked.
-  await p.evaluate(() => { try { fScenarioPresentBegin(window.__probeMenuAuth, 0); } catch (e) {} });
-  await p.waitForTimeout(1200);
-  s = await state(p);
-  check(s.step === 0 && !s.target, "authored menu step should apply disarmed, got " + JSON.stringify({ i: s.step, t: s.target }));
-  const picked2 = await p.evaluate(() => {
+  // Present the authored card (append a trailing plain step through a copy).
+  const menuPresentId = await p.evaluate(() => {
     try {
-      const items = Array.from(document.querySelectorAll(".menuLi"));
-      const mine = items.find((x) => (x.getAttribute("id") || "") === "propane");
-      if (mine) { mine.click(); return true; }
-      return "nomenuitem";
-    } catch (e) { return "err:" + String(e && e.message || e).slice(0, 60); }
+      const sc = fScenarioGet(window.__probeMenuAuth);
+      const tail = fScenarioDefaults({ selectedMol: "ethane" }, sc.steps.length);
+      tail.lang = "en";
+      sc.steps.push(tail);
+      fScenarioRenderList(sc.id);
+      fScenarioPresentBegin(sc.id, 0);
+      return sc.id;
+    } catch (e) { return "err:" + String((e && e.message) || e).slice(0, 60); }
   });
-  await p.waitForTimeout(1500);
-  check(picked2 === true, "menu pick should work in Present, got " + JSON.stringify(picked2));
-  s = await state(p);
-  check(s.target === "compCarbonsCount",
-    "menu pick should auto-arm the authored quiz, got " + JSON.stringify(s.target));
+  await p.waitForTimeout(1300);
+  st = await state(p);
+  check(st.step === 0 && !st.target && st.todo && st.todo.length === 0,
+    "menu step should apply undone and unarmed, got " + JSON.stringify({ i: st.step, t: st.target, todo: st.todo }));
+  await clickBtn(p, "scNext");
+  st = await state(p);
+  check(st.step === 0, "menu quiz step must not advance before a molecule is picked, got index " + st.step);
+  check(await menuPick(p, "propane") === true, "menu pick should work in Present");
+  st = await state(p);
+  check(st.target === "compCarbonsCount", "menu pick should auto-arm the deferred quiz, got " + JSON.stringify(st.target));
+  check(st.quiz && st.quiz.mol === "" && st.quiz.mode === "compCarbonsCount", "deferred task should stay per-molecule");
+  const rm6 = await solveAllTodos(p);
+  check(rm6 === true, "menu quiz should be solvable, got " + JSON.stringify(rm6));
+  await clickBtn(p, "scNext");
+  st = await state(p);
+  check(st.step === 1, "solved menu quiz should advance, got index " + st.step);
 
-  // --- 3. gate holds, auto-arm works, solve advances (fresh page) ---
+  // --- 7. pinned Present step: auto-arm, gate, all-todo completion ---
   await openMol(p, "ethane");
-  await p.evaluate(() => {
-    try {
-      const scen = fScenarioNew("probeq-gate", true);
-      const mk = (extra) => {
-        const st = (typeof fScenarioDefaults === "function")
-          ? fScenarioDefaults({ selectedMol: "ethane", nameAnalysisMode: "none" }, scen.steps.length)
-          : { selectedMol: "ethane", nameAnalysisMode: "none" };
-        for (const k in extra) st[k] = extra[k];
-        scen.steps.push(st);
-        return st;
-      };
-      mk({});
-      mk({ quiz: { kind: "nameComp", mode: "compCarbonsCount", mol: "ethane", prompt: "" } });
-      mk({});
-      try { if (typeof fScenarioBuildPanels === "function") fScenarioBuildPanels(); } catch (e) {}
-      try { if (typeof fScenarioRenderList === "function") fScenarioRenderList(scen.id); } catch (e) {}
-      window.__probeGate = scen.id;
-    } catch (e) {}
-  });
-  await p.evaluate(() => { try { fScenarioPresentBegin(window.__probeGate, 0); } catch (e) {} });
-  await p.waitForTimeout(1200);
-  s = await state(p);
-  check(s.present === true && s.step === 0 && !s.target, "passive step should apply clean, got " + JSON.stringify({ t: s.target, i: s.step }));
-  await p.evaluate(() => { try { document.getElementById("scNext").click(); } catch (e) {} });
-  await p.waitForTimeout(1200);
-  s = await state(p);
-  check(s.step === 1 && s.target === "compCarbonsCount" && s.task === "compCarbonsCount",
-    "present must auto-arm the quiz step, got " + JSON.stringify({ i: s.step, t: s.target }));
-  check(await clickAtom(p, 1), "student pick should land, got " + JSON.stringify(s.sel));
-  s = await state(p);
-  check(s.sel.length === 1, "student pick should register, got " + JSON.stringify(s.sel));
-  await p.evaluate(() => { try { document.getElementById("scNext").click(); } catch (e) {} });
-  await p.waitForTimeout(600);
-  s = await state(p);
-  check(s.step === 1, "unsolved gate must hold the step, got index " + s.step);
-  check(await clickAtom(p, 2), "missing anchor for ethane C2 (student)");
-  await p.waitForTimeout(600);
-  s = await state(p);
-  check(/Correct/.test(s.verdict) && !s.hidden && !s.target, "student exact should succeed, got " + JSON.stringify(s.verdict));
-  check(s.solved === true, "exact should mark solved, got " + JSON.stringify(s.solved));
-  // --- 3b. post-solve freedom: reps pickable, other comps armable, no gate ---
-  check(await clickAtom(p, 1), "post-solve pick should land");
-  s = await state(p);
-  check(s.sel.length === 1, "reps should be pickable after solving, got " + JSON.stringify(s.sel));
-  const other = await p.evaluate(() => {
-    try {
-      const boxes = Array.prototype.slice.call(document.querySelectorAll("#nameAnalysis .nameCompBox"));
-      for (const b of boxes) {
-        const id = b.getAttribute("id");
-        if (!id || id === "comp5") continue;
-        if (b.classList.contains("comp-hidden")) continue;
-        const m = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId(id) : "none";
-        if (!m || m === "none" || m === "compCarbonsCount") continue;
-        try {
-          const r = (typeof fMulerQuizResolveTarget === "function") ? fMulerQuizResolveTarget(m) : [];
-          if (r && r.length) return { id, mode: m };
-        } catch (e) {}
-      }
-      return null;
-    } catch (e) { return "err"; }
-  });
-  if (other && other.id) {
-    await p.evaluate((id) => { try { document.getElementById(id).click(); } catch (e) {} }, other.id);
-    await p.waitForTimeout(600);
-    s = await state(p);
-    check(s.target === other.mode, "other comps should arm practice after solve, got " + JSON.stringify(s.target));
-  } else { warn("no second armable comp on ethane — practice arm untested"); }
-  await p.evaluate(() => { try { document.getElementById("scNext").click(); } catch (e) {} });
-  await p.waitForTimeout(900);
-  s = await state(p);
-  check(s.step === 2, "solved gate must advance, got index " + s.step);
-
-  // --- 3c. solved steps stay solved on revisit (no re-quiz) ---
-  await p.evaluate(() => { try { document.getElementById("scPrev").click(); } catch (e) {} });
-  await p.waitForTimeout(1200);
-  s = await state(p);
-  check(s.step === 1 && !s.target && s.solved === true,
-    "revisit should show solved display, got " + JSON.stringify({ i: s.step, t: s.target, solved: s.solved }));
-  const backBox = await p.evaluate(() => { try { const b = document.getElementById("comp5"); return !!(b && b.classList.contains("selected")); } catch (e) { return "err"; } });
-  check(backBox === true, "revisit should select the solved box, got " + JSON.stringify(backBox));
-  await p.evaluate(() => { try { document.getElementById("scNext").click(); } catch (e) {} });
-  await p.waitForTimeout(900);
-  s = await state(p);
-  check(s.step === 2, "revisited solved step should advance freely, got index " + s.step);
-
-  // --- 4. restart re-arms (fresh run) ---
-  await p.evaluate(() => { try { fScenarioPresentBegin(window.__probeGate, 0); } catch (e) {} });
-  await p.waitForTimeout(1200);
-  s = await state(p);
-  check(s.step === 0 && !s.target && s.solved === false, "restart should reset, got " + JSON.stringify({ i: s.step, t: s.target }));
-  await p.evaluate(() => { try { document.getElementById("scNext").click(); } catch (e) {} });
-  await p.waitForTimeout(1200);
-  s = await state(p);
-  check(s.step === 1 && s.target === "compCarbonsCount", "restart must re-arm the gated step, got " + JSON.stringify({ i: s.step, t: s.target }));
-
-  // --- 5. requireSolution:false passes without solving (fresh page) ---
-  await openMol(p, "ethane");
-  await p.evaluate(() => {
-    try {
-      const scen = fScenarioNew("probeq-free", true);
-      const mk = (extra) => {
-        const st = (typeof fScenarioDefaults === "function")
-          ? fScenarioDefaults({ selectedMol: "ethane", nameAnalysisMode: "none" }, scen.steps.length)
-          : { selectedMol: "ethane", nameAnalysisMode: "none" };
-        for (const k in extra) st[k] = extra[k];
-        scen.steps.push(st);
-        return st;
-      };
-      mk({});
-      mk({ quiz: { kind: "nameComp", mode: "compCarbonsCount", mol: "ethane", prompt: "" }, requireSolution: false });
-      mk({});
-      try { if (typeof fScenarioBuildPanels === "function") fScenarioBuildPanels(); } catch (e) {}
-      try { if (typeof fScenarioRenderList === "function") fScenarioRenderList(scen.id); } catch (e) {}
-      window.__probeFree = scen.id;
-    } catch (e) {}
-  });
-  await p.evaluate(() => { try { fScenarioPresentBegin(window.__probeFree, 1); } catch (e) {} });
-  await p.waitForTimeout(1200);
-  s = await state(p);
-  check(s.step === 1 && s.target === "compCarbonsCount",
-    "free step should present armed, got " + JSON.stringify({ i: s.step, t: s.target }));
-  await p.evaluate(() => { try { document.getElementById("scNext").click(); } catch (e) {} });
-  await p.waitForTimeout(900);
-  s = await state(p);
-  check(s.step === 2, "requireSolution:false must not gate, got index " + s.step);
-
-  // --- 6. menu quiz: pick a molecule, task arms for it (fresh page) ---
-  await openMol(p, "ethane");
-  await p.evaluate(() => {
-    try {
-      const scen = fScenarioNew("probeq-menu", true);
-      const m0 = (typeof fScenarioDefaults === "function")
-        ? fScenarioDefaults({ selectedMol: null, nameAnalysisMode: "none" }, 0)
-        : { selectedMol: null, nameAnalysisMode: "none" };
-      m0.show = m0.show || {};
-      m0.show.menu = true;
-      m0.menuSubset = ["ethane", "propane"];
-      m0.quiz = { kind: "nameComp", mode: "compCarbonsCount", mol: "", prompt: "" };
-      scen.steps.push(m0);
-      const m1 = (typeof fScenarioDefaults === "function")
-        ? fScenarioDefaults({ selectedMol: "ethane", nameAnalysisMode: "none" }, 1)
-        : { selectedMol: "ethane", nameAnalysisMode: "none" };
-      scen.steps.push(m1);
-      try { if (typeof fScenarioBuildPanels === "function") fScenarioBuildPanels(); } catch (e) {}
-      try { if (typeof fScenarioRenderList === "function") fScenarioRenderList(scen.id); } catch (e) {}
-      window.__probeMenu = scen.id;
-    } catch (e) {}
-  });
-  await p.evaluate(() => { try { fScenarioPresentBegin(window.__probeMenu, 0); } catch (e) {} });
-  await p.waitForTimeout(1200);
-  s = await state(p);
-  check(s.step === 0 && !s.target, "menu step should apply without arming, got " + JSON.stringify({ i: s.step, t: s.target }));
-  const picked = await p.evaluate(() => {
-    try {
-      const items = Array.from(document.querySelectorAll(".menuLi"));
-      const mine = items.find((x) => (x.getAttribute("id") || "") === "propane");
-      if (mine) { mine.click(); return true; }
-      return "nomenuitem";
-    } catch (e) { return "err:" + String(e && e.message || e).slice(0, 60); }
-  });
-  await p.waitForTimeout(1500);
-  check(picked === true, "menu pick should work in Present, got " + JSON.stringify(picked));
-  s = await state(p);
-  check(s.target === "compCarbonsCount",
-    "menu pick should auto-arm the quiz for it, got " + JSON.stringify(s.target));
-  const blankBox = await p.evaluate(() => { try { return !!document.querySelector("#nameAnalysis .nameCompBox.selected"); } catch (e) { return "err"; } });
-  check(blankBox === false, "fresh molecule should not preselect a component, got selected=" + JSON.stringify(blankBox));
-
-  // --- 6b. switch molecules mid-quiz: solve propane, pick ethane → re-arms ---
-  check(await clickAtom(p, 1), "propane pick 1");
-  check(await clickAtom(p, 2), "propane pick 2");
-  check(await clickAtom(p, 3), "propane pick 3");
-  await p.waitForTimeout(600);
-  s = await state(p);
-  check(/Correct/.test(s.verdict) && !s.hidden && !s.target && s.solved === true,
-    "propane exact should succeed, got " + JSON.stringify(s.verdict));
-  const picked3 = await p.evaluate(() => {
-    try {
-      const items = Array.from(document.querySelectorAll(".menuLi"));
-      const mine = items.find((x) => (x.getAttribute("id") || "") === "ethane");
-      if (mine) { mine.click(); return true; }
-      return "nomenuitem";
-    } catch (e) { return "err:" + String(e && e.message || e).slice(0, 60); }
-  });
-  await p.waitForTimeout(1500);
-  check(picked3 === true, "switch pick should work in Present, got " + JSON.stringify(picked3));
-  s = await state(p);
-  check(s.target === "compCarbonsCount" && s.sel.length === 0,
-    "switching molecules should re-arm fresh for ethane, got " + JSON.stringify({ t: s.target, sel: s.sel }));
-  check(await clickAtom(p, 1), "ethane pick 1 (after switch)");
-  check(await clickAtom(p, 2), "ethane pick 2 (after switch)");
-  await p.waitForTimeout(600);
-  s = await state(p);
-  check(/Correct/.test(s.verdict) && !s.target,
-    "ethane exact after switch should succeed, got " + JSON.stringify(s.verdict));
-
-  // --- 6c. solved molecules show their solved display (no re-arm) ---
-  const picked6 = await p.evaluate(() => {
-    try {
-      const items = Array.from(document.querySelectorAll(".menuLi"));
-      const mine = items.find((x) => (x.getAttribute("id") || "") === "propane");
-      if (mine) { mine.click(); return true; }
-      return "nomenuitem";
-    } catch (e) { return "err:" + String(e && e.message || e).slice(0, 60); }
-  });
-  await p.waitForTimeout(1500);
-  check(picked6 === true, "return pick should work, got " + JSON.stringify(picked6));
-  s = await state(p);
-  check(!s.target && s.solved === true,
-    "returning to a solved molecule should show solved display, got " + JSON.stringify({ t: s.target, solved: s.solved }));
-  const solvedBox = await p.evaluate(() => { try { const b = document.querySelector("#comp5"); return !!(b && b.classList.contains("selected")); } catch (e) { return "err"; } });
-  check(solvedBox === true, "solved display should select the solved box, got " + JSON.stringify(solvedBox));
-  await p.evaluate(() => { try { document.getElementById("scNext").click(); } catch (e) {} });
-  await p.waitForTimeout(900);
-  s = await state(p);
-  check(s.step === 1, "gate should pass on solved display, got index " + s.step);
-
-  // --- 2e. molecule+menu capture stores a deferred quiz (mol "") ---
-  await openMol(p, "ethane");
-  await armSelect(p);
-  check(await ensureArmed(p, "comp5", "compCarbonsCount"), "setup arm failed");
-  await p.evaluate(() => {
-    try {
-      const scen = fScenarioNew("probeq-molmenu", true);
-      window.__probeMolMenu = scen.id;
-      try { if (typeof fScenarioBuildPanels === "function") fScenarioBuildPanels(); } catch (e) {}
-      try { if (typeof fScenarioRenderList === "function") fScenarioRenderList(scen.id); } catch (e) {}
-      if (typeof fScenarioSetPick === "function") { fScenarioSetPick("propane", true); }
-      const btn = document.querySelector('.scenarioPanel[data-scenario-id="' + scen.id + '"] .scSave');
-      if (btn) btn.click();
-    } catch (e) {}
-  });
-  await p.waitForTimeout(800);
-  const mmCap = await p.evaluate(() => {
-    try {
-      const sc = fScenarioGet(window.__probeMolMenu);
-      const st = sc && sc.steps[sc.steps.length - 1];
-      return st ? { quiz: st.quiz || null, mol: st.selectedMol, menu: (st.show || {}).menu, subset: st.menuSubset || [] } : null;
-    } catch (e) { return { err: 1 }; }
-  });
-  check(mmCap && mmCap.quiz && mmCap.quiz.mode === "compCarbonsCount" && mmCap.quiz.mol === "",
-    "molecule+menu Add should store a deferred quiz, got " + JSON.stringify(mmCap && mmCap.quiz));
-  check(mmCap && mmCap.mol === "ethane" && mmCap.menu === true && (mmCap.subset || []).length === 2,
-    "step should pin ethane with a 2-pick menu, got " + JSON.stringify(mmCap));
-  // Present: apply arms ethane immediately; picking propane re-arms for it.
-  await p.evaluate(() => { try { fScenarioPresentBegin(window.__probeMolMenu, 0); } catch (e) {} });
-  await p.waitForTimeout(1200);
-  s = await state(p);
-  check(s.step === 0 && s.target === "compCarbonsCount",
-    "molecule+menu apply should arm the pinned molecule, got " + JSON.stringify({ i: s.step, t: s.target }));
-  const picked4 = await p.evaluate(() => {
-    try {
-      const items = Array.from(document.querySelectorAll(".menuLi"));
-      const mine = items.find((x) => (x.getAttribute("id") || "") === "propane");
-      if (mine) { mine.click(); return true; }
-      return "nomenuitem";
-    } catch (e) { return "err:" + String(e && e.message || e).slice(0, 60); }
-  });
-  await p.waitForTimeout(1500);
-  check(picked4 === true, "menu pick should work, got " + JSON.stringify(picked4));
-  s = await state(p);
-  check(s.target === "compCarbonsCount" && s.sel.length === 0,
-    "picking propane should re-arm fresh (no mismatch gate), got " + JSON.stringify({ t: s.target, sel: s.sel }));
-  const blankBox2 = await p.evaluate(() => { try { return !!document.querySelector("#nameAnalysis .nameCompBox.selected"); } catch (e) { return "err"; } });
-  check(blankBox2 === false, "authored-menu pick should not preselect either, got selected=" + JSON.stringify(blankBox2));
-  check(await clickAtom(p, 1), "propane pick 1");
-  check(await clickAtom(p, 2), "propane pick 2");
-  check(await clickAtom(p, 3), "propane pick 3");
-  await p.waitForTimeout(600);
-  s = await state(p);
-  check(/Correct/.test(s.verdict) && !s.target,
-    "propane exact should succeed, got " + JSON.stringify(s.verdict));
-
-  // --- 7. reselect resets solved (authoring, fresh page) ---
-  await openMol(p, "ethane");
-  await armSelect(p);
-  check(await ensureArmed(p, "comp5", "compCarbonsCount"), "setup arm failed");
-  check(await clickAtom(p, 1), "missing anchor C1");
-  check(await clickAtom(p, 2), "missing anchor C2");
-  await p.waitForTimeout(600);
-  s = await state(p);
-  check(/Correct/.test(s.verdict) && !s.target, "exact should succeed, got " + JSON.stringify(s.verdict));
-  check(s.solved === true, "quiz should be marked solved, got " + JSON.stringify(s));
-  await p.evaluate(() => {
-    try {
-      const items = Array.from(document.querySelectorAll(".menuLi"));
-      const mine = items.find((x) => (x.getAttribute("id") || "") === "ethane");
-      if (mine) mine.click();
-    } catch (e) {}
-  });
-  await p.waitForTimeout(1200);
-  s = await state(p);
-  check(s.solved === false, "reselecting the molecule should reset solved, got " + JSON.stringify(s));
-  check(await ensureArmed(p, "comp5", "compCarbonsCount"), "re-arm must work after reselect");
-
-  // --- 8. solved display locks reps (authoring, same page; re-arm first) ---
-  check(await ensureArmed(p, "comp5", "compCarbonsCount"), "re-arm must work");
-  check(await clickAtom(p, 1), "setup pick");
-  check(await clickAtom(p, 2), "setup pick 2");
-  await p.waitForTimeout(600);
-  s = await state(p);
-  check(/Correct/.test(s.verdict) && !s.target, "exact should succeed, got " + JSON.stringify(s.verdict));
-  check(await clickAtom(p, 1), "click still resolves");
+  const gateId = await makeScenario(p, "probeq-gate", [
+    { selectedMol: "ethane" },
+    { selectedMol: "ethane", quiz: { kind: "nameComp", mode: "compCarbonsCount", mol: "ethane" } },
+    { selectedMol: "ethane" },
+  ]);
+  await p.evaluate((id) => { try { fScenarioPresentBegin(id, 0); } catch (e) {} }, gateId);
+  await p.waitForTimeout(1300);
+  st = await state(p);
+  check(st.present === true && st.step === 0 && !st.target, "passive step should apply clean, got " + JSON.stringify({ t: st.target, i: st.step }));
+  await clickBtn(p, "scNext");
+  st = await state(p);
+  check(st.step === 1 && st.target === "compCarbonsCount" && st.task === "compCarbonsCount",
+    "Present must auto-arm the quiz step, got " + JSON.stringify({ i: st.step, t: st.target }));
+  // legacy (no stored set) => all capable comps are required
+  check(st.todo && st.todo.indexOf("compCarbonsCount") >= 0 && st.todo.indexOf("compBondType") >= 0,
+    "legacy step should require every capable comp, got " + JSON.stringify(st.todo));
+  check(await clickAtom(p, 1), "student pick should land");
+  st = await state(p);
+  check(st.sel.length === 1, "student pick should register, got " + JSON.stringify(st.sel));
+  await clickBtn(p, "scNext");
+  st = await state(p);
+  check(st.step === 1, "unsolved gate must hold the step, got index " + st.step);
+  // clear the partial pick so the solve below starts blank (Esc = student
+  // clear; the task stays armed)
+  await p.keyboard.press("Escape");
   await p.waitForTimeout(400);
-  s = await state(p);
-  check(s.sel.length === 0, "solved display must lock reps (no-op picks), got " + JSON.stringify(s.sel));
-
-  // --- 9. free practice: any unsolved comp arms, solved comps highlight ---
-  await openMol(p, "methyl_2_propene");
-  await p.evaluate(() => {
-    try {
-      const scen = fScenarioNew("probeq-free2", true);
-      const mk = (extra) => {
-        const st = (typeof fScenarioDefaults === "function")
-          ? fScenarioDefaults({ selectedMol: "methyl_2_propene", nameAnalysisMode: "none" }, scen.steps.length)
-          : { selectedMol: "methyl_2_propene", nameAnalysisMode: "none" };
-        for (const k in extra) st[k] = extra[k];
-        scen.steps.push(st);
-        return st;
-      };
-      mk({ quiz: { kind: "nameComp", mode: "compCarbonsCount", mol: "methyl_2_propene", prompt: "" } });
-      mk({});
-      try { if (typeof fScenarioBuildPanels === "function") fScenarioBuildPanels(); } catch (e) {}
-      try { if (typeof fScenarioRenderList === "function") fScenarioRenderList(scen.id); } catch (e) {}
-      window.__probeFree2 = scen.id;
-    } catch (e) {}
+  check(await armBox(p, "comp5", "compCarbonsCount"), "student chain re-arm failed");
+  const r7 = await solveMode(p, "compCarbonsCount");
+  check(r7 === true, "student chain solve should succeed, got " + JSON.stringify(r7));
+  st = await state(p);
+  check(st.todo && st.todo.length === 1 && st.todo[0] === "compBondType",
+    "after the chain only the bond-type comp should remain, got " + JSON.stringify(st.todo));
+  // post-solve freedom: reps pickable while required comps remain
+  check(await clickAtom(p, 1), "post-solve pick should land");
+  st = await state(p);
+  check(st.sel.length === 1, "reps should be pickable while required comps remain, got " + JSON.stringify(st.sel));
+  await clickBtn(p, "scNext");
+  st = await state(p);
+  check(st.step === 1, "gate must hold while a required comp remains, got index " + st.step);
+  const r7b = await solveAllTodos(p);
+  check(r7b === true, "all required comps should be solvable, got " + JSON.stringify(r7b));
+  await clickBtn(p, "scNext");
+  st = await state(p);
+  check(st.step === 2, "fully solved step must advance, got index " + st.step);
+  // revisit: solved display, no re-quiz, free bounds
+  await clickBtn(p, "scPrev");
+  st = await state(p);
+  check(st.step === 1 && !st.target && st.todo && st.todo.length === 0,
+    "revisit should show the solved display, got " + JSON.stringify({ i: st.step, t: st.target, todo: st.todo }));
+  const selBox = await p.evaluate(() => {
+    try { return !!document.querySelector("#nameAnalysis .nameCompBox.selected"); } catch (e) { return "err"; }
   });
-  await p.evaluate(() => { try { fScenarioPresentBegin(window.__probeFree2, 0); } catch (e) {} });
-  await p.waitForTimeout(1200);
-  s = await state(p);
-  check(s.step === 0 && s.target === "compCarbonsCount",
-    "task should auto-arm on entry, got " + JSON.stringify({ i: s.step, t: s.target }));
-  const other2 = await p.evaluate(() => {
-    try {
-      const boxes = Array.prototype.slice.call(document.querySelectorAll("#nameAnalysis .nameCompBox"));
-      for (const b of boxes) {
-        const id = b.getAttribute("id");
-        if (!id || id === "comp5") continue;
-        if (b.classList.contains("comp-hidden")) continue;
-        const m = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId(id) : "none";
-        if (!m || m === "none" || m === "compCarbonsCount") continue;
-        try {
-          const r = (typeof fMulerQuizResolveTarget === "function") ? fMulerQuizResolveTarget(m) : [];
-          if (r && r.length) return { id, mode: m };
-        } catch (e) {}
-      }
-      return null;
-    } catch (e) { return "err"; }
-  });
-  check(other2 && other2.id, "branched molecule should offer a second armable comp, got " + JSON.stringify(other2));
-  await p.evaluate((id) => { try { document.getElementById(id).click(); } catch (e) {} }, other2.id);
-  await p.waitForTimeout(600);
-  s = await state(p);
-  check(s.target === other2.mode && s.task === null,
-    "other unsolved comps should arm practice without becoming the task, got " + JSON.stringify({ t: s.target, task: s.task }));
-  const pr = await solveLiveTarget(p);
-  check(pr === true, "practice should be solvable, got " + JSON.stringify(pr));
-  await p.evaluate(() => { try { document.getElementById("scNext").click(); } catch (e) {} });
-  await p.waitForTimeout(600);
-  s = await state(p);
-  check(s.step === 0, "unsolved task must still gate after practice, got index " + s.step);
-  await p.evaluate(() => { try { document.getElementById("comp5").click(); } catch (e) {} });
-  await p.waitForTimeout(600);
-  s = await state(p);
-  check(s.target === "compCarbonsCount", "task box should re-arm the task, got " + JSON.stringify(s.target));
-  const wasSel = await p.evaluate((id) => { try { return !!document.getElementById(id).classList.contains("selected"); } catch (e) { return "err"; } }, other2.id);
-  await p.evaluate((id) => { try { document.getElementById(id).click(); } catch (e) {} }, other2.id);
-  await p.waitForTimeout(600);
-  s = await state(p);
-  const nowSel = await p.evaluate((id) => { try { return !!document.getElementById(id).classList.contains("selected"); } catch (e) { return "err"; } }, other2.id);
-  check(s.target === "compCarbonsCount" && wasSel !== nowSel,
-    "solved box must toggle highlight without killing the task, got " + JSON.stringify({ t: s.target, wasSel, nowSel }));
-  const fin = await solveLiveTarget(p);
-  check(fin === true, "task should solve, got " + JSON.stringify(fin));
-  await p.evaluate(() => { try { document.getElementById("scNext").click(); } catch (e) {} });
-  await p.waitForTimeout(900);
-  s = await state(p);
-  check(s.step === 1, "solved task should advance, got index " + s.step);
+  check(selBox === true, "revisit should select the solved component box, got " + JSON.stringify(selBox));
+  check(await clickAtom(p, 1), "free-bounds pick should land");
+  st = await state(p);
+  check(st.sel.length === 1, "solved step should allow free exploration, got " + JSON.stringify(st.sel));
+  await clickBtn(p, "scNext");
+  st = await state(p);
+  check(st.step === 2, "solved step should advance freely, got index " + st.step);
 
-  // --- 10. authored solved state restores as solved ---
+  // --- 8. requireSolution:false never gates but still arms ---
   await openMol(p, "ethane");
-  await armSelect(p);
-  await p.evaluate(() => { try { document.getElementById("comp5").click(); } catch (e) {} });
-  await p.waitForTimeout(600);
-  check(await clickAtom(p, 1), "missing anchor C1");
-  check(await clickAtom(p, 2), "missing anchor C2");
-  await p.waitForTimeout(600);
-  s = await state(p);
-  check(/Correct/.test(s.verdict) && !s.target && s.solved === true, "setup solve failed, got " + JSON.stringify(s.verdict));
-  const preId = await p.evaluate(() => {
-    try {
-      const scen = fScenarioNew("probeq-presolved", true);
-      scen.steps.push(fScenarioDefaults({ selectedMol: "ethane", nameAnalysisMode: "none" }, 0));
-      try { if (typeof fScenarioBuildPanels === "function") fScenarioBuildPanels(); } catch (e) {}
-      try { if (typeof fScenarioRenderList === "function") fScenarioRenderList(scen.id); } catch (e) {}
-      window.__probePre = scen.id;
-      return scen.id;
-    } catch (e) { return null; }
-  });
-  check(!!preId, "scenario creation failed");
-  check(await rowButton(preId, ".scUpdate") === true, "Update should capture");
+  const freeId = await makeScenario(p, "probeq-free", [
+    { selectedMol: "ethane", quiz: { kind: "nameComp", mode: "compCarbonsCount", mol: "ethane" }, requireSolution: false },
+    { selectedMol: "ethane" },
+  ]);
+  await p.evaluate((id) => { try { fScenarioPresentBegin(id, 0); } catch (e) {} }, freeId);
+  await p.waitForTimeout(1300);
+  st = await state(p);
+  check(st.step === 0 && st.target === "compCarbonsCount", "ungated quiz step should still arm, got " + JSON.stringify(st.target));
+  await clickBtn(p, "scNext");
+  st = await state(p);
+  check(st.step === 1, "requireSolution:false must not gate, got index " + st.step);
+
+  // --- 9. stored set wins over capability (v58.11) ---
+  await openMol(p, "ethane");
+  const narrowId = await makeScenario(p, "probeq-modes", [
+    { selectedMol: "ethane", quiz: { kind: "nameComp", mode: "compCarbonsCount", mol: "ethane", modes: ["compCarbonsCount"], modeLabels: ["eth"] } },
+    { selectedMol: "ethane" },
+  ]);
+  await p.evaluate((id) => { try { fScenarioPresentBegin(id, 0); } catch (e) {} }, narrowId);
+  await p.waitForTimeout(1300);
+  st = await state(p);
+  check(st.step === 0 && st.todo && st.todo.length === 1 && st.todo[0] === "compCarbonsCount",
+    "stored set should narrow the requirement, got " + JSON.stringify(st.todo));
+  const r9 = await solveMode(p, "compCarbonsCount");
+  check(r9 === true, "narrowed chain should solve, got " + JSON.stringify(r9));
+  await clickBtn(p, "scNext");
+  st = await state(p);
+  check(st.step === 1, "solving the stored set must open the gate (bond type not required), got index " + st.step);
+
+  // --- 10. authored pre-solved baseline restores as solved ---
+  await openMol(p, "ethane");
+  await p.evaluate(() => { document.getElementById("selectAtomsBtn").click(); });
+  await p.waitForTimeout(400);
+  const preId = await makeScenario(p, "probeq-presolved", [{ selectedMol: "ethane" }]);
+  check(await armBox(p, "comp5", "compCarbonsCount"), "preSolved setup arm failed");
+  check(await solveMode(p, "compCarbonsCount") === true, "preSolved chain solve failed");
+  check(await solveMode(p, "compBondType") === true, "preSolved bond-type solve failed");
+  check(await rowButton(p, preId, ".scUpdate") === true, "preSolved Update failed");
   const preCap = await p.evaluate((id) => {
-    try {
-      const sc = fScenarioGet(id);
-      const st = sc && sc.steps[0];
-      return st ? { quiz: st.quiz || null, nam: st.nameAnalysisMode } : null;
-    } catch (e) { return { err: 1 }; }
+    try { const q = fScenarioGet(id).steps[0].quiz; return q ? { modes: q.modes, pre: q.preSolved } : null; } catch (e) { return "err"; }
   }, preId);
-  check(preCap && preCap.quiz && preCap.quiz.mode === "compCarbonsCount" &&
-    preCap.quiz.preSolved && preCap.quiz.preSolved.ethane && preCap.quiz.preSolved.ethane.indexOf("compCarbonsCount") >= 0,
-    "capture should store authored solved state, got " + JSON.stringify(preCap && preCap.quiz));
-  check(!preCap || preCap.nam === "none", "quiz steps should capture a clean naming mode, got " + JSON.stringify(preCap && preCap.nam));
+  check(preCap && preCap.pre && preCap.pre.ethane && preCap.pre.ethane.indexOf("compCarbonsCount") >= 0 &&
+    preCap.pre.ethane.indexOf("compBondType") >= 0,
+    "capture should store the full authored baseline, got " + JSON.stringify(preCap));
+  // a trailing step so the gate has somewhere to advance to
   await p.evaluate((id) => {
     try {
       const sc = fScenarioGet(id);
-      sc.steps.push(fScenarioDefaults({ selectedMol: "ethane", nameAnalysisMode: "none" }, sc.steps.length));
-      try { if (typeof fScenarioRenderList === "function") fScenarioRenderList(id); } catch (e) {}
+      const tail = fScenarioDefaults({ selectedMol: "ethane" }, sc.steps.length);
+      tail.lang = "en";
+      sc.steps.push(tail);
+      fScenarioRenderList(id);
     } catch (e) {}
   }, preId);
-  await p.evaluate(() => { try { fScenarioPresentBegin(window.__probePre, 0); } catch (e) {} });
+  await p.evaluate((id) => { try { fScenarioPresentBegin(id, 0); } catch (e) {} }, preId);
+  await p.waitForTimeout(1400);
+  st = await state(p);
+  check(st.step === 0 && !st.target && st.todo && st.todo.length === 0,
+    "authored-solved step should present as solved, got " + JSON.stringify({ t: st.target, todo: st.todo }));
+  const preCls = await p.evaluate(() => {
+    try {
+      const b = document.getElementById("comp5");
+      return b ? String(b.className) : null;
+    } catch (e) { return "err"; }
+  });
+  check(preCls && /freeComp/.test(preCls), "authored-solved comp should carry .freeComp, got " + JSON.stringify(preCls));
+  await clickBtn(p, "scNext");
+  st = await state(p);
+  check(st.step === 1, "authored-solved step should advance freely, got index " + st.step);
+
+  // --- 11. forward jumps land on the next step (no gate skipping) ---
+  await openMol(p, "ethane");
+  const jumpId = await makeScenario(p, "probeq-jump", [
+    { selectedMol: "ethane" },
+    { selectedMol: "ethane", quiz: { kind: "nameComp", mode: "compCarbonsCount", mol: "ethane" } },
+    { selectedMol: "ethane" },
+  ]);
+  await p.evaluate((id) => { try { fScenarioPresentBegin(id, 0); } catch (e) {} }, jumpId);
+  await p.waitForTimeout(1300);
+  await p.evaluate(() => { try { fScenarioGo(3); } catch (e) {} });
+  await p.waitForTimeout(1000);
+  st = await state(p);
+  check(st.step === 1, "a forward jump must clamp to the next step, got index " + st.step);
+  await p.evaluate(() => { location.hash = "#step=3"; });
+  await p.waitForTimeout(1000);
+  st = await state(p);
+  check(st.step === 1, "a hash jump must not skip the gated step, got index " + st.step);
+
+  // --- 12. reselect resets solved (authoring) ---
+  await openMol(p, "ethane");
+  await p.evaluate(() => { document.getElementById("selectAtomsBtn").click(); });
+  await p.waitForTimeout(400);
+  check(await armBox(p, "comp5", "compCarbonsCount"), "reselect setup arm failed");
+  check(await solveMode(p, "compCarbonsCount") === true, "reselect chain solve failed");
+  st = await state(p);
+  check(st.solved && st.solved.ethane && st.solved.ethane.compCarbonsCount === true,
+    "solving should mark progress, got " + JSON.stringify(st.solved));
+  await p.evaluate(() => {
+    try {
+      const items = Array.from(document.querySelectorAll(".menuLi"));
+      const hit = items.find((x) => (x.getAttribute("id") || "") === "ethane");
+      if (hit) hit.click();
+    } catch (e) {}
+  });
   await p.waitForTimeout(1200);
-  s = await state(p);
-  check(s.step === 0 && !s.target && s.solved === true,
-    "authored solved state should restore as solved, got " + JSON.stringify({ i: s.step, t: s.target, solved: s.solved }));
-  const preBox = await p.evaluate(() => { try { const b = document.getElementById("comp5"); return !!(b && b.classList.contains("selected")); } catch (e) { return "err"; } });
-  check(preBox === true, "restored display should select the solved box, got " + JSON.stringify(preBox));
-  await p.evaluate(() => { try { document.getElementById("scNext").click(); } catch (e) {} });
-  await p.waitForTimeout(900);
-  s = await state(p);
-  check(s.step === 1, "authored-solved step should advance freely, got index " + s.step);
+  st = await state(p);
+  check(st.solved && (!st.solved.ethane || !st.solved.ethane.compCarbonsCount),
+    "reselecting the molecule should reset solved progress, got " + JSON.stringify(st.solved));
+
+  // --- 13. solved display locks reps (authoring) ---
+  check(await armBox(p, "comp5", "compCarbonsCount"), "reps-lock re-arm failed");
+  check(await solveMode(p, "compCarbonsCount") === true, "reps-lock solve failed");
+  const repsLocked = await p.evaluate(() => {
+    try { return fMulerSelectRepsLocked(); } catch (e) { return "err"; }
+  });
+  check(repsLocked === true, "solved display should lock reps, got " + JSON.stringify(repsLocked));
+  check(await clickAtom(p, 1), "locked click still resolves");
+  st = await state(p);
+  check(st.sel.length === 0, "locked reps should not take picks, got " + JSON.stringify(st.sel));
 
   console.log(JSON.stringify({ failures, warnings }, null, 1));
   console.log("PAGEERRORS:" + JSON.stringify(errs));

@@ -1,22 +1,25 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
 > **Resume pointer (cross-machine):** 2026-11-18 — **v58 is LIVE**
-> (`index.html` → `mulermoc-nom-58.html`, `?v=58.8`). Scenario quiz contract:
-> multi-comp steps (quiz done = every `.quizTodo` solved), author pre-solved
-> comps in `.freeComp` (normal classic), post-solve next-box arming, non-quiz
-> steps tear down student mode, `step.quiz.preSolved` baselines, deferred menu
-> quizzes. The 2D probe suite was retargeted to `-58.html`
-> (`probe-scenario-quiz.js` for the Present path). Remaining owner-side: run
-> the 2D suite against v58, then the Present matrix (all-todo gate, revisit
-> re-quiz, menu deferred arm, post-solve freedom, non-quiz step after quiz),
-> plus the parked v55 sweeps below (overview table both languages, narration
-> voices, menu rail), P3 blessing of Greek word forms, completion-callback
-> wait spike, energy comparison, settings tabs. Full record:
-> `docs/CHANGELOG.md` [v58]/[v57], `docs/SESSION-NOTES.md` 2026-11-16/17/18
-> entries, `docs/learning-activities-Plan.md` Stage 0, audit
-> `docs/REVIEW-SCENARIO-QUIZ-58.md`. Routine on the other machine: pull first,
-> hard-reload (Ctrl+Shift+R), then resume from `git log --oneline -5` +
-> `git status`. OpenCode sessions stay machine-local.
+> (`index.html` → `mulermoc-nom-58.html`, `?v=58.11`, review follow-ups).
+> Scenario quiz contract: steps store their required component set
+> (`quiz.modes` + labels), Update never destroys an authored task (explicit
+> Remove), Present auto-arms + gates on the stored set, Esc clears picks on
+> quiz steps (no longer exits the lesson), forward jumps can't skip a gated
+> step, menu steps gate until a molecule is picked. `probe-scenario-quiz.js`
+> was rewritten and is green. Remaining owner-side: run the full 2D suite
+> against v58 (probe-quiz/final/mode-quiz/explain-all already re-run green
+> after the change), then the browser Present matrix (per-component
+> requirement list in the drawer, Remove, Esc, revisit, menu deferred arm,
+> non-quiz step after quiz), plus the parked v55 sweeps below (overview
+> table both languages, narration voices, menu rail), P3 blessing of Greek
+> word forms, completion-callback wait spike, energy comparison, settings
+> tabs. Full record: `docs/CHANGELOG.md` [v58]/[v57],
+> `docs/SESSION-NOTES.md` 2026-11-16/17/18 entries,
+> `docs/learning-activities-Plan.md` Stage 0, audit
+> `docs/REVIEW-SCENARIO-QUIZ-58.md`, review `docs/REVIEW-V58.md`. Routine on
+> the other machine: pull first, hard-reload (Ctrl+Shift+R), then resume from
+> `git log --oneline -5` + `git status`. OpenCode sessions stay machine-local.
 >
 > Previous pointer (2026-11-11): HEAD `b247b98` — v55
 > overview toggle relabel (Explain naming) + docs; tree clean. Remaining: browser sweep
@@ -3115,6 +3118,16 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 ## 2026-11-18 — quiz steps hide “Εμφάνιση ονομασίας” (v58 working tree, owner request)
 * Owner: in the drawer a quiz step must not offer the naming master — hiding the name in a quiz has no meaning. Decision on hidden components (`.comp-hidden` exempts a comp from the todo set): leave as-is; revisit when activity types land.
 * Fix: `_isQuizStep` computed before the naming row; the master label is hidden (also checkbox disabled) and `show.naming` is forced true on render and in `_syncNameRow`. Capture + Update + validate (imported/legacy files coerce silently) + `fScenarioApplyQuiz` (replaces the old “naming off → classic” fallback) all force `naming`/`nameClick` on. Probe asserts hidden + checked + stored on. `?v=58.8` → `?v=58.9`.
+
+## 2026-11-18 — v58.11: review follow-ups (working tree, plan agreed with owner)
+* Review lives in `docs/REVIEW-V58.md`. H1 was reframed there: the all-`.quizTodo` completion is the owner's 58.8 decision, so the fix stores the required set with the step instead of reverting to single-mode.
+* `quiz.modes` + `quiz.modeLabels` captured from the step's molecule (deferred menu steps stay per-pick); `fMulerQuizTodoModes(required)` filters gate/tint/auto-arm; the drawer quiz row lists the components and carries an explicit Remove button.
+* `fScenarioUpdateStep` keeps `old.quiz` when the capture had no quiz signal (no more destroy-on-edit / silent retarget); the old "disarmed Update clears" flow is retired.
+* Esc used to **exit the presentation** on a quiz step (prototype `keydown` handler) while molview's student-mode Esc cleared picks — a student pressing Esc to fix a wrong pick dropped out of the lesson. Quiz steps now swallow the presenter exit; passive steps keep it.
+* Gate edges: deferred menu steps block forward moves until a molecule is picked (empty todo no longer reads as done); forward jumps clamp to the next step (`fScenarioGo`, hashchange) so a gated step can't be skipped, while cold `?present=1#step=N` links still enter directly via `fScenarioPresentBegin`; the arm debounce is keyed per step and moved after the solved-display branch.
+* Robustness: `fMulerQuizTodoModes` returns `null` when the naming panel isn't built (unknown ≠ completed), the Present guard fails closed on its outer catch, todo is computed once per guard, the solved display now repaints tints (`.freeComp` was missing), `preSolved` is scoped to the step's modes and omitted when empty, `quizIntent` is cleared on exit/teardown, unknown modes warn on import, `prompt` is no longer written, `.freeComp`'s empty CSS rule is gone, badge text/tooltip localized. `?v=58.11`.
+* Pre-existing 58.8 regression, caught by bisecting `probe-compact-main` (green at the 58.0 fork + 58.7, red from 58.8): "fresh arm starts blank" cleared the selection in authoring too, wiping the fragment→anchor normalization, so a compacted label picked before arming the main-chain quiz left the task armed with no pick (missing badge/ellipse/paint, toggle drift, wrong exact). The reset is now student-mode only; the authoring contract is v56 again. Probe green.
+* Probe `probe-scenario-quiz.js` rewritten for the contract (13 sections: capture/set/labels, keep-on-Update, explicit removal, just-solved, select-ON Add, menu pre-pick gate, pinned gate + all-required, requireSolution:false, stored-set narrowing, authored pre-solved restore, jump clamp, reselect reset, reps lock). Green; `probe-quiz`/`probe-final`/`probe-mode-quiz`/`probe-explain-all` re-run green; `node --check` clean.
 
 ## 2026-11-18 — drawer row architecture: roles + dedicated quiz row (v58 working tree, owner request)
 * Owner: `.scShowRow.scStepViewersSettings` checkboxes had no ids/classes; `requireSolution` sat in the name row. Asked for ids + three distinct row classes and a dedicated quiz row for a growing settings surface.

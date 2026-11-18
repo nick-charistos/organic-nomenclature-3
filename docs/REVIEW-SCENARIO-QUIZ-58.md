@@ -3,6 +3,13 @@
 Date: 2026-11-16. Tree: v58 fork (byte-identical to v57 at fork; all
 cites are `js/mulermoc-nom-*-58.js`). No code changed by this audit.
 
+> **Status 2026-11-18 (`?v=58.11`):** this audit is the historical input to
+> the implemented contract. The shipped schema is
+> `step.quiz {kind, mode, modes, modeLabels, mol, prompt(legacy, unused), preSolved}`
+> + `requireSolution`; `quizSnapshot` was retired (classic replay shows solved
+> steps), and `modes` is the stored required set described in Q7/H1 of
+> `docs/REVIEW-V58.md`.
+
 ## Q1 — Step schema: nothing quiz-armed is stored
 - `fScenarioCapture` (scenario-58.js:515) stores `nameAnalysisMode`
   (selected box mode), `selectedMol`, `mode2D`, chainIdx, style/show/audio/
