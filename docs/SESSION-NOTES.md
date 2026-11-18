@@ -1,8 +1,8 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
 > **Resume pointer (cross-machine):** 2026-11-18 — **v58 is LIVE**
-> (`index.html` → `mulermoc-nom-58.html`, `?v=58.15`, review follow-ups +
-> student hover/3D fixes + step-row architecture/corners).
+> (`index.html` → `mulermoc-nom-58.html`, `?v=58.16`, review follow-ups +
+> student hover/3D fixes + step-row architecture/corners/density).
 > Scenario quiz contract: steps store their required component set
 > (`quiz.modes` + labels), Update never destroys an authored task (explicit
 > Remove), Present auto-arms + gates on the stored set, Esc clears picks on
@@ -3151,6 +3151,11 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * Owner wants the drag handle and the collapse/delete pair back at the row corners (as before), asking whether to use absolute positioning or margin/padding tricks.
 * Decision: neither — the head is a 3-column grid (`24px | minmax(0,1fr) | auto`) with areas `grip | top | toggles` / `grip | main | toggles`. Grip and toggles are direct `.srowHead` children, span both head rows, and are placed at the corners with `align-self:start` / `justify-self`; number/badges and title/actions stay in the middle track. Everything remains in flow (long badges/titles cannot run under the corners, no reserved padding), `.scStepTopSpacer` removed. Insets are left to the owner's CSS pass (no negative margins shipped).
 * Verified: probe asserts head `display:grid`, grip/toggles as direct head children and controls non-absolute; drawer behavior unchanged; `probe-scenario-quiz` + `probe-quiz`/`probe-final`/`probe-mode-quiz`/`probe-compact-main` green; drawer screenshot checked.
+
+## 2026-11-18 — step-row density pass + badge guard (`?v=58.16`, owner CSS tweaks reviewed)
+* Owner condensed the row (hidden `scStepTitleLabel`, tighter offsets). Review found the `margin-left:-50px` on the toggles collapsed the right grid track to 0px, so the top rail had no reserved space and long badges could slide under collapse/delete (stress test: 5px gap at 280px).
+* Fix: head areas become `"grip top toggles" / "grip main main"` — the toggle track is only reserved on the top row (badges wrap), while title/actions span the full width (the owner's condensed look). Grip keeps a small fixed negative margin over its 0-width track; top rail clears it with `padding-left` instead of a position margin; toggles use `margin:-8px -8px 0 0` (no magic -50px).
+* Verified: same visual x/y for grip/number/badges/title; long-badge stress no longer overlaps; `probe-scenario-quiz` green after the CSS change.
 
 ## 2026-11-18 — drawer row architecture: roles + dedicated quiz row (v58 working tree, owner request)
 * Owner: `.scShowRow.scStepViewersSettings` checkboxes had no ids/classes; `requireSolution` sat in the name row. Asked for ids + three distinct row classes and a dedicated quiz row for a growing settings surface.

@@ -506,31 +506,36 @@
    opacity: .9;
 }
 
-/* v58.15 step-row architecture. Head is a 3-column grid: the grip pins the
-   top-left track and the collapse/delete pair the top-right track, both
-   spanning the two head rows; number/badges and title/actions live in the
-   middle column. Everything stays in flow — no absolute corner buttons. */
+/* v58.16 step-row architecture. Head is a grid: the grip overlays a
+   zero-width left track (top-left corner), the collapse/delete pair reserves
+   a real right track on the top row, and the title/actions row spans the
+   full width. Everything stays in flow — no absolute corner buttons. */
 .scenarioDrawer .srow .srowHead {
    display: grid;
-   grid-template-columns: 24px minmax(0, 1fr) auto;
+   grid-template-columns: 0 minmax(0, 1fr) auto;
    grid-template-areas:
       "grip top     toggles"
-      "grip main    toggles";
-   column-gap: 8px;
+      "grip main    main";
+   column-gap: 0;
    row-gap: 6px;
    align-items: start;
    width: 100%;
    min-width: 0;
 }
 
+/* Top rail clears the 24px grip overlay; the toggle track reserves its own
+   width so a long badge set wraps instead of sliding under the buttons. */
 .scenarioDrawer .srow .srowHeadTop {
    grid-area: top;
    display: flex;
    align-items: center;
    gap: 6px;
    min-width: 0;
+   margin: -5px 0 0 0;
+   padding-left: 15px;
 }
 
+/* Title/actions span both content columns: full width under the toggles. */
 .scenarioDrawer .srow .srowHeadMain {
    grid-area: main;
    display: flex;
@@ -554,8 +559,9 @@
    align-items: center;
    align-self: start;
    justify-self: end;
-   gap: 4px;
+   gap: 10px;
    flex: none;
+   margin: -8px -8px 0 0;
 }
 
 .scenarioDrawer .srow .scStepActions {
@@ -654,6 +660,7 @@
    justify-self: start;
    flex: none;
    transition: all .2s ease;
+   margin:-10px 0 0 -10px;
 }
 
 .scenarioDrawer .srow .scDragHandle:hover {
@@ -703,6 +710,7 @@
    opacity: .8;
    line-height: 1.2;
    font-weight: bold;
+   display:none;
 }
 
 .scenarioDrawer .srow .scStepTitleWrap input.scStepTitle {
