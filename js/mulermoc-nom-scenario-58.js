@@ -2068,8 +2068,9 @@ function fScenarioClickNameBox(step, token) {
 // (default on) gates forward moves; unchecked steps never gate. Worked
 // examples are just solved steps — no snapshot layer.
 
-// Live student task, if any: Present + quiz step + live target for that
-// step's mode. Solved/quiescent steps (no target) return null — the reps
+// Live student task, if any: Present + quiz step + live target that belongs
+// to the step's todo set (all unsolved capable comps, not just the primary
+// auto-arm mode). Solved/quiescent steps (no target) return null — the reps
 // lock and the classic display own those states. Menu steps (no quiz.mol)
 // arm on whatever molecule gets picked (see the menu-pick hook below).
 function fScenarioStudentTask() {
@@ -2084,15 +2085,37 @@ function fScenarioStudentTask() {
     var t = null;
     try { t = (typeof window !== "undefined") ? window.MulerQuizTarget : null; } catch (eT) {}
     if (!t) return null;
-    // A practice target for another component is not the task (it never
-    // gates and never narrows box clicks — see the solved-unlock below).
-    try { if (String(t) !== String(st.quiz.mode)) return null; } catch (eTM) { return null; }
-    return { quiz: st.quiz, idx: i };
+    // Any unsolved capable target counts as the task (multi-comp steps need
+    // every .quizTodo solved, not just the primary). Practice after full
+    // completion has no live target (solved comps never arm), so it still
+    // never gates and never narrows box clicks.
+    try {
+      if (String(t) === String(st.quiz.mode)) return { quiz: st.quiz, idx: i };
+    } catch (eTM) { return null; }
+    try {
+      if (typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved(String(t))) return null;
+    } catch (eS) { return null; }
+    try {
+      if (typeof fMulerQuizTodoModes === "function") {
+        var _todo = fMulerQuizTodoModes() || [];
+        if (_todo.indexOf(String(t)) >= 0) return { quiz: st.quiz, idx: i };
+      }
+    } catch (eTD) {}
+    // Fallback for pre-DOM moments: any live target on a quiz step counts
+    // (fail-open toward unblocked picks; the gate still needs todo-empty).
+    try {
+      if (typeof fMulerQuizResolveTarget === "function") {
+        var _rt = fMulerQuizResolveTarget(String(t)) || [];
+        if (_rt && _rt.length) return { quiz: st.quiz, idx: i };
+      }
+    } catch (eRT) {}
+    return null;
   } catch (e) { return null; }
 }
 
-// Navigation gate: leaving a gated step forward requires the step's own
-// task solved — not merely a live target. Ungraded practice never gates;
+// Navigation gate: leaving a gated step forward requires every quizTodo
+// solved — not merely the primary auto-arm mode. Practice after full
+// completion has no live target (solved comps never arm), so it never gates;
 // a task that was never armed (broken auto-arm, toasted on apply) fails
 // open instead of deadlocking. Back/present always allowed;
 // requireSolution:false never gates.
@@ -2114,10 +2137,24 @@ function fScenarioNavAllowed(idx) {
       var _lm = (typeof selectedMol !== "undefined" && selectedMol) ? String(selectedMol) : "";
       if (st.quiz.mol && _lm && st.quiz.mol !== _lm) return true;
     } catch (eMM) { return true; }
-    // Solved for the relevant molecule (pinned, or current pick when
-    // deferred): free to advance.
+    // All todo solved for the relevant molecule (pinned, or current pick
+    // when deferred): free to advance. Todo = capable - solved, so author
+    // pre-solved (.freeComp) comps never block.
     var done = false;
-    try { done = !!(typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved(String(st.quiz.mode))); } catch (eD) {}
+    try {
+      if (typeof fMulerQuizTodoModes === "function") {
+        var _todo = fMulerQuizTodoModes() || [];
+        done = (_todo.length === 0);
+        // Fallback when the todo helper has no DOM yet (menu-only with no
+        // molecule): keep the primary-mode check so a solved primary still
+        // passes and an unsolved one still respects armed-once below.
+        if (!done && (!_todo || !_todo.length)) {
+          try { done = !!(typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved(String(st.quiz.mode))); } catch (eD2) {}
+        }
+      } else {
+        done = !!(typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved(String(st.quiz.mode)));
+      }
+    } catch (eD) {}
     if (done) return true;
     // Never armed this visit: fail open (auto-arm toasts its own reason).
     var ao = false;
@@ -2141,7 +2178,41 @@ function fScenarioApplyQuiz(step) {
     if (!step) return;
     var task = step.quiz || null;
     var hasTask = !!(task && task.mode && task.mode !== "none");
-    if (!hasTask) return;
+    // v58 bug1: a non-quiz step in Present must leave student mode —
+    // otherwise the previous quiz's armed select survives: tints repaint
+    // (armed) and fExplainNameComp early-returns (no classic highlight).
+    // Light teardown only (run progress __mulerQuizSolved is kept).
+    if (!hasTask) {
+      var isP0 = false;
+      try { isP0 = (typeof fMulerSelectPresenting === "function") && fMulerSelectPresenting(); } catch (eP0) {}
+      if (!isP0) return;
+      try { if (typeof fMulerQuizDisarm === "function") fMulerQuizDisarm(); } catch (eD9) {}
+      try {
+        var s9 = (typeof fMulerSelectState === "function") ? fMulerSelectState() : null;
+        if (s9) { s9.atoms2D = []; s9.bonds2D = []; s9.atoms3D = []; s9.bonds3D = []; s9.groups = []; }
+      } catch (eC9) {}
+      try { if (typeof window !== "undefined" && window.MulerUserSelection) window.MulerUserSelection.active = false; } catch (eA9) {}
+      try { if (typeof window !== "undefined") window.__mulerStudentArming = false; } catch (eSA9) {}
+      try {
+        var host9 = (typeof document !== "undefined") ? document.getElementById("jsmeNomeclatureSVG") : null;
+        if (host9 && host9.classList) host9.classList.remove("selecting");
+      } catch (eSV9) {}
+      // Debounce belongs to quiz arms — clear it so a return to the same
+      // task re-arms instead of hitting the 1500ms same-key window.
+      try { if (typeof window !== "undefined") { window.__mulerStudentArmAt = 0; window.__mulerStudentArmKey = ""; } } catch (eDB9) {}
+      try { if (typeof fMulerSelectClear3DPaint === "function") fMulerSelectClear3DPaint(); } catch (eP39) {}
+      try { if (typeof removeEcho3D === "function") removeEcho3D(); } catch (eE39) {}
+      try { if (typeof fMulerSelectRepaint === "function") fMulerSelectRepaint(); } catch (eR9) {}
+      try { if (typeof fMulerQuizPaintSolved === "function") fMulerQuizPaintSolved(); } catch (ePS9) {}
+      try { if (typeof fUpdateSVG === "function") fUpdateSVG(); } catch (eU9) {}
+      // The §5 stored-highlight replay above ran while still armed (early
+      // return, .selected set but no paint) — repaint classic now that the
+      // viewer is free. Pending 3D replay (if any) fires later, now clean.
+      try { if (typeof fExplainNameComp === "function") fExplainNameComp(); } catch (eEX9) {}
+      try { if (typeof fMulerSelectSyncRepsLock === "function") fMulerSelectSyncRepsLock(); } catch (eSL9) {}
+      try { if (typeof fMulerSelectSync3DPicking === "function") fMulerSelectSync3DPicking(); } catch (eSP9) {}
+      return;
+    }
     // Never fight a later apply: kill the pending stored-highlight replay
     // (timer + 3D-parse paths both honor `done`).
     try { if (typeof MuLERMoCScenario !== "undefined" && MuLERMoCScenario.pending3D) MuLERMoCScenario.pending3D.done = true; } catch (eP) {}
@@ -2203,7 +2274,7 @@ function fScenarioApplyQuiz(step) {
       if (s2) { s2.atoms2D = []; s2.bonds2D = []; s2.atoms3D = []; s2.bonds3D = []; s2.groups = []; }
     } catch (eC3) {}
     // v58: the step's authored solved baseline seeds the run (union only —
-    // student progress is never erased). A solved molecule shows its
+    // student progress is never erased). A fully solved molecule shows its
     // display instead of re-arming (no re-quiz on revisit or re-pick).
     try {
       if (typeof window !== "undefined" && molNow && task && task.mode) {
@@ -2218,14 +2289,28 @@ function fScenarioApplyQuiz(step) {
         }
       }
     } catch (ePS0) {}
+    // Multi-comp completion: the step is done only when every .quizTodo is
+    // solved. Auto-arm prefers the primary mode, else the first todo.
+    var _todoList = null;
+    try { _todoList = (typeof fMulerQuizTodoModes === "function") ? (fMulerQuizTodoModes() || []) : null; } catch (eTDN) { _todoList = null; }
+    var _armMode = String(task.mode || "");
+    try {
+      if (_todoList && _todoList.length) {
+        if (_todoList.indexOf(String(task.mode)) >= 0) _armMode = String(task.mode);
+        else _armMode = String(_todoList[0] || task.mode);
+      }
+    } catch (eAM) {}
     var _doneNow = false;
-    try { _doneNow = !!(typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved(String(task.mode))); } catch (eDN) {}
+    try {
+      if (_todoList && _todoList.length !== undefined) _doneNow = (_todoList.length === 0);
+      else _doneNow = !!(typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved(String(task.mode)));
+    } catch (eDN) {}
     if (_doneNow) {
       try { if (typeof fMulerQuizShowSolved === "function") fMulerQuizShowSolved(String(task.mode)); } catch (eSD) {}
       return;
     }
     try {
-      var boxId = (typeof fMulerQuizBoxIdForMode === "function") ? fMulerQuizBoxIdForMode(task.mode) : null;
+      var boxId = (typeof fMulerQuizBoxIdForMode === "function") ? fMulerQuizBoxIdForMode(_armMode) : null;
       var bel = (boxId && typeof document !== "undefined") ? document.getElementById(boxId) : null;
       // Deferred menu quizzes (no molecule loaded yet) re-arm on the pick —
       // silent. A missing/hidden box WITH a molecule is a broken task: say so.
@@ -2245,7 +2330,7 @@ function fScenarioApplyQuiz(step) {
       // A failed arm here is a stuck student (reps dead, no prompt, no gate
       // task) — name it instead of dying silently.
       if (!_armed) {
-        try { if (typeof fScenarioToast === "function") fScenarioToast(fMulerPre("Το κουίζ δεν όπλισε για αυτό το μόριο.", "Quiz did not arm for this molecule.") + " (" + String(task.mode) + ", " + String(molNow) + ")"); } catch (eAF) {}
+        try { if (typeof fScenarioToast === "function") fScenarioToast(fMulerPre("Το κουίζ δεν όπλισε για αυτό το μόριο.", "Quiz did not arm for this molecule.") + " (" + String(_armMode) + ", " + String(molNow) + ")"); } catch (eAF) {}
       }
     } catch (eB) {
       try { if (typeof window !== "undefined") window.__mulerLastQuizError = { where: "apply", err: String((eB && eB.message) || eB) }; } catch (eSE) {}

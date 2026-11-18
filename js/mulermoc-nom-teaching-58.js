@@ -1389,17 +1389,19 @@ $(document).ready(function () {
     // Hidden (dash) boxes are inert: no highlight, no explanation change.
     if ($(this).hasClass("comp-hidden")) return;
     // v58 student mode: re-clicking the selected armed task box keeps the
-    // quiz (no deselect, so the task can't be lost). Every other unsolved
-    // box flows to the arm below (task re-arm or ungraded practice);
-    // solved boxes fall through to the classic highlight. The gate — not
-    // the click — enforces solving the step's own task.
+    // quiz (no deselect, so the task can't be lost). Multi-comp: any live
+    // todo box is protected, not just the primary auto-arm mode.
+    // Solved boxes fall through to the classic highlight. The gate — not
+    // the click — enforces solving every todo.
     try {
       if (typeof fScenarioStudentTask === "function") {
         var _st = fScenarioStudentTask();
         if (_st && _st.quiz && _st.quiz.mode) {
           var _bm = "none";
           try { _bm = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId($(this).attr("id")) : "none"; } catch (eM2) { _bm = "none"; }
-          if (_bm === _st.quiz.mode) {
+          var _lt = null;
+          try { _lt = (typeof window !== "undefined") ? window.MulerQuizTarget : null; } catch (eLT) { _lt = null; }
+          if (_lt && _bm && String(_bm) === String(_lt)) {
             try { if ($(this).hasClass && $(this).hasClass("selected")) return; } catch (eS2) {}
           }
         }

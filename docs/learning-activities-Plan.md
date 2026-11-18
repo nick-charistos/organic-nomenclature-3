@@ -61,13 +61,11 @@ well-posed and turn the rank-ordering caveat into a non-issue.
   default on). Capture precedence: live target → just-solved → shown
   comp (if resolvable) → main-chain default (if resolvable) → classic;
   any menu-carrying step stores a deferred task (`mol: ""`) so the quiz
-  follows every picked molecule. Present auto-arms with fresh picks; any
-  unsolved component arms (task or ungraded practice), solved ones
-  highlight classically without killing a live task; the gate holds while
-  the step task is unsolved once armed (fail-open when never armed),
-  unlocks free exploration once solved, locks reps otherwise. Steps save
-  the exact authoring comp state (`preSolved`) and restore it as solved
-  display, so revisits never re-quiz. Quiz intent
+  follows every picked molecule. Present auto-arms with fresh picks (primary
+  else first todo); done = every `.quizTodo` solved (`fMulerQuizTodoModes()`
+  = capable − solved − hidden). Author/run-solved capable boxes get
+  `.freeComp` (normal classic, marker only) and never block the gate.
+  Non-quiz steps tear down student mode (no tint stall). Quiz intent
   (`__mulerQuizIntent {mode, mol}`) bridges menu-building teardown.
   This *is* the activity shell for name-component quizzes — new activity
   types plug the same path (kind/resolver/prompt/pick-unit).

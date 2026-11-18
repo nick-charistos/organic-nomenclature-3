@@ -1329,6 +1329,21 @@ function fMulerSelectPresentBlocked() {
     // practice in progress must stay playable. Target-less steps stay
     // locked (fail-closed); the gate owns advancement.
     try { if (typeof window !== "undefined" && window.MulerQuizTarget) return false; } catch (eLT) {}
+    // Multi-comp: work remains — unblock so the next .quizTodo can arm.
+    // After one exact the target is null but todos remain; without this the
+    // next box arm is refused and the classic guard eats the highlight.
+    try {
+      if (typeof fScenarioPresent === "function" && typeof fMulerQuizTodoModes === "function") {
+        var _psT = fScenarioPresent();
+        var _stT = _psT && _psT.steps ? _psT.steps[_psT.index] : null;
+        if (_stT && _stT.quiz && _stT.quiz.mode && _stT.quiz.mode !== "none") {
+          var _mkT = (typeof selectedMol !== "undefined" && selectedMol) ? String(selectedMol) : "";
+          if (!(_stT.quiz.mol && _mkT && _stT.quiz.mol !== _mkT)) {
+            try { if (_mkT && ((fMulerQuizTodoModes() || []).length > 0)) return false; } catch (eTT) {}
+          }
+        }
+      }
+    } catch (eSTT) {}
     // Solved task: the step is completed — free exploration (reps pickable,
     // other components armable as ungraded practice). Mismatched molecules
     // stay blocked (fail-closed); practice targets never gate by themselves
@@ -1342,7 +1357,15 @@ function fMulerSelectPresentBlocked() {
           // Mismatched molecules stay blocked (fail-closed); menu quizzes
           // (empty quiz.mol) unlock for whatever is loaded.
           if (!(_st.quiz.mol && _mk && _st.quiz.mol !== _mk)) {
-            if (_mk && fMulerQuizIsSolved(String(_st.quiz.mode))) return false;
+            // Multi-comp: the step is completed when every todo is solved.
+            var _allDone = false;
+            try {
+              if (typeof fMulerQuizTodoModes === "function") _allDone = !!_mk && ((fMulerQuizTodoModes() || []).length === 0);
+              else _allDone = !!_mk && !!fMulerQuizIsSolved(String(_st.quiz.mode));
+            } catch (eAD) {
+              try { _allDone = !!_mk && !!fMulerQuizIsSolved(String(_st.quiz.mode)); } catch (eAD2) { _allDone = false; }
+            }
+            if (_allDone) return false;
           }
         }
       }
@@ -4545,10 +4568,46 @@ function fMulerQuizMarkSolved(mode) {
     window.__mulerQuizSolved[k][mode] = true;
   } catch (e) {}
 }
+// Quiz todo set (v58 multi-comp): capable + unsolved + visible modes for the
+// current molecule. Mirrors the paint below so gate/task and tint can never
+// disagree. Author pre-solved modes (preSolved) are excluded via IsSolved.
+function fMulerQuizTodoModes() {
+  try {
+    var out = [];
+    var boxes = [];
+    try { boxes = Array.prototype.slice.call(document.querySelectorAll("#nameAnalysis .nameCompBox")); } catch (eB) { return []; }
+    for (var i = 0; i < boxes.length; i++) {
+      (function (b) {
+        try {
+          if (!b || !b.classList) return;
+          if (b.classList.contains("comp-hidden")) return;
+          var id = (b && b.getAttribute) ? b.getAttribute("id") : null;
+          if (!id) return;
+          var compMode = "none";
+          try { compMode = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId(id) : "none"; } catch (eM) { compMode = "none"; }
+          if (!compMode || compMode === "none") return;
+          if (out.indexOf(compMode) >= 0) return;
+          var solved = false;
+          try { solved = (typeof fMulerQuizIsSolved === "function") ? fMulerQuizIsSolved(compMode) : false; } catch (eS) { solved = false; }
+          if (solved) return;
+          var capable = false;
+          try {
+            var tgt = (typeof fMulerQuizResolveTarget === "function") ? fMulerQuizResolveTarget(compMode) : [];
+            capable = !!(tgt && tgt.length);
+          } catch (eT) { capable = false; }
+          if (capable) out.push(compMode);
+        } catch (e) {}
+      })(boxes[i]);
+    }
+    return out;
+  } catch (e) { return []; }
+}
+
 // Paint quiz to-do tints: quiz-capable unsolved boxes get .quizTodo while
-// select mode is armed; everything else renders default. Capability uses
-// the same resolver as the arm gate, so tint and quiz can never disagree
-// (hydrocarbon -io and other atom-less boxes stay default).
+// select mode is armed; author/run-solved capable boxes get .freeComp
+// (normal classic behavior, marker only); incapable stays default.
+// Capability uses the same resolver as the arm gate, so tint and quiz can
+// never disagree (hydrocarbon -io and other atom-less boxes stay default).
 function fMulerQuizPaintSolved() {
   try {
     var armed = false;
@@ -4560,21 +4619,20 @@ function fMulerQuizPaintSolved() {
         try {
           var id = (b && b.getAttribute) ? b.getAttribute("id") : null;
           if (!id || !b.classList) return;
-          if (!armed) { try { b.classList.remove("quizTodo"); } catch (eR0) {} return; }
-          if (b.classList.contains("comp-hidden")) { try { b.classList.remove("quizTodo"); } catch (eR1) {} return; }
+          if (!armed) { try { b.classList.remove("quizTodo"); } catch (eR0) {} try { b.classList.remove("freeComp"); } catch (eR0b) {} return; }
+          if (b.classList.contains("comp-hidden")) { try { b.classList.remove("quizTodo"); } catch (eR1) {} try { b.classList.remove("freeComp"); } catch (eR1b) {} return; }
           var compMode = "none";
           try { compMode = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId(id) : "none"; } catch (eM) { compMode = "none"; }
-          if (!compMode || compMode === "none") { try { b.classList.remove("quizTodo"); } catch (eR2) {} return; }
+          if (!compMode || compMode === "none") { try { b.classList.remove("quizTodo"); } catch (eR2) {} try { b.classList.remove("freeComp"); } catch (eR2b) {} return; }
           var solved = false, capable = false;
           try { solved = (typeof fMulerQuizIsSolved === "function") ? fMulerQuizIsSolved(compMode) : false; } catch (eS) { solved = false; }
-          if (!solved) {
-            try {
-              var tgt = (typeof fMulerQuizResolveTarget === "function") ? fMulerQuizResolveTarget(compMode) : [];
-              capable = !!(tgt && tgt.length);
-            } catch (eT) { capable = false; }
-          }
-          if (capable && !solved) { try { b.classList.add("quizTodo"); } catch (eA2) {} }
-          else { try { b.classList.remove("quizTodo"); } catch (eR3) {} }
+          try {
+            var tgt = (typeof fMulerQuizResolveTarget === "function") ? fMulerQuizResolveTarget(compMode) : [];
+            capable = !!(tgt && tgt.length);
+          } catch (eT) { capable = false; }
+          if (capable && !solved) { try { b.classList.add("quizTodo"); } catch (eA2) {} try { b.classList.remove("freeComp"); } catch (eR3b) {} }
+          else if (capable && solved) { try { b.classList.remove("quizTodo"); } catch (eR3) {} try { b.classList.add("freeComp"); } catch (eA3) {} }
+          else { try { b.classList.remove("quizTodo"); } catch (eR3c) {} try { b.classList.remove("freeComp"); } catch (eR3d) {} }
         } catch (e) {}
       })(boxes[i]);
     }
@@ -4810,17 +4868,40 @@ function fMulerQuizArmForBox(boxId, $box) {
     // never re-arm) — same contract as the atom-less hydrocarbon case above.
     try { if (typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved(mode)) return false; } catch (eS) { return false; }
     try { window.MulerQuizTarget = mode; } catch (eT) {}
-    // v58 gate: a task-mode arm in Present counts as armed-once (manual
+    // Fresh arm starts blank: free picks made while unblocked (no live
+    // target, todos remain) must not pollute the new quiz compare.
+    try {
+      var _cs = (typeof fMulerSelectState === "function") ? fMulerSelectState() : null;
+      if (_cs) { _cs.atoms2D = []; _cs.bonds2D = []; _cs.atoms3D = []; _cs.bonds3D = []; _cs.groups = []; }
+    } catch (eCS) {}
+    // v58 gate: any todo arm in Present counts as armed-once (manual
     // recovery when auto-arm failed) — the gate fails open only when the
-    // task was never armed this visit.
+    // task was never armed this visit. Multi-comp: every todo mode counts,
+    // not just the primary auto-arm mode.
     try {
       if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting() &&
           typeof fScenarioPresent === "function" && typeof MuLERMoCScenario !== "undefined") {
         var _psm = fScenarioPresent();
-        if (_psm && _psm.steps && _psm.steps[_psm.index] && _psm.steps[_psm.index].quiz &&
-            String(_psm.steps[_psm.index].quiz.mode || "") === String(mode)) {
-          var _km = String(MuLERMoCScenario.presentId || "live") + "#" + _psm.index;
-          if (typeof window !== "undefined") { window.__mulerTaskArmed = window.__mulerTaskArmed || {}; window.__mulerTaskArmed[_km] = true; }
+        var _sq = _psm && _psm.steps && _psm.steps[_psm.index] ? _psm.steps[_psm.index].quiz : null;
+        if (_sq && _sq.mode && _sq.mode !== "none") {
+          var _isTodoArm = (String(_sq.mode || "") === String(mode));
+          try {
+            if (!_isTodoArm && typeof fMulerQuizTodoModes === "function") {
+              var _tl = fMulerQuizTodoModes() || [];
+              // Live target just set above is still unsolved, so todo still
+              // contains it unless the helper ran after marking solved (it
+              // didn't — solving happens on exact). Fall back to capable.
+              if (_tl.indexOf(String(mode)) >= 0) _isTodoArm = true;
+              else if (typeof fMulerQuizResolveTarget === "function") {
+                var _rt = fMulerQuizResolveTarget(String(mode)) || [];
+                if (_rt && _rt.length) _isTodoArm = true;
+              }
+            }
+          } catch (eTA) {}
+          if (_isTodoArm) {
+            var _km = String(MuLERMoCScenario.presentId || "live") + "#" + _psm.index;
+            if (typeof window !== "undefined") { window.__mulerTaskArmed = window.__mulerTaskArmed || {}; window.__mulerTaskArmed[_km] = true; }
+          }
         }
       }
     } catch (eAO2) {}

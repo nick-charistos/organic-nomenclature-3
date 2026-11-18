@@ -3079,3 +3079,12 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 
 ## 2026-11-16 — env note: Node lives on Windows (`node.exe`)
 * Agent env has no `node`, but the Windows install is reachable from here: `/mnt/c/Program Files/nodejs/node.exe`. All 9 v58 files (`core/molview/teaching/note/scenario/iupac/lang/name-en-58.js` + `probe-scenario-quiz.js`) pass `node.exe --check`. Use that path for future syntax checks; browser/server runs stay owner-side.
+
+## 2026-11-18 — non-quiz teardown after quiz (v58 working tree, owner report)
+* Owner: after a quiz step, the next non-quiz step showed the molecule as quiz (tinted, not white) and stalled — no quiz prompts (correct), no highlighting on comp selection (wrong).
+* Root cause: `fScenarioApplyQuiz` returned early on non-quiz steps, leaving `MulerUserSelection.active` + stale `MulerQuizTarget`; `PaintSolved` re-tinted (armed) and `fExplainNameComp` early-returned (viewer owned by selection).
+* Fix (`scenario-58.js`): Present non-quiz apply does a light teardown (disarm, picks cleared, select off, `__mulerStudentArming=false`, debounce cleared, 3D cleared, repaint/strip-tints/`UpdateSVG`, classic `Explain`, reps/picking sync). Run progress `__mulerQuizSolved` kept. Authoring preview untouched. `?v=58.8` pending (bumped with the multi-comp batch below).
+
+## 2026-11-18 — multi-comp quiz steps: all `.quizTodo` must solve (v58 working tree, owner request)
+* Owner: quiz solution is when every quiz name comp is solved, not only carbon count; pre-solved comps (no `.quizTodo`) behave normal; suggested `.freeComp` marker for default behavior.
+* Fix: new `fMulerQuizTodoModes()` (capable − solved − hidden, mirrors paint). Gate/task/unlock/auto-arm all use the todo set: gate passes only when todo empty; `StudentTask` accepts any live todo; auto-arm prefers primary else first todo; full-done shows solved display; `PresentBlocked` unblocks while todos remain (post-solve next-box arm works) and on full-done (free exploration), stays fail-closed on mismatch. `ArmForBox` counts any todo arm toward `__mulerTaskArmed` and starts fresh arms with blank picks. Teaching re-click keep protects the live target. Paint adds `.freeComp` for capable+solved (classic white, marker only) alongside `.quizTodo`. `?v=58.7` → `?v=58.8` on all v58 assets. `node --check` clean (molview/scenario/teaching).
