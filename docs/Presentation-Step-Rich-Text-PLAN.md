@@ -1,5 +1,11 @@
 # Presentation Step Rich Text — v51/v52 Plan
 
+> **Historical (2026-11-18):** current tree is **v58** (`?v=58.16`); this file
+> remains the v51/v52 rich-text record. The inline note editor now lives in
+> the step row's `.scStepText` block (toolbar + editor) under the v58.14–v58.16
+> row architecture — see `docs/CHANGELOG.md` [v58] and
+> `docs/didactic-scenario-plan.md` (step rows).
+
 Status: rich-text implementation is complete and **v52 is live**; v52 adds the
 unified rich note editor (inline WYSIWYG, modal WYSIWYG + HTML source, lazy
 legacy-text upgrade, staged Apply/Cancel, and a dirty-close confirm). The v51 safe rich-note renderer,

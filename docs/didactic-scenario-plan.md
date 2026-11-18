@@ -386,21 +386,27 @@ Visibility rules:
   drawer is hidden by CSS while the bar is away, and Exit scrolls it back
   to the presented step. The Steps button (or a bar-gap click) still
   closes it deliberately.
-* Step rows (collapsible accordion, live-only — no schema): each row renders
-  collapsed showing its header (`.srowHead`: drag grip, number + type/language
-  badges, title field, Go/Present/Update/Dupe/Up/Down + collapse toggle +
-  delete pinned top-right); the body (`.srowBody`: note editor, viewer/naming
-  checkbox groups, menu groups) expands on toggle, head-space/row-padding
-  click or title focus, collapsing the other rows (accordion; all-collapsed
-  allowed). `Update` re-opens its row. Collapse animates
-  (`max-height` + fade, off under `prefers-reduced-motion`); expanded bodies
-  keep `overflow:visible` so tooltips aren't clipped. Srow head tooltips are
-  edge-anchored (Go/Present left, Up/Down/Collapse/delete right, middle
-  centered, last-row flips above) and content-sized (`max-content` + caps).
-  Contents: number + type badge (`molecule`/`menu`, key in tooltip)
-  stacked in `.scStepNumberWrap`, step title (`Τίτλος βήματος` label
-  above the field, defaults to the live Greek IUPAC name at Save —
-  key fallback, `"menu"` for menu-only), per-step educational text
+* Step rows (collapsible accordion, live-only — no schema; v58.14–v58.16
+  architecture): each row renders collapsed showing its header
+  (`.srowHead`, a grid — `.scDragHandle` pinned top-left over a zero-width
+  track, `.scStepNumberWrap` + `.scStepBadges` in the top rail,
+  `.scStepToggles` (collapse + delete) reserving the top-right track, and
+  `.srowHeadMain` spanning the full width with the title field +
+  `.scStepActions` Go/Present/Update/Dupe/Up/Down); the body
+  (`.srowBody`: `.scStepText` note toolbar + editor above `.scStepSettings`
+  with the viewer/naming/quiz/menu-group rows) expands on toggle,
+  head-space/row-padding click or title focus, collapsing the other rows
+  (accordion; all-collapsed allowed). `Update` re-opens its row. Collapse
+  animates (`max-height` + fade, off under `prefers-reduced-motion`);
+  expanded bodies keep `overflow:visible` so tooltips aren't clipped. Srow
+  head tooltips are edge-anchored (Go/Present left, Up/Down/Collapse/delete
+  right, middle centered, last-row flips above) and content-sized
+  (`max-content` + caps).
+  Contents: number in `.scStepNumberWrap` plus type (`molecule`/`menu`, key
+  in tooltip), language and quiz badges in `.scStepBadges`; step title
+  (`Τίτλος βήματος` label is rendered but visually hidden by the v58.16
+  density pass; defaults to the live Greek IUPAC name at Save — key
+  fallback, `"menu"` for menu-only), per-step educational text
   (`note` rich editor with formatting toolbar: `B I sup sub`, clear, UL/OL
   lists, per-block font-size dropdown (`14/18/22/26`), left/center/right
   alignment dropdown (WYSIWYG only), image file dialog/table and icon-only
@@ -412,10 +418,12 @@ Visibility rules:
   Δεξιά` icon dropdown `styleText.position` (`"left"`/`"right"`, or null = top;
   v50); `<small>`/`<big>` still render in saved notes but are not inserted),
   per-step chrome
-   checkboxes (grouped rows: `.scStepViewersSettings` for `2D/3D controls`,
+   checkboxes (grouped rows with `data-sc-row`: `.scStepViewersSettings` for `2D/3D controls`,
    `.scStepNameSettings` for master `show.naming` (“Εμφάνιση ονομασίας”,
    default checked — off hides the whole `analysisCol` in Present and disables
-   the rest) + `Name controls`, `Name interact`, `Ορατότητα συνθετικών`, plus `Ταξινομήσεις Μένου` (`Μόρια` default-checked,
+   the rest) + `Name controls`, `Name interact`, `Ορατότητα συνθετικών`,
+   `.scStepQuizSettings` for quiz steps (`Require solving…`, the stored
+   required-component list, `Remove`), plus `Ταξινομήσεις Μένου` (`Μόρια` default-checked,
   `Χημικές Τάξεις`, `Ομόλογες Σειρές` — presentation-only menu views,
   shown only on menu-carrying steps, all-off valid → flat fallback;
   see §2) — see §2; no `Text`/`Menu`: text is automatic, menu
@@ -599,7 +607,7 @@ Done in v43 (`mulermoc-nom-43.html`, last suffixed copy; carried through v44 int
    assertions (manual click-through pending).
 6. ✅ CHANGELOG v43 entry (`index.html` → 43 in repo3 only).
 
-Remaining: v52 is live (`index.html` → 52 — unified inline/modal rich note editor with WYSIWYG + HTML source, lazy legacy-text upgrade, staged Apply/Cancel and dirty-close confirm; safe rich HTML notes, rule-table components, compact icon toolbar, 136 molecules, and a Snap-free native `MuSVG` 2D overlay; default preload `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json`; see `CHANGELOG.md [v52]`). It retains the v51 rich notes, the v50 per-step presentation text position (top/left/right fourth-column sticky rail) + persistent naming shell, and the v49 MSc-student import (see `CHANGELOG.md [v51]`/`[v50]`/`[v49]`); `*51*`–`*44*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced. Then quizzes/games on the
+Remaining: v58 is live (`index.html` → 58 — scenario quiz steps with student mode, stored required component set, deferred menu quizzes and explicit Remove; 3D atom/bond picking via JSmol `pickCallback`; 2D atom/bond quizzes; step drawer rebuilt in v58.14–v58.16; unified inline/modal rich note editor with WYSIWYG + HTML source, lazy legacy-text upgrade, staged Apply/Cancel and dirty-close confirm; safe rich HTML notes, rule-table components, compact icon toolbar, 141 molecules, and a Snap-free native `MuSVG` 2D overlay; default preload `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json`; see `CHANGELOG.md [v58]`). It retains the v51 rich notes, the v50 per-step presentation text position (top/left/right fourth-column sticky rail) + persistent naming shell, and the v49 MSc-student import (see `CHANGELOG.md [v57]`/`[v56]`/`[v51]`/`[v50]`/`[v49]`); `*57*`–`*44*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced. Then quizzes/games on the
 same reuse contract. The stepper's main-chain pool index is captured per step (`chainIdx`, v47 additive) and re-asserted on apply; only the transient EXPLORE walk UI position is not step state.
 
 ## 8. Open questions for development (moveto timing closed 2026-10-04)

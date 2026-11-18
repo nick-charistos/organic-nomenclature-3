@@ -1,9 +1,18 @@
 # Roadmap — next development (v55 working tree, 2026-11-12; v56 implements it)
 
+> **Historical (2026-11-18):** workstream 1 is shipped — v56 added 2D
+> atom/bond selection with main-chain/FG/branch/locant quizzes, v57 added
+> 3D atom/bond picking via JSmol `pickCallback`, and v58 added scenario quiz
+> steps (student mode, stored required set, deferred menu quizzes). Current
+> tree: v58 (`?v=58.16`). This document is kept as the design record; see
+> `docs/CHANGELOG.md` [v56]–[v58] for what shipped.
+
 Two workstreams, ordered by dependency. Status: UI entry + phase 1B done
 (selection button, gating, 2D click capture + cyan overlay paint); 1C
-(compare/validate) and workstream 2 pending. Harness (`muler-harness`,
-Playwright + installed Chrome) is the verification vehicle for both.
+(compare/validate) shipped in v56–v58 — see the banner above. Workstream 2
+(one file vs per-molecule data) remains a decision record. Harness
+(`muler-harness`, Playwright + installed Chrome) is the verification vehicle
+for both.
 
 ---
 

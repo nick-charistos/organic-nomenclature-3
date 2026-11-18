@@ -1,8 +1,9 @@
 # Review — v58 (scenario quiz contract)
 
 Date: 2026-11-18. Tree: `a9e598f` (`?v=58.10`) at review time. Status:
-**resolved in `?v=58.11`** — see "Resolution" below; the findings are kept
-verbatim as the record of what was wrong and why.
+**resolved in `?v=58.11`**, with later v58 work recorded below (current:
+`?v=58.16`, `4347e45`); the findings are kept verbatim as the record of what
+was wrong and why.
 Scope: `11d5886` (fork) → `a9e598f`; the real delta is `72699c2`,
 `29287c3`, `bf2aca5`, `a9e598f` + the new probe.
 
@@ -40,6 +41,27 @@ Verification: `probe-scenario-quiz` (13 sections) green; `probe-quiz`,
 `probe-skel-joints` green; `node --check` clean on the three changed JS
 files. Owner-side browser matrix remains (drawer list/Remove, Esc, revisit,
 menu arm, non-quiz step).
+
+### Later v58 work (58.12–58.16, after the review)
+
+Recorded here so this file reflects the shipped tree; none of these are
+review findings.
+
+- **58.12** — student-mode 2D hover and 3D picking on Present quiz steps
+  (raw Present guards left in the hover tick/binder; picking mode only
+  written by the load tail and the reps-lock transition). `ae43ea4`.
+- **58.13** — clearing picks no longer erases the solved 3D green (cyan and
+  green share the atom-color channel; wipe only when 3D picks existed, then
+  restore the classic display). `899b2c6`.
+- **58.14** — step-row architecture rebuilt: two-row head (meta rail +
+  title/actions), `.scStepText` (toolbar + note) above `.scStepSettings`;
+  no absolute corner buttons; class-mapped icons; structural probe
+  assertions. `74dd319`.
+- **58.15** — corner landmarks via a grid head (grip top-left, collapse/delete
+  top-right) without absolute positioning. `3b8b83b`.
+- **58.16** — owner density pass + badge-row guard (toggle track reserved on
+  the top row only; title/actions span full width; no magic `-50px`).
+  `4347e45`.
 
 ---
 

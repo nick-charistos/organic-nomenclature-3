@@ -8,14 +8,16 @@
 > Remove), Present auto-arms + gates on the stored set, Esc clears picks on
 > quiz steps (no longer exits the lesson), forward jumps can't skip a gated
 > step, menu steps gate until a molecule is picked. `probe-scenario-quiz.js`
-> was rewritten and is green. Remaining owner-side: run the full 2D suite
-> against v58 (probe-quiz/final/mode-quiz/explain-all already re-run green
-> after the change), then the browser Present matrix (per-component
+> was rewritten and is green. The full 2D suite was re-run against v58 and is
+> green (final/quiz/mode-quiz/explain-all/fg/loc/bond/branch/coverage56/
+> smoke56/compact-main/shift/skel-joints; `probe-3d-pick` still owner-side).
+> Remaining owner-side: the browser Present matrix (per-component
 > requirement list in the drawer, Remove, Esc, revisit, menu deferred arm,
-> non-quiz step after quiz), plus the parked v55 sweeps below (overview
-> table both languages, narration voices, menu rail), P3 blessing of Greek
-> word forms, completion-callback wait spike, energy comparison, settings
-> tabs. Full record: `docs/CHANGELOG.md` [v58]/[v57],
+> non-quiz step after quiz), then `probe-3d-pick` on a machine with working
+> 3D and the parked v55 sweeps below (overview table both languages,
+> narration voices, menu rail), P3 blessing of Greek word forms,
+> completion-callback wait spike, energy comparison, settings tabs.
+> Full record: `docs/CHANGELOG.md` [v58]/[v57],
 > `docs/SESSION-NOTES.md` 2026-11-16/17/18 entries,
 > `docs/learning-activities-Plan.md` Stage 0, audit
 > `docs/REVIEW-SCENARIO-QUIZ-58.md`, review `docs/REVIEW-V58.md`. Routine on

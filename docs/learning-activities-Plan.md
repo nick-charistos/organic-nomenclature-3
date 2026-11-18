@@ -66,7 +66,8 @@ well-posed and turn the rank-ordering caveat into a non-issue.
   filtered through `fMulerQuizTodoModes(required)` for gate/tint/auto-arm;
   deferred steps compute it per picked molecule. `Update` keeps an authored
   task unless the capture carries a quiz signal — removal is the drawer's
-  explicit Remove action. Present auto-arms with fresh picks (primary else
+  explicit Remove action, and the quiz row lists the stored components with
+  their semantic labels. Present auto-arms with fresh picks (primary else
   first required); done = every required `.quizTodo` solved. Author/run-solved
   capable boxes get `.freeComp` (normal classic, marker only) and never block
   the gate. Non-quiz steps tear down student mode (no tint stall). Esc on a

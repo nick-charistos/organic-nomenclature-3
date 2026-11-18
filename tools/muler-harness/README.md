@@ -55,7 +55,7 @@ working directory.
   `allowSelect` gating (hide entry when off, uncheck-while-active exits),
   Present block (toggle no-op + CSS hides the entry). Hard-fail.
 - `probe-compact-main.js` — main-chain versus free compacted-label semantics: COOH/HCOOH/CN resolve to the anchor carbon under a main-chain target, NO2 stays a fragment, free selection stays a fragment; checks C-only paint, hover box, badge, exact reward, the free-mode backplate edge, clear/marker restore and methanal (no highlight geometry).
-- `probe-scenario-quiz.js` — v58 scenario quiz contract (`?v=58.11`): capture
+- `probe-scenario-quiz.js` — v58 scenario quiz contract (`?v=58.16`): capture
   stores the task + its required component set + labels, `Update` keeps an
   authored task, the drawer's explicit Remove clears it, Present auto-arms,
   the gate holds until every required comp is solved, the solved display
@@ -68,7 +68,9 @@ working directory.
   picking"` → `atom` on quiz steps, `off` on passive steps, no traffic on
   idle repaints), plus the solved 3D green surviving a pick clear (a wipe
   must be followed by the green restore; a no-pick clear sends no 3D paint
-  script). Hard-fail; covers the Present path no other probe enters.
+  script), plus the v58.14–v58.16 step-row structure (grid head with direct
+  grip/toggles corners, `.scStepText`/`.scStepSettings` blocks, controls
+  non-absolute). Hard-fail; covers the Present path no other probe enters.
 - `probe-skel-joints.js` — skeletal vertex→atom assignment: for 16 molecules across aldehydes, ketones, acids, ester, alkene, alkyne, nitrile and nitro, asserts every vertex pick is an endpoint of all its incident bonds, no offset multi-line end is left unmerged, and every carbonyl carbon's incident-bond line endpoints (the old "click the carbon, get the oxygen" spot) select the carbon. Guards the C=O offset-end merge in `fMulerSelectVertices`.
 - `audit.js <port> <query|- > <width> <out>` — tooltip clip audit:
   measures every `[data-tooltip]` bubble against overflow ancestors and the

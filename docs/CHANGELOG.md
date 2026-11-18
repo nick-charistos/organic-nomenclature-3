@@ -6,7 +6,7 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ## [v58] (scenario quiz contract; LIVE, `index.html` → v58)
 
-Forked from v57 (`mulermoc-nom-58.html` + `js/*-58.js` + `css/*-58.css` + `jsme-nick-nomeclature-moc2-data_58.js` + `spt/init-3-58.spt` + `zz-test-core58.html`, `?v=58.11`; `ui-icons.js` stays shared). v57 files untouched (frozen). No chemistry changes.
+Forked from v57 (`mulermoc-nom-58.html` + `js/*-58.js` + `css/*-58.css` + `jsme-nick-nomeclature-moc2-data_58.js` + `spt/init-3-58.spt` + `zz-test-core58.html`, `?v=58.16`; `ui-icons.js` stays shared). v57 files untouched (frozen). No chemistry changes.
 
 ### Scenario authoring (v58 working tree)
 - Audit first: step schema vs quiz state, Present-guard inventory, `nameClick=true` chain, step-change vs quiz state, solved sets vs steps, capture requirements, draft interplay, probe surface. Findings note → schema → consolidated contract (see `docs/learning-activities-Plan.md`, Stage 0).
