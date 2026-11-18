@@ -1,8 +1,8 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
 > **Resume pointer (cross-machine):** 2026-11-18 — **v58 is LIVE**
-> (`index.html` → `mulermoc-nom-58.html`, `?v=58.14`, review follow-ups +
-> student hover/3D fixes + step-row architecture).
+> (`index.html` → `mulermoc-nom-58.html`, `?v=58.15`, review follow-ups +
+> student hover/3D fixes + step-row architecture/corners).
 > Scenario quiz contract: steps store their required component set
 > (`quiz.modes` + labels), Update never destroys an authored task (explicit
 > Remove), Present auto-arms + gates on the stored set, Esc clears picks on
@@ -3146,6 +3146,11 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * Owner: `.srow` head should be two rows (meta rail + title/actions) and the body should nest the note toolbar/editor in `.scStepText` and the settings rows in `.scStepSettings`; the absolutely-positioned collapse/delete were the main problem.
 * Fix (`scenario-58.js` + `mulermoc-nom-scenario-58.css`): row built from explicit nodes (no `innerHTML` + move-children trick). Head = `.srowHeadTop` (`.scDragHandle`, `.scStepNumberWrap`, `.scStepBadges`, spacer, `.scStepToggles` with collapse/delete) above `.srowHeadMain` (`.scStepTitleWrap` + `.scStepActions` with Go/Present/Update/Dupe/Up/Down). Body = `.scStepText` (toolbar + note) above `.scStepSettings`. Grip/collapse/delete/lang badge are in flow; no absolute corners. Tooltip anchors moved to `.scStepActions`/`.scStepToggles`; icons are class-mapped (the old positional pass was one DOM reorder away from mislabelling buttons). Collapse got `aria-controls`/`aria-expanded`; groups got labels (`stepActions` key).
 * Verified headless: structure counts (1 headTop, 1 headMain, 1 text, 1 settings, 2 toggles, 6 actions, toolbar+note in text), computed `position` not absolute for grip/collapse/delete, accordion + drag arming + title commit unchanged; drawer screenshot checked. `probe-scenario-quiz` asserts the structure; `probe-final`/`probe-mode-quiz`/`probe-compact-main` green.
+
+## 2026-11-18 — step-row corners: grip top-left, toggles top-right (`?v=58.15`, owner request)
+* Owner wants the drag handle and the collapse/delete pair back at the row corners (as before), asking whether to use absolute positioning or margin/padding tricks.
+* Decision: neither — the head is a 3-column grid (`24px | minmax(0,1fr) | auto`) with areas `grip | top | toggles` / `grip | main | toggles`. Grip and toggles are direct `.srowHead` children, span both head rows, and are placed at the corners with `align-self:start` / `justify-self`; number/badges and title/actions stay in the middle track. Everything remains in flow (long badges/titles cannot run under the corners, no reserved padding), `.scStepTopSpacer` removed. Insets are left to the owner's CSS pass (no negative margins shipped).
+* Verified: probe asserts head `display:grid`, grip/toggles as direct head children and controls non-absolute; drawer behavior unchanged; `probe-scenario-quiz` + `probe-quiz`/`probe-final`/`probe-mode-quiz`/`probe-compact-main` green; drawer screenshot checked.
 
 ## 2026-11-18 — drawer row architecture: roles + dedicated quiz row (v58 working tree, owner request)
 * Owner: `.scShowRow.scStepViewersSettings` checkboxes had no ids/classes; `requireSolution` sat in the name row. Asked for ids + three distinct row classes and a dedicated quiz row for a growing settings surface.

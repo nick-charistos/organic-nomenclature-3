@@ -329,6 +329,9 @@ const clickBtn = async (p, id) => {
         actions: q(".scStepActions > button"),
         note: q(".scStepText > .scNoteToolbar") + "/" + q(".scStepText > .snote"),
         pos: [pos(".scDragHandle"), pos(".scCollapse"), pos(".delete")],
+        gripInHead: q(".srowHead > .scDragHandle"),
+        togglesInHead: q(".srowHead > .scStepToggles"),
+        headDisplay: (() => { const h = row.querySelector(".srowHead"); return h ? getComputedStyle(h).display : "missing"; })(),
       };
     } catch (e) { return "err"; }
   }, scid);
@@ -338,6 +341,8 @@ const clickBtn = async (p, id) => {
     "row head should group 2 toggles and 6 actions, got " + JSON.stringify(struct));
   check(struct && struct.note === "1/1", "toolbar + note should live in .scStepText, got " + JSON.stringify(struct && struct.note));
   check(struct && struct.pos.every((x) => x !== "absolute"), "row controls must stay in flow, got " + JSON.stringify(struct && struct.pos));
+  check(struct && struct.gripInHead === 1 && struct.togglesInHead === 1 && struct.headDisplay === "grid",
+    "head should be a grid with the grip and toggles as direct corner tracks, got " + JSON.stringify(struct));
 
   // --- 2. Update with no quiz signal keeps the authored task ---
   check(await armBox(p, "comp5", "compCarbonsCount"), "deselect/re-arm setup failed");

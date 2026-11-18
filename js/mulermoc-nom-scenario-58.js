@@ -5979,7 +5979,6 @@ function fScenarioRenderOne(scen) {
     bodyDiv.className = "srowBody";
     bodyDiv.id = "scStepBody" + i;
 
-    headTop.appendChild(grip);
     var numWrap = document.createElement("span");
     numWrap.id = "scStep" + i;
     numWrap.className = "scStepNumberWrap";
@@ -5991,12 +5990,8 @@ function fScenarioRenderOne(scen) {
     var badgeWrap = document.createElement("span");
     badgeWrap.className = "scStepBadges";
     headTop.appendChild(badgeWrap);
-    var topSpacer = document.createElement("span");
-    topSpacer.className = "scStepTopSpacer";
-    headTop.appendChild(topSpacer);
     var toggles = document.createElement("span");
     toggles.className = "scStepToggles";
-    headTop.appendChild(toggles);
 
     var _T = function (k, gr) { try { return (typeof fMulerT === "function") ? fMulerT(k) : gr; } catch (e) { return gr; } };
     var _icon = function (k) { try { return (window.MuLERIcons && window.MuLERIcons[k]) || null; } catch (e) { return null; } };
@@ -6099,7 +6094,11 @@ function fScenarioRenderOne(scen) {
     delBtn.setAttribute("aria-label", _T("deleteStep", "Διαγραφή"));
     toggles.appendChild(delBtn);
 
+    // v58.15: head is a 3-column grid — grip pinned top-left, toggles
+    // pinned top-right, number/badges + title/actions in the middle column.
+    headDiv.appendChild(grip);
     headDiv.appendChild(headTop);
+    headDiv.appendChild(toggles);
     headDiv.appendChild(headMain);
     row.appendChild(headDiv);
     row.appendChild(bodyDiv);

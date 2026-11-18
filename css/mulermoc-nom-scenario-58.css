@@ -506,30 +506,36 @@
    opacity: .9;
 }
 
-/* v58.14 step-row architecture. Head = meta rail (grip · number · badges ·
-   collapse/delete) above the title + actions row; body = text block above
-   the settings rows. Everything is in flow — no absolute corner buttons. */
+/* v58.15 step-row architecture. Head is a 3-column grid: the grip pins the
+   top-left track and the collapse/delete pair the top-right track, both
+   spanning the two head rows; number/badges and title/actions live in the
+   middle column. Everything stays in flow — no absolute corner buttons. */
 .scenarioDrawer .srow .srowHead {
-   display: flex;
-   flex-direction: column;
-   gap: 6px;
+   display: grid;
+   grid-template-columns: 24px minmax(0, 1fr) auto;
+   grid-template-areas:
+      "grip top     toggles"
+      "grip main    toggles";
+   column-gap: 8px;
+   row-gap: 6px;
+   align-items: start;
    width: 100%;
    min-width: 0;
 }
 
 .scenarioDrawer .srow .srowHeadTop {
+   grid-area: top;
    display: flex;
    align-items: center;
    gap: 6px;
-   width: 100%;
    min-width: 0;
 }
 
 .scenarioDrawer .srow .srowHeadMain {
+   grid-area: main;
    display: flex;
    align-items: flex-end;
    gap: 8px;
-   width: 100%;
    min-width: 0;
    flex-wrap: wrap;
 }
@@ -542,13 +548,12 @@
    min-width: 0;
 }
 
-.scenarioDrawer .srow .scStepTopSpacer {
-   flex: 1 1 auto;
-}
-
 .scenarioDrawer .srow .scStepToggles {
+   grid-area: toggles;
    display: inline-flex;
    align-items: center;
+   align-self: start;
+   justify-self: end;
    gap: 4px;
    flex: none;
 }
@@ -630,8 +635,9 @@
 
 /* Drag-reorder grip (authoring): dedicated ⠿ handle, desktop HTML5 DnD.
    Span (not button) so the button:not(.scNoteBtn) action index is stable.
-   v58.14: in flow in the head meta rail (no absolute corner). */
+   v58.15: pinned in the head grid's top-left track (in flow). */
 .scenarioDrawer .srow .scDragHandle {
+   grid-area: grip;
    display: inline-flex;
    align-items: center;
    justify-content: center;
@@ -644,7 +650,8 @@
    color: var(--lightBlue);
    border-radius: 4px;
    font-size: 1.0rem;
-   align-self: center;
+   align-self: start;
+   justify-self: start;
    flex: none;
    transition: all .2s ease;
 }
