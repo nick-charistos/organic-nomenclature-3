@@ -488,12 +488,12 @@
 .scenarioDrawer .srow {
    position: relative;
    display: flex;
-   gap: 5px;
-   align-items: flex-end;
+   flex-direction: column;
+   gap: 8px;
+   align-items: stretch;
    margin: 10px 0;
-   flex-wrap: wrap;
    background: var(--bodyBg);
-   padding: 15px 10px 10px 10px;
+   padding: 10px 12px 12px 12px;
    border-radius: 4px;
    border: 1px solid var(--darkBlue);
    opacity: 1;
@@ -506,26 +506,67 @@
    opacity: .9;
 }
 
-/* Step row header/body: collapsed shows the head (number/title/buttons) only. */
+/* v58.14 step-row architecture. Head = meta rail (grip · number · badges ·
+   collapse/delete) above the title + actions row; body = text block above
+   the settings rows. Everything is in flow — no absolute corner buttons. */
 .scenarioDrawer .srow .srowHead {
    display: flex;
-   gap: 5px;
-   align-items: flex-end;
-   flex-basis: 100%;
+   flex-direction: column;
+   gap: 6px;
    width: 100%;
-   /* padding-right: 52px; */
+   min-width: 0;
 }
 
-/* Collapse toggle: absolute corner pair with delete (delete at right:-1px,
-   collapse immediately left of it). Mirrors the delete corner language. */
+.scenarioDrawer .srow .srowHeadTop {
+   display: flex;
+   align-items: center;
+   gap: 6px;
+   width: 100%;
+   min-width: 0;
+}
+
+.scenarioDrawer .srow .srowHeadMain {
+   display: flex;
+   align-items: flex-end;
+   gap: 8px;
+   width: 100%;
+   min-width: 0;
+   flex-wrap: wrap;
+}
+
+.scenarioDrawer .srow .scStepBadges {
+   display: inline-flex;
+   align-items: center;
+   gap: 4px;
+   flex-wrap: wrap;
+   min-width: 0;
+}
+
+.scenarioDrawer .srow .scStepTopSpacer {
+   flex: 1 1 auto;
+}
+
+.scenarioDrawer .srow .scStepToggles {
+   display: inline-flex;
+   align-items: center;
+   gap: 4px;
+   flex: none;
+}
+
+.scenarioDrawer .srow .scStepActions {
+   display: flex;
+   align-items: center;
+   gap: 4px;
+   flex: none;
+   margin-left: auto;
+   flex-wrap: nowrap;
+}
+
+/* Collapse toggle: inline icon in the toggles group (delete follows it). */
 #scenarioAuthorBar .scenarioDrawer .srow .scIconBtn.scCollapse {
-   position: absolute;
-   right: 23px;
-   top: -1px;
    border: 0;
-   border-radius: 0;
-   border-bottom-left-radius: 4px;
    background: transparent;
+   border-radius: 4px;
 }
 
 #scenarioAuthorBar .scenarioDrawer .srow .scIconBtn.scCollapse:hover {
@@ -535,16 +576,33 @@
 
 .scenarioDrawer .srow .srowBody {
    display: flex;
-   gap: 5px;
-   align-items: flex-end;
-   flex-wrap: wrap;
-   flex-basis: 100%;
+   flex-direction: column;
+   gap: 8px;
    width: 100%;
+   min-width: 0;
    overflow: hidden;
-   max-height: 1200px;
+   max-height: 2400px;
    opacity: 1;
    visibility: visible;
    transition: max-height .28s ease, opacity .22s ease, visibility 0s;
+}
+
+.scenarioDrawer .srow .scStepText {
+   display: flex;
+   flex-direction: column;
+   gap: 4px;
+   width: 100%;
+   min-width: 0;
+}
+
+.scenarioDrawer .srow .scStepSettings {
+   display: flex;
+   flex-direction: column;
+   gap: 2px;
+   width: 100%;
+   min-width: 0;
+   padding-top: 4px;
+   border-top: 1px dashed var(--lightBlue);
 }
 
 .scenarioDrawer .srow.collapsed .srowBody {
@@ -571,7 +629,8 @@
 }
 
 /* Drag-reorder grip (authoring): dedicated ⠿ handle, desktop HTML5 DnD.
-   Span (not button) so the button:not(.scNoteBtn) action index is stable. */
+   Span (not button) so the button:not(.scNoteBtn) action index is stable.
+   v58.14: in flow in the head meta rail (no absolute corner). */
 .scenarioDrawer .srow .scDragHandle {
    display: inline-flex;
    align-items: center;
@@ -586,9 +645,7 @@
    border-radius: 4px;
    font-size: 1.0rem;
    align-self: center;
-   position: absolute;
-   left: -4px;
-   top: -2px;
+   flex: none;
    transition: all .2s ease;
 }
 
@@ -796,9 +853,7 @@
 	padding: 1px 2px;
 	white-space: nowrap;
 	font-family: "Roboto Condensed", sans-serif;
-	position: absolute !important;
-	top: 3px;
-	left: -8px;
+	flex: none;
 }
 .scenarioDrawer .scStepNumberWrap {
    display: inline-flex;
@@ -807,7 +862,7 @@
    gap: 2px;
    flex: none;
    position: relative;
-   min-width: 50px;
+   min-width: 26px;
 }
 
 .scenarioDrawer .stepNumber {
@@ -1340,8 +1395,8 @@
 /* Step-row head buttons: centered-below bubbles clip at the drawer/panel
    edges, so anchor the outer buttons like scSave/scDelete and wrap long
    hints inside the drawer. Middle buttons keep centered geometry. */
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scGo[data-tooltip]::after,
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scPresentStep[data-tooltip]::after {
+#scenarioAuthorBar .scenarioDrawer .srow .scStepActions button.scGo[data-tooltip]::after,
+#scenarioAuthorBar .scenarioDrawer .srow .scStepActions button.scPresentStep[data-tooltip]::after {
    left: 0;
    right: auto;
    transform: none;
@@ -1353,19 +1408,19 @@
    text-align: left;
 }
 
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scGo[data-tooltip]::before,
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scPresentStep[data-tooltip]::before {
+#scenarioAuthorBar .scenarioDrawer .srow .scStepActions button.scGo[data-tooltip]::before,
+#scenarioAuthorBar .scenarioDrawer .srow .scStepActions button.scPresentStep[data-tooltip]::before {
    left: 12px;
    right: auto;
    transform: none;
 }
 
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scUp[data-tooltip]::after,
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scDown[data-tooltip]::after,
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scCollapse[data-tooltip]::after,
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scUpdate[data-tooltip]::after,
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scDupe[data-tooltip]::after,
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.delete[data-tooltip]::after {
+#scenarioAuthorBar .scenarioDrawer .srow .scStepActions button.scUp[data-tooltip]::after,
+#scenarioAuthorBar .scenarioDrawer .srow .scStepActions button.scDown[data-tooltip]::after,
+#scenarioAuthorBar .scenarioDrawer .srow .scStepToggles button.scCollapse[data-tooltip]::after,
+#scenarioAuthorBar .scenarioDrawer .srow .scStepActions button.scUpdate[data-tooltip]::after,
+#scenarioAuthorBar .scenarioDrawer .srow .scStepActions button.scDupe[data-tooltip]::after,
+#scenarioAuthorBar .scenarioDrawer .srow .scStepToggles button.delete[data-tooltip]::after {
    left: auto;
    right: 0;
    transform: none;
@@ -1377,19 +1432,19 @@
    text-align: left;
 }
 
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scUp[data-tooltip]::before,
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scDown[data-tooltip]::before,
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scCollapse[data-tooltip]::before,
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scUpdate[data-tooltip]::before,
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scDupe[data-tooltip]::before,
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.delete[data-tooltip]::before {
+#scenarioAuthorBar .scenarioDrawer .srow .scStepActions button.scUp[data-tooltip]::before,
+#scenarioAuthorBar .scenarioDrawer .srow .scStepActions button.scDown[data-tooltip]::before,
+#scenarioAuthorBar .scenarioDrawer .srow .scStepToggles button.scCollapse[data-tooltip]::before,
+#scenarioAuthorBar .scenarioDrawer .srow .scStepActions button.scUpdate[data-tooltip]::before,
+#scenarioAuthorBar .scenarioDrawer .srow .scStepActions button.scDupe[data-tooltip]::before,
+#scenarioAuthorBar .scenarioDrawer .srow .scStepToggles button.delete[data-tooltip]::before {
    left: auto;
    right: 12px;
    transform: none;
 }
 
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scUpdate[data-tooltip]::after,
-#scenarioAuthorBar .scenarioDrawer .srow .srowHead>button.scDupe[data-tooltip]::after {
+#scenarioAuthorBar .scenarioDrawer .srow .scStepActions button.scUpdate[data-tooltip]::after,
+#scenarioAuthorBar .scenarioDrawer .srow .scStepActions button.scDupe[data-tooltip]::after {
    width: max-content;
    max-width: calc(100vw - 2rem);
    white-space: normal;
@@ -1428,12 +1483,14 @@
 
 /* Last step row: head bubbles flip above so the drawer's scrollport
    doesn't clip them at the bottom. */
-#scenarioAuthorBar .scenarioDrawer .scSteps>.srow:last-child .srowHead>button[data-tooltip]::after {
+#scenarioAuthorBar .scenarioDrawer .scSteps>.srow:last-child .scStepActions>button[data-tooltip]::after,
+#scenarioAuthorBar .scenarioDrawer .scSteps>.srow:last-child .scStepToggles>button[data-tooltip]::after {
    top: auto;
    bottom: calc(100% + 10px);
 }
 
-#scenarioAuthorBar .scenarioDrawer .scSteps>.srow:last-child .srowHead>button[data-tooltip]::before {
+#scenarioAuthorBar .scenarioDrawer .scSteps>.srow:last-child .scStepActions>button[data-tooltip]::before,
+#scenarioAuthorBar .scenarioDrawer .scSteps>.srow:last-child .scStepToggles>button[data-tooltip]::before {
    top: auto;
    bottom: 100%;
    border-bottom-color: transparent;
@@ -1823,16 +1880,11 @@
    color: #fff;
 }
 
-/* Step-row delete (Διαγραφή): pinned to the card's top-right corner like a
-   close affordance; transparent until hover so it does not read as a box. */
+/* Step-row delete (Διαγραφή): inline in the head toggles (collapse · delete),
+   transparent until hover so it does not read as a box. */
 #scenarioAuthorBar .scenarioDrawer .srow .scIconBtn.delete {
-   position: absolute;
-   right: -1px;
-   top: -1px;
-   border-radius: 0;
    border: 0;
-   border-top-right-radius: 3px;
-   border-bottom-left-radius: 4px;
+   border-radius: 4px;
    background: transparent;
 }
 

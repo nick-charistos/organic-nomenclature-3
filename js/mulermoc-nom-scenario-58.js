@@ -5958,116 +5958,106 @@ function fScenarioRenderOne(scen) {
     grip.setAttribute("data-tooltip", ((typeof fMulerPre === "function") ? fMulerPre("Σύρετε για αναδιάταξη του βήματος ", "Drag to reorder step ", st.n) : ("Σύρετε για αναδιάταξη του βήματος " + st.n)));
     grip.setAttribute("aria-label", ((typeof fMulerPre === "function") ? fMulerPre("Σύρετε για αναδιάταξη του βήματος ", "Drag to reorder step ", st.n) : ("Σύρετε για αναδιάταξη του βήματος " + st.n)));
     grip.setAttribute("tabindex", "0");
-    row.innerHTML =
-      "<span id='scStep" + i + "' class='scStepNumberWrap'>" +
-      "<span class='stepNumber'>" + st.n + "</span></span><span class='scStepTitleWrap'><span class='scStepTitleLabel'>" + ((typeof fMulerT === "function") ? fMulerT("stepTitle") : "Τίτλος βήματος") + "</span><input type='text' class='scStepTitle' placeholder='" + ((typeof fMulerT === "function") ? fMulerT("stepTitle") : "Τίτλος βήματος") + "' value=''></span>" +
-      "<button class='scGo' data-tooltip='" + ((typeof fMulerT === "function") ? fMulerT("preview") : "Προεπισκόπηση") + "'>Go</button>" +
-      "<button class='scPresentStep' data-tooltip='" + ((typeof fMulerPre === "function") ? fMulerPre("Παρουσίαση από το βήμα ", "Present from step ", st.n) : ("Παρουσίαση από το βήμα " + st.n)) + "'>▶</button>" +
-      "<button class='scUpdate' data-tooltip='" + ((typeof fMulerT === "function") ? fMulerT("updateStep") : "Ενημέρωση βήματος από την τρέχουσα προβολή") + "'>Update</button><button class='scDupe' data-tooltip='" + ((typeof fMulerT === "function") ? fMulerT("dupeStep") : "Διπλασιασμός βήματος") + "'>⧉</button><button class='scUp' data-tooltip='" + ((typeof fMulerT === "function") ? fMulerT("moveUp") : "Επάνω") + "'>↑</button><button class='scDown' data-tooltip='" + ((typeof fMulerT === "function") ? fMulerT("moveDown") : "Κάτω") + "'>↓</button>" +
-      "<button class='delete scIconBtn' data-tooltip='" + ((typeof fMulerT === "function") ? fMulerT("deleteStep") : "Διαγραφή") + "'>✕</button>";
-    // Grip first so it leads the row; mousedown on it arms HTML5 drag
-    // (row stays non-draggable otherwise so inputs/textareas keep working).
-    if (row.firstChild) row.insertBefore(grip, row.firstChild);
-    else row.appendChild(grip);
     grip.addEventListener("mousedown", function () {
       row.setAttribute("draggable", "true");
     });
     grip.addEventListener("mouseup", function () {
       if (!row.classList.contains("dragging")) row.setAttribute("draggable", "false");
     });
-    // Icon-only step actions (data-tooltip + aria-label keep the meaning).
-    (function () {
-      var ab = row.querySelectorAll("button");
-      var _T = function (k, gr) { try { return (typeof fMulerT === "function") ? fMulerT(k) : gr; } catch (e) { return gr; } };
-      var defs = [
-        ["skip", _T("preview", "Προεπισκόπηση")], ["screen", _T("presentFromStep", "Παρουσίαση από αυτό το βήμα")], ["reset", _T("updateStep", "Ενημέρωση βήματος από την τρέχουσα προβολή")], ["copy", _T("dupeStep", "Διπλασιασμός βήματος")],
-        ["arrowUp", _T("moveUp", "Επάνω")], ["arrowDown", _T("moveDown", "Κάτω")], ["deleteStep", _T("deleteStep", "Διαγραφή")]
-      ];
-      for (var k = 0; k < defs.length && k < ab.length; k++) {
-        var ic = (window.MuLERIcons && window.MuLERIcons[defs[k][0]]) || null;
-        if (ic) {
-          ab[k].innerHTML = ic;
-          if (ab[k].classList) ab[k].classList.add("scIconBtn");
-          ab[k].setAttribute("aria-label", defs[k][1]);
-        }
-      }
-    })();
-    // Step type at a glance: "menu" when the step carries a browsable
-    // menu (menu-only or molecule+menu subset), else "molecule".
-    // Detail (molecule key / subset size) lives in the tooltip.
-    var molBadge = document.createElement("span");
-    var _isMenu = !!(st.show && st.show.menu === true);
-    molBadge.className = "scMolBadge" + (_isMenu ? " is-menu" : " is-mol");
-    var _subN = Array.isArray(st.menuSubset) ? st.menuSubset.length : 0;
-    molBadge.setAttribute("data-tooltip", st.selectedMol
-      ? st.selectedMol + (_isMenu ? ((typeof fMulerIsEN === "function" && fMulerIsEN()) ? " + menu (" + _subN + ")" : " + μενού (" + _subN + ")") : "")
-      : ((typeof fMulerIsEN === "function" && fMulerIsEN()) ? "menu only (" + _subN + ")" : "μόνο μενού (" + _subN + ")"));
-    molBadge.textContent = _isMenu ? ((typeof fMulerT === "function") ? fMulerT("menuWord") : "Μενού") : ((typeof fMulerT === "function") ? fMulerT("molecule") : "Μόριο");
-    var langBadge = document.createElement("span");
-    langBadge.className = "scLangBadge";
-    var _sLang = (st.lang === "en") ? "en" : "gr";
-    langBadge.textContent = _sLang.toUpperCase();
-    try {
-      langBadge.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("stepLang") : "Γλώσσα βήματος") + ": " + _sLang.toUpperCase());
-      langBadge.setAttribute("aria-label", ((typeof fMulerT === "function") ? fMulerT("stepLang") : "Γλώσσα βήματος"));
-    } catch (eLB) {}
-    var numWrap = row.querySelector(".scStepNumberWrap");
-    if (numWrap) { numWrap.appendChild(molBadge); numWrap.appendChild(langBadge); }
-    else { row.insertBefore(langBadge, row.firstChild.nextSibling); row.insertBefore(molBadge, row.firstChild.nextSibling); }
-    // Quiz badge: directly below the molecule/menu badge (lang badge is
-    // absolutely positioned, so this lands right under MolBadge).
-    try {
-      if (st.quiz && st.quiz.mode && st.quiz.mode !== "none") {
-        var quizBadge = document.createElement("span");
-        var _qk = "is-quiz";
-        try {
-          var _kk = String((st.quiz.kind || "nameComp")).toLowerCase().replace(/[^a-z0-9]+/g, "");
-          if (_kk && _kk !== "namecomp") _qk += " is-quiz-" + _kk;
-        } catch (eK) {}
-        quizBadge.className = "scQuizBadge " + _qk;
-        quizBadge.textContent = ((typeof fMulerT === "function") ? fMulerT("quizBadge") : "quiz");
-        try {
-          // v58.11: describe the required components with author labels
-          // instead of raw internal mode ids (mode ids only as a fallback).
-          var _qlBadge = Array.isArray(st.quiz.modeLabels) ? st.quiz.modeLabels : [];
-          var _reqBadge = _qlBadge.length
-            ? _qlBadge.join(", ")
-            : (Array.isArray(st.quiz.modes) && st.quiz.modes.length
-              ? st.quiz.modes.join(", ")
-              : ((typeof fMulerT === "function") ? fMulerT("quizPerMolecule") : "per molecule"));
-          quizBadge.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("quizStepBadge") : "Βήμα κουίζ") + ": " + _reqBadge);
-          quizBadge.setAttribute("aria-label", ((typeof fMulerT === "function") ? fMulerT("quizStepBadge") : "Βήμα κουίζ"));
-        } catch (eQB) {}
-        if (numWrap) {
-          try { numWrap.insertBefore(quizBadge, langBadge); } catch (eQI) { numWrap.appendChild(quizBadge); }
-        }
-        else row.insertBefore(quizBadge, row.firstChild.nextSibling);
-      }
-    } catch (eQB2) {}
-    var titleInput = row.querySelector("input.scStepTitle");
-    titleInput.value = st.title || "";
-    titleInput.onchange = function () {
-      st.title = titleInput.value;
-    };
-    // Header/body structure: collapse shows head only (title + buttons).
+
+    // v58.14 row architecture: explicit blocks, no absolute positioning.
+    // Head = meta rail (grip · number · badges · collapse/delete) above a
+    // title + action row. Body = text block (toolbar + note) above settings.
+    // CSS and the probe key off classes, never child order.
     var headDiv = document.createElement("div");
     headDiv.className = "srowHead";
+    var headTop = document.createElement("div");
+    headTop.className = "srowHeadTop";
+    var headMain = document.createElement("div");
+    headMain.className = "srowHeadMain";
     var bodyDiv = document.createElement("div");
     bodyDiv.className = "srowBody";
-    (function () {
-      var _kids = [];
-      for (var _hi = 0; _hi < row.childNodes.length; _hi++) _kids.push(row.childNodes[_hi]);
-      for (var _hj = 0; _hj < _kids.length; _hj++) headDiv.appendChild(_kids[_hj]);
-    })();
+    bodyDiv.id = "scStepBody" + i;
+
+    headTop.appendChild(grip);
+    var numWrap = document.createElement("span");
+    numWrap.id = "scStep" + i;
+    numWrap.className = "scStepNumberWrap";
+    var stepNo = document.createElement("span");
+    stepNo.className = "stepNumber";
+    stepNo.textContent = String(st.n);
+    numWrap.appendChild(stepNo);
+    headTop.appendChild(numWrap);
+    var badgeWrap = document.createElement("span");
+    badgeWrap.className = "scStepBadges";
+    headTop.appendChild(badgeWrap);
+    var topSpacer = document.createElement("span");
+    topSpacer.className = "scStepTopSpacer";
+    headTop.appendChild(topSpacer);
+    var toggles = document.createElement("span");
+    toggles.className = "scStepToggles";
+    headTop.appendChild(toggles);
+
+    var _T = function (k, gr) { try { return (typeof fMulerT === "function") ? fMulerT(k) : gr; } catch (e) { return gr; } };
+    var _icon = function (k) { try { return (window.MuLERIcons && window.MuLERIcons[k]) || null; } catch (e) { return null; } };
+    // Icon-only step actions (data-tooltip + aria-label keep the meaning).
+    // v58.14: explicit class → icon mapping (the old positional
+    // querySelectorAll("button") pass broke silently on any DOM reorder).
+    var titleWrap = document.createElement("span");
+    titleWrap.className = "scStepTitleWrap";
+    var titleLabel = document.createElement("span");
+    titleLabel.className = "scStepTitleLabel";
+    titleLabel.id = "scStepTitleLabel" + i;
+    titleLabel.textContent = _T("stepTitle", "Τίτλος βήματος");
+    var titleInput = document.createElement("input");
+    titleInput.type = "text";
+    titleInput.className = "scStepTitle";
+    titleInput.placeholder = _T("stepTitle", "Τίτλος βήματος");
+    titleInput.setAttribute("aria-labelledby", titleLabel.id);
+    titleWrap.appendChild(titleLabel);
+    titleWrap.appendChild(titleInput);
+    headMain.appendChild(titleWrap);
+
+    var actions = document.createElement("div");
+    actions.className = "scStepActions";
+    actions.setAttribute("role", "group");
+    actions.setAttribute("aria-label", _T("stepActions", "Ενέργειες βήματος"));
+    var _action = function (cls, iconKey, tip, label, textFallback) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = cls;
+      var ic = _icon(iconKey);
+      if (ic) {
+        btn.innerHTML = ic;
+        if (btn.classList) btn.classList.add("scIconBtn");
+      } else {
+        btn.textContent = textFallback;
+      }
+      if (tip) btn.setAttribute("data-tooltip", tip);
+      if (label) btn.setAttribute("aria-label", label);
+      actions.appendChild(btn);
+      return btn;
+    };
+    _action("scGo", "skip", _T("preview", "Προεπισκόπηση"), _T("preview", "Προεπισκόπηση"), "Go");
+    _action("scPresentStep", "screen",
+      ((typeof fMulerPre === "function") ? fMulerPre("Παρουσίαση από το βήμα ", "Present from step ", st.n) : ("Παρουσίαση από το βήμα " + st.n)),
+      _T("presentFromStep", "Παρουσίαση από αυτό το βήμα"), "▶");
+    _action("scUpdate", "reset", _T("updateStep", "Ενημέρωση βήματος από την τρέχουσα προβολή"), _T("updateStep", "Ενημέρωση βήματος από την τρέχουσα προβολή"), "Update");
+    _action("scDupe", "copy", _T("dupeStep", "Διπλασιασμός βήματος"), _T("dupeStep", "Διπλασιασμός βήματος"), "⧉");
+    _action("scUp", "arrowUp", _T("moveUp", "Επάνω"), _T("moveUp", "Επάνω"), "↑");
+    _action("scDown", "arrowDown", _T("moveDown", "Κάτω"), _T("moveDown", "Κάτω"), "↓");
+    headMain.appendChild(actions);
+
     var collapseBtn = document.createElement("button");
     collapseBtn.type = "button";
     collapseBtn.className = "scCollapse scIconBtn";
     try {
       collapseBtn.innerHTML = (window.MuLERIcons && window.MuLERIcons.maximize) || "▸";
     } catch (eIc) { collapseBtn.textContent = "▸"; }
-    collapseBtn.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("collapseStep") : "Collapse/expand step"));
-    collapseBtn.setAttribute("aria-label", ((typeof fMulerT === "function") ? fMulerT("collapseStep") : "Collapse/expand step"));
+    collapseBtn.setAttribute("data-tooltip", _T("collapseStep", "Collapse/expand step"));
+    collapseBtn.setAttribute("aria-label", _T("collapseStep", "Collapse/expand step"));
     collapseBtn.setAttribute("aria-expanded", "false");
+    collapseBtn.setAttribute("aria-controls", bodyDiv.id);
     collapseBtn.onclick = function (ev) {
       if (ev && ev.preventDefault) ev.preventDefault();
       var _c = row.classList.toggle("collapsed");
@@ -6098,13 +6088,74 @@ function fScenarioRenderOne(scen) {
       } catch (eIc2) { collapseBtn.textContent = _c ? "▸" : "▾"; }
       collapseBtn.setAttribute("aria-expanded", _c ? "false" : "true");
     };
-    (function () {
-      var _del = headDiv.querySelector(".delete");
-      if (_del) headDiv.insertBefore(collapseBtn, _del);
-      else headDiv.appendChild(collapseBtn);
-    })();
+    toggles.appendChild(collapseBtn);
+
+    var delBtn = document.createElement("button");
+    delBtn.type = "button";
+    delBtn.className = "delete scIconBtn";
+    var _delIc = _icon("deleteStep");
+    if (_delIc) delBtn.innerHTML = _delIc; else delBtn.textContent = "✕";
+    delBtn.setAttribute("data-tooltip", _T("deleteStep", "Διαγραφή"));
+    delBtn.setAttribute("aria-label", _T("deleteStep", "Διαγραφή"));
+    toggles.appendChild(delBtn);
+
+    headDiv.appendChild(headTop);
+    headDiv.appendChild(headMain);
     row.appendChild(headDiv);
     row.appendChild(bodyDiv);
+
+    // Step type at a glance: "menu" when the step carries a browsable
+    // menu (menu-only or molecule+menu subset), else "molecule".
+    // Detail (molecule key / subset size) lives in the tooltip.
+    var molBadge = document.createElement("span");
+    var _isMenu = !!(st.show && st.show.menu === true);
+    molBadge.className = "scMolBadge" + (_isMenu ? " is-menu" : " is-mol");
+    var _subN = Array.isArray(st.menuSubset) ? st.menuSubset.length : 0;
+    molBadge.setAttribute("data-tooltip", st.selectedMol
+      ? st.selectedMol + (_isMenu ? ((typeof fMulerIsEN === "function" && fMulerIsEN()) ? " + menu (" + _subN + ")" : " + μενού (" + _subN + ")") : "")
+      : ((typeof fMulerIsEN === "function" && fMulerIsEN()) ? "menu only (" + _subN + ")" : "μόνο μενού (" + _subN + ")"));
+    molBadge.textContent = _isMenu ? ((typeof fMulerT === "function") ? fMulerT("menuWord") : "Μενού") : ((typeof fMulerT === "function") ? fMulerT("molecule") : "Μόριο");
+    var langBadge = document.createElement("span");
+    langBadge.className = "scLangBadge";
+    var _sLang = (st.lang === "en") ? "en" : "gr";
+    langBadge.textContent = _sLang.toUpperCase();
+    try {
+      langBadge.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("stepLang") : "Γλώσσα βήματος") + ": " + _sLang.toUpperCase());
+      langBadge.setAttribute("aria-label", ((typeof fMulerT === "function") ? fMulerT("stepLang") : "Γλώσσα βήματος"));
+    } catch (eLB) {}
+    badgeWrap.appendChild(molBadge);
+    // Quiz badge: follows the molecule/menu badge (own flex item now, no
+    // absolute lang offset or insert-before special case).
+    try {
+      if (st.quiz && st.quiz.mode && st.quiz.mode !== "none") {
+        var quizBadge = document.createElement("span");
+        var _qk = "is-quiz";
+        try {
+          var _kk = String((st.quiz.kind || "nameComp")).toLowerCase().replace(/[^a-z0-9]+/g, "");
+          if (_kk && _kk !== "namecomp") _qk += " is-quiz-" + _kk;
+        } catch (eK) {}
+        quizBadge.className = "scQuizBadge " + _qk;
+        quizBadge.textContent = ((typeof fMulerT === "function") ? fMulerT("quizBadge") : "quiz");
+        try {
+          // v58.11: describe the required components with author labels
+          // instead of raw internal mode ids (mode ids only as a fallback).
+          var _qlBadge = Array.isArray(st.quiz.modeLabels) ? st.quiz.modeLabels : [];
+          var _reqBadge = _qlBadge.length
+            ? _qlBadge.join(", ")
+            : (Array.isArray(st.quiz.modes) && st.quiz.modes.length
+              ? st.quiz.modes.join(", ")
+              : ((typeof fMulerT === "function") ? fMulerT("quizPerMolecule") : "per molecule"));
+          quizBadge.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("quizStepBadge") : "Βήμα κουίζ") + ": " + _reqBadge);
+          quizBadge.setAttribute("aria-label", ((typeof fMulerT === "function") ? fMulerT("quizStepBadge") : "Βήμα κουίζ"));
+        } catch (eQB) {}
+        badgeWrap.appendChild(quizBadge);
+      }
+    } catch (eQB2) {}
+    badgeWrap.appendChild(langBadge);
+    titleInput.value = st.title || "";
+    titleInput.onchange = function () {
+      st.title = titleInput.value;
+    };
     var noteInput = document.createElement("div");
     noteInput.className = "snote snoteRich";
     noteInput.setAttribute("data-placeholder", ((typeof fMulerT === "function") ? fMulerT("notePlaceholder") : "Γράψτε το κείμενο του βήματος…"));
@@ -6383,8 +6434,15 @@ function fScenarioRenderOne(scen) {
       noteBar.appendChild(wrap);
       paintPos();
     })();
-    bodyDiv.appendChild(noteBar);
-    bodyDiv.appendChild(noteInput);
+    // Body blocks (v58.14): text (toolbar + note) above the settings rows.
+    var textBlock = document.createElement("div");
+    textBlock.className = "scStepText";
+    textBlock.appendChild(noteBar);
+    textBlock.appendChild(noteInput);
+    bodyDiv.appendChild(textBlock);
+    var settingsBlock = document.createElement("div");
+    settingsBlock.className = "scStepSettings";
+    bodyDiv.appendChild(settingsBlock);
     // No Text checkbox: heading + text show automatically iff the step
     // carries a title or note (see showTextOn); clear both for silence.
     // No Menu checkbox: the menu follows picks + selection (derived at
@@ -6418,7 +6476,7 @@ function fScenarioRenderOne(scen) {
       label.appendChild(document.createTextNode(" " + pair[0]));
       viewersRow.appendChild(label);
     });
-    bodyDiv.appendChild(viewersRow);
+    settingsBlock.appendChild(viewersRow);
     // Naming row: master visibility switch first (default checked), then the
     // three naming checkboxes. Master off disables the rest (values kept, so
     // re-check restores the prior ticks). Quiz steps force it on and hide it
@@ -6522,7 +6580,7 @@ function fScenarioRenderOne(scen) {
     };
     namingCheck.onchange = function () { _syncNameRow(true); };
     try { _syncNameRow(false); } catch (eSync) {}
-    bodyDiv.appendChild(nameRow);
+    settingsBlock.appendChild(nameRow);
     // Quiz settings row (v58 scenario quizzes): no quiz, no quiz settings.
     // Classic steps render nothing here so future quiz options (attempts,
     // hints, order) drop in without layout churn.
@@ -6574,7 +6632,7 @@ function fScenarioRenderOne(scen) {
         } catch (eRem) {}
       };
       quizRow.appendChild(quizRemoveBtn);
-      bodyDiv.appendChild(quizRow);
+      settingsBlock.appendChild(quizRow);
     }
     // Menu grouping (presentation only, menu-carrying steps only): which
     // menu views the step offers. Μόρια = flat list (default); Τάξεις/Σειρές
@@ -6616,7 +6674,7 @@ function fScenarioRenderOne(scen) {
         gLabel.appendChild(document.createTextNode(" " + pair[0]));
         menuGroupsRow.appendChild(gLabel);
       });
-      bodyDiv.appendChild(menuGroupsRow);
+      settingsBlock.appendChild(menuGroupsRow);
     }
     // Class-bound step actions (order-free): Go previews, Present jumps
     // straight into presentation at this step, the rest edit/reorder/delete.

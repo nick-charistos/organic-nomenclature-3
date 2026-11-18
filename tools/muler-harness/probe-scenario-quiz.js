@@ -312,6 +312,32 @@ const clickBtn = async (p, id) => {
     "quiz badge should be localized, got " + JSON.stringify(rowInfo && rowInfo.badge));
   check(rowInfo && rowInfo.badgeTip && !/compCarbonsCount/.test(rowInfo.badgeTip),
     "quiz badge tooltip should use labels, not mode ids, got " + JSON.stringify(rowInfo && rowInfo.badgeTip));
+  // --- 1b. v58.14 row architecture: two-row head + text/settings body ---
+  const struct = await p.evaluate((id) => {
+    try {
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      if (!row) return "missing";
+      const q = (s) => row.querySelectorAll(s).length;
+      const pos = (s) => { const el = row.querySelector(s); return el ? getComputedStyle(el).position : "missing"; };
+      return {
+        top: q(".srowHead > .srowHeadTop"),
+        main: q(".srowHead > .srowHeadMain"),
+        text: q(".srowBody > .scStepText"),
+        settings: q(".srowBody > .scStepSettings"),
+        badges: q(".srowHeadTop .scStepBadges > *"),
+        toggles: q(".scStepToggles > button"),
+        actions: q(".scStepActions > button"),
+        note: q(".scStepText > .scNoteToolbar") + "/" + q(".scStepText > .snote"),
+        pos: [pos(".scDragHandle"), pos(".scCollapse"), pos(".delete")],
+      };
+    } catch (e) { return "err"; }
+  }, scid);
+  check(struct && struct.top === 1 && struct.main === 1 && struct.text === 1 && struct.settings === 1,
+    "row should use the two-row head + text/settings body blocks, got " + JSON.stringify(struct));
+  check(struct && struct.toggles === 2 && struct.actions === 6,
+    "row head should group 2 toggles and 6 actions, got " + JSON.stringify(struct));
+  check(struct && struct.note === "1/1", "toolbar + note should live in .scStepText, got " + JSON.stringify(struct && struct.note));
+  check(struct && struct.pos.every((x) => x !== "absolute"), "row controls must stay in flow, got " + JSON.stringify(struct && struct.pos));
 
   // --- 2. Update with no quiz signal keeps the authored task ---
   check(await armBox(p, "comp5", "compCarbonsCount"), "deselect/re-arm setup failed");

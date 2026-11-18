@@ -1,8 +1,8 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
 > **Resume pointer (cross-machine):** 2026-11-18 — **v58 is LIVE**
-> (`index.html` → `mulermoc-nom-58.html`, `?v=58.13`, review follow-ups +
-> student hover/3D fixes).
+> (`index.html` → `mulermoc-nom-58.html`, `?v=58.14`, review follow-ups +
+> student hover/3D fixes + step-row architecture).
 > Scenario quiz contract: steps store their required component set
 > (`quiz.modes` + labels), Update never destroys an authored task (explicit
 > Remove), Present auto-arms + gates on the stored set, Esc clears picks on
@@ -3141,6 +3141,11 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * Root cause: 3D selection cyan and the classic green share the atom-color channel. `fMulerSelectClear()` wiped 3D unconditionally while select mode was active, on the (v57) assumption that the green only lives under an armed-but-empty state that never reaches the clear path. In student mode a solved step *is* armed + no target + green, so the empty-canvas clear (and Esc) erased it. 2D kept its component channel, hence the 2D/3D mismatch. Toggle-to-empty (`fMulerSelectClear3DIfEmpty`) had the same gap.
 * Fix: `fMulerSelectClear` only wipes when there was 3D pick paint, and after any wipe re-asserts the classic display with the exact-reward opt-in (`fMulerRestoreClassic3D`: no-op with a live target, no live component paint, or no selected box/naming mode). `fMulerSelectClear3DIfEmpty` restores the same way. Armed quizzes still wipe cyan and paint no green.
 * Verified headless via script capture: no-pick empty click sends no 3D paint script; a wipe with picks is followed by `X79dc6d`; toggle-to-empty restores; armed clear does not. `probe-scenario-quiz` extended; `probe-quiz`/`probe-mode-quiz`/`probe-final`/`probe-compact-main`/`probe-coverage56`/`probe-explain-all` green.
+
+## 2026-11-18 — step-row architecture: two-row head + text/settings body (`?v=58.14`, owner request)
+* Owner: `.srow` head should be two rows (meta rail + title/actions) and the body should nest the note toolbar/editor in `.scStepText` and the settings rows in `.scStepSettings`; the absolutely-positioned collapse/delete were the main problem.
+* Fix (`scenario-58.js` + `mulermoc-nom-scenario-58.css`): row built from explicit nodes (no `innerHTML` + move-children trick). Head = `.srowHeadTop` (`.scDragHandle`, `.scStepNumberWrap`, `.scStepBadges`, spacer, `.scStepToggles` with collapse/delete) above `.srowHeadMain` (`.scStepTitleWrap` + `.scStepActions` with Go/Present/Update/Dupe/Up/Down). Body = `.scStepText` (toolbar + note) above `.scStepSettings`. Grip/collapse/delete/lang badge are in flow; no absolute corners. Tooltip anchors moved to `.scStepActions`/`.scStepToggles`; icons are class-mapped (the old positional pass was one DOM reorder away from mislabelling buttons). Collapse got `aria-controls`/`aria-expanded`; groups got labels (`stepActions` key).
+* Verified headless: structure counts (1 headTop, 1 headMain, 1 text, 1 settings, 2 toggles, 6 actions, toolbar+note in text), computed `position` not absolute for grip/collapse/delete, accordion + drag arming + title commit unchanged; drawer screenshot checked. `probe-scenario-quiz` asserts the structure; `probe-final`/`probe-mode-quiz`/`probe-compact-main` green.
 
 ## 2026-11-18 — drawer row architecture: roles + dedicated quiz row (v58 working tree, owner request)
 * Owner: `.scShowRow.scStepViewersSettings` checkboxes had no ids/classes; `requireSolution` sat in the name row. Asked for ids + three distinct row classes and a dedicated quiz row for a growing settings surface.

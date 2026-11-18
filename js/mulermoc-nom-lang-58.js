@@ -327,6 +327,7 @@ var MULER_STRINGS = {
   menuWord: { gr: "Μενού", en: "Menu" },
   scenariosShort: { gr: "Σενάρια", en: "Scenarios" },
   stepTitle: { gr: "Τίτλος βήματος", en: "Step title" },
+  stepActions: { gr: "Ενέργειες βήματος", en: "Step actions" },
   notePlaceholder: { gr: "Γράψτε το κείμενο του βήματος…", en: "Write the step text…" },
   htmlSource: { gr: "HTML πηγής", en: "Source HTML" },
   scenTitle: { gr: "Τίτλος σεναρίου", en: "Scenario title" },
