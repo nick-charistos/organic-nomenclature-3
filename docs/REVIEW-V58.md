@@ -29,6 +29,8 @@ Agreed plan (D1–D8) implemented in one pass; probe rewritten and green.
 | **N3** debounce/armed-once | Debounce keyed by `presentId#index|mode|mol` and moved after the solved-display branch. |
 | New (found while testing) | **Esc on a quiz step exited the whole presentation** (scenario key handler), fighting the student-mode "clear picks" Esc. Quiz steps now swallow the presenter exit. Also: the solved display never repainted the tint classes (`.freeComp` missing) — `fMulerQuizShowSolved` now repaints. |
 | Regression (58.8, found by the suite) | `probe-compact-main` was red from 58.8: the "fresh arm starts blank" reset ran in authoring and wiped the fragment→anchor normalization, so compacted-label main-chain picks armed empty (badge/paint/toggle/exact drift). The reset is now student-mode only; probe green. |
+| Student hover (58.12, owner report) | `fMulerHoverTick` + its `mousemove` binder still had the pre-student-mode raw Present guard; the student-aware check sat below the tick's raw one and was dead. Both use `fMulerSelectPresentBlocked()` now. |
+| 3D picking on later quiz steps (58.12, owner report) | Picking mode was only written by the 3D load tail (computed before the arm / while select is off) and by a reps-lock transition that never fires in Present. `fMulerSelectSync3DPicking` is idempotent and now runs from the repaint tail, disarm and `jmol_isReady`; load writers record the appended tail. Verified with `show picking`: `atom` on every quiz step, `off` on passive, 0 sends on idle repaints. |
 
 Verification: `probe-scenario-quiz` (13 sections) green; `probe-quiz`,
 `probe-final`, `probe-mode-quiz`, `probe-explain-all`, `probe-fg-quiz`,

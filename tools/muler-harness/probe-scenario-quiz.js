@@ -78,6 +78,38 @@ async function openMol(p, mol) {
   await waitReady(p);
 }
 
+// v58.12: student-mode hover ring (2D) — true when the ring rect exists.
+async function hoverAtom(p, atom1) {
+  const sc = await p.evaluate((a1) => {
+    try {
+      const A = fMulerSelectAnchors().find((x) => x.atom === a1 - 1);
+      if (!A) return null;
+      const svg = document.querySelector("#jsmeNomeclatureSVG svg");
+      const g = svg.getElementsByTagName("g")[0];
+      const q = new DOMPoint(A.x, A.y).matrixTransform(g.getScreenCTM());
+      return [q.x, q.y];
+    } catch (e) { return null; }
+  }, atom1);
+  if (!sc) return "noanchor";
+  await p.mouse.move(sc[0], sc[1]);
+  await p.waitForTimeout(500);
+  return await p.evaluate(() => !!document.querySelector("#mulerHoverRing rect"));
+}
+
+// Applet-side picking mode ("atom"/"off"/...): the only reliable check that
+// the 3D picking script actually reached JSmol (the page-side string can lie
+// when a load tail overwrites it).
+async function pickingState(p) {
+  return await p.evaluate(() => {
+    try {
+      if (typeof Jmol === "undefined" || !Jmol || typeof jmolAppletNomeclature === "undefined" || !jmolAppletNomeclature) return "noapplet";
+      var s = String(Jmol.scriptWait(jmolAppletNomeclature, "show picking") || "");
+      var m = /picking = "([^"]+)"/.exec(s);
+      return m ? m[1] : "unknown";
+    } catch (e) { return "err"; }
+  });
+}
+
 async function rowButton(p, scenId, cls) {
   const ok = await p.evaluate(([id, c]) => {
     try {
@@ -390,6 +422,14 @@ const clickBtn = async (p, id) => {
   st = await state(p);
   check(st.step === 1 && st.target === "compCarbonsCount" && st.task === "compCarbonsCount",
     "Present must auto-arm the quiz step, got " + JSON.stringify({ i: st.step, t: st.target }));
+  // v58.12: student-mode hover + 3D picking on a quiz step (both were dead
+  // when the step armed: raw Present hover guards + a picking tail computed
+  // before the task armed).
+  const hovQuiz = await hoverAtom(p, 1);
+  check(hovQuiz === true, "hover ring should show on a Present quiz step, got " + JSON.stringify(hovQuiz));
+  const pickQuiz = await pickingState(p);
+  if (pickQuiz === "noapplet" || pickQuiz === "err") warn("3D applet unavailable — picking assertions skipped");
+  else check(pickQuiz === "atom", "3D picking should be armed on a quiz step, got " + JSON.stringify(pickQuiz));
   // legacy (no stored set) => all capable comps are required
   check(st.todo && st.todo.indexOf("compCarbonsCount") >= 0 && st.todo.indexOf("compBondType") >= 0,
     "legacy step should require every capable comp, got " + JSON.stringify(st.todo));
@@ -421,6 +461,13 @@ const clickBtn = async (p, id) => {
   await clickBtn(p, "scNext");
   st = await state(p);
   check(st.step === 2, "fully solved step must advance, got index " + st.step);
+  // v58.12: a passive step keeps the ring off and the applet picking OFF.
+  const hovPlain = await hoverAtom(p, 1);
+  check(hovPlain === false, "hover ring should stay off on a passive step, got " + JSON.stringify(hovPlain));
+  const pickPlain = await pickingState(p);
+  if (pickPlain !== "noapplet" && pickPlain !== "err") {
+    check(pickPlain === "off", "3D picking should be off on a passive step, got " + JSON.stringify(pickPlain));
+  }
   // revisit: solved display, no re-quiz, free bounds
   await clickBtn(p, "scPrev");
   st = await state(p);

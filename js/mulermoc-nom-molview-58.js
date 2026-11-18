@@ -2265,11 +2265,12 @@ function fMulerHoverTick() {
     if (typeof window === "undefined" || !window.__mulerHoverInside) return;
     if (!(typeof fMulerSelectActive === "function" && fMulerSelectActive())) return;
     if (typeof window !== "undefined" && window.MulerDraft) return;
-    if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return;
     if (typeof selectedMol === "undefined" || !selectedMol) return;
     // Solved/target-less display: no hover ring (cursor class synced by repaint).
     try { if (typeof fMulerSelectRepsLocked === "function" && fMulerSelectRepsLocked()) { try { fMulerHoverClear(); } catch (eC0) {} return; } } catch (eRL) {}
-    // Present (no student task): no hover ring either.
+    // Present (no student task): no hover ring either. v58.12: student mode
+    // owns the ring, so this must be the student-aware guard (the old raw
+    // fMulerSelectPresenting() check above it made the ring dead in Present).
     try { if (typeof fMulerSelectPresentBlocked === "function" && fMulerSelectPresentBlocked()) { try { fMulerHoverClear(); } catch (eC1) {} return; } } catch (ePB) {}
     var svg = null;
     try { svg = document.querySelector("#jsmeNomeclatureSVG svg"); } catch (eS) { svg = null; }
@@ -3370,7 +3371,18 @@ function fMulerSelectSync3DPicking() {
     var s = "";
     try { s = (typeof fMulerSelectPickingScript === "function") ? fMulerSelectPickingScript() : ""; } catch (eS) { s = ""; }
     if (!s) return;
-    if (typeof fJSmolScript === "function") fJSmolScript(jmolAppletNomeclature, s);
+    // v58.12: idempotent — only talk to the applet when the desired mode
+    // changed. That makes it safe on hot paths (arm/repaint/disarm) and
+    // covers Present quiz steps, where the reps-lock transition that used to
+    // be the only trigger never happens (Present never locks reps). The 3D
+    // load writers store the tail they appended as the marker, so a reload
+    // can never leave the marker lying about the applet state.
+    try { if (typeof window !== "undefined" && window.__mulerPickScriptSync === s) return; } catch (eSS) {}
+    var r = null;
+    try { if (typeof fJSmolScript === "function") r = fJSmolScript(jmolAppletNomeclature, s); } catch (eSS2) { r = null; }
+    // fJSmolScript returns null when the applet refused the script; keep the
+    // marker unset then so the next call retries.
+    try { if (typeof window !== "undefined" && r !== null) window.__mulerPickScriptSync = s; } catch (eSM) {}
   } catch (e) {}
 }
 
@@ -4520,6 +4532,9 @@ function fMulerQuizDisarm() {
   try { if (typeof removeEcho3D === "function") removeEcho3D(); } catch (eR2) {}
   try { numberingAtomOverride3D = null; } catch (eO) {}
   try { numberingFlag = false; } catch (eF) {}
+  // v58.12: the target is gone, so the applet's picking mode must follow even
+  // when the caller does not repaint afterwards (idempotent sync).
+  try { if (typeof fMulerSelectSync3DPicking === "function") fMulerSelectSync3DPicking(); } catch (eSP) {}
 }
 
 // Quiz progress (v57 quizzes with variants): per-molecule solved set.
@@ -5547,6 +5562,11 @@ function fMulerSelectRepaint() {
     // exact via caller tails, toggle, re-arm), so the applet mode self-heals
     // without touching N call sites.
     try { if (typeof fMulerSelectSyncRepsLock === "function") fMulerSelectSyncRepsLock(); } catch (eSL) {}
+    // v58.12: keep the applet's picking mode in step with the live arm state.
+    // Idempotent (script-string marker), so this is the single place that
+    // covers arm/disarm/solved-display in Present, where reps-lock never
+    // transitions and the 3D load tail is computed before the task arms.
+    try { if (typeof fMulerSelectSync3DPicking === "function") fMulerSelectSync3DPicking(); } catch (eSP3) {}
     try { if (typeof fMulerSelectPushState === "function") fMulerSelectPushState(); } catch (eP2) {}
     // v57 3D: repaint selection paint from state (no-op when off/empty/hidden).
     try { if (typeof fMulerSelectPush3D === "function") fMulerSelectPush3D(); } catch (eP3) {}
@@ -5649,7 +5669,9 @@ function fMulerSelectBindOnce() {
         try {
           if (!(typeof fMulerSelectActive === "function" && fMulerSelectActive())) return;
           if (typeof window !== "undefined" && window.MulerDraft) return;
-          if (typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()) return;
+          // v58.12: student mode enables the hover ring (student-aware guard);
+          // the raw presenting check made __mulerHoverInside unreachable there.
+          if (typeof fMulerSelectPresentBlocked === "function" && fMulerSelectPresentBlocked()) return;
           if (typeof selectedMol === "undefined" || !selectedMol) return;
           if (typeof window === "undefined") return;
           try { window.__mulerHoverInside = true; } catch (eI) {}
@@ -12213,8 +12235,11 @@ function fLoadMol3D() {
       if (typeof fJSmolLoadInlineSDF === "function") {
         var _pickTail = "";
         try { _pickTail = (typeof fMulerSelectPickingScript === "function") ? fMulerSelectPickingScript() : ""; } catch (ePT) { _pickTail = ""; }
-        fJSmolLoadInlineSDF(jmolAppletNomeclature, selectedExample.sdf3D,
+        var _inlineOk = fJSmolLoadInlineSDF(jmolAppletNomeclature, selectedExample.sdf3D,
           "script spt/init-3-58.spt;" + zoomInline + movetoInline + _pickTail);
+        // v58.12: the applet now sits on this tail — record it so the picking
+        // sync does not skip a needed update (and does not resend it).
+        try { if (typeof window !== "undefined") window.__mulerPickScriptSync = _inlineOk ? _pickTail : null; } catch (ePMI) {}
       }
     } catch (eInline) {}
     try { if (typeof fSetMolVis3D === "function") fSetMolVis3D(); } catch (eV) {}
@@ -12241,13 +12266,16 @@ function fLoadMol3D() {
     : "";
   var _pickCmd = "";
   try { _pickCmd = (typeof fMulerSelectPickingScript === "function") ? fMulerSelectPickingScript() : ""; } catch (ePC) { _pickCmd = ""; }
-  fJSmolScript(
+  var _loadRes = fJSmolScript(
     jmolAppletNomeclature,
     "frank off;load " +
       myMol3D +
       "; select all; center selected;" +
       "script spt/init-3-58.spt;" + zoomCmd + movetoCmd + _pickCmd,
   );
+  // v58.12: the queued script ends on this tail — record it so the picking
+  // sync knows the applet's state (null when the applet refused the load).
+  try { if (typeof window !== "undefined") window.__mulerPickScriptSync = (_loadRes !== null) ? _pickCmd : null; } catch (ePMF) {}
   fSetMolVis3D();
   // A fresh load satisfies any pending one-shot exit reload (e.g. molecule
   // picked while 3D hidden after a no-3D exit: already loaded, reopen is instant).
@@ -18846,6 +18874,10 @@ var _resizeSentOn3DReady = false;
           } catch (eSH) { /* scenario re-highlight best-effort */ }
         }
       } catch (ePR) { /* resend best-effort */ }
+      // v58.12: a cold applet that becomes live after a Present step armed
+      // still needs the picking mode (the load tail was computed earlier).
+      // Idempotent: no traffic when the mode already matches.
+      try { if (typeof fMulerSelectSync3DPicking === "function") fMulerSelectSync3DPicking(); } catch (ePS2) { /* best-effort */ }
     };
   } catch (eW) { /* hook unavailable */ }
 })();

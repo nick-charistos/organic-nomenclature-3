@@ -1,7 +1,8 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
 > **Resume pointer (cross-machine):** 2026-11-18 — **v58 is LIVE**
-> (`index.html` → `mulermoc-nom-58.html`, `?v=58.11`, review follow-ups).
+> (`index.html` → `mulermoc-nom-58.html`, `?v=58.12`, review follow-ups +
+> student hover/3D fixes).
 > Scenario quiz contract: steps store their required component set
 > (`quiz.modes` + labels), Update never destroys an authored task (explicit
 > Remove), Present auto-arms + gates on the stored set, Esc clears picks on
@@ -3128,6 +3129,12 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * Robustness: `fMulerQuizTodoModes` returns `null` when the naming panel isn't built (unknown ≠ completed), the Present guard fails closed on its outer catch, todo is computed once per guard, the solved display now repaints tints (`.freeComp` was missing), `preSolved` is scoped to the step's modes and omitted when empty, `quizIntent` is cleared on exit/teardown, unknown modes warn on import, `prompt` is no longer written, `.freeComp`'s empty CSS rule is gone, badge text/tooltip localized. `?v=58.11`.
 * Pre-existing 58.8 regression, caught by bisecting `probe-compact-main` (green at the 58.0 fork + 58.7, red from 58.8): "fresh arm starts blank" cleared the selection in authoring too, wiping the fragment→anchor normalization, so a compacted label picked before arming the main-chain quiz left the task armed with no pick (missing badge/ellipse/paint, toggle drift, wrong exact). The reset is now student-mode only; the authoring contract is v56 again. Probe green.
 * Probe `probe-scenario-quiz.js` rewritten for the contract (13 sections: capture/set/labels, keep-on-Update, explicit removal, just-solved, select-ON Add, menu pre-pick gate, pinned gate + all-required, requireSolution:false, stored-set narrowing, authored pre-solved restore, jump clamp, reselect reset, reps lock). Green; `probe-quiz`/`probe-final`/`probe-mode-quiz`/`probe-explain-all` re-run green; `node --check` clean.
+
+## 2026-11-18 — student hover + 3D picking on Present quiz steps (`?v=58.12`, owner reports)
+* Owner: "hover is not working in 2D quiz-step" and "3D picking worked only in the first quiz-step".
+* Hover root cause: `fMulerHoverTick` and its `mousemove` binder kept the pre-student-mode raw `fMulerSelectPresenting()` returns. 58.7 added the student-aware check *below* the tick's raw one, so it was dead code and the ring never ran (the pick/paint internals paint fine — verified). Fix: both sites use `fMulerSelectPresentBlocked()`; authoring/passive/reps-lock behavior unchanged.
+* 3D root cause: the applet picking mode is written by the 3D load tail — computed *before* `fScenarioApplyQuiz` arms and while select is off after a non-quiz teardown — and by `fMulerSelectSyncRepsLock` on a lock transition, which cannot happen in Present (reps lock is disabled there). So every Present quiz step kept `picking OFF`; the first step only looked right when it inherited the authoring-loaded model. Fix: `fMulerSelectSync3DPicking` is idempotent (script-string marker) and is called from the repaint tail, `fMulerQuizDisarm`, and the `jmol_isReady` hook; the 3D load writers record the appended tail so a reload can't leave the marker stale. Jmol queues scripts, so the post-arm sync executes after the load's `picking OFF` tail.
+* Verified headless: `show picking` = `atom` on quiz steps, `off` on passive, 0 commands on idle repaints; hover ring present on quiz steps and absent on passive. `probe-scenario-quiz` extended with both assertions (plus `probe-quiz`/`probe-mode-quiz`/`probe-final`/`probe-compact-main`/`probe-coverage56` green).
 
 ## 2026-11-18 — drawer row architecture: roles + dedicated quiz row (v58 working tree, owner request)
 * Owner: `.scShowRow.scStepViewersSettings` checkboxes had no ids/classes; `requireSolution` sat in the name row. Asked for ids + three distinct row classes and a dedicated quiz row for a growing settings surface.
