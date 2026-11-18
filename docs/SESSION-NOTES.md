@@ -3112,3 +3112,7 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * 2D probe suite retargeted: the 15 probes that hardcoded `mulermoc-nom-57.html` now target `-58.html` (`probe-compare55-56.js` intentionally cross-version; `probe-scenario-quiz.js` already targeted 58). Probes are URL-string-only changes — no assertions touched.
 * v57 files untouched/frozen. Owner-side before/after the flip: hard reload, run the 2D suite against v58 (it now exercises the live tree), then the Present matrix (quiz gate all-todo, revisit re-quiz, menu deferred arm, post-solve freedom, non-quiz step after quiz).
 
+## 2026-11-18 — quiz steps hide “Εμφάνιση ονομασίας” (v58 working tree, owner request)
+* Owner: in the drawer a quiz step must not offer the naming master — hiding the name in a quiz has no meaning. Decision on hidden components (`.comp-hidden` exempts a comp from the todo set): leave as-is; revisit when activity types land.
+* Fix: `_isQuizStep` computed before the naming row; the master label is hidden (also checkbox disabled) and `show.naming` is forced true on render and in `_syncNameRow`. Capture + Update + validate (imported/legacy files coerce silently) + `fScenarioApplyQuiz` (replaces the old “naming off → classic” fallback) all force `naming`/`nameClick` on. Probe asserts hidden + checked + stored on. `?v=58.8` → `?v=58.9`.
+

@@ -707,6 +707,11 @@ function fScenarioCapture() {
       }
     }
     if (step.quiz) {
+      // Quiz steps force interaction + naming on (the task lives in the name
+      // boxes; hidden naming makes the quiz unanswerable).
+      step.show = step.show || {};
+      step.show.nameClick = true;
+      step.show.naming = true;
       try { if (typeof fScenarioToast === "function") fScenarioToast(fMulerPre("Το κουίζ αποθηκεύτηκε στο βήμα.", "Quiz saved into the step.") + " (" + String(step.quiz.mode) + (step.quiz.mol ? "" : ", menu") + ")"); } catch (eQT0) {}
     }
     // v58: quiz steps own their display (auto-arm / solved display) — never
@@ -1394,6 +1399,12 @@ function fScenarioValidate(obj) {
     if (!showMenu) kept = [];
     st.show = st.show || {};
     st.show.menu = showMenu;
+    // Quiz steps are answerable only with the name boxes visible and
+    // clickable — coerce imported/legacy files (no warning: it is implied).
+    if (st.quiz && st.quiz.mode && st.quiz.mode !== "none") {
+      st.show.nameClick = true;
+      st.show.naming = true;
+    }
     if (!hasMol) {
       // Menu-only step (selectedMol null): needs a browsable subset.
       if (!kept.length) {
@@ -2231,9 +2242,13 @@ function fScenarioApplyQuiz(step) {
         window.__mulerTaskArmed[_aoKey] = false;
       }
     } catch (eAO0) { _aoKey = ""; }
-    // Naming hidden = unanswerable task: fall back to classic (gate passes
-    // with no live target).
-    try { if (step.show && step.show.naming === false) return; } catch (eN) {}
+    // Quiz steps are answerable only with the name boxes visible: coerce an
+    // imported/legacy naming-off task instead of silently degrading to a
+    // classic step (which would leave the gate "armed-once never" ambiguity).
+    try {
+      if (step.show && step.show.naming === false) step.show.naming = true;
+      if (step.show && step.show.nameClick === false) step.show.nameClick = true;
+    } catch (eN) {}
     var molNow = "";
     try { molNow = (typeof selectedMol !== "undefined" && selectedMol) ? String(selectedMol) : ""; } catch (eM) {}
     // Stale task (quiz pins a molecule the step no longer loads): classic
@@ -6211,7 +6226,10 @@ function fScenarioRenderOne(scen) {
     bodyDiv.appendChild(viewersRow);
     // Naming row: master visibility switch first (default checked), then the
     // three naming checkboxes. Master off disables the rest (values kept, so
-    // re-check restores the prior ticks).
+    // re-check restores the prior ticks). Quiz steps force it on and hide it
+    // (a quiz with hidden naming is unanswerable) — computed here because the
+    // naming row is the first consumer.
+    var _isQuizStep = !!(st.quiz && st.quiz.mode && st.quiz.mode !== "none");
     var nameRow = document.createElement("div");
     nameRow.className = "scShowRow scStepNameSettings";
     var namingLabel = document.createElement("label");
@@ -6219,10 +6237,15 @@ function fScenarioRenderOne(scen) {
     namingLabel.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("showNamingTip") : "Show naming in presentation"));
     var namingCheck = document.createElement("input");
     namingCheck.type = "checkbox";
-    namingCheck.checked = !(st.show && st.show.naming === false);
+    if (_isQuizStep) { st.show = st.show || {}; st.show.naming = true; }
+    namingCheck.checked = _isQuizStep ? true : !(st.show && st.show.naming === false);
+    if (_isQuizStep) { try { namingCheck.disabled = true; } catch (eND) {} }
     namingLabel.appendChild(namingCheck);
     namingLabel.appendChild(document.createTextNode(" " + ((typeof fMulerT === "function") ? fMulerT("showNaming") : "Εμφάνιση ονομασίας")));
     nameRow.appendChild(namingLabel);
+    // Quiz steps: naming must stay visible (the task boxes live there), so the
+    // master row is hidden instead of offering a switch that breaks the quiz.
+    if (_isQuizStep) { try { namingLabel.style.display = "none"; } catch (eNH) {} }
     // Naming gear + panel.
     var nameCtlLabel = document.createElement("label");
     nameCtlLabel.className = "sshow";
@@ -6245,7 +6268,6 @@ function fScenarioRenderOne(scen) {
     nameClickLabel.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("nameClickTip") : "Allow clicking the name boxes in presentation"));
     var nameClickCheck = document.createElement("input");
     nameClickCheck.type = "checkbox";
-    var _isQuizStep = !!(st.quiz && st.quiz.mode && st.quiz.mode !== "none");
     if (_isQuizStep) { st.show = st.show || {}; st.show.nameClick = true; }
     nameClickCheck.checked = _isQuizStep ? true : !!(st.show && st.show.nameClick === true);
     nameClickCheck.onchange = function () {
@@ -6303,7 +6325,9 @@ function fScenarioRenderOne(scen) {
     quizReqLabel.appendChild(document.createTextNode(" " + ((typeof fMulerT === "function") ? fMulerT("requireSolution") : "Απαίτηση λύσης")));
     nameRow.appendChild(quizReqLabel);
     var _syncNameRow = function (write) {
-      var on = namingCheck.checked;
+      // Quiz steps: naming is structurally on (the task lives in the name
+      // boxes) — never let a hidden/locked master write false.
+      var on = _isQuizStep ? true : namingCheck.checked;
       if (write !== false) {
         st.show = st.show || {};
         st.show.naming = on;
@@ -6717,11 +6741,13 @@ function fScenarioUpdateStep(scenId, idx) {
   fresh.show.nameEye = oldShow.nameEye === true;
   // v58 quiz steps: capture above owns the task (armed → set, disarmed →
   // cleared with a toast so the loss is explicit, never silent).
-  // requireSolution is authored (default on); nameClick is forced on.
+  // requireSolution is authored (default on); nameClick + naming are forced
+  // on (the task lives in the name boxes).
   try {
     if (fresh.quiz) {
       if (typeof old.requireSolution !== "undefined") fresh.requireSolution = !!old.requireSolution;
       fresh.show.nameClick = true;
+      fresh.show.naming = true;
     } else if (old.quiz && old.quiz.mode) {
       try { if (typeof fScenarioToast === "function") fScenarioToast(fMulerPre("Το κουίζ αφαιρέθηκε — το βήμα είναι κλασικό.", "Quiz removed — step is classic now.")); } catch (eQT) {}
     }

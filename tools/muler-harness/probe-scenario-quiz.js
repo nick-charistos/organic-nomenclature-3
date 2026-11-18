@@ -178,6 +178,25 @@ async function rowButton(p, scenId, cls) {
   }, scid);
   check(ncBox && ncBox.checked === true && ncBox.disabled === true,
     "nameClick should be forced on + disabled for quiz steps, got " + JSON.stringify(ncBox));
+  // Master "Show naming" is hidden on quiz steps (nothing to hide in a quiz)
+  // and stored naming stays on.
+  const namingRow = await p.evaluate((id) => {
+    try {
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      const labels = row ? Array.prototype.slice.call(row.querySelectorAll("label.sshow")) : [];
+      const hit = labels.find((x) => /Show naming|Εμφάνιση ονομασίας/.test((x.textContent || "")));
+      if (!hit) return "missing";
+      const chk = hit.querySelector('input[type="checkbox"]');
+      const sc = fScenarioGet(id);
+      return {
+        hidden: getComputedStyle(hit).display === "none",
+        checked: chk ? !!chk.checked : null,
+        stored: !!((sc && sc.steps[0] && sc.steps[0].show || {}).naming),
+      };
+    } catch (e) { return "err"; }
+  }, scid);
+  check(namingRow && namingRow.hidden === true && namingRow.checked === true && namingRow.stored === true,
+    "Show naming should be hidden+on for quiz steps, got " + JSON.stringify(namingRow));
 
   // --- 2. disarmed Update clears the quiz (with toast) ---
   // (one click: deselects the armed box; a second click would re-arm)

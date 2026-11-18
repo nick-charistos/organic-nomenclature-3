@@ -6,7 +6,7 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ## [v58] (scenario quiz contract; LIVE, `index.html` → v58)
 
-Forked from v57 (`mulermoc-nom-58.html` + `js/*-58.js` + `css/*-58.css` + `jsme-nick-nomeclature-moc2-data_58.js` + `spt/init-3-58.spt` + `zz-test-core58.html`, `?v=58.8`; `ui-icons.js` stays shared). v57 files untouched (frozen). No chemistry changes.
+Forked from v57 (`mulermoc-nom-58.html` + `js/*-58.js` + `css/*-58.css` + `jsme-nick-nomeclature-moc2-data_58.js` + `spt/init-3-58.spt` + `zz-test-core58.html`, `?v=58.9`; `ui-icons.js` stays shared). v57 files untouched (frozen). No chemistry changes.
 
 ### Scenario authoring (v58 working tree)
 - Audit first: step schema vs quiz state, Present-guard inventory, `nameClick=true` chain, step-change vs quiz state, solved sets vs steps, capture requirements, draft interplay, probe surface. Findings note → schema → consolidated contract (see `docs/learning-activities-Plan.md`, Stage 0).
@@ -14,6 +14,8 @@ Forked from v57 (`mulermoc-nom-58.html` + `js/*-58.js` + `css/*-58.css` + `jsme-
 
 - Multi-comp steps (`?v=58.8`): quiz done = every `.quizTodo` solved, not just the primary auto-arm mode (`fMulerQuizTodoModes()` = capable − solved − hidden, mirrors paint). Author pre-solved comps get `.freeComp` (normal classic, marker only); auto-arm prefers primary else first todo; gate/task/unlock all use the todo set (fail-open when never armed kept). Non-quiz steps in Present tear down student mode (disarm, picks cleared, select off, debounce cleared, classic repaint) so no tint stall. Post-solve stays unblocked while todos remain (next box arms with blank picks); full-done unlocks free exploration. `node --check` clean.
 - Went live 2026-11-18: `index.html` redirect (meta + script + fallback link) → `mulermoc-nom-58.html`; the 15 headless 2D probes retargeted to `-58.html` (`probe-compare55-56.js` stays cross-version by design), harness README describes the v58 live tree. v57 files untouched/frozen. Browser Present matrix remains owner-side.
+
+- Quiz steps hide the drawer's “Εμφάνιση ονομασίας” master (a quiz with hidden naming is unanswerable) and force `show.naming`/`nameClick` on at capture, Update, validate (imported/legacy files coerce silently) and apply; the master can no longer store `false`. `?v=58.9`.
 
 ## [v57] (3D atom/bond picking via JSmol pickCallback; LIVE, `index.html` → v57)
 
