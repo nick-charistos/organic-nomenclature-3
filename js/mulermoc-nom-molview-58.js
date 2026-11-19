@@ -15500,10 +15500,13 @@ function fNameExplainTableBuild() {
           var box = boxes[bi], bid = "";
           try { bid = box.getAttribute("id") || ""; } catch (eI) { bid = ""; }
           if (!bid) continue;
-          // Eye-hidden components keep their row instead of vanishing: the
-          // chip mirrors the hidden box (dash), the explanation cell stays.
-          var _rowHidden = false;
-          try { _rowHidden = !!(box.classList && (box.classList.contains("comp-hidden") || box.classList.contains("comp-gone"))); } catch (eH) { _rowHidden = false; }
+          // Veiled components keep their row (chip mirrors the dash, the
+          // explanation cell stays); removed (.comp-gone) components lose the
+          // whole row instead.
+          var _state = "shown";
+          try { _state = (typeof fNameCompState === "function") ? fNameCompState(bid) : ((box.classList && box.classList.contains("comp-hidden")) ? "veiled" : "shown"); } catch (eH) { _state = "shown"; }
+          var _rowHidden = (_state === "veiled");
+          var _rowGone = (_state === "gone");
           var mode = null;
           try { mode = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId(bid) : null; } catch (eM) { mode = null; }
           if (!mode || mode === "none") continue;
@@ -15518,7 +15521,7 @@ function fNameExplainTableBuild() {
           // nested table must not survive a rebuild).
           try { if (html.indexOf("explainTable") >= 0) html = ""; } catch (eH3) { html = ""; }
           if (!html) continue;
-          rows.push({ id: bid, chip: chip, html: html, hidden: _rowHidden });
+          rows.push({ id: bid, chip: chip, html: html, hidden: _rowHidden, gone: _rowGone });
         }
       } catch (eL) {}
     } finally {
@@ -15562,7 +15565,7 @@ function fNameExplainTableRender() {
       // the box: escape first, then wrap (chip source is textContent, so the
       // only tags reaching the HTML are our own <i>).
       try { if (typeof fMulerItalicSecTert === "function") esc = fMulerItalicSecTert(esc); } catch (eI) {}
-      h += "<div class='explainRow" + (rows[i].hidden ? " row-hidden" : "") + (rows[i].id === sel ? " selected" : "") + "' data-box='" + rows[i].id + "'><span class='explainChip'>" + esc + "</span><div class='explainCell'>" + rows[i].html + "</div></div>";
+      h += "<div class='explainRow" + (rows[i].gone ? " row-hidden" : (rows[i].hidden ? " chipHidden" : "")) + (rows[i].id === sel ? " selected" : "") + "' data-box='" + rows[i].id + "'><span class='explainChip'>" + esc + "</span><div class='explainCell'>" + rows[i].html + "</div></div>";
     }
     na.innerHTML = h + "</div>";
   } catch (eO) {}

@@ -303,8 +303,8 @@ Visibility rules:
   `lightBlue` fill and ignore clicks. `styleName.gone` lists removed comps:
   the box is not drawn (`display:none`) but its wrap/eye row stays so the
   author can cycle back; removed comps are skipped exactly like veiled ones
-  (narration, stored-highlight replay, quiz todo set, overview rows stay
-  marked). Authors toggle boxes via the master
+  (narration, stored-highlight replay, quiz todo set; overview rows for
+  removed comps are hidden, veiled ones stay as dashed chips). Authors toggle boxes via the master
   eye-edit switch in `#nameSettingsPanel` (live-only, never stored) +
   per-box eye buttons; Save/Update captures both sets. `show.nameEye`
   (per-step drawer checkbox `Ορατότητα συνθετικών`, default unchecked,

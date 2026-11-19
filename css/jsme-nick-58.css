@@ -2318,23 +2318,28 @@ outline: 3px solid var(--vibrantGreen);
 	/* height: 100%; */
 }
 
-/* Eye-hidden components keep their overview row: the chip mirrors the
-   hidden name box (dash on hidden fill, no pointer), the explanation cell
-   stays informative. Row clicks on hidden boxes are already inert in JS. */
-.explainRow.row-hidden {
+/* Veiled components keep their overview row: the chip mirrors the hidden
+   name box (dash on hidden fill, no pointer), the explanation cell stays
+   informative. Row clicks on veiled boxes are already inert in JS. */
+.explainRow.chipHidden {
   cursor: default;
 }
 
-.explainRow.row-hidden:hover {
+.explainRow.chipHidden:hover {
   border-color: var(--lightBlue);
 }
 
-.explainRow.row-hidden .explainChip {
+.explainRow.chipHidden .explainChip {
   background-color: var(--veryLightBlue);
   border-right-color: var(--lightBlue);
   color: #fff;
   min-width: 1.2em;
   text-align: center;
+}
+
+/* Removed components (.comp-gone) lose their overview row entirely. */
+.explainRow.row-hidden {
+  display: none;
 }
 
 .explainCell {
