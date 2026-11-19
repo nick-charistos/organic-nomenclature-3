@@ -1,9 +1,9 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
 > **Resume pointer (cross-machine):** 2026-11-19 — **v58 is LIVE**
-> (`index.html` → `mulermoc-nom-58.html`, `?v=58.28`, review follow-ups +
+> (`index.html` → `mulermoc-nom-58.html`, `?v=58.29`, review follow-ups +
 > student hover/3D fixes + step-row architecture/corners/density + the
-> 58.17–58.28 feature/UI batch).
+> 58.17–58.29 feature/UI batch).
 > Scenario quiz contract: steps store their required component set
 > (`quiz.modes` + labels), Update never destroys an authored task (explicit
 > Remove), Present auto-arms + gates on the stored set, Esc clears picks on
@@ -12,10 +12,11 @@
 > was rewritten and is green. The full 2D suite was re-run against v58 and is
 > green (final/quiz/mode-quiz/explain-all/fg/loc/bond/branch/coverage56/
 > smoke56/compact-main/shift/skel-joints; `probe-3d-pick` still owner-side).
-> New in 58.17–58.28: three-state comp eye (shown/veiled/removed, 14px icons,
+> New in 58.17–58.29: three-state comp eye (shown/veiled/removed, 14px icons,
 > explain rows follow), draft author fields + split oracle rows, spin switch,
 > measured viewer-height clamp, pinned bar/footer fit + merge, step-row
-> separators + quiz row last, safer generated draft headers. Owner decision:
+> separators + quiz row last + section titles (Viewers/Naming/Menu/Quiz),
+> safer generated draft headers. Owner decision:
 > comp eyes stay usable on quiz steps (teacher aid; hiding a required comp
 > removes it from the todo set) — revisit if users report.
 > Remaining owner-side: the browser Present matrix (per-component
@@ -3238,4 +3239,11 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * Pinned-footer CSS comment repaired as a valid block comment (`body.scPinned #creditsUs` is back in the CSSOM; Brave check). Docs synced to 58.28 (README, PROJECT-PLAN/GR, LAYERS, ROADMAP, STAGE2, Presentation, REVIEW docs, learning plan, harness README).
 * Owner decision recorded: comp eyes stay usable on quiz steps (teacher aid); hiding/removing a required comp removes it from the todo set — revisit if users report it. No code guard added.
 * `?v=58.27` → `?v=58.28`. `node --check` clean; `probe-scenario-quiz`/`probe-final`/`probe-explain-all`/`probe-coverage56` green.
+
+## 2026-11-19 — section titles on drawer settings rows (`?v=58.29`, owner request)
+* Owner: every `.scShowRow` should start with a title — Viewers, Naming, Menu, Quiz (inline, not a separate line).
+* Implemented: `span.scRowTitle` as the first flex item of each row via a local `_addRowTitle(row, key, fallback)` helper. New i18n keys `rowViewers` (“Viewers” in GR/EN, per owner), `rowNaming` (Ονομασία/Naming), `rowMenu` (Μενού/Menu), `rowQuiz` (Κουίζ/Quiz). The menu row's old `sshow scMenuGroupsTitle` span is replaced by the shared title; `menuGroupsTitle` retired. CSS adds the shared title style (Roboto Condensed, 0.72rem, bold, dark blue, nowrap).
+* Drawer-only; `data-sc-row`/`data-sc-role` hooks and probe selectors unchanged (probes locate the container, not child order).
+* Verified live in Brave (browse extension, `127.0.0.1` static server): GR shows Viewers / Ονομασία / Μενού / Κουίζ; EN shows Viewers / Naming / Menu / Quiz; titles are first children, bold 11.52px dark blue nowrap. Classic menu step ends at the Menu row, menu+quiz step ends at Quiz, and the last row still has no dotted border. Headless re-check: same order/borders, EN + GR, screenshots clean. In-memory test scenario only; no stored data touched.
+* `?v=58.28` → `?v=58.29`. `node --check` clean; `probe-scenario-quiz`/`probe-final`/`probe-explain-all`/`probe-coverage56` green. Committed in v58.29.
 

@@ -4,7 +4,7 @@
 > atom/bond selection with main-chain/FG/branch/locant quizzes, v57 added
 > 3D atom/bond picking via JSmol `pickCallback`, and v58 added scenario quiz
 > steps (student mode, stored required set, deferred menu quizzes). Current
-> tree: v58 (`?v=58.28`). This document is kept as the design record; see
+> tree: v58 (`?v=58.29`). This document is kept as the design record; see
 > `docs/CHANGELOG.md` [v56]–[v58] for what shipped.
 
 Two workstreams, ordered by dependency. Status: UI entry + phase 1B done

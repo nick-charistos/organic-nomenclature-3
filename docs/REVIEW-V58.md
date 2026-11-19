@@ -2,7 +2,7 @@
 
 Date: 2026-11-18. Tree: `a9e598f` (`?v=58.10`) at review time. Status:
 **resolved in `?v=58.11`**, with later v58 work recorded below (current:
-`?v=58.28`); the findings are kept verbatim as the record of what
+`?v=58.29`); the findings are kept verbatim as the record of what
 was wrong and why.
 Scope: `11d5886` (fork) → `a9e598f`; the real delta is `72699c2`,
 `29287c3`, `bf2aca5`, `a9e598f` + the new probe.
@@ -42,7 +42,7 @@ Verification: `probe-scenario-quiz` (13 sections) green; `probe-quiz`,
 files. Owner-side browser matrix remains (drawer list/Remove, Esc, revisit,
 menu arm, non-quiz step).
 
-### Later v58 work (58.12–58.28, after the review)
+### Later v58 work (58.12–58.29, after the review)
 
 Recorded here so this file reflects the shipped tree; none of these are
 review findings.
@@ -78,6 +78,9 @@ review findings.
 - **58.26–58.28** — menu-groups row joins the shared `.scShowRow` separators,
   quiz row moves last, eye glyph normalized to 14px + top alignment, draft
   header `*/` escaping, docs sync (this batch).
+- **58.29** — settings rows get bold inline section titles (Viewers / Naming /
+  Menu / Quiz), with new `rowViewers`/`rowNaming`/`rowMenu`/`rowQuiz` i18n keys
+  and `menuGroupsTitle` retired; drawer-only.
 
 Known trade-offs / accepted decisions: comp eyes on quiz steps are
 intentionally left live (owner, 2026-11-19); the pinned-bar 220px floor can

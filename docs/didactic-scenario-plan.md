@@ -401,8 +401,9 @@ Visibility rules:
   `.scStepActions` Go/Present/Update/Dupe/Up/Down); the body
   (`.srowBody`: `.scStepText` note toolbar + editor above `.scStepSettings`
   with the viewer → naming → menu-groups → quiz rows, each a `.scShowRow`
-  with a dotted bottom separator and no trailing rule; stable `data-sc-row`
-  hooks) expands on toggle,
+  that starts with a bold inline section title (Viewers / Naming / Menu /
+  Quiz), has a dotted bottom separator and no trailing rule; stable
+  `data-sc-row` hooks) expands on toggle,
   head-space/row-padding click or title focus, collapsing the other rows
   (accordion; all-collapsed allowed). `Update` re-opens its row. Collapse
   animates (`max-height` + fade, off under `prefers-reduced-motion`);

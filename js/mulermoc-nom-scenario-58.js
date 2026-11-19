@@ -6544,6 +6544,14 @@ function fScenarioRenderOne(scen) {
     var settingsBlock = document.createElement("div");
     settingsBlock.className = "scStepSettings";
     bodyDiv.appendChild(settingsBlock);
+    // Shared row title (v58.29): every settings row starts with a short label
+    // so the drawer reads as sections (Viewers / Naming / Menu / Quiz).
+    var _addRowTitle = function (rowEl, key, fallback) {
+      var titleEl = document.createElement("span");
+      titleEl.className = "scRowTitle";
+      titleEl.appendChild(document.createTextNode(((typeof fMulerT === "function") ? fMulerT(key) : fallback)));
+      rowEl.appendChild(titleEl);
+    };
     // No Text checkbox: heading + text show automatically iff the step
     // carries a title or note (see showTextOn); clear both for silence.
     // No Menu checkbox: the menu follows picks + selection (derived at
@@ -6553,6 +6561,7 @@ function fScenarioRenderOne(scen) {
     var viewersRow = document.createElement("div");
     viewersRow.className = "scShowRow scStepViewersSettings";
     viewersRow.setAttribute("data-sc-row", "viewers");
+    _addRowTitle(viewersRow, "rowViewers", "Viewers");
     var _s23 = ((typeof fMulerIsEN === "function") && fMulerIsEN()) ? [["2D settings", "2D"], ["3D settings", "3D"]] : [["2D ρυθμίσεις", "2D"], ["3D ρυθμίσεις", "3D"]];
     _s23.forEach(function (pair) {
       var label = document.createElement("label");
@@ -6587,6 +6596,7 @@ function fScenarioRenderOne(scen) {
     var nameRow = document.createElement("div");
     nameRow.className = "scShowRow scStepNameSettings";
     nameRow.setAttribute("data-sc-row", "naming");
+    _addRowTitle(nameRow, "rowNaming", "Ονομασία");
     var namingLabel = document.createElement("label");
     namingLabel.className = "sshow";
     namingLabel.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("showNamingTip") : "Show naming in presentation"));
@@ -6693,10 +6703,7 @@ function fScenarioRenderOne(scen) {
       var menuGroupsRow = document.createElement("div");
       menuGroupsRow.className = "scShowRow scMenuGroupsRow";
       menuGroupsRow.setAttribute("data-sc-row", "menu-groups");
-      var menuGroupTitle = document.createElement("span");
-      menuGroupTitle.className = "sshow scMenuGroupsTitle";
-      menuGroupTitle.appendChild(document.createTextNode(((typeof fMulerT === "function") ? fMulerT("menuGroupsTitle") : "Ταξινομήσεις:")));
-      menuGroupsRow.appendChild(menuGroupTitle);
+      _addRowTitle(menuGroupsRow, "rowMenu", "Μενού");
       [[((typeof fMulerT === "function") ? fMulerT("moleculesPlural") : "Μόρια"), "molecules"], [((typeof fMulerT === "function") ? fMulerT("chemClasses") : "Χημικές Τάξεις"), "chemclass"], [((typeof fMulerT === "function") ? fMulerT("homolSeries") : "Ομόλογες Σειρές"), "series"]].forEach(function (pair) {
         var gLabel = document.createElement("label");
         gLabel.className = "sshow scMenuGroup";
@@ -6732,6 +6739,7 @@ function fScenarioRenderOne(scen) {
       var quizRow = document.createElement("div");
       quizRow.className = "scShowRow scStepQuizSettings";
       quizRow.setAttribute("data-sc-row", "quiz");
+      _addRowTitle(quizRow, "rowQuiz", "Κουίζ");
       var quizReqLabel = document.createElement("label");
       quizReqLabel.className = "sshow";
       quizReqLabel.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("requireSolution") : "Απαίτηση λύσης κουίζ για συνέχεια"));

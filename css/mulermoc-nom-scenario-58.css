@@ -771,6 +771,15 @@
    border-bottom: 0;
 }
 
+/* Row section title (v58.29): short label at the start of each settings row. */
+.scenarioDrawer .scRowTitle {
+   font-size: 0.72rem;
+   font-weight: 700;
+   color: var(--darkBlue);
+   font-family: "Roboto Condensed", sans-serif;
+   white-space: nowrap;
+}
+
 .scenarioDrawer .sshow {
    display: inline-flex;
    align-items: center;

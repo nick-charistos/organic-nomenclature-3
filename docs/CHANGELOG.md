@@ -6,7 +6,7 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ## [v58] (scenario quiz contract; LIVE, `index.html` → v58)
 
-Forked from v57 (`mulermoc-nom-58.html` + `js/*-58.js` + `css/*-58.css` + `jsme-nick-nomeclature-moc2-data_58.js` + `spt/init-3-58.spt` + `zz-test-core58.html`, `?v=58.28`; `ui-icons.js` stays shared). v57 files untouched (frozen). No chemistry changes.
+Forked from v57 (`mulermoc-nom-58.html` + `js/*-58.js` + `css/*-58.css` + `jsme-nick-nomeclature-moc2-data_58.js` + `spt/init-3-58.spt` + `zz-test-core58.html`, `?v=58.29`; `ui-icons.js` stays shared). v57 files untouched (frozen). No chemistry changes.
 
 ### Scenario authoring (v58 working tree)
 - Audit first: step schema vs quiz state, Present-guard inventory, `nameClick=true` chain, step-change vs quiz state, solved sets vs steps, capture requirements, draft interplay, probe surface. Findings note → schema → consolidated contract (see `docs/learning-activities-Plan.md`, Stage 0).
@@ -37,6 +37,7 @@ Forked from v57 (`mulermoc-nom-58.html` + `js/*-58.js` + `css/*-58.css` + `jsme-
 - Menu-groups drawer row joins the shared show-row (`?v=58.26`, owner request): `.scMenuGroupsRow` now also carries `.scShowRow`, so the last settings row gets the same dotted bottom separator/padding as the viewers/name/quiz rows (its nowrap single-line layout is kept by the later `.scMenuGroupsRow` rule). Markup-only; no schema or behaviour change.
 - Quiz row moves below the menu-groups row (`?v=58.27`, owner request): in `.scStepSettings` the render order is now viewers → naming → menu groups → quiz. The quiz block is appended after the menu-groups block; on classic steps (no quiz row) the menu row remains last. DOM order only — conditions, state and the `data-sc-row`/`data-sc-role` probe surface are unchanged.
 - Step-row settings polish + hardening (`?v=58.28`): `.scShowRow` gets the dotted bottom separator (last settings row suppressed), the menu-groups row joins the shared row class, the `.scStepSettings` top rule is retired, and the eye glyph is normalized to 14px (the 18px `eyeState` no longer makes the veiled button larger; `.nameCompContainer` aligns wraps to the top so a removed comp's eye row lines up). Draft file headers now neutralize `*/` in Submitted by / Proposed name / Comments (and names/source fields) so a generated `MULERMOC_*_data.js` can never be broken by user text. Docs synced to 58.28 (README, plans, reviews, harness), and the pinned-footer CSS comment is a valid block comment again.
+- Settings rows get section titles (`?v=58.29`, owner request): every `.scShowRow` in the step drawer starts with a `span.scRowTitle` — Viewers, Naming, Menu, Quiz (new i18n keys `rowViewers`/`rowNaming`/`rowMenu`/`rowQuiz`; “Viewers” is identical in GR/EN). The menu row's old `scMenuGroupsTitle` label is replaced by the `Menu` title (`menuGroupsTitle` retired), and the shared title style (Roboto Condensed, 0.72rem, bold, dark blue, nowrap) sits beside the existing row separator rules. Drawer-only; no schema, behaviour or probe-hook changes.
 
 ## [v57] (3D atom/bond picking via JSmol pickCallback; LIVE, `index.html` → v57)
 
