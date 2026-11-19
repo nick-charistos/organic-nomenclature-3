@@ -206,6 +206,7 @@ if (typeof window.nameCrossFlag === "undefined") window.nameCrossFlag = false;
 // the hidden comp ids (e.g. ["comp5"]); window.nameEyeEdit is the live-only
 // authoring edit mode (never stored in steps).
 if (typeof window.nameHiddenComps === "undefined") window.nameHiddenComps = [];
+if (typeof window.nameGoneComps === "undefined") window.nameGoneComps = [];
 if (typeof window.nameEyeEdit === "undefined") window.nameEyeEdit = false;
 let mainChainMode = "algorithmic"; // 'data' | 'algorithmic'
 let etherNamingMode = "iupac"; // 'iupac' | 'common' — ether naming variant toggle
@@ -272,9 +273,12 @@ const svgNewMol = (window.MuLERIcons && window.MuLERIcons.newMolecule) || "";
 const svgSaveMol = (window.MuLERIcons && window.MuLERIcons.saveMolecule) || "";
 const svgSelectAtoms = (window.MuLERIcons && window.MuLERIcons.selectAtoms) || "";
 
-// Per-component name visibility helpers (eye toggles). Masking is applied at
-// box-construction time in fShowNameAnalysis so every rebuild (mode switch,
-// free-browse, scenario apply) honors the live hidden set automatically.
+// Per-component name visibility (eye toggles, three states):
+//   shown  — full text;
+//   veiled — dash on a lightBlue fill (window.nameHiddenComps);
+//   gone   — removed from the name entirely (window.nameGoneComps).
+// Masking is applied at box-construction time in fShowNameAnalysis so every
+// rebuild (mode switch, free-browse, scenario apply) honors the live sets.
 function fNameCompHidden(id) {
   try {
     var h = window.nameHiddenComps;
@@ -282,6 +286,25 @@ function fNameCompHidden(id) {
   } catch (e) {
     return false;
   }
+}
+function fNameCompGone(id) {
+  try {
+    if (fNameCompHidden(id)) return false;
+    var g = window.nameGoneComps;
+    return Array.isArray(g) && g.indexOf(id) >= 0;
+  } catch (e) {
+    return false;
+  }
+}
+// "shown" | "veiled" | "gone" — single source for the eye cycle and every
+// consumer that must skip an invisible component.
+function fNameCompState(id) {
+  if (fNameCompGone(id)) return "gone";
+  if (fNameCompHidden(id)) return "veiled";
+  return "shown";
+}
+function fNameCompInvisible(id) {
+  return fNameCompState(id) !== "shown";
 }
 
 // Eye buttons show while the authoring master switch is on. In presentation
@@ -315,22 +338,34 @@ function fNameEyeVisible() {
 // Wrapped name-component box: eye row above, box below. The eye row keeps
 // a fixed-height slot whether eyes are shown or not, so every wrap has the
 // same height and the outside "+" separators align uniformly (see CSS).
-// Hidden boxes render
-// a dash on a lightBlue fill (CSS .comp-hidden); the full text lives only in
+// Three visibility states: shown (text), veiled (dash on lightBlue fill,
+// CSS .comp-hidden), gone (box removed, CSS .comp-gone — the wrap and its
+// eye row stay so the author can cycle back). The full text lives only in
 // memory (never persisted). Euphony connectors stay as computed for the full
-// name — neighbors of a dash box keep their connector letter.
+// name — neighbors of a veiled/gone box keep their connector letter.
 function fNameCompBox(boxId, boxClass, displayComp, tipHtml) {
-  var hidden = fNameCompHidden(boxId);
-  var cls = boxClass + (hidden ? " comp-hidden" : "");
+  var state = (typeof fNameCompState === "function") ? fNameCompState(boxId) : (fNameCompHidden(boxId) ? "veiled" : "shown");
+  var hidden = state === "veiled";
+  var gone = state === "gone";
+  var cls = boxClass + (hidden ? " comp-hidden" : "") + (gone ? " comp-gone" : "");
   var tip = (typeof tipHtml === "string" && tipHtml) ? tipHtml : null;
   if (tip) cls += " sysDiff";
   // Display-only italic prefixes (IUPAC detached sec-/tert-): raw slot text,
   // ids, tooltips and matching stay untouched (see fMulerItalicSecTert).
-  var body = hidden ? "–" : displayComp;
-  try { if (!hidden && typeof fMulerItalicSecTert === "function") body = fMulerItalicSecTert(displayComp); } catch (eI) {}
+  var body = (hidden || gone) ? "–" : displayComp;
+  try { if (!hidden && !gone && typeof fMulerItalicSecTert === "function") body = fMulerItalicSecTert(displayComp); } catch (eI) {}
   var eye = "";
   if (fNameEyeVisible()) {
-    eye = "<button class='compEye" + (hidden ? " off-state" : "") + "' data-comp='" + boxId + "' data-tooltip='" + (hidden ? ((typeof fMulerT === "function") ? fMulerT("showComp") : "Εμφάνιση συνθετικού") : ((typeof fMulerT === "function") ? fMulerT("hideComp") : "Απόκρυψη συνθετικού")) + "'>" + (hidden ? svgEyeOff : svgEye) + "</button>";
+    // Cycle shown → veiled → gone → shown. Icons: eye / eyeState (master
+    // toggle) / eyeOff; each tooltip names the NEXT action.
+    var _eyeCls = "compEye" + (hidden ? " off-state" : "") + (gone ? " gone-state" : "");
+    var _eyeTip = (state === "shown")
+      ? ((typeof fMulerT === "function") ? fMulerT("hideComp") : "Απόκρυψη συνθετικού")
+      : (state === "veiled")
+        ? ((typeof fMulerT === "function") ? fMulerT("removeComp") : "Ολική απόκρυψη συνθετικού")
+        : ((typeof fMulerT === "function") ? fMulerT("showComp") : "Εμφάνιση συνθετικού");
+    var _eyeIcon = (state === "veiled") ? svgEyeState : (state === "gone" ? svgEyeOff : svgEye);
+    eye = "<button class='" + _eyeCls + "' data-comp='" + boxId + "' data-state='" + state + "' data-tooltip='" + _eyeTip + "'>" + _eyeIcon + "</button>";
   }
   return "<div class='nameCompWrap'><div class='nameCompEyeRow'>" + eye + "</div><div class='" + cls + "' id='" + boxId + "'" + (tip ? " title='" + tip + "'" : "") + ">" + body + "</div></div>";
 }
@@ -4630,7 +4665,7 @@ function fMulerQuizTodoModes(required) {
       (function (b) {
         try {
           if (!b || !b.classList) return;
-          if (b.classList.contains("comp-hidden")) return;
+          if (b.classList.contains("comp-hidden") || b.classList.contains("comp-gone")) return;
           var id = (b && b.getAttribute) ? b.getAttribute("id") : null;
           if (!id) return;
           var compMode = "none";
@@ -4687,7 +4722,7 @@ function fMulerQuizPaintSolved() {
           var id = (b && b.getAttribute) ? b.getAttribute("id") : null;
           if (!id || !b.classList) return;
           if (!armed) { try { b.classList.remove("quizTodo"); } catch (eR0) {} try { b.classList.remove("freeComp"); } catch (eR0b) {} return; }
-          if (b.classList.contains("comp-hidden")) { try { b.classList.remove("quizTodo"); } catch (eR1) {} try { b.classList.remove("freeComp"); } catch (eR1b) {} return; }
+          if (b.classList.contains("comp-hidden") || b.classList.contains("comp-gone")) { try { b.classList.remove("quizTodo"); } catch (eR1) {} try { b.classList.remove("freeComp"); } catch (eR1b) {} return; }
           var compMode = "none";
           try { compMode = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId(id) : "none"; } catch (eM) { compMode = "none"; }
           if (!compMode || compMode === "none") { try { b.classList.remove("quizTodo"); } catch (eR2) {} try { b.classList.remove("freeComp"); } catch (eR2b) {} return; }
@@ -4758,8 +4793,9 @@ function fMulerQuizRearmSticky() {
     try {
       var bEl = document.getElementById(boxId);
       if (!bEl) return false;
-      if (bEl.classList && bEl.classList.contains("comp-hidden")) return false;
-      if (typeof fNameCompHidden === "function" && fNameCompHidden(boxId)) return false;
+      if (bEl.classList && (bEl.classList.contains("comp-hidden") || bEl.classList.contains("comp-gone"))) return false;
+      if (typeof fNameCompInvisible === "function" && fNameCompInvisible(boxId)) return false;
+      if (typeof fNameCompInvisible !== "function" && typeof fNameCompHidden === "function" && fNameCompHidden(boxId)) return false;
     } catch (eH) { return false; }
     // Solved for this molecule: stay disarmed (classic path on click).
     try { if (typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved(mode)) return false; } catch (eS2) { return false; }
@@ -5135,7 +5171,8 @@ function fMulerQuizRefresh() {
           var _rb = (typeof fMulerQuizBoxIdForMode === "function") ? fMulerQuizBoxIdForMode(_ret) : null;
           var _rel = null;
           try { _rel = (_rb &&typeof document !== "undefined") ? document.getElementById(_rb) : null; } catch (eRE) { _rel = null; }
-          if (_rt.length && _rb && _rel && !_rel.classList.contains("comp-hidden") &&
+          if (_rt.length && _rb && _rel && !_rel.classList.contains("comp-hidden") && !_rel.classList.contains("comp-gone") &&
+              (typeof fNameCompInvisible !== "function" || !fNameCompInvisible(_rb)) &&
               (typeof fNameCompHidden !== "function" || !fNameCompHidden(_rb)) &&
               !(typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved(_ret))) {
             try { if (typeof window !== "undefined") window.MulerQuizTarget = _ret; } catch (eT2) {}
@@ -5957,7 +5994,7 @@ function fMolDraftEnter(mode) {
   // Fresh canvas on New (blank drawing, naming placeholder): clear any sticky
   // hidden set so the preview starts fully visible. Edit keeps the live set
   // (template is the visible variant the author was just looking at).
-  try { if (mode === "new" && typeof window !== "undefined") window.nameHiddenComps = []; } catch (eH) {}
+  try { if (mode === "new" && typeof window !== "undefined") { window.nameHiddenComps = []; window.nameGoneComps = []; } } catch (eH) {}
   // Update-in-place only when an Edit redraws the SAME molecule (beautify).
   // Edit producing a different molecule always forks a new custom entry;
   // stored (141) templates are never overwritten (option a). Source identity
@@ -13884,7 +13921,7 @@ function fShowNameAnalysis() {
   // work; the presentation lock logic re-asserts afterwards).
   try {
     var _allBoxesFx3 = document.querySelectorAll(".nameCompContainer .nameCompBox");
-    var _visBoxes = document.querySelectorAll(".nameCompContainer .nameCompBox:not(.comp-hidden)");
+    var _visBoxes = document.querySelectorAll(".nameCompContainer .nameCompBox:not(.comp-hidden):not(.comp-gone)");
     var _tableOnFx3 = (typeof window !== "undefined" && !!window.nameExplainAll);
     $("#nameAnalysisExplain").toggle((_tableOnFx3 && _allBoxesFx3.length > 0) || _visBoxes.length > 0); // table on: all-hidden still shows (dashed chips)
   } catch (e) {
@@ -13934,7 +13971,7 @@ function fShowNameAnalysis() {
     };
     const _selId = _modeToCompId[nameAnalysisMode] || fBranchPieceBoxId(nameAnalysisMode);
     // Hidden boxes stay inert: never restore .selected onto a dash box.
-    if (_selId && $(`#${_selId}`).length && !fNameCompHidden(_selId)) {
+    if (_selId && $(`#${_selId}`).length && !fNameCompInvisible(_selId)) {
       $(`#${_selId}`).addClass("selected");
     } else {
       nameAnalysisMode = "none";
@@ -15431,6 +15468,7 @@ function fExplainAllKey() {
     try { parts.push(typeof selectedMol !== "undefined" ? selectedMol : ""); } catch (eS) {}
     try { parts.push((typeof fMulerLang === "function") ? fMulerLang() : "gr"); } catch (eL) {}
     try { parts.push(Array.isArray(window.nameHiddenComps) ? window.nameHiddenComps.join(",") : ""); } catch (eH) {}
+    try { parts.push(Array.isArray(window.nameGoneComps) ? window.nameGoneComps.join(",") : ""); } catch (eHg) {}
     try { parts.push(typeof substNamingMode !== "undefined" ? substNamingMode : ""); } catch (eV) {}
     try { parts.push(typeof etherNamingMode !== "undefined" ? etherNamingMode : ""); } catch (eE) {}
     try {
@@ -15465,7 +15503,7 @@ function fNameExplainTableBuild() {
           // Eye-hidden components keep their row instead of vanishing: the
           // chip mirrors the hidden box (dash), the explanation cell stays.
           var _rowHidden = false;
-          try { _rowHidden = !!(box.classList && box.classList.contains("comp-hidden")); } catch (eH) { _rowHidden = false; }
+          try { _rowHidden = !!(box.classList && (box.classList.contains("comp-hidden") || box.classList.contains("comp-gone"))); } catch (eH) { _rowHidden = false; }
           var mode = null;
           try { mode = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId(bid) : null; } catch (eM) { mode = null; }
           if (!mode || mode === "none") continue;

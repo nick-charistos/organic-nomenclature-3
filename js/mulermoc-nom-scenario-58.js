@@ -592,6 +592,7 @@ function fScenarioCapture() {
       etherNaming: fScenarioG("etherNamingMode", "iupac"),
       panelOpen: !!fScenarioG("nameSettingsFlag", true),
       hidden: Array.isArray(window.nameHiddenComps) ? window.nameHiddenComps.slice() : [],
+      gone: Array.isArray(window.nameGoneComps) ? window.nameGoneComps.slice() : [],
     },
     styleHighlight: {
       bondAtoms: fScenarioCheck("bondAtomsCheck", true),
@@ -1250,6 +1251,7 @@ function fScenarioDefaults(step, i) {
   // arrays copy by value, not by reference (steps stay independent)
   out.menuSubset = Array.isArray(step.menuSubset) ? step.menuSubset.slice() : [];
   out.styleName.hidden = Array.isArray(step.styleName && step.styleName.hidden) ? step.styleName.hidden.slice() : [];
+  out.styleName.gone = Array.isArray(step.styleName && step.styleName.gone) ? step.styleName.gone.slice() : [];
   out.menuGroups = fScenarioValidMenuGroups(step.menuGroups);
   // Whole-text size/width/columns: normalize silently (font 12–28, width
   // 320–1200, columns 1|2 → 2 else null). The validate path warns on
@@ -1629,6 +1631,7 @@ function fScenarioStashAuthorSettings() {
     numberingAtoms: fScenarioCheck("highlightNumberingCheck", true),
     numberingBonds: fScenarioCheck("highlightNumberingBondsCheck", true),
     nameHidden: Array.isArray(window.nameHiddenComps) ? window.nameHiddenComps.slice() : [],
+    nameGone: Array.isArray(window.nameGoneComps) ? window.nameGoneComps.slice() : [],
     nameEyeEdit: window.nameEyeEdit === true,
     zoom: (typeof molZoom2D !== "undefined" ? molZoom2D : 2.0),
     viewerMaxHeight: (typeof viewerMaxH !== "undefined" ? viewerMaxH : null),
@@ -1659,6 +1662,7 @@ function fScenarioRestoreAuthorSettings() {
   fScenarioSetCheck("highlightNumberingCheck", a.numberingAtoms !== false, "selectedCheck", "unselectedCheck");
   fScenarioSetCheck("highlightNumberingBondsCheck", a.numberingBonds !== false, "selectedCheck", "unselectedCheck");
   window.nameHiddenComps = Array.isArray(a.nameHidden) ? a.nameHidden.slice() : [];
+  window.nameGoneComps = Array.isArray(a.nameGone) ? a.nameGone.slice() : [];
   window.nameEyeEdit = a.nameEyeEdit === true;
   // Author's menu-collapse rail comes back too (present entry expanded it).
   try {
@@ -2113,7 +2117,7 @@ function fScenarioClickNameBox(step, token) {
   if (!box) return;
   // Hidden (dash) boxes stay inert: skip the stored highlight replay.
   try {
-    if (box.classList && box.classList.contains("comp-hidden")) return;
+    if (box.classList && (box.classList.contains("comp-hidden") || box.classList.contains("comp-gone"))) return;
   } catch (e) {
     /* DOM unavailable */
   }
@@ -2155,7 +2159,7 @@ function fScenarioQuizCapableModes() {
     var boxes = document.querySelectorAll("#nameAnalysis .nameCompBox");
     for (var i = 0; i < boxes.length; i++) {
       var b = boxes[i];
-      if (!b || !b.classList || b.classList.contains("comp-hidden")) continue;
+      if (!b || !b.classList || b.classList.contains("comp-hidden") || b.classList.contains("comp-gone")) continue;
       var id = b.getAttribute ? b.getAttribute("id") : null;
       if (!id) continue;
       var m = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId(id) : "none";
@@ -2498,7 +2502,7 @@ function fScenarioApplyQuiz(step) {
       var bel = (boxId && typeof document !== "undefined") ? document.getElementById(boxId) : null;
       // Deferred menu quizzes (no molecule loaded yet) re-arm on the pick —
       // silent. A missing/hidden box WITH a molecule is a broken task: say so.
-      if (!bel || (bel.classList && bel.classList.contains("comp-hidden"))) {
+      if (!bel || (bel.classList && (bel.classList.contains("comp-hidden") || bel.classList.contains("comp-gone")))) {
         if (molNow) {
           try { if (typeof fScenarioToast === "function") fScenarioToast(fMulerPre("Το κουτί του κουίζ λείπει — το βήμα παίζει κλασικά.", "Quiz box unavailable — classic step.")); } catch (eMB) {}
         }
@@ -2662,6 +2666,7 @@ function fScenarioApply(step) {
   // visibility for the new molecule, then the step's stored set applies.
   // Same synchronous task as the load render → single paint, no flash.
   window.nameHiddenComps = Array.isArray(step.styleName.hidden) ? step.styleName.hidden.slice() : [];
+  window.nameGoneComps = (step.styleName && Array.isArray(step.styleName.gone)) ? step.styleName.gone.slice() : [];
   // Master eye switch seeds from the step's visibility flag: with the naming
   // settings gear shown it stays live and toggles the eyes (fNameEyeVisible).
   window.nameEyeEdit = !!(step.show && step.show.nameEye === true);
@@ -4650,7 +4655,7 @@ function fScenarioApplyNamingChrome(show) {
     var _authNoVis = false;
     var _authNoBox = true;
     try {
-      _authNoVis = document.querySelectorAll(".nameCompContainer .nameCompBox:not(.comp-hidden)").length === 0;
+      _authNoVis = document.querySelectorAll(".nameCompContainer .nameCompBox:not(.comp-hidden):not(.comp-gone)").length === 0;
       _authNoBox = document.querySelectorAll(".nameCompContainer .nameCompBox").length === 0;
     } catch (e) {
       /* DOM unavailable */
@@ -4691,7 +4696,7 @@ function fScenarioApplyNamingChrome(show) {
     var _allBoxCount = 0;
     try {
       _visBoxCount = document.querySelectorAll(
-        ".nameCompContainer .nameCompBox:not(.comp-hidden)",
+        ".nameCompContainer .nameCompBox:not(.comp-hidden):not(.comp-gone)",
       ).length;
       _allBoxCount = document.querySelectorAll(
         ".nameCompContainer .nameCompBox",

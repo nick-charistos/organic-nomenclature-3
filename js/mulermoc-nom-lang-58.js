@@ -85,6 +85,7 @@ var MULER_STRINGS = {
   explainSingle: { gr: "Μεμονωμένη εξήγηση", en: "Single explanation" },
   showComp: { gr: "Εμφάνιση συνθετικού", en: "Show component" },
   hideComp: { gr: "Απόκρυψη συνθετικού", en: "Hide component" },
+  removeComp: { gr: "Ολική απόκρυψη συνθετικού", en: "Remove component" },
   show2D: { gr: "Εμφάνιση 2D", en: "Show 2D" },
   show3D: { gr: "Εμφάνιση 3D", en: "Show 3D" },
   editMol: { gr: "Επεξεργασία μορίου", en: "Edit molecule" },
@@ -1055,7 +1056,7 @@ function fWireENTTS() {
         if (boxes && boxes.length) {
           var parts = [];
           for (var i = 0; i < boxes.length; i++) {
-            try { if (boxes[i].classList && boxes[i].classList.contains("comp-hidden")) continue; } catch (eH) {}
+            try { if (boxes[i].classList && (boxes[i].classList.contains("comp-hidden") || boxes[i].classList.contains("comp-gone"))) continue; } catch (eH) {}
             var s = (boxes[i].textContent || "").trim();
             if (s) parts.push(s);
           }

@@ -440,7 +440,7 @@ function fSpeakNameWithPauses() {
       parts = [];
       for (var bi = 0; bi < boxes.length; bi++) {
         var box = boxes[bi];
-        if (box.classList && box.classList.contains("comp-hidden")) continue;
+        if (box.classList && (box.classList.contains("comp-hidden") || box.classList.contains("comp-gone"))) continue;
         var token = (box.textContent || "").replace(/-/g, " ").replace(/\s+/g, " ").trim();
         if (token) parts.push(token);
       }
@@ -986,7 +986,7 @@ $(document).ready(function () {
       document
         .querySelectorAll(".nameCompContainer .nameCompBox")
         .forEach(function (b) {
-          if (!b.classList.contains("comp-hidden") && b.textContent) {
+          if (!b.classList.contains("comp-hidden") && !b.classList.contains("comp-gone") && b.textContent) {
             vis.push(b.textContent);
           }
         });
@@ -1068,7 +1068,8 @@ $(document).ready(function () {
   });
 
   // Per-component eye toggle (live only — step data untouched in
-  // presentation; authoring persists via Save/Update). Hiding the
+  // presentation; authoring persists via Save/Update). Three-state cycle:
+  // shown → veiled (dash cover) → gone (removed) → shown. Hiding the
   // currently-selected box mirrors the deselect path: clear highlights +
   // rule theory first, then re-render (guard forces mode "none").
   $(document).on("click", ".compEye", function (event) {
@@ -1083,15 +1084,31 @@ $(document).ready(function () {
     } catch (e) {
       /* DOM unavailable */
     }
+    var state = "shown";
+    try { state = (typeof fNameCompState === "function") ? fNameCompState(id) : "shown"; } catch (eSt) { state = "shown"; }
     var h = Array.isArray(window.nameHiddenComps)
       ? window.nameHiddenComps.slice()
       : [];
-    var at = h.indexOf(id);
-    var hiding = at < 0;
-    if (hiding) h.push(id);
-    else h.splice(at, 1);
+    var g = Array.isArray(window.nameGoneComps)
+      ? window.nameGoneComps.slice()
+      : [];
+    var atH = h.indexOf(id);
+    var atG = g.indexOf(id);
+    // Next state: shown → veiled → gone → shown.
+    if (state === "shown") {
+      if (atG >= 0) g.splice(atG, 1);
+      if (atH < 0) h.push(id);
+    } else if (state === "veiled") {
+      if (atH >= 0) h.splice(atH, 1);
+      if (atG < 0) g.push(id);
+    } else {
+      if (atH >= 0) h.splice(atH, 1);
+      if (atG >= 0) g.splice(atG, 1);
+    }
     window.nameHiddenComps = h;
-    if (hiding && wasSel && typeof fClearHighlights === "function") {
+    window.nameGoneComps = g;
+    var _nowInvisible = (state !== "gone");
+    if (_nowInvisible && wasSel && typeof fClearHighlights === "function") {
       fClearHighlights();
       // Repaint the 2D SVG: fClearHighlights resets the applet colors but
       // the stale highlight + numbering stay painted until fUpdateSVG
@@ -1514,7 +1531,7 @@ $(document).ready(function () {
     var box = null;
     try { box = document.getElementById(bid); } catch (eD) {}
     if (!box) return;
-    try { if (box.classList && box.classList.contains("comp-hidden")) return; } catch (eH) { return; }
+    try { if (box.classList && (box.classList.contains("comp-hidden") || box.classList.contains("comp-gone"))) return; } catch (eH) { return; }
     try { box.click(); } catch (eC) { return; }
     try { if (window.nameExplainAll && typeof fNameExplainTableRender === "function") fNameExplainTableRender(); } catch (eR) {}
   });

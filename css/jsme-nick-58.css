@@ -2149,6 +2149,14 @@ header {
   color: #fff;
 }
 
+/* Third state (removed): marker only; icon carries the meaning. */
+.compEye.gone-state {
+}
+
+.compEye.gone-state:hover {
+  color: #fff;
+}
+
 .nameCompBox.comp-hidden {
   background-color: var(--veryLightBlue);
   border-color: var(--lightBlue);
@@ -2156,6 +2164,12 @@ header {
   cursor: default;
   min-width: 1.2em;
   text-align: center;
+}
+
+/* Removed from the name: no box, no text, no width. The wrap's eye row
+   stays so the author can cycle back. */
+.nameCompBox.comp-gone {
+  display: none;
 }
 
 .nameCompBox.comp-hidden:hover {

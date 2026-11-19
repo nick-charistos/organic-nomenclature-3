@@ -43,8 +43,9 @@ progress tracking, server storage.
 > 320–1200/null is still parsed but ignored by v52, `columns` 1|2/null,
 > `position` `"left"`/`"right"`/null (v50); null = theme defaults). Per-block
 > font size/alignment live in the note HTML as allowlisted `note-fs-*` /
-> `note-align-*` classes. `styleName.hidden` + `show.nameEye` carry
-> per-component visibility (see §2 visibility rules).
+> `note-align-*` classes. `styleName.hidden` (veiled) + `styleName.gone`
+> (removed) + `show.nameEye` carry per-component visibility (see §2
+> visibility rules).
 
 ```json
 {
@@ -296,22 +297,26 @@ Visibility rules:
   skipped); rows click through to the box (highlight/select/narration) so it
   stays consistent under `nameClick` gating, and it renders read-only in
   Present for the current molecule.
-* Per-component visibility: `styleName.hidden` lists hidden comp ids
-  (e.g. `["comp5"]`); hidden boxes render a dash on a `lightBlue` fill,
-  ignore clicks, and are skipped by narration and stored-highlight replay
-  (PNG shows them as displayed). Authors toggle boxes via the master
+* Per-component visibility: three states per comp, cycled by the box's eye
+  button (shown → veiled → removed → shown). `styleName.hidden` lists
+  veiled comp ids (e.g. `["comp5"]`); veiled boxes render a dash on a
+  `lightBlue` fill and ignore clicks. `styleName.gone` lists removed comps:
+  the box is not drawn (`display:none`) but its wrap/eye row stays so the
+  author can cycle back; removed comps are skipped exactly like veiled ones
+  (narration, stored-highlight replay, quiz todo set, overview rows stay
+  marked). Authors toggle boxes via the master
   eye-edit switch in `#nameSettingsPanel` (live-only, never stored) +
-  per-box eye buttons; Save/Update captures the set. `show.nameEye`
+  per-box eye buttons; Save/Update captures both sets. `show.nameEye`
   (per-step drawer checkbox `Ορατότητα συνθετικών`, default unchecked,
   molecule steps only; absent in legacy files = no toggles) seeds the
   master switch on step entry; while the naming settings gear is shown
   the master toggles the eyes live, otherwise eyes follow `show.nameEye`
-  directly. The hidden set is sticky across molecule switches (menu steps
+  directly. Both sets are sticky across molecule switches (menu steps
   and main-app browsing hide the same slot ids everywhere; unknown ids are
-  ignored); fresh starts reset it (cold boot, draft New). `Update` refreshes
-  `hidden` from the live view and preserves
-  `nameEye`; Present stashes / Exit restores the author's live hidden set
-  + edit mode. Eye-hiding the highlighted box also repaints the 2D SVG
+  ignored); fresh starts reset them (cold boot, draft New). `Update`
+  refreshes `hidden`/`gone` from the live view and preserves
+  `nameEye`; Present stashes / Exit restores the author's live sets
+  + edit mode. Hide/removing the highlighted box also repaints the 2D SVG
   so its highlight vanishes at once.
 * `title` is the step heading: in presentation it replaces the
   page `#pageTitle` (number pill `<span class="scStepNumberTitle">N.</span>`
@@ -443,7 +448,7 @@ Visibility rules:
    `styleText` (fontSizePx, textWidthPx, columns, position) + `show.controls`
    + `show.naming` + `show.nameSettings` + `show.nameClick` + `show.nameEye` +
    `menuGroups`, refreshes everything visual incl. `nameAnalysisMode`,
-   `styleName.hidden` (from the live eye toggles),
+   `styleName.hidden`/`styleName.gone` (from the live eye toggles),
    `menuSubset`/`show.menu`/`show.viewers`; toasts kind/subset changes),
   `⧉` duplicate (deep-clone after, title + ` (αντίγραφο)`),
    reorder up/down, delete (`deleteStep` icon, pinned to the row's
