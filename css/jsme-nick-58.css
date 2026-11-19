@@ -409,6 +409,65 @@ header {
   opacity: 0.85;
 }
 
+/* Oracle row parts: source label (e.g. "IUPAC (PubChem):") and the molecule
+   name, split so each can be styled independently; the agreement mark keeps
+   its own class. */
+.draftOCSource {
+  margin-left: 4px;
+  
+}
+
+.draftOCName {
+  color: inherit;
+  font-weight: 600;
+}
+
+/* Author input (collaboration): submitted-by, proposed name, comments.
+   Stored in the custom molecule record and its generated data file. */
+.draftAuthorBox {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--redAlert);
+}
+
+.draftAuthorRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.draftAuthorRow label {
+  font-family: "Roboto Condensed", sans-serif;
+  flex: 0 0 96px;
+  padding-top: 3px;
+  color: var(--darkBlue);
+  /* font-weight: 600; */
+}
+
+.draftAuthorRow input[type="text"],
+.draftAuthorRow textarea {
+  flex: 1 1 auto;
+  min-width: 0;
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 3px 6px;
+  border: 1px solid var(--lightBlue);
+  border-radius: 3px;
+  background: #fff;
+  color: var(--darkBlue);
+  resize: vertical;
+}
+
+.draftAuthorRow input[type="text"]:focus,
+.draftAuthorRow textarea:focus {
+  outline: 0;
+  border-color: var(--redAlert);
+}
+
 /* Draft entries are authoring-only: never in presentation. */
 #pageContainer.presenting #editMolBtn,
 #pageContainer.presenting #newMolBtn,

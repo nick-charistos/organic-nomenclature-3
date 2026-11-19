@@ -5988,7 +5988,17 @@ function fMolDraftEnter(mode) {
     var b3 = document.getElementById("view3DBtn");
     had3D = !!(b3 && b3.classList.contains("active"));
   } catch (eB) { had3D = false; }
-  window.MulerDraft = { mode: mode, sourceMol: sourceMol, variant: variant, had3D: had3D };
+  window.MulerDraft = { mode: mode, sourceMol: sourceMol, variant: variant, had3D: had3D, author: "", proposedName: "", authorNote: "" };
+  // Author fields seed from the source record on Edit (custom molecules), so
+  // a beautify/update keeps the collaboration context; New starts blank.
+  try {
+    var _authSrc = (mode === "edit" && sourceMol && typeof nameExamples !== "undefined") ? nameExamples[sourceMol] : null;
+    if (_authSrc) {
+      window.MulerDraft.author = _authSrc.author || "";
+      window.MulerDraft.proposedName = _authSrc.proposedName || "";
+      window.MulerDraft.authorNote = _authSrc.authorNote || "";
+    }
+  } catch (eAuthSrc) {}
   try { window.MulerDraft._epoch = (window._MulerDraftEpoch = (window._MulerDraftEpoch || 0) + 1); } catch (eEp) { try { window.MulerDraft._epoch = Date.now(); } catch (eEp2) {} }
   try { window.MulerDraft._submitId = 0; window.MulerDraft.accepting = false; } catch (eSi) {}
   // Fresh canvas on New (blank drawing, naming placeholder): clear any sticky
@@ -6612,6 +6622,16 @@ function fMolDraftRenderPreview() {
   try {
     var na = document.getElementById("nameAnalysis");
     if (!na) return;
+    // Author fields are re-rendered from the draft on every preview rebuild
+    // (verdict clicks, oracle/3D fetches). Preserve focus + caret when the
+    // author is typing through such a rebuild.
+    var _af = null;
+    try {
+      var _ae = document.activeElement;
+      if (_ae && (_ae.id === "molDraftAuthorBy" || _ae.id === "molDraftProposedName" || _ae.id === "molDraftAuthorNote")) {
+        _af = { id: _ae.id, start: _ae.selectionStart, end: _ae.selectionEnd };
+      }
+    } catch (eAF) { _af = null; }
     var vGR = d.verdictGR || "unconfirmed", vEN = d.verdictEN || "unconfirmed";
     var clsGR = vGR === "correct" ? " draftV-correct" : (vGR === "wrong" ? " draftV-wrong" : "");
     var clsEN = vEN === "correct" ? " draftV-correct" : (vEN === "wrong" ? " draftV-wrong" : "");
@@ -6651,10 +6671,10 @@ function fMolDraftRenderPreview() {
           if (_pcM) { _pcG = "✓"; _pcT = fMolDraftT("draftPCMatchTip", "PubChem agrees with the predicted name"); }
           else { _pcG = "✕"; _pcT = fMolDraftT("draftPCMismatchTip", "Predicted name differs from PubChem — pending human review"); }
         } catch (ePCM) {}
-        html += "<div class='draftOracleRow'><span class='draftOCMark' title='" + fMolDraftEsc(_pcT) + "'>" + _pcG + "</span> " + fMolDraftEsc(fMolDraftT("draftIUPACRow", "IUPAC (PubChem)")) + ": " + fMolDraftEsc(iupac) + "</div>";
+        html += "<div class='draftOracleRow'><span class='draftOCMark' title='" + fMolDraftEsc(_pcT) + "'>" + _pcG + "</span><span class='draftOCSource'>" + fMolDraftEsc(fMolDraftT("draftIUPACRow", "IUPAC (PubChem)")) + ": </span><span class='draftOCName'>" + fMolDraftEsc(iupac) + "</span></div>";
       }
-      if (title && /ether$/i.test(String(title).trim()) && norm(title) !== norm(iupac)) html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("draftCommonRow", "Common (PubChem)")) + ": " + fMolDraftEsc(title) + "</div>";
-      if (sys && norm(sys) !== norm(iupac) && norm(sys) !== norm(title)) html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("draftSysRow", "Systematic")) + ": " + fMolDraftEsc(sys) + "</div>";
+      if (title && /ether$/i.test(String(title).trim()) && norm(title) !== norm(iupac)) html += "<div class='draftOracleRow'><span class='draftOCSource'>" + fMolDraftEsc(fMolDraftT("draftCommonRow", "Common (PubChem)")) + ": </span><span class='draftOCName'>" + fMolDraftEsc(title) + "</span></div>";
+      if (sys && norm(sys) !== norm(iupac) && norm(sys) !== norm(title)) html += "<div class='draftOracleRow'><span class='draftOCSource'>" + fMolDraftEsc(fMolDraftT("draftSysRow", "Systematic")) + ": </span><span class='draftOCName'>" + fMolDraftEsc(sys) + "</span></div>";
       // OpenClatura second oracle (rule-built EN): verbatim name + OPSIN
       // round-trip status. Display only — never feeds verdicts (Phase 2).
       // Speaks loudest on no-PubChem-record drafts (amber rows).
@@ -6675,7 +6695,7 @@ function fMolDraftRenderPreview() {
             else if (_ocV === "mismatch") { _ocG = "✕"; _ocT = fMolDraftT("ocMismatchTip", "Engine name differs from OpenClatura — pending human review"); }
             else { _ocG = "?"; _ocT = fMolDraftT("ocMissingTip", "No OpenClatura answer"); }
           } catch (eOCV) {}
-          html += "<div class='draftOracleRow'><span class='draftOCMark' title='" + fMolDraftEsc(_ocT) + "'>" + _ocG + "</span> " + fMolDraftEsc(fMolDraftT("draftOpenclatura", "IUPAC (OpenClatura)")) + ": " + fMolDraftEsc(_ocD.name) + ((_ocD.opsin && _ocD.opsin !== "matched") ? fMolDraftEsc(" (OPSIN: " + _ocD.opsin + ")") : "") + "</div>";
+          html += "<div class='draftOracleRow'><span class='draftOCMark' title='" + fMolDraftEsc(_ocT) + "'>" + _ocG + "</span><span class='draftOCSource'>" + fMolDraftEsc(fMolDraftT("draftOpenclatura", "IUPAC (OpenClatura)")) + ": </span><span class='draftOCName'>" + fMolDraftEsc(_ocD.name) + ((_ocD.opsin && _ocD.opsin !== "matched") ? fMolDraftEsc(" (OPSIN: " + _ocD.opsin + ")") : "") + "</span></div>";
         } else if (_ocD === undefined && d.submitted) {
           html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("draftOCFetching", "Looking up OpenClatura…")) + "</div>";
         } else if (d.openclaturaErr) {
@@ -6688,8 +6708,56 @@ function fMolDraftRenderPreview() {
       html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitNoRecord", "No PubChem record — engine only.")) + "</div>";
       try { if (typeof fMolDraftSDF3DStatusHTML === "function") html += fMolDraftSDF3DStatusHTML(d) || ""; } catch (eS32) {}
     }
+    // Author input (collaboration): submitted-by, proposed name, comments.
+    // Values live on the draft and are copied into the accepted record, so the
+    // generated MULERMOC_*_data.js keeps them. Inputs never trigger a preview
+    // rebuild; focus/caret are restored after rebuilds caused by fetches.
+    var _phBy = fMolDraftT("draftAuthorByPh", "Name / initials");
+    var _phName = fMolDraftT("draftProposedNamePh", "Your proposed name");
+    var _phNote = fMolDraftT("draftAuthorNotePh", "Comments for the reviewer");
+    html += "<div class='draftAuthorBox'>" +
+      "<div class='draftAuthorRow'><label for='molDraftAuthorBy'>" + fMolDraftEsc(fMolDraftT("draftAuthorBy", "Submitted by")) + "</label>" +
+      "<input type='text' id='molDraftAuthorBy' autocomplete='off' placeholder='" + fMolDraftEsc(_phBy) + "' value='" + fMolDraftEsc(d.author || "") + "'></div>" +
+      "<div class='draftAuthorRow'><label for='molDraftProposedName'>" + fMolDraftEsc(fMolDraftT("draftProposedName", "Proposed name")) + "</label>" +
+      "<input type='text' id='molDraftProposedName' autocomplete='off' placeholder='" + fMolDraftEsc(_phName) + "' value='" + fMolDraftEsc(d.proposedName || "") + "'></div>" +
+      "<div class='draftAuthorRow'><label for='molDraftAuthorNote'>" + fMolDraftEsc(fMolDraftT("draftAuthorNote", "Comments")) + "</label>" +
+      "<textarea id='molDraftAuthorNote' rows='3' placeholder='" + fMolDraftEsc(_phNote) + "'>" + fMolDraftEsc(d.authorNote || "") + "</textarea></div>" +
+      "</div>";
     html += "</div>";
     na.innerHTML = html;
+    // Persist as the author types (no re-render), then restore focus/caret.
+    try {
+      var _bind = function (id, key) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener("input", function () {
+          try {
+            var cur = window.MulerDraft;
+            if (cur) cur[key] = el.value;
+          } catch (eIn) {}
+        });
+        el.addEventListener("change", function () {
+          try {
+            var cur = window.MulerDraft;
+            if (cur) cur[key] = el.value;
+          } catch (eCh) {}
+        });
+      };
+      _bind("molDraftAuthorBy", "author");
+      _bind("molDraftProposedName", "proposedName");
+      _bind("molDraftAuthorNote", "authorNote");
+    } catch (eBind) {}
+    if (_af) {
+      try {
+        var _el = document.getElementById(_af.id);
+        if (_el) {
+          _el.focus();
+          if (typeof _el.setSelectionRange === "function" && typeof _af.start === "number") {
+            _el.setSelectionRange(_af.start, (typeof _af.end === "number") ? _af.end : _af.start);
+          }
+        }
+      } catch (eRestore) {}
+    }
   } catch (eR) {}
 }
 
@@ -8151,6 +8219,9 @@ function fMolDraftDownloadSingle(rec) {  // One molecule per file (Accept auto-s
       "   Molecule: " + rec.key + (rec.grName ? " (" + rec.grName + ")" : "") + "\n" +
       "   Status: " + (rec.status || "draft") + " | " + new Date().toISOString().slice(0, 10) + "\n" +
       "   3D: " + (rec.sdf3DSource || "none") + "\n" +
+      (rec.author ? "   Submitted by: " + String(rec.author).replace(/\r?\n/g, " ") + "\n" : "") +
+      (rec.proposedName ? "   Proposed name: " + String(rec.proposedName).replace(/\r?\n/g, " ") + "\n" : "") +
+      (rec.authorNote ? "   Comments: " + String(rec.authorNote).replace(/\r?\n/g, "\n             ") + "\n" : "") +
       "   Names: GR " + _nc.gr + ", EN " + _nc.en + (_nc.enAutoValidated ? " (EN auto: " + (_nc.enAutoSource === "openclatura" ? "OpenClatura" : (_nc.enAutoSource === "openclatura-sys" ? "OpenClatura-sys" : (_nc.enAutoSource === "pubchem-sys" ? "PubChem-sys" : "PubChem"))) + ")" : "") + "\n" +
       "   Place next to the data file (js/) and register it:\n" +
       "   <script src=\"js/" + fMolDraftFileSlug(rec) + "\"><\/script> */\n" +
@@ -8696,9 +8767,11 @@ async function fMolDraftAccept() {
     sdf3D: d.sdf3D || null,
     sdf3DSource: d.sdf3DSource || null,
     file3D: null,
-    author: "",
+    author: String(d.author || "").trim(),
+    proposedName: String(d.proposedName || "").trim(),
+    authorNote: String(d.authorNote || "").trim(),
     status: "draft",
-    history: [{ t: Date.now(), action: "accepted", mode: d.mode, source: d.sourceMol || null, sdf3DSource: d.sdf3DSource || null, verdict: { gr: _vc.gr, en: _vc.en } }]
+    history: [{ t: Date.now(), action: "accepted", mode: d.mode, source: d.sourceMol || null, sdf3DSource: d.sdf3DSource || null, verdict: { gr: _vc.gr, en: _vc.en }, author: String(d.author || "").trim(), proposedName: String(d.proposedName || "").trim() }]
   };
   rec.structure2D_Condensed = molC;
   rec.structure2D_Expanded = molE;
@@ -8738,8 +8811,13 @@ async function fMolDraftAccept() {
     prev.sdf3D = rec.sdf3D;
     try { prev.sdf3DSource = rec.sdf3DSource || null; } catch (eS3s) {}
     try {
+      prev.author = rec.author;
+      prev.proposedName = rec.proposedName;
+      prev.authorNote = rec.authorNote;
+    } catch (eAuth) {}
+    try {
       prev.history = prev.history || [];
-      prev.history.push({ t: Date.now(), action: "updated-slot:" + _slot, mode: d.mode, source: d.sourceMol || null, verdict: { gr: _vc.gr, en: _vc.en } });
+      prev.history.push({ t: Date.now(), action: "updated-slot:" + _slot, mode: d.mode, source: d.sourceMol || null, verdict: { gr: _vc.gr, en: _vc.en }, author: rec.author, proposedName: rec.proposedName });
     } catch (eH) {}
     rec = prev;
     try { if (typeof fMolDraftMarkNewCustom === "function") fMolDraftMarkNewCustom(key); } catch (eMk) {}
