@@ -349,7 +349,7 @@ var MULER_STRINGS = {
   molOnlyNaming: { gr: "Μόνο για βήματα με μόριο (αυτό το βήμα δεν έχει ονοματολογία)", en: "Molecule steps only (this step carries no naming)" },
   collapseStep: { gr: "Σύμπτυξη/ανάπτυξη βήματος", en: "Collapse/expand step" },
   nameInteract: { gr: "Διάδραση ονομασίας", en: "Name interaction" },
-  menuGroupsTitle: { gr: "Ταξινομήσεις Μένου:", en: "Menu groupings:" },
+  menuGroupsTitle: { gr: "Ταξινομήσεις:", en: "Groupings:" },
   chSymbols: { gr: "Σύμβολα CH", en: "CH symbols" },
   hydrogens: { gr: "Υδρογόνα", en: "Hydrogens" },
   rotation: { gr: "Περιστροφή", en: "Rotation" },

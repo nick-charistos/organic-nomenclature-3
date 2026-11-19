@@ -8207,6 +8207,13 @@ function fMolDraftNewCustomKeys() {
   } catch (eK) { return []; }
 }
 
+// Comment-safe text for the generated file headers (they are block
+// comments): user-supplied fields must never terminate the comment with
+// `*/` — that would break the generated JS (and could inject code).
+function fMolDraftCommentSafe(s) {
+  try { return String(s == null ? "" : s).replace(/\*\//g, "* /"); } catch (e) { return ""; }
+}
+
 function fMolDraftDownloadSingle(rec) {  // One molecule per file (Accept auto-save). Merge-safe assignment so any
   // number of collected files coexist regardless of load order — a plain
   // `var nameExamplesCustom = ...` would let file #2 clobber file #1.
@@ -8215,14 +8222,15 @@ function fMolDraftDownloadSingle(rec) {  // One molecule per file (Accept auto-s
     var one = {};
     one[rec.key] = rec;
     var _nc = rec.nameCheck || { gr: "unconfirmed", en: "unconfirmed" };
+    var _cs = fMolDraftCommentSafe;
     var header = "/* MuLER custom draft molecule (v55 tiered-3D, manual save from Ρυθμίσεις).\n" +
-      "   Molecule: " + rec.key + (rec.grName ? " (" + rec.grName + ")" : "") + "\n" +
-      "   Status: " + (rec.status || "draft") + " | " + new Date().toISOString().slice(0, 10) + "\n" +
-      "   3D: " + (rec.sdf3DSource || "none") + "\n" +
-      (rec.author ? "   Submitted by: " + String(rec.author).replace(/\r?\n/g, " ") + "\n" : "") +
-      (rec.proposedName ? "   Proposed name: " + String(rec.proposedName).replace(/\r?\n/g, " ") + "\n" : "") +
-      (rec.authorNote ? "   Comments: " + String(rec.authorNote).replace(/\r?\n/g, "\n             ") + "\n" : "") +
-      "   Names: GR " + _nc.gr + ", EN " + _nc.en + (_nc.enAutoValidated ? " (EN auto: " + (_nc.enAutoSource === "openclatura" ? "OpenClatura" : (_nc.enAutoSource === "openclatura-sys" ? "OpenClatura-sys" : (_nc.enAutoSource === "pubchem-sys" ? "PubChem-sys" : "PubChem"))) + ")" : "") + "\n" +
+      "   Molecule: " + _cs(rec.key) + (rec.grName ? " (" + _cs(rec.grName) + ")" : "") + "\n" +
+      "   Status: " + _cs(rec.status || "draft") + " | " + new Date().toISOString().slice(0, 10) + "\n" +
+      "   3D: " + _cs(rec.sdf3DSource || "none") + "\n" +
+      (rec.author ? "   Submitted by: " + _cs(String(rec.author).replace(/\r?\n/g, " ")) + "\n" : "") +
+      (rec.proposedName ? "   Proposed name: " + _cs(String(rec.proposedName).replace(/\r?\n/g, " ")) + "\n" : "") +
+      (rec.authorNote ? "   Comments: " + _cs(String(rec.authorNote)).replace(/\r?\n/g, "\n             ") + "\n" : "") +
+      "   Names: GR " + _cs(_nc.gr) + ", EN " + _cs(_nc.en) + (_nc.enAutoValidated ? " (EN auto: " + (_nc.enAutoSource === "openclatura" ? "OpenClatura" : (_nc.enAutoSource === "openclatura-sys" ? "OpenClatura-sys" : (_nc.enAutoSource === "pubchem-sys" ? "PubChem-sys" : "PubChem"))) + ")" : "") + "\n" +
       "   Place next to the data file (js/) and register it:\n" +
       "   <script src=\"js/" + fMolDraftFileSlug(rec) + "\"><\/script> */\n" +
       "window.nameExamplesCustom = Object.assign(window.nameExamplesCustom || {}, " +
@@ -8250,8 +8258,9 @@ function fMolDraftDownloadBundle(recs) {
     var date = "";
     try { date = new Date().toISOString().slice(0, 10).replace(/-/g, ""); } catch (eD) { date = "nodate"; }
     var filename = "MULERMOC_custom_" + date + "_" + list.length + "mols_data.js";
+    var _cs = fMolDraftCommentSafe;
     var header = "/* MuLER custom draft molecules, session bundle (v55 tiered-3D).\n" +
-      "   Molecules (" + list.length + "): " + list.map(function (r) { return r.key + (r.grName ? " (" + r.grName + ")" : ""); }).join("; ") + "\n" +
+      "   Molecules (" + list.length + "): " + list.map(function (r) { return _cs(r.key) + (r.grName ? " (" + _cs(r.grName) + ")" : ""); }).join("; ") + "\n" +
       "   Status/date: " + new Date().toISOString().slice(0, 10) + "\n" +
       "   Place next to the data file (js/) and register it:\n" +
       "   <script src=\"js/" + filename + "\"><\/script> */\n";
@@ -8260,8 +8269,8 @@ function fMolDraftDownloadBundle(recs) {
       var one = {};
       one[list[i].key] = list[i];
       var _nc = list[i].nameCheck || { gr: "unconfirmed", en: "unconfirmed" };
-      body += "\n/* " + list[i].key + (list[i].grName ? " (" + list[i].grName + ")" : "") +
-        " | Names: GR " + _nc.gr + ", EN " + _nc.en + " */\n" +
+      body += "\n/* " + _cs(list[i].key) + (list[i].grName ? " (" + _cs(list[i].grName) + ")" : "") +
+        " | Names: GR " + _cs(_nc.gr) + ", EN " + _cs(_nc.en) + " */\n" +
         "window.nameExamplesCustom = Object.assign(window.nameExamplesCustom || {}, " +
         JSON.stringify(one, null, 2) + ");\n";
     }

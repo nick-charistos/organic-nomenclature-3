@@ -613,7 +613,6 @@
    width: 100%;
    min-width: 0;
    padding-top: 4px;
-   border-top: 1px dashed var(--lightBlue);
 }
 
 .scenarioDrawer .srow.collapsed .srowBody {
@@ -764,6 +763,12 @@
    /* positioned: sshow tooltip bubbles anchor to the full row (left: 0 +
       max-width: 100% always fits), never to the narrow inline label */
    position: relative;
+   border-bottom: 1px dotted #bbb;
+   padding-bottom: 4px;
+}
+
+.scenarioDrawer .scStepSettings .scShowRow:last-child {
+   border-bottom: 0;
 }
 
 .scenarioDrawer .sshow {
@@ -787,7 +792,9 @@
 }
 
 /* Menu-grouping set (Ταξινομήσεις Μένου): title + 3 checkboxes share one
-   nowrap line of their own inside the wrapping step row. */
+   nowrap line of their own inside the wrapping step row. The element also
+   carries .scShowRow (shared row separator/padding); this later rule keeps
+   the single-line layout. */
 .scenarioDrawer .scMenuGroupsRow {
    display: flex;
    align-items: center;
@@ -2402,9 +2409,9 @@ body.scPinned #pageTitle {
    margin-right: 480px;
 }
 
-// Credits strip: the footer fills the page width under the pinned bar (the
-// bar is capped above the footer now, so the 480px reservation would only
-// leave a white band there).
+/* Credits strip: the footer fills the page width under the pinned bar (the
+   bar is capped above the footer now, so the 480px reservation would only
+   leave a white band there). */
 body.scPinned #creditsUs {
    width: 100%;
    margin-right: 0;

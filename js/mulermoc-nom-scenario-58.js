@@ -6682,9 +6682,52 @@ function fScenarioRenderOne(scen) {
     namingCheck.onchange = function () { _syncNameRow(true); };
     try { _syncNameRow(false); } catch (eSync) {}
     settingsBlock.appendChild(nameRow);
+    // Menu grouping (presentation only, menu-carrying steps only): which
+    // menu views the step offers. Μόρια = flat list (default); Τάξεις/Σειρές
+    // classify the picked subset. 2+ checked → grouping switcher in
+    // presentation; none → flat fallback. Pure molecule steps (no menu)
+    // show no trace of this block.
+    if (Array.isArray(st.menuSubset) && st.menuSubset.length > 1) {
+      // Single-line set: title + 3 checkboxes share a nowrap wrapper so the
+      // wrapping row can never split them across lines.
+      var menuGroupsRow = document.createElement("div");
+      menuGroupsRow.className = "scShowRow scMenuGroupsRow";
+      menuGroupsRow.setAttribute("data-sc-row", "menu-groups");
+      var menuGroupTitle = document.createElement("span");
+      menuGroupTitle.className = "sshow scMenuGroupsTitle";
+      menuGroupTitle.appendChild(document.createTextNode(((typeof fMulerT === "function") ? fMulerT("menuGroupsTitle") : "Ταξινομήσεις:")));
+      menuGroupsRow.appendChild(menuGroupTitle);
+      [[((typeof fMulerT === "function") ? fMulerT("moleculesPlural") : "Μόρια"), "molecules"], [((typeof fMulerT === "function") ? fMulerT("chemClasses") : "Χημικές Τάξεις"), "chemclass"], [((typeof fMulerT === "function") ? fMulerT("homolSeries") : "Ομόλογες Σειρές"), "series"]].forEach(function (pair) {
+        var gLabel = document.createElement("label");
+        gLabel.className = "sshow scMenuGroup";
+        var gKind = pair[1];
+        var gCheck = document.createElement("input");
+        gCheck.type = "checkbox";
+        gCheck.setAttribute("data-sc-role", "menu-group-" + gKind);
+        // Stored state shown as-is (all-off is valid → flat fallback); only a
+        // missing field (legacy) displays the molecules default.
+        var _mgShown = Array.isArray(st.menuGroups) ? st.menuGroups : ["molecules"];
+        gCheck.checked = _mgShown.indexOf(gKind) >= 0;
+        gCheck.onchange = function () {
+          var cur = Array.isArray(st.menuGroups) ? st.menuGroups.slice() : ["molecules"];
+          // all-off is a valid stored state (renders the flat fallback);
+          // the default only applies to fresh captures.
+          var at = cur.indexOf(gKind);
+          if (gCheck.checked && at < 0) cur.push(gKind);
+          if (!gCheck.checked && at >= 0) cur.splice(at, 1);
+          cur.sort(function (a, b) { return SCENARIO_MENU_GROUPS.indexOf(a) - SCENARIO_MENU_GROUPS.indexOf(b); });
+          st.menuGroups = cur;
+        };
+        gLabel.appendChild(gCheck);
+        gLabel.appendChild(document.createTextNode(" " + pair[0]));
+        menuGroupsRow.appendChild(gLabel);
+      });
+      settingsBlock.appendChild(menuGroupsRow);
+    }
     // Quiz settings row (v58 scenario quizzes): no quiz, no quiz settings.
     // Classic steps render nothing here so future quiz options (attempts,
-    // hints, order) drop in without layout churn.
+    // hints, order) drop in without layout churn. Kept last: the quiz row
+    // follows the menu-settings row when both are present.
     if (_isQuizStep) {
       var quizRow = document.createElement("div");
       quizRow.className = "scShowRow scStepQuizSettings";
@@ -6734,48 +6777,6 @@ function fScenarioRenderOne(scen) {
       };
       quizRow.appendChild(quizRemoveBtn);
       settingsBlock.appendChild(quizRow);
-    }
-    // Menu grouping (presentation only, menu-carrying steps only): which
-    // menu views the step offers. Μόρια = flat list (default); Τάξεις/Σειρές
-    // classify the picked subset. 2+ checked → grouping switcher in
-    // presentation; none → flat fallback. Pure molecule steps (no menu)
-    // show no trace of this block.
-    if (Array.isArray(st.menuSubset) && st.menuSubset.length > 1) {
-      // Single-line set: title + 3 checkboxes share a nowrap wrapper so the
-      // wrapping row can never split them across lines.
-      var menuGroupsRow = document.createElement("div");
-      menuGroupsRow.className = "scMenuGroupsRow";
-      menuGroupsRow.setAttribute("data-sc-row", "menu-groups");
-      var menuGroupTitle = document.createElement("span");
-      menuGroupTitle.className = "sshow scMenuGroupsTitle";
-      menuGroupTitle.appendChild(document.createTextNode(((typeof fMulerT === "function") ? fMulerT("menuGroupsTitle") : "Ταξινομήσεις Μένου:")));
-      menuGroupsRow.appendChild(menuGroupTitle);
-      [[((typeof fMulerT === "function") ? fMulerT("moleculesPlural") : "Μόρια"), "molecules"], [((typeof fMulerT === "function") ? fMulerT("chemClasses") : "Χημικές Τάξεις"), "chemclass"], [((typeof fMulerT === "function") ? fMulerT("homolSeries") : "Ομόλογες Σειρές"), "series"]].forEach(function (pair) {
-        var gLabel = document.createElement("label");
-        gLabel.className = "sshow scMenuGroup";
-        var gKind = pair[1];
-        var gCheck = document.createElement("input");
-        gCheck.type = "checkbox";
-        gCheck.setAttribute("data-sc-role", "menu-group-" + gKind);
-        // Stored state shown as-is (all-off is valid → flat fallback); only a
-        // missing field (legacy) displays the molecules default.
-        var _mgShown = Array.isArray(st.menuGroups) ? st.menuGroups : ["molecules"];
-        gCheck.checked = _mgShown.indexOf(gKind) >= 0;
-        gCheck.onchange = function () {
-          var cur = Array.isArray(st.menuGroups) ? st.menuGroups.slice() : ["molecules"];
-          // all-off is a valid stored state (renders the flat fallback);
-          // the default only applies to fresh captures.
-          var at = cur.indexOf(gKind);
-          if (gCheck.checked && at < 0) cur.push(gKind);
-          if (!gCheck.checked && at >= 0) cur.splice(at, 1);
-          cur.sort(function (a, b) { return SCENARIO_MENU_GROUPS.indexOf(a) - SCENARIO_MENU_GROUPS.indexOf(b); });
-          st.menuGroups = cur;
-        };
-        gLabel.appendChild(gCheck);
-        gLabel.appendChild(document.createTextNode(" " + pair[0]));
-        menuGroupsRow.appendChild(gLabel);
-      });
-      settingsBlock.appendChild(menuGroupsRow);
     }
     // Class-bound step actions (order-free): Go previews, Present jumps
     // straight into presentation at this step, the rest edit/reorder/delete.

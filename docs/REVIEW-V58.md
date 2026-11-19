@@ -2,7 +2,7 @@
 
 Date: 2026-11-18. Tree: `a9e598f` (`?v=58.10`) at review time. Status:
 **resolved in `?v=58.11`**, with later v58 work recorded below (current:
-`?v=58.16`, `4347e45`); the findings are kept verbatim as the record of what
+`?v=58.28`); the findings are kept verbatim as the record of what
 was wrong and why.
 Scope: `11d5886` (fork) → `a9e598f`; the real delta is `72699c2`,
 `29287c3`, `bf2aca5`, `a9e598f` + the new probe.
@@ -42,7 +42,7 @@ Verification: `probe-scenario-quiz` (13 sections) green; `probe-quiz`,
 files. Owner-side browser matrix remains (drawer list/Remove, Esc, revisit,
 menu arm, non-quiz step).
 
-### Later v58 work (58.12–58.16, after the review)
+### Later v58 work (58.12–58.28, after the review)
 
 Recorded here so this file reflects the shipped tree; none of these are
 review findings.
@@ -62,6 +62,27 @@ review findings.
 - **58.16** — owner density pass + badge-row guard (toggle track reserved on
   the top row only; title/actions span full width; no magic `-50px`).
   `4347e45`.
+- **58.17** — comp eye is a three-state cycle (shown / veiled dash / removed),
+  `nameGoneComps` + `styleName.gone`; quiz todo and every veiled skip also
+  skip removed. Owner decision: eyes stay usable on quiz steps (teacher
+  aid); hiding a required comp removes it from the todo set — revisit if
+  users report it. `c7e5a6a`.
+- **58.18** — explain overview rows follow the eye state (`chipHidden` vs
+  `row-hidden`). `14a41c9`.
+- **58.19–58.20** — draft preview author fields (Submitted by / Proposed
+  name / Comments, stored on the record and generated header) and split
+  oracle rows (`.draftOCSource` + `.draftOCName`). `d426366`.
+- **58.21–58.25** — Present spin switch follows the step; full-height viewers
+  clamp to the measured column top; pinned author bar fits above the footer,
+  footer full width, 10px merge. `2a5e746`.
+- **58.26–58.28** — menu-groups row joins the shared `.scShowRow` separators,
+  quiz row moves last, eye glyph normalized to 14px + top alignment, draft
+  header `*/` escaping, docs sync (this batch).
+
+Known trade-offs / accepted decisions: comp eyes on quiz steps are
+intentionally left live (owner, 2026-11-19); the pinned-bar 220px floor can
+meet the footer on very short viewports; the viewer-height clamp is
+scroll-stable by design (resize while scrolled can under-allocate).
 
 ---
 

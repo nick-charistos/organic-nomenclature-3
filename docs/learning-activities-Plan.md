@@ -98,3 +98,7 @@ well-posed and turn the rank-ordering caveat into a non-issue.
 2. Attempt limits / scoring, if any.
 3. Which family to build first (recommendation: C, highest pedagogical
    value per line of new code — mostly shell around existing resolvers).
+4. Comp eyes on quiz steps (accepted 2026-11-19): eyes stay available
+   (teacher/presentation aid). Hiding/removing a required component removes
+   it from the quiz todo set, so a student can shrink the task set; revisit
+   with a lock/fail-closed rule if users report it.

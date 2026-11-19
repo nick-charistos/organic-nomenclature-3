@@ -1,8 +1,9 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** 2026-11-18 — **v58 is LIVE**
-> (`index.html` → `mulermoc-nom-58.html`, `?v=58.16`, review follow-ups +
-> student hover/3D fixes + step-row architecture/corners/density).
+> **Resume pointer (cross-machine):** 2026-11-19 — **v58 is LIVE**
+> (`index.html` → `mulermoc-nom-58.html`, `?v=58.28`, review follow-ups +
+> student hover/3D fixes + step-row architecture/corners/density + the
+> 58.17–58.28 feature/UI batch).
 > Scenario quiz contract: steps store their required component set
 > (`quiz.modes` + labels), Update never destroys an authored task (explicit
 > Remove), Present auto-arms + gates on the stored set, Esc clears picks on
@@ -11,6 +12,12 @@
 > was rewritten and is green. The full 2D suite was re-run against v58 and is
 > green (final/quiz/mode-quiz/explain-all/fg/loc/bond/branch/coverage56/
 > smoke56/compact-main/shift/skel-joints; `probe-3d-pick` still owner-side).
+> New in 58.17–58.28: three-state comp eye (shown/veiled/removed, 14px icons,
+> explain rows follow), draft author fields + split oracle rows, spin switch,
+> measured viewer-height clamp, pinned bar/footer fit + merge, step-row
+> separators + quiz row last, safer generated draft headers. Owner decision:
+> comp eyes stay usable on quiz steps (teacher aid; hiding a required comp
+> removes it from the todo set) — revisit if users report.
 > Remaining owner-side: the browser Present matrix (per-component
 > requirement list in the drawer, Remove, Esc, revisit, menu deferred arm,
 > non-quiz step after quiz), then `probe-3d-pick` on a machine with working
@@ -18,7 +25,7 @@
 > narration voices, menu rail), P3 blessing of Greek word forms,
 > completion-callback wait spike, energy comparison, settings tabs.
 > Full record: `docs/CHANGELOG.md` [v58]/[v57],
-> `docs/SESSION-NOTES.md` 2026-11-16/17/18 entries,
+> `docs/SESSION-NOTES.md` 2026-11-16/17/18/19 entries,
 > `docs/learning-activities-Plan.md` Stage 0, audit
 > `docs/REVIEW-SCENARIO-QUIZ-58.md`, review `docs/REVIEW-V58.md`. Routine on
 > the other machine: pull first, hard-reload (Ctrl+Shift+R), then resume from
@@ -3164,53 +3171,71 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * Decision (no ids): ids repeat across scenario cards (invalid HTML, `getElementById` hits the wrong card); the stable scope is `.scenarioPanel[data-scenario-id] .srow[data-idx]`. Rows get `data-sc-row` + class (`viewers|naming|quiz|menu-groups`), every checkbox a `data-sc-role` (`ctl-2D/3D`, `naming`, `name-settings`, `name-click`, `name-eye`, `require-solution`, `menu-group-*`).
 * Fix: `requireSolution` moves into its own `.scShowRow.scStepQuizSettings` (`data-sc-row="quiz"`), rendered only on quiz steps — classic steps render no quiz row. Probe prefers roles (text fallback kept) and asserts quiz-row presence on quiz steps, absence on classic ones. `?v=58.9` → `?v=58.10`.
 
-## 2026-11-19 — compEye three-state cycle (v58 working tree, owner request, awaiting owner check)
+## 2026-11-19 — compEye three-state cycle (v58 working tree, owner request)
 * Owner: the per-component eye was two-state (shown / dash-veiled). Add a third state that hides the component entirely; icons: shown = eye, veiled = the naming-eye master icon (`eyeState`), removed = the icon the veiled state used (`eyeOff`).
 * Implemented: `fNameCompState(id)` (`shown|veiled|gone`) + `fNameCompGone`/`fNameCompInvisible`; `nameGoneComps` alongside `nameHiddenComps`; render adds `.comp-gone` (`display:none`, wrap/eye row kept) and per-state eye classes/icons/tooltips (`hideComp` → `removeComp` → `showComp`); click cycles shown → veiled → gone → shown and still clears highlights when the selected box disappears. All veiled-skip sites (quiz todo/arm gates, stored replay, narration, overview rows, all-visible checks) also skip gone; `fExplainAllKey` includes the gone list. Step schema additive `styleName.gone` (capture/validate/apply/stash/restore; legacy → `[]`); New-draft reset clears both sets. `?v=58.16` → `?v=58.17`.
-* Verified live in Chrome: 3-state cycle (class/display/icon/tooltip/arrays), capture + validate round-trip of `styleName.gone`, apply restores the removed box, quiz todo drops the removed comp. Not committed — owner check pending.
+* Verified live in Chrome: 3-state cycle (class/display/icon/tooltip/arrays), capture + validate round-trip of `styleName.gone`, apply restores the removed box, quiz todo drops the removed comp. Committed in the v58.17–v58.28 batch.
 
-## 2026-11-19 — draft preview author input (v58 working tree, owner request, awaiting owner check)
+## 2026-11-19 — draft preview author input (v58 working tree, owner request)
 * Owner: in `draftPreview` add Author's proposed name + Author's comments, saved in the generated molecule JS file, for student collaboration. Decision: also add a third "Submitted by" field filling the existing (previously always empty) `rec.author`.
 * Implemented: `.draftAuthorBox` at the bottom of the preview with `Submitted by` / `Proposed name` / `Comments` (textarea), i18n keys `draftAuthorBy(_Ph)`, `draftProposedName(_Ph)`, `draftAuthorNote(_Ph)`. Values live on `window.MulerDraft` (`author`/`proposedName`/`authorNote`), persist on `input`/`change` without re-render, and are re-injected on every preview rebuild with focus + caret restored (verdict/oracle/3D updates no longer steal typing). Edit seeds them from the source custom record.
 * Accept: `rec.author` / `rec.proposedName` / `rec.authorNote` (trimmed); in-place update copies them to `prev` and the history entry records author + proposed name. File writer header adds `Submitted by:` / `Proposed name:` / `Comments:` (multi-line comments indented); JSON body carries the fields.
-* Verified live in Chrome: inputs/labels/placeholders, typing writes the draft, rebuild keeps values/focus/caret, header lines render (incl. multi-line comment indentation), JSON body includes all three fields. `?v=58.18` → `?v=58.19`. Not committed.
+* Verified live in Chrome: inputs/labels/placeholders, typing writes the draft, rebuild keeps values/focus/caret, header lines render (incl. multi-line comment indentation), JSON body includes all three fields. `?v=58.18` → `?v=58.19`. Committed in the v58.17–v58.28 batch.
 
-## 2026-11-19 — oracle rows split into source/name spans (v58 working tree, owner request, awaiting owner check)
+## 2026-11-19 — oracle rows split into source/name spans (v58 working tree, owner request)
 * Owner: `draftOracleRow` text should split into a source span (e.g. “IUPAC (PubChem):”) and a molecule-name span, each with a class for CSS.
 * Implemented: `.draftOCSource` (label + trailing space, margin-left 4px, weight 600) and `.draftOCName` (name, `color: inherit`) in all four named rows (IUPAC PubChem, Common PubChem, Systematic, IUPAC OpenClatura); `.draftOCMark` glyph unchanged. Plain status rows (fetching/no-record/3D) untouched.
-* Verified live in Chrome: spans present, `IUPAC (PubChem): ` + `ethane`, OpenClatura row same shape. `?v=58.19` → `?v=58.20`. Not committed.
+* Verified live in Chrome: spans present, `IUPAC (PubChem): ` + `ethane`, OpenClatura row same shape. `?v=58.19` → `?v=58.20`. Committed in the v58.17–v58.28 batch.
 
-## 2026-11-19 — Present rotate switch keeps the step state (v58 working tree, owner report, awaiting owner check)
+## 2026-11-19 — Present rotate switch keeps the step state (v58 working tree, owner report)
 * Owner: the 3D rotate checkbox must reflect the step. Symptom: a spin step rotates but the switch shows unchecked.
 * Root cause: apply forces `rotateFlag=false` during the load and syncs the bar there; the step‘s spin is restored later (immediate else or 400ms moveto timer) without a second bar sync. Exit also leaked: the delayed spin timer fired after `fScenarioRestoreAuthorSettings`, re-spinning authoring.
 * Fix: new `fScenarioSyncSpinUi()` (rotateCheck classes only) called after the final `rotate3D()` in both branches; the delayed restore is gated on `MuLERMoCScenario.present`. Author rotate switch added to the Present stash and restored on Exit (`authorSettings.rotate`, bar sync, `rotate3D()`).
-* Verified live in Chrome: capture spin on/off → Present step1 checked+rotating, step2 unchecked+stopped, back to step1 checked; Exit restores the author’s unchecked switch. `?v=58.20` → `?v=58.21`. Not committed.
+* Verified live in Chrome: capture spin on/off → Present step1 checked+rotating, step2 unchecked+stopped, back to step1 checked; Exit restores the author’s unchecked switch. `?v=58.20` → `?v=58.21`. Committed in the v58.17–v58.28 batch.
 
-## 2026-11-19 — full-height viewers clamp to the measured column top (v58 working tree, owner report, awaiting owner check)
+## 2026-11-19 — full-height viewers clamp to the measured column top (v58 working tree, owner report)
 * Owner: in authoring, both viewers at full height with both settings bars clipped ~30px. Present was acceptable (exact heights can be authored).
 * Measured: viewerCol top 138.8 + heights 39/341/36/341/36 on a 917px viewport → bottom 933.8 (≈17px clipped; the dev banner and gaps made the `-30 header/-30 margins` constants drift). Chrome itself (111px) was counted correctly.
 * Fix: `fViewerHeights2D3D` clamps `total` to `viewport − (viewerCol doc-top + scrollY) − 16` (clamp-only, so no layout can grow; `full`/both-split/phone caps inherit it). Play-bar branch left untouched (it is dead for the fixed bar and the measured top already includes its space).
-* Verified live in Chrome: authoring both viewers+bars full → 326px each, column bottom 904 (<917); Present two-viewer step with note → 307px each, bottom 903; single-viewer Full unchanged at the width clamp (614). `?v=58.21` → `?v=58.22`. Not committed.
+* Verified live in Chrome: authoring both viewers+bars full → 326px each, column bottom 904 (<917); Present two-viewer step with note → 307px each, bottom 903; single-viewer Full unchanged at the width clamp (614). `?v=58.21` → `?v=58.22`. Committed in the v58.17–v58.28 batch.
 
-## 2026-11-19 — pinned author bar stops at the footer top (v58 working tree, owner report, awaiting owner check)
+## 2026-11-19 — pinned author bar stops at the footer top (v58 working tree, owner report)
 * Owner: pinned bar takes the full page height; the bottom drawer rows overlap the credits footer, and scrolling to them hides the app.
 * Measured root cause: `body.scPinned #scenarioAuthorBar` is absolute with `bottom:0; max-height:none`, so its height ran to the body bottom (−31 → 1342) while the footer starts at 924 on a 917px viewport.
 * Fix: `fScenarioFitAuthorBar()` caps the bar at `min(footer top, viewport bottom) − bar top − 8px`, computed in document coordinates (scroll-stable), 220px floor; `fScenarioScheduleAuthorBarFit()` debounces. Wired to build, window resize, pin toggle, drawer open/close, authoring toggle, and a footer `ResizeObserver`. Unpinned clears the inline cap (CSS 85vh/fixed top unchanged).
-* Verified live in Chrome: pinned bottom 853 / viewport 861 (8px gap); footer raised above the fold → bar bottom 559 vs footer 568; footer restored → 853; unpinned inline cleared, fixed bar unchanged. `?v=58.22` → `?v=58.23`. Not committed.
+* Verified live in Chrome: pinned bottom 853 / viewport 861 (8px gap); footer raised above the fold → bar bottom 559 vs footer 568; footer restored → 853; unpinned inline cleared, fixed bar unchanged. `?v=58.22` → `?v=58.23`. Committed in the v58.17–v58.28 batch.
 
-## 2026-11-19 — pinned footer full width + seam (v58 working tree, owner follow-up, awaiting owner check)
+## 2026-11-19 — pinned footer full width + seam (v58 working tree, owner follow-up)
 * Owner: white space under the capped pinned bar; asked whether the footer can expand full width.
 * Fix: `body.scPinned #creditsUs` full width (`margin-right:0; width:100%`) — safe because the bar now stops above the footer. `fScenarioFitAuthorBar` uses gap 0 when footer-limited (dark bar meets the footer, no white sliver) and keeps 8px when viewport-limited; rounding switched to `Math.round` so the seam is 0px.
-* Verified live in Chrome: credits width = footer width (1905px, full page); footer-limited bar bottom 624 = footer top 624 (seam 0); viewport-limited bottom 909 with 8px gap; restore returns to viewport cap. `?v=58.23` → `?v=58.24`. Not committed.
+* Verified live in Chrome: credits width = footer width (1905px, full page); footer-limited bar bottom 624 = footer top 624 (seam 0); viewport-limited bottom 909 with 8px gap; restore returns to viewport cap. `?v=58.23` → `?v=58.24`. Committed in the v58.17–v58.28 batch.
 
-## 2026-11-19 — pinned bar merges into the footer with +10px (v58 working tree, owner request, awaiting owner check)
+## 2026-11-19 — pinned bar merges into the footer with +10px (v58 working tree, owner request)
 * Owner rejected the decorative bridge; asked to simply add 10px to the calculated drawer height.
 * Implemented: the fitter adds 10px only in the footer-limited branch, so the bar’s 10px bottom border overlaps into the footer (visual merge, no extra element). Viewport-limited keeps the 8px gap (adding 10 there would push the bar 2px past the viewport). Scroll offset uses max(documentElement/body/scrollingElement/window) so body-scrolled refits stay correct.
-* Verified live in Chrome at 1100×640: footer-limited bar bottom 477 vs footer top 467 → 10px merge, screenshot shows a clean seam; viewport-limited bottom 632 (8px gap); restored 632. `?v=58.24` → `?v=58.25`. Not committed.
+* Verified live in Chrome at 1100×640: footer-limited bar bottom 477 vs footer top 467 → 10px merge, screenshot shows a clean seam; viewport-limited bottom 632 (8px gap); restored 632. `?v=58.24` → `?v=58.25`. Committed in the v58.17–v58.28 batch.
 
 
-## 2026-11-19 — explain rows follow the eye state (v58 working tree, owner request, awaiting owner check)
+## 2026-11-19 — explain rows follow the eye state (v58 working tree, owner request)
 * Owner: a removed (`.comp-gone`) component's `.explainRow` must disappear too; the old `row-hidden` class only styled the chip.
 * Implemented: rows carry `{hidden: veiled, gone: removed}` from `fNameCompState`; veiled rows use the renamed `chipHidden` class (same dash-chip look), removed rows use `row-hidden` → `.explainRow.row-hidden { display:none }`; gone wins if both flags were set. Scrape/cache unchanged (rows still built, just hidden), so cycling back restores the row with no rebuild.
-* Verified live in Chrome: shown → `explainRow` flex; veiled → `chipHidden`, dash chip, row visible; gone → `row-hidden`, `display:none`, visible rows 6→5; cycle back → row returns. `?v=58.17` → `?v=58.18`. Not committed.
+* Verified live in Chrome: shown → `explainRow` flex; veiled → `chipHidden`, dash chip, row visible; gone → `row-hidden`, `display:none`, visible rows 6→5; cycle back → row returns. `?v=58.17` → `?v=58.18`. Committed in the v58.17–v58.28 batch.
+
+## 2026-11-19 — menu-groups row joins the shared show-row (v58 working tree, owner request)
+* Owner: `.scMenuGroupsRow` should also get `.scShowRow` so the last drawer settings row carries the same separator as the others.
+* Implemented: markup only — `menuGroupsRow.className = "scShowRow scMenuGroupsRow"`. The later `.scMenuGroupsRow` rule still wins for `display`/`align-items`/`gap`/`flex-wrap`/`flex-basis` (single nowrap line kept); `.scShowRow` now contributes the dotted bottom border + 4px padding (and the positioned tooltip anchor). No schema or behaviour change.
+* `?v=58.25` → `?v=58.26`. `node --check` clean. Committed in the v58.17–v58.28 batch.
+
+## 2026-11-19 — quiz settings row after the menu-groups row (v58 working tree, owner request)
+* Owner: `.scStepQuizSettings` should come after the menu settings row in the step drawer.
+* Implemented: moved the self-contained quiz-row block below the menu-groups block, so `.scStepSettings` renders viewers → naming → menu groups → quiz. Conditions unchanged: quiz row only on quiz steps, menu row only on menu-carrying steps (classic menu steps still end at the menu row). No schema/state change; the probe finds the row by `[data-sc-row="quiz"]`, so order is irrelevant to it.
+* Verified live in Brave (browse extension, `127.0.0.1` static server): a menu+quiz step renders `.scStepSettings` as viewers → naming → menu-groups → quiz, each `.scShowRow` with the dotted bottom separator; a classic menu step still ends at the menu-groups row. Test scenario was modified in memory only; tab closed after the check.
+* `?v=58.26` → `?v=58.27`. `node --check` clean. Committed in the v58.17–v58.28 batch.
+
+## 2026-11-19 — step-row settings polish + generated-file hardening (`?v=58.28`, review follow-ups)
+* Step settings: shared `.scShowRow` dotted bottom separator (last settings row suppressed), menu-groups row joins the shared class, `.scStepSettings` top rule retired, quiz row last (58.26/27). Eye polish from the owner's CSS: `.compEye svg` normalized to 14px (the 18px `eyeState` no longer enlarges the veiled button) and `.nameCompContainer` aligns wraps to the top so a removed comp's eye row lines up with the others.
+* Draft files: new `fMolDraftCommentSafe()` neutralizes `*/` in the generated `MULERMOC_*_data.js` block-comment headers (Submitted by / Proposed name / Comments, names/source fields) so user text can't break or inject into the file; bundle headers covered too. Verified headless by stubbing the download and inspecting the blob (fields render as `* /`; the header closes only at its own `*/`).
+* Pinned-footer CSS comment repaired as a valid block comment (`body.scPinned #creditsUs` is back in the CSSOM; Brave check). Docs synced to 58.28 (README, PROJECT-PLAN/GR, LAYERS, ROADMAP, STAGE2, Presentation, REVIEW docs, learning plan, harness README).
+* Owner decision recorded: comp eyes stay usable on quiz steps (teacher aid); hiding/removing a required comp removes it from the todo set — revisit if users report it. No code guard added.
+* `?v=58.27` → `?v=58.28`. `node --check` clean; `probe-scenario-quiz`/`probe-final`/`probe-explain-all`/`probe-coverage56` green.
 

@@ -55,7 +55,7 @@ working directory.
   `allowSelect` gating (hide entry when off, uncheck-while-active exits),
   Present block (toggle no-op + CSS hides the entry). Hard-fail.
 - `probe-compact-main.js` — main-chain versus free compacted-label semantics: COOH/HCOOH/CN resolve to the anchor carbon under a main-chain target, NO2 stays a fragment, free selection stays a fragment; checks C-only paint, hover box, badge, exact reward, the free-mode backplate edge, clear/marker restore and methanal (no highlight geometry).
-- `probe-scenario-quiz.js` — v58 scenario quiz contract (`?v=58.16`): capture
+- `probe-scenario-quiz.js` — v58 scenario quiz contract (`?v=58.28`): capture
   stores the task + its required component set + labels, `Update` keeps an
   authored task, the drawer's explicit Remove clears it, Present auto-arms,
   the gate holds until every required comp is solved, the solved display
@@ -78,3 +78,9 @@ working directory.
 
 Conventions: selection state lives in `window.MulerUserSelection`;
 all pick/render functions fail closed (return null / no-op on any gap).
+
+Coverage note (58.17–58.28): the comp-eye three-state cycle, draft author
+fields/oracle split, Present spin switch, viewer-height clamp and pinned
+bar/footer fit were verified live in Chrome (owner-side), not by the headless
+probes. The suite covers the quiz contract, step-row structure, student
+hover/picking, the solved 3D green and the existing 2D picking paths.

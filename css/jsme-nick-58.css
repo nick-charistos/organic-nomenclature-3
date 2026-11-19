@@ -1995,7 +1995,7 @@ header {
   display: flex;
   /* flex-wrap: wrap; */
   /* margin-top: 10px; */
-  align-items: center;
+  align-items: start;
   justify-content: center;
 }
 
@@ -2191,6 +2191,12 @@ header {
   position: relative;
   line-height: 1;
   margin-bottom: 2px;
+}
+
+.compEye svg {
+  width: 14px;
+  height: 14px;
+  display: block;
 }
 
 .compEye:hover {

@@ -304,7 +304,8 @@ Visibility rules:
   the box is not drawn (`display:none`) but its wrap/eye row stays so the
   author can cycle back; removed comps are skipped exactly like veiled ones
   (narration, stored-highlight replay, quiz todo set; overview rows for
-  removed comps are hidden, veiled ones stay as dashed chips). Authors toggle boxes via the master
+  removed comps are hidden, veiled ones stay as dashed chips). Eye glyphs are
+  normalized to 14px (`eye` / `eyeState` for veiled / `eyeOff` for removed). Authors toggle boxes via the master
   eye-edit switch in `#nameSettingsPanel` (live-only, never stored) +
   per-box eye buttons; Save/Update captures both sets. `show.nameEye`
   (per-step drawer checkbox `Ορατότητα συνθετικών`, default unchecked,
@@ -399,7 +400,9 @@ Visibility rules:
   `.srowHeadMain` spanning the full width with the title field +
   `.scStepActions` Go/Present/Update/Dupe/Up/Down); the body
   (`.srowBody`: `.scStepText` note toolbar + editor above `.scStepSettings`
-  with the viewer/naming/quiz/menu-group rows) expands on toggle,
+  with the viewer → naming → menu-groups → quiz rows, each a `.scShowRow`
+  with a dotted bottom separator and no trailing rule; stable `data-sc-row`
+  hooks) expands on toggle,
   head-space/row-padding click or title focus, collapsing the other rows
   (accordion; all-collapsed allowed). `Update` re-opens its row. Collapse
   animates (`max-height` + fade, off under `prefers-reduced-motion`);
