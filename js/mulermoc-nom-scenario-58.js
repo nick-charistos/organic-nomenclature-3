@@ -1611,6 +1611,14 @@ function fScenarioSyncControlUi() {
   }
 }
 
+// Spin switch only (cheap): the bar's rotateCheck must mirror the step's
+// view3D.spin after the async spin restore, not only at the pre-load sync.
+function fScenarioSyncSpinUi() {
+  try {
+    fScenarioSetCheck("rotateCheck", !!(typeof rotateFlag !== "undefined" && rotateFlag), "selectedCheck", "unselectedCheck");
+  } catch (e) { /* controls unavailable */ }
+}
+
 // Checkbox settings live only as DOM classes (no JS global) — capture them
 // literally; a missing element falls back to the UI default.
 function fScenarioCheck(id, fallback) {
@@ -1633,6 +1641,7 @@ function fScenarioStashAuthorSettings() {
     nameHidden: Array.isArray(window.nameHiddenComps) ? window.nameHiddenComps.slice() : [],
     nameGone: Array.isArray(window.nameGoneComps) ? window.nameGoneComps.slice() : [],
     nameEyeEdit: window.nameEyeEdit === true,
+    rotate: !!(typeof rotateFlag !== "undefined" && rotateFlag),
     zoom: (typeof molZoom2D !== "undefined" ? molZoom2D : 2.0),
     viewerMaxHeight: (typeof viewerMaxH !== "undefined" ? viewerMaxH : null),
     viewerBothHeight: (typeof viewerBothH !== "undefined" ? viewerBothH : null),
@@ -1664,6 +1673,12 @@ function fScenarioRestoreAuthorSettings() {
   window.nameHiddenComps = Array.isArray(a.nameHidden) ? a.nameHidden.slice() : [];
   window.nameGoneComps = Array.isArray(a.nameGone) ? a.nameGone.slice() : [];
   window.nameEyeEdit = a.nameEyeEdit === true;
+  // Author's 3D spin switch comes back too (step applies overwrote it).
+  try {
+    if (typeof rotateFlag !== "undefined") rotateFlag = a.rotate === true;
+    try { if (typeof fScenarioSyncSpinUi === "function") fScenarioSyncSpinUi(); } catch (eSU3) {}
+    if (typeof rotate3D === "function") rotate3D();
+  } catch (eRot) { /* 3D unavailable */ }
   // Author's menu-collapse rail comes back too (present entry expanded it).
   try {
     if (typeof fMenuCollapseSet === "function") fMenuCollapseSet(a.menuCollapsed === true);
@@ -2741,15 +2756,17 @@ function fScenarioApply(step) {
         } catch (e) {
           /* 3D unavailable */
         }
-        if (tok === MuLERMoCScenario.applyToken) {
+        if (tok === MuLERMoCScenario.applyToken && MuLERMoCScenario.present) {
           rotateFlag = wantSpin;
           rotate3D();
+          try { if (typeof fScenarioSyncSpinUi === "function") fScenarioSyncSpinUi(); } catch (eSU) {}
         }
       }, 400);
     })(token, step.view3D.moveto);
   } else {
     rotateFlag = wantSpin;
     rotate3D();
+    try { if (typeof fScenarioSyncSpinUi === "function") fScenarioSyncSpinUi(); } catch (eSU2) {}
   }
 
   // 5. name highlight via the standard click path, gated on 3D analysis (S2):
@@ -4881,6 +4898,7 @@ function fScenarioSetAuthoring(on) {
   fScenarioSyncAuthorUi();
   fScenarioPaintPickUi();
   fScenarioApplyPinPref();
+  try { if (typeof fScenarioScheduleAuthorBarFit === "function") fScenarioScheduleAuthorBarFit(); } catch (eFit) {}
 }
 
 // ── authoring pin-dock (v48) ────────────────────────────────────────────
@@ -4921,6 +4939,7 @@ function fScenarioSetPinned(on) {
     // after layout settles (flex + applet resizes land async).
     try { fScenarioSyncScroller(); } catch (eSync) { /* cues best-effort */ }
     try { setTimeout(function () { fScenarioSyncScroller(); }, 300); } catch (eSyncD) { /* cues best-effort */ }
+    try { if (typeof fScenarioScheduleAuthorBarFit === "function") fScenarioScheduleAuthorBarFit(); } catch (eFit) {}
   } else {
     MuLERMoCScenario.pinned = false;
     if (pin) pin.classList.remove("active");
@@ -4931,7 +4950,83 @@ function fScenarioSetPinned(on) {
       var _sc = document.getElementById("mainAppContainer");
       if (_sc) { _sc.classList.remove("scCanScroll"); _sc.removeAttribute("tabindex"); }
     } catch (eSync2) { /* cues best-effort */ }
+    try { if (typeof fScenarioScheduleAuthorBarFit === "function") fScenarioScheduleAuthorBarFit(); } catch (eFit2) {}
   }
+}
+
+// Pinned author-bar sizing (v58.23): the docked bar is absolutely positioned
+// with bottom:0 relative to its container, so without a cap it grows over the
+// credits footer and its lower drawer rows become unreachable (scrolling the
+// page to them hides the app). Cap it at the first of footer top / viewport
+// bottom (8px gap); unpinned keeps CSS sizing (85vh under a fixed top).
+var _scFitBarTimer = null;
+function fScenarioFitAuthorBar() {
+  try {
+    var bar = document.getElementById("scenarioAuthorBar");
+    if (!bar) return;
+    var pinned = false;
+    try { pinned = document.body.classList.contains("scPinned"); } catch (eP) { pinned = false; }
+    if (!pinned) { try { bar.style.maxHeight = ""; } catch (eR) {} return; }
+    var r = null;
+    try { r = bar.getBoundingClientRect(); } catch (eRect) { r = null; }
+    if (!r || r.height <= 0) return;
+    // Document coordinates: the docked bar scrolls with the page, so
+    // viewport-relative tops would change the cap on every scroll.
+    var sy = 0;
+    try {
+      // Body-scrolled layouts report the offset on documentElement/body/
+      // scrollingElement depending on quirks/mode: take the largest.
+      var _se = document.scrollingElement;
+      sy = Math.max(
+        (_se && _se.scrollTop) || 0,
+        (document.documentElement && document.documentElement.scrollTop) || 0,
+        (document.body && document.body.scrollTop) || 0,
+        window.scrollY || window.pageYOffset || 0
+      );
+    } catch (eSy) { sy = 0; }    var barTopDoc = r.top + sy;
+    var limitDoc = 0;
+    try { limitDoc = sy + (window.innerHeight || 0); } catch (eVp) { limitDoc = 0; }
+    var gap = 8; // viewport-limited: keep breathing room under the bar
+    try {
+      var f = document.querySelector("footer");
+      if (f) {
+        var fr = f.getBoundingClientRect();
+        if (fr.height > 0) {
+          var footerTopDoc = fr.top + sy;
+          if (footerTopDoc > 0 && footerTopDoc < limitDoc) {
+            limitDoc = footerTopDoc;
+            gap = 0; // footer-limited: meet the footer edge, no white sliver
+          }
+        }
+      }
+    } catch (eF) {}
+    // Footer-limited: +10 so the bar's bottom border merges into the footer.
+    // Viewport-limited: keep the 8px breathing gap (no overshoot).
+    var h = Math.round(limitDoc - barTopDoc - gap) + (gap === 0 ? 10 : 0);
+    if (!(h > 0)) h = 0;
+    if (h > 0 && h < 220) h = 220; // usable floor on very short viewports
+    try { bar.style.maxHeight = h + "px"; } catch (eSet) {}
+    try { if (typeof fScenarioSyncScroller === "function") fScenarioSyncScroller(); } catch (eS) {}
+  } catch (e) {}
+}
+function fScenarioScheduleAuthorBarFit() {
+  try {
+    if (_scFitBarTimer) clearTimeout(_scFitBarTimer);
+    _scFitBarTimer = setTimeout(function () { _scFitBarTimer = null; fScenarioFitAuthorBar(); }, 60);
+  } catch (e) {}
+}
+function fScenarioInitAuthorBarFit() {
+  if (window._scAuthorBarFit) return;
+  window._scAuthorBarFit = true;
+  try { window.addEventListener("resize", fScenarioScheduleAuthorBarFit); } catch (eR) {}
+  // Footer content can grow/shrink at runtime (credits, notices): re-fit.
+  try {
+    var f = document.querySelector("footer");
+    if (f && typeof ResizeObserver !== "undefined") {
+      new ResizeObserver(function () { fScenarioScheduleAuthorBarFit(); }).observe(f);
+    }
+  } catch (eRO) { /* observer unavailable */ }
+  fScenarioScheduleAuthorBarFit();
 }
 
 // Re-apply the author's remembered pin when the bar returns (authoring only;
@@ -5397,6 +5492,7 @@ function fScenarioBuildUi() {
     var lb = panel.querySelector(".scList");
     if (d) d.classList.add("open");
     if (lb) lb.classList.add("active");
+    try { if (typeof fScenarioScheduleAuthorBarFit === "function") fScenarioScheduleAuthorBarFit(); } catch (eFit) {}
   }
   // Toggle helper: open drawer closes it (+ drops Steps .active),
   // otherwise delegates to the open-only path above.
@@ -5407,6 +5503,7 @@ function fScenarioBuildUi() {
       d.classList.remove("open");
       var lb = panel.querySelector(".scList");
       if (lb && lb.classList) lb.classList.remove("active");
+      try { if (typeof fScenarioScheduleAuthorBarFit === "function") fScenarioScheduleAuthorBarFit(); } catch (eFitT) {}
     } else {
       fScenarioOpenDrawer(id);
     }
@@ -7147,6 +7244,7 @@ function fScenarioParseUrl() {
 
 function fScenarioBoot() {
   fScenarioBuildUi();
+  try { if (typeof fScenarioInitAuthorBarFit === "function") fScenarioInitAuthorBarFit(); } catch (eFit) {}
   // stash the app title; present mode replaces #pageTitle per step, exit restores it
   try {
     var _h = document.getElementById("pageTitle");

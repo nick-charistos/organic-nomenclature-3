@@ -18721,6 +18721,19 @@ function fViewerHeights2D3D(raw) {
     }
     var n = (show2D ? 1 : 0) + (show3D ? 1 : 0);
     if (n === 0) return out;
+    // Measured clamp (v58.22): the arithmetic above uses magic header/margin
+    // constants (the real top offset drifts with the dev banner, present
+    // play bar, note card and gaps), so "full" could end ~30px too tall and
+    // clip the bottom control bar. The live column top already includes all
+    // of that: clamp the budget to the space actually left below it.
+    // Clamp-only — no layout can grow from this.
+    try {
+      if (vc) {
+        var _docTop = Math.round(vc.getBoundingClientRect().top + (window.scrollY || 0));
+        var _avail = _vph - _docTop - 16; // 16px bottom breathing room
+        if (_avail > 0 && _avail < total) total = _avail;
+      }
+    } catch (eClamp) { /* measuring unavailable */ }
     // Dead-space top-up: when a sibling column (menu/analysis content)
     // stretches the row taller than the viewport share, viewers split the
     // row-driven height instead — otherwise dead space sits under them.

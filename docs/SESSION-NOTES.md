@@ -3180,6 +3180,35 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * Implemented: `.draftOCSource` (label + trailing space, margin-left 4px, weight 600) and `.draftOCName` (name, `color: inherit`) in all four named rows (IUPAC PubChem, Common PubChem, Systematic, IUPAC OpenClatura); `.draftOCMark` glyph unchanged. Plain status rows (fetching/no-record/3D) untouched.
 * Verified live in Chrome: spans present, `IUPAC (PubChem): ` + `ethane`, OpenClatura row same shape. `?v=58.19` → `?v=58.20`. Not committed.
 
+## 2026-11-19 — Present rotate switch keeps the step state (v58 working tree, owner report, awaiting owner check)
+* Owner: the 3D rotate checkbox must reflect the step. Symptom: a spin step rotates but the switch shows unchecked.
+* Root cause: apply forces `rotateFlag=false` during the load and syncs the bar there; the step‘s spin is restored later (immediate else or 400ms moveto timer) without a second bar sync. Exit also leaked: the delayed spin timer fired after `fScenarioRestoreAuthorSettings`, re-spinning authoring.
+* Fix: new `fScenarioSyncSpinUi()` (rotateCheck classes only) called after the final `rotate3D()` in both branches; the delayed restore is gated on `MuLERMoCScenario.present`. Author rotate switch added to the Present stash and restored on Exit (`authorSettings.rotate`, bar sync, `rotate3D()`).
+* Verified live in Chrome: capture spin on/off → Present step1 checked+rotating, step2 unchecked+stopped, back to step1 checked; Exit restores the author’s unchecked switch. `?v=58.20` → `?v=58.21`. Not committed.
+
+## 2026-11-19 — full-height viewers clamp to the measured column top (v58 working tree, owner report, awaiting owner check)
+* Owner: in authoring, both viewers at full height with both settings bars clipped ~30px. Present was acceptable (exact heights can be authored).
+* Measured: viewerCol top 138.8 + heights 39/341/36/341/36 on a 917px viewport → bottom 933.8 (≈17px clipped; the dev banner and gaps made the `-30 header/-30 margins` constants drift). Chrome itself (111px) was counted correctly.
+* Fix: `fViewerHeights2D3D` clamps `total` to `viewport − (viewerCol doc-top + scrollY) − 16` (clamp-only, so no layout can grow; `full`/both-split/phone caps inherit it). Play-bar branch left untouched (it is dead for the fixed bar and the measured top already includes its space).
+* Verified live in Chrome: authoring both viewers+bars full → 326px each, column bottom 904 (<917); Present two-viewer step with note → 307px each, bottom 903; single-viewer Full unchanged at the width clamp (614). `?v=58.21` → `?v=58.22`. Not committed.
+
+## 2026-11-19 — pinned author bar stops at the footer top (v58 working tree, owner report, awaiting owner check)
+* Owner: pinned bar takes the full page height; the bottom drawer rows overlap the credits footer, and scrolling to them hides the app.
+* Measured root cause: `body.scPinned #scenarioAuthorBar` is absolute with `bottom:0; max-height:none`, so its height ran to the body bottom (−31 → 1342) while the footer starts at 924 on a 917px viewport.
+* Fix: `fScenarioFitAuthorBar()` caps the bar at `min(footer top, viewport bottom) − bar top − 8px`, computed in document coordinates (scroll-stable), 220px floor; `fScenarioScheduleAuthorBarFit()` debounces. Wired to build, window resize, pin toggle, drawer open/close, authoring toggle, and a footer `ResizeObserver`. Unpinned clears the inline cap (CSS 85vh/fixed top unchanged).
+* Verified live in Chrome: pinned bottom 853 / viewport 861 (8px gap); footer raised above the fold → bar bottom 559 vs footer 568; footer restored → 853; unpinned inline cleared, fixed bar unchanged. `?v=58.22` → `?v=58.23`. Not committed.
+
+## 2026-11-19 — pinned footer full width + seam (v58 working tree, owner follow-up, awaiting owner check)
+* Owner: white space under the capped pinned bar; asked whether the footer can expand full width.
+* Fix: `body.scPinned #creditsUs` full width (`margin-right:0; width:100%`) — safe because the bar now stops above the footer. `fScenarioFitAuthorBar` uses gap 0 when footer-limited (dark bar meets the footer, no white sliver) and keeps 8px when viewport-limited; rounding switched to `Math.round` so the seam is 0px.
+* Verified live in Chrome: credits width = footer width (1905px, full page); footer-limited bar bottom 624 = footer top 624 (seam 0); viewport-limited bottom 909 with 8px gap; restore returns to viewport cap. `?v=58.23` → `?v=58.24`. Not committed.
+
+## 2026-11-19 — pinned bar merges into the footer with +10px (v58 working tree, owner request, awaiting owner check)
+* Owner rejected the decorative bridge; asked to simply add 10px to the calculated drawer height.
+* Implemented: the fitter adds 10px only in the footer-limited branch, so the bar’s 10px bottom border overlaps into the footer (visual merge, no extra element). Viewport-limited keeps the 8px gap (adding 10 there would push the bar 2px past the viewport). Scroll offset uses max(documentElement/body/scrollingElement/window) so body-scrolled refits stay correct.
+* Verified live in Chrome at 1100×640: footer-limited bar bottom 477 vs footer top 467 → 10px merge, screenshot shows a clean seam; viewport-limited bottom 632 (8px gap); restored 632. `?v=58.24` → `?v=58.25`. Not committed.
+
+
 ## 2026-11-19 — explain rows follow the eye state (v58 working tree, owner request, awaiting owner check)
 * Owner: a removed (`.comp-gone`) component's `.explainRow` must disappear too; the old `row-hidden` class only styled the chip.
 * Implemented: rows carry `{hidden: veiled, gone: removed}` from `fNameCompState`; veiled rows use the renamed `chipHidden` class (same dash-chip look), removed rows use `row-hidden` → `.explainRow.row-hidden { display:none }`; gone wins if both flags were set. Scrape/cache unchanged (rows still built, just hidden), so cycling back restores the row with no rebuild.

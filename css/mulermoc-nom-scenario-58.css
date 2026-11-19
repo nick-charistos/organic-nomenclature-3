@@ -2402,9 +2402,12 @@ body.scPinned #pageTitle {
    margin-right: 480px;
 }
 
+// Credits strip: the footer fills the page width under the pinned bar (the
+// bar is capped above the footer now, so the 480px reservation would only
+// leave a white band there).
 body.scPinned #creditsUs {
-   width: auto;
-   margin-right: 480px;
+   width: 100%;
+   margin-right: 0;
 }
 
 #authorLayout {
