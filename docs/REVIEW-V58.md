@@ -2,7 +2,7 @@
 
 Date: 2026-11-18. Tree: `a9e598f` (`?v=58.10`) at review time. Status:
 **resolved in `?v=58.11`**, with later v58 work recorded below (current:
-`?v=58.40`); the findings are kept verbatim as the record of what
+`?v=58.41`); the findings are kept verbatim as the record of what
 was wrong and why.
 Scope: `11d5886` (fork) → `a9e598f`; the real delta is `72699c2`,
 `29287c3`, `bf2aca5`, `a9e598f` + the new probe.
@@ -42,7 +42,7 @@ Verification: `probe-scenario-quiz` (13 sections) green; `probe-quiz`,
 files. Owner-side browser matrix remains (drawer list/Remove, Esc, revisit,
 menu arm, non-quiz step).
 
-### Later v58 work (58.12–58.40, after the review)
+### Later v58 work (58.12–58.41, after the review)
 
 Recorded here so this file reflects the shipped tree; none of these are
 review findings.
@@ -100,6 +100,9 @@ review findings.
   so the credits footer starts at/below the viewport bottom regardless of the
   scenario drawer state; presentation keeps the header but hides the footer,
   which returns on Exit.
+- **58.41** — shared fixed `#mulerTipLayer` renders every `[data-tooltip]`,
+  flips/clamps inside the viewport and replaces pseudo bubbles (kept as no-JS
+  fallback); fixes the drawer/quiz-tag/last-row clips.
 
 Known trade-offs / accepted decisions: comp eyes on quiz steps are
 intentionally left live (owner, 2026-11-19); the pinned-bar 220px floor can

@@ -8,7 +8,7 @@ changelog.
 
 Greek-first static web app for teaching organic nomenclature (JSME + JSmol +
 vanilla JavaScript; no build step). The live entry point is `index.html` →
-`mulermoc-nom-58.html`. Current live version: **v58.40** (2026-11-20).
+`mulermoc-nom-58.html`. Current live version: **v58.41** (2026-11-20).
 Older versions v42–v57 remain runnable at the repo root but are **frozen**.
 
 ## Read first
@@ -23,7 +23,7 @@ Older versions v42–v57 remain runnable at the repo root but are **frozen**.
 ## Live tree (v58)
 
 - Page: `mulermoc-nom-58.html`
-- Scripts: `js/mulermoc-nom-{core,molview,teaching,note,scenario,iupac,lang,name-en}-58.js`
+- Scripts: `js/mulermoc-nom-{tooltip,core,molview,teaching,note,scenario,iupac,lang,name-en}-58.js`
 - Styles: `css/jsme-nick-58.css` (app/naming), `css/mulermoc-nom-scenario-58.css` (scenario UI)
 - Data: `js/jsme-nick-nomeclature-moc2-data_58.js`
 - Init: `spt/init-3-58.spt`; harness page: `zz-test-core58.html`
@@ -173,6 +173,11 @@ Update docs in the same commit as the change:
   of the scenario drawer state; the app keeps its natural height and the gap
   is white space. Presentation keeps the header (navigation + Exit) but hides
   the footer; Exit restores it.
+- Tooltips (v58.41): every `[data-tooltip]` is rendered by the fixed
+  `#mulerTipLayer` in `js/mulermoc-nom-tooltip-58.js`, not by pseudo-elements.
+  It flips/clamps inside the viewport and hides on scroll/resize/leave.
+  Pseudo bubbles are suppressed only while the layer is active and remain the
+  no-JS fallback; add new tooltips via `data-tooltip`, not new bubble CSS.
 - Add UI text to `js/mulermoc-nom-lang-58.js`; legacy inline strings exist,
   so keep GR/EN parity and existing fallback behavior in new code. Greek
   values are UTF-8.

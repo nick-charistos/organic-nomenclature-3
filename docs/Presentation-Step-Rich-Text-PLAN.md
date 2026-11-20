@@ -1,6 +1,6 @@
 # Presentation Step Rich Text — v51/v52 Plan
 
-> **Historical (2026-11-18):** current tree is **v58** (`?v=58.40`); this file
+> **Historical (2026-11-18):** current tree is **v58** (`?v=58.41`); this file
 > remains the v51/v52 rich-text record. The inline note editor now lives in
 > the step row's `.scStepText` block (toolbar + editor) under the v58.14–v58.16
 > row architecture — see `docs/CHANGELOG.md` [v58] and
