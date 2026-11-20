@@ -200,6 +200,7 @@ var MULER_STRINGS = {
   quizLocantNeedsChain: { gr: "Η θέση απαιτεί την κύρια αλυσίδα στο κουίζ", en: "Needs the main chain in the quiz" },
   quizTagIncapableTip: { gr: "Δεν έχει άτομα για κουίζ σε αυτό το μόριο", en: "No atoms to quiz on this molecule" },
   quizTagHiddenTip: { gr: "Κρυμμένο συνθετικό — δεν μπορεί να μπει στο κουίζ", en: "Hidden component — cannot be quizzed" },
+  quizTagRemoveTip: { gr: "κλικ για αφαίρεση", en: "click to remove" },
   quizNoCapable: { gr: "Δεν βρέθηκαν συνθετικά με άτομα για κουίζ.", en: "No components with atoms to quiz." },
   quizGoFirst: { gr: "Ανοίξτε πρώτα το βήμα (Go) για να φορτωθεί το μόριο.", en: "Open the step first (Go) to load its molecule." },
   quizLastRequired: { gr: "Κρατήστε τουλάχιστον ένα συνθετικό στο κουίζ.", en: "Keep at least one component in the quiz." },

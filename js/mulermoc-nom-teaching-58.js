@@ -1574,7 +1574,10 @@ $(document).ready(function () {
     try {
       if (_authRe && _prevMol && String(selectedMol) === _prevMol &&
           typeof window !== "undefined" && window.__mulerQuizSolved) {
-        delete window.__mulerQuizSolved[String(selectedMol)];
+        var _qkRe = (typeof fMulerQuizSolvedKeyFor === "function")
+          ? fMulerQuizSolvedKeyFor(String(selectedMol))
+          : String(selectedMol);
+        if (_qkRe) delete window.__mulerQuizSolved[_qkRe];
       }
       // v58: the just-solved capture record is per-molecule too — reselect
       // drops it so a later Update can't store a stale answer. Quiz intent

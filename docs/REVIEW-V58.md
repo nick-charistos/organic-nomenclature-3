@@ -2,7 +2,7 @@
 
 Date: 2026-11-18. Tree: `a9e598f` (`?v=58.10`) at review time. Status:
 **resolved in `?v=58.11`**, with later v58 work recorded below (current:
-`?v=58.29`); the findings are kept verbatim as the record of what
+`?v=58.40`); the findings are kept verbatim as the record of what
 was wrong and why.
 Scope: `11d5886` (fork) → `a9e598f`; the real delta is `72699c2`,
 `29287c3`, `bf2aca5`, `a9e598f` + the new probe.
@@ -42,7 +42,7 @@ Verification: `probe-scenario-quiz` (13 sections) green; `probe-quiz`,
 files. Owner-side browser matrix remains (drawer list/Remove, Esc, revisit,
 menu arm, non-quiz step).
 
-### Later v58 work (58.12–58.29, after the review)
+### Later v58 work (58.12–58.40, after the review)
 
 Recorded here so this file reflects the shipped tree; none of these are
 review findings.
@@ -81,6 +81,25 @@ review findings.
 - **58.29** — settings rows get bold inline section titles (Viewers / Naming /
   Menu / Quiz), with new `rowViewers`/`rowNaming`/`rowMenu`/`rowQuiz` i18n keys
   and `menuGroupsTitle` retired; drawer-only.
+- **58.30–58.39** — locant re-click keeps the chain-first task; the quiz row
+  becomes a master checkbox + binary tag editor (selected = required,
+  unselected/solved = free), with in-place tag updates, collapsed list,
+  chain-locked locants, and Go-aware enable; menu quizzes become deferred
+  tasks with switchable component-type chips. 58.39 makes solved/free state
+  step-scoped, blocks zero-type cascades, makes a selected no-capable type an
+  empty task, locks `bondPos`/`groupLocants` with the chain, keeps required
+  hidden tags removable, and preserves authored `quiz.types`/`preSolved`
+  across Update. A menu-less molecule quiz stores `quiz.mol` on enable and
+  renders the real name tags; any menu-carrying step stays deferred and
+  renders type chips even with a selected molecule. Probe sections 17–22
+  cover two-step independence, a no-capable menu type, the zero-type cascade,
+  Update type preservation, hidden-tag removal and the molecule-tags/menu-types
+  split. The old “drawer list/Remove” owner matrix is superseded by the master
+  checkbox/tag/type-chip checks.
+- **58.40** — pinned authoring reserves a measured viewport-tall `#authorLayout`
+  so the credits footer starts at/below the viewport bottom regardless of the
+  scenario drawer state; presentation keeps the header but hides the footer,
+  which returns on Exit.
 
 Known trade-offs / accepted decisions: comp eyes on quiz steps are
 intentionally left live (owner, 2026-11-19); the pinned-bar 220px floor can

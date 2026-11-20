@@ -659,7 +659,7 @@
    justify-self: start;
    flex: none;
    transition: all .2s ease;
-   margin:-10px 0 0 -10px;
+   margin: -10px 0 0 -10px;
 }
 
 .scenarioDrawer .srow .scDragHandle:hover {
@@ -709,7 +709,7 @@
    opacity: .8;
    line-height: 1.2;
    font-weight: bold;
-   display:none;
+   display: none;
 }
 
 .scenarioDrawer .srow .scStepTitleWrap input.scStepTitle {
@@ -814,10 +814,12 @@
 
 .scenarioDrawer .scMolBadge {
    font-size: .7rem;
+   font-weight: bold;
    color: #fff;
    background: var(--lightBlue);
    border-radius: 2px;
-   padding: 0 6px;
+   border: 1px solid var(--lightBlue);
+    padding: 1px 4px;
    white-space: nowrap;
    max-width: 130px;
    overflow: hidden;
@@ -837,9 +839,9 @@
    font-weight: bold;
    color: var(--darkBlue);
    background: var(--veryLightEarth, #fff1de);
-   border: 1px solid currentColor;
+   border: 1px solid var(--lightBlue);
    border-radius: 2px;
-   padding: 0 6px;
+   padding: 1px 4px;
    white-space: nowrap;
    font-family: "Roboto Condensed", sans-serif;
 }
@@ -861,35 +863,34 @@
    /* max-width: 46%; */
 }
 
-.scenarioDrawer .scStepQuizSettings .scQuizReqHead {
+#scenarioAuthorBar .scenarioDrawer .scStepQuizSettings .scQuizReqHead {
    align-self: flex-start;
    font: inherit;
    font-weight: 700;
-   color: var(--darkBlue);
-   background: transparent;
-   border: 0;
-   padding: 0;
+   background: var(--veryLightBlue);
+   border: 1px solid var(--lightBlue);
+   padding: 2px 4px;
    cursor: pointer;
    font-family: "Roboto Condensed", sans-serif;
    font-size: .72rem;
 }
 
-.scenarioDrawer .scStepQuizSettings .scQuizReqList {
+#scenarioAuthorBar .scenarioDrawer .scStepQuizSettings .scQuizReqList {
    display: flex;
    flex-wrap: wrap;
    gap: 4px;
 }
 
 /* Menu quizzes: read-only type chips + hints (v58.37). */
-.scenarioDrawer .scStepQuizSettings .scQuizReqHeadStatic {
+#scenarioAuthorBar .scenarioDrawer .scStepQuizSettings .scQuizReqHeadStatic {
    font-size: .72rem;
    font-weight: 700;
    color: var(--darkBlue);
    font-family: "Roboto Condensed", sans-serif;
 }
 
-.scenarioDrawer .scStepQuizSettings .scQuizMenuHint,
-.scenarioDrawer .scStepQuizSettings .scQuizPreSolved {
+#scenarioAuthorBar .scenarioDrawer .scStepQuizSettings .scQuizMenuHint,
+#scenarioAuthorBar .scenarioDrawer .scStepQuizSettings .scQuizPreSolved {
    font-size: .68rem;
    color: var(--darkBlue);
    opacity: .8;
@@ -921,7 +922,7 @@
 
 #scenarioAuthorBar .scenarioDrawer .scStepQuizSettings .scQuizTag.free {
    opacity: 0.9;
-   color:#000;
+   color: #000;
    background: #fff;
    border-color: var(--lightBlue);
 }
@@ -930,6 +931,13 @@
    opacity: .65;
    border-style: dashed;
    cursor: not-allowed;
+}
+
+/* v58.39: a required tag that became hidden/atom-less stays clickable so the
+   author can remove it from the task; unselected incapable tags stay disabled. */
+#scenarioAuthorBar .scenarioDrawer .scStepQuizSettings .scQuizTag.incapable.removable {
+   opacity: .9;
+   cursor: pointer;
 }
 
 .scenarioDrawer .scStepQuizSettings .scQuizTag.orphan {
@@ -944,17 +952,18 @@
 }
 
 .scenarioDrawer .scLangBadge {
-	font-size: .65rem;
-	font-weight: bold;
-	color: var(--lightBlue);
-	/* background: var(--veryLightEarth); */
-	/* border: 1px solid var(--veryLightBlue); */
-	border-radius: 2px;
-	padding: 1px 2px;
-	white-space: nowrap;
-	font-family: "Roboto Condensed", sans-serif;
-	flex: none;
+   font-size: .65rem;
+   font-weight: bold;
+   color: var(--lightBlue);
+   /* background: var(--veryLightEarth); */
+   /* border: 1px solid var(--veryLightBlue); */
+   border-radius: 2px;
+   padding: 1px 2px;
+   white-space: nowrap;
+   font-family: "Roboto Condensed", sans-serif;
+   flex: none;
 }
+
 .scenarioDrawer .scStepNumberWrap {
    display: inline-flex;
    flex-direction: column;
@@ -1695,7 +1704,7 @@
    bubble would spill past it, so anchor it left like the drawer's expand
    button (extends right, where the whole toolbar row has room). */
 .scNoteEditorToolbar>div.scNoteToolbar>button[data-tooltip]:first-child::after,
-.scNoteEditorToolbar>button.scNoteSourceBtn + button[data-tooltip]::after,
+.scNoteEditorToolbar>button.scNoteSourceBtn+button[data-tooltip]::after,
 .scNoteEditorToolbar>button:first-child[data-tooltip]::after {
    left: 0;
    right: auto;
@@ -1703,7 +1712,7 @@
 }
 
 .scNoteEditorToolbar>div.scNoteToolbar>button[data-tooltip]:first-child::before,
-.scNoteEditorToolbar>button.scNoteSourceBtn + button[data-tooltip]::before,
+.scNoteEditorToolbar>button.scNoteSourceBtn+button[data-tooltip]::before,
 .scNoteEditorToolbar>button:first-child[data-tooltip]::before {
    left: 12px;
    right: auto;
@@ -1823,6 +1832,14 @@
    max-width: 900px;
    flex: 0 1 900px;
    min-width: 0;
+}
+
+/* Presentation is lesson-only: keep the header (navigation + Exit) but hide
+   the project credits footer. It is informational chrome, not instructional
+   content, and would otherwise sit at the viewport bottom or add page scroll.
+   Exit drops .presenting and the footer returns in normal flow. */
+#pageContainer.presenting > footer {
+   display: none;
 }
 
 #pageContainer.presenting #creditsUs {

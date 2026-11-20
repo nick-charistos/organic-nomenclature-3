@@ -359,7 +359,11 @@ Visibility rules:
   the visibility/state authority and reduced-motion/no-WAAPI falling back to an
   instant change; `#mainAppContainer` (exactly
   the three columns)
-  is the horizontal scroller and the title + footer yield a 480px band,
+  is the horizontal scroller and the title yields a 480px band; v58.40 also
+  reserves a viewport-tall `#authorLayout` in pinned authoring so the credits
+  footer starts at/below the viewport bottom regardless of drawer state (the
+  app keeps its natural height; the gap is white space, footer by scrolling),
+  while presentation hides the footer and keeps the header,
   so name settings stay reachable while authoring
   (viewer widths frozen from a pre-dock read, applets untouched). Authoring
   opens with the bar docked: the pin default is on and remembered
@@ -431,8 +435,11 @@ Visibility rules:
    `.scStepNameSettings` for master `show.naming` (“Εμφάνιση ονομασίας”,
    default checked — off hides the whole `analysisCol` in Present and disables
    the rest) + `Name controls`, `Name interact`, `Ορατότητα συνθετικών`,
-   `.scStepQuizSettings` for quiz steps (`Require solving…`, the stored
-   required-component list, `Remove`), plus `Ταξινομήσεις Μένου` (`Μόρια` default-checked,
+   `.scStepQuizSettings` for quiz steps (master `quiz-enabled` checkbox, the
+   gate checkbox, and the collapsible component tags — selected = required,
+   unselected/solved = pre-solved; any menu-carrying step, even with a
+   selected molecule, uses switchable type chips instead of name tags),
+   plus `Ταξινομήσεις Μένου` (`Μόρια` default-checked,
   `Χημικές Τάξεις`, `Ομόλογες Σειρές` — presentation-only menu views,
   shown only on menu-carrying steps, all-off valid → flat fallback;
   see §2) — see §2; no `Text`/`Menu`: text is automatic, menu
@@ -544,7 +551,9 @@ Visibility rules:
   rows stay clickable for free
   browsing. `#pageContainer.presenting` scopes present-only CSS (flipped
   on every step apply + Exit; first override: taller `.menuListContainer`,
-  350px vs the 150px author default). Exit rebuilds the pristine author menu instead.
+  350px vs the 150px author default; v58.40 also hides the project credits
+  footer — the header with navigation/Exit stays — and Exit restores it).
+  Exit rebuilds the pristine author menu instead.
 * Menu forced shut in playback unless the step carries 2+ picks;
   panels and control bars follow `show.*`.
 * Student self-learning uses the same playback without a teacher.
@@ -616,7 +625,7 @@ Done in v43 (`mulermoc-nom-43.html`, last suffixed copy; carried through v44 int
    assertions (manual click-through pending).
 6. ✅ CHANGELOG v43 entry (`index.html` → 43 in repo3 only).
 
-Remaining: v58 is live (`index.html` → 58 — scenario quiz steps with student mode, stored required component set, deferred menu quizzes and explicit Remove; 3D atom/bond picking via JSmol `pickCallback`; 2D atom/bond quizzes; step drawer rebuilt in v58.14–v58.16; unified inline/modal rich note editor with WYSIWYG + HTML source, lazy legacy-text upgrade, staged Apply/Cancel and dirty-close confirm; safe rich HTML notes, rule-table components, compact icon toolbar, 141 molecules, and a Snap-free native `MuSVG` 2D overlay; default preload `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json`; see `CHANGELOG.md [v58]`). It retains the v51 rich notes, the v50 per-step presentation text position (top/left/right fourth-column sticky rail) + persistent naming shell, and the v49 MSc-student import (see `CHANGELOG.md [v57]`/`[v56]`/`[v51]`/`[v50]`/`[v49]`); `*57*`–`*44*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced. Then quizzes/games on the
+Remaining: v58 is live (`index.html` → 58 — scenario quiz steps with student mode, stored required component set, deferred menu quizzes with switchable types, and the master-checkbox/component-tag editor; 3D atom/bond picking via JSmol `pickCallback`; 2D atom/bond quizzes; step drawer rebuilt in v58.14–v58.16; unified inline/modal rich note editor with WYSIWYG + HTML source, lazy legacy-text upgrade, staged Apply/Cancel and dirty-close confirm; safe rich HTML notes, rule-table components, compact icon toolbar, 141 molecules, and a Snap-free native `MuSVG` 2D overlay; default preload `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json`; see `CHANGELOG.md [v58]`). It retains the v51 rich notes, the v50 per-step presentation text position (top/left/right fourth-column sticky rail) + persistent naming shell, and the v49 MSc-student import (see `CHANGELOG.md [v57]`/`[v56]`/`[v51]`/`[v50]`/`[v49]`); `*57*`–`*44*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced. Then quizzes/games on the
 same reuse contract. The stepper's main-chain pool index is captured per step (`chainIdx`, v47 additive) and re-asserted on apply; only the transient EXPLORE walk UI position is not step state.
 
 ## 8. Open questions for development (moveto timing closed 2026-10-04)

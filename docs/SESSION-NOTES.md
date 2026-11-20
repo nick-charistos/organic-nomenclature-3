@@ -1,32 +1,36 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
 > **Resume pointer (cross-machine):** 2026-11-20 — **v58 is LIVE**
-> (`index.html` → `mulermoc-nom-58.html`, `?v=58.38`, review follow-ups +
+> (`index.html` → `mulermoc-nom-58.html`, `?v=58.40`, review follow-ups +
 > student hover/3D fixes + step-row architecture/corners/density + the
-> 58.17–58.29 feature/UI batch).
+> 58.17–58.40 feature/UI batch).
 > Scenario quiz contract: steps store their required component set
-> (`quiz.modes` + labels), Update never destroys an authored task (explicit
-> Remove), Present auto-arms + gates on the stored set, Esc clears picks on
+> (`quiz.modes` + labels; deferred `quiz.types` for menu quizzes), the drawer
+> master checkbox owns quiz existence, Update never destroys an authored task,
+> Present auto-arms + gates on the stored set, Esc clears picks on
 > quiz steps (no longer exits the lesson), forward jumps can't skip a gated
 > step, menu steps gate until a molecule is picked. `probe-scenario-quiz.js`
-> was rewritten and is green. The full 2D suite was re-run against v58 and is
+> is green; the full 2D suite was re-run against v58 and is
 > green (final/quiz/mode-quiz/explain-all/fg/loc/bond/branch/coverage56/
 > smoke56/compact-main/shift/skel-joints; `probe-3d-pick` still owner-side).
-> New in 58.17–58.29: three-state comp eye (shown/veiled/removed, 14px icons,
+> New in 58.17–58.40: three-state comp eye (shown/veiled/removed, 14px icons,
 > explain rows follow), draft author fields + split oracle rows, spin switch,
 > measured viewer-height clamp, pinned bar/footer fit + merge, step-row
 > separators + quiz row last + section titles (Viewers/Naming/Menu/Quiz),
-> safer generated draft headers. Owner decision:
+> safer generated draft headers, the quiz component editor (master checkbox,
+> binary tags, collapsible list), the locant chain rule, switchable menu quiz
+> types, step-independent quiz progress, the pinned-authoring footer below the
+> viewport, and the hidden presentation footer. Owner decision:
 > comp eyes stay usable on quiz steps (teacher aid; hiding a required comp
 > removes it from the todo set) — revisit if users report.
-> Remaining owner-side: the browser Present matrix (per-component
-> requirement list in the drawer, Remove, Esc, revisit, menu deferred arm,
-> non-quiz step after quiz), then `probe-3d-pick` on a machine with working
-> 3D and the parked v55 sweeps below (overview table both languages,
-> narration voices, menu rail), P3 blessing of Greek word forms,
-> completion-callback wait spike, energy comparison, settings tabs.
+> Remaining owner-side: the browser Present matrix (quiz editor tags/menu
+> types, Esc, revisit, deferred menu arm, non-quiz step after quiz), then
+> `probe-3d-pick` on a machine with working 3D and the parked v55 sweeps
+> below (overview table both languages, narration voices, menu rail), P3
+> blessing of Greek word forms, completion-callback wait spike, energy
+> comparison, settings tabs.
 > Full record: `docs/CHANGELOG.md` [v58]/[v57],
-> `docs/SESSION-NOTES.md` 2026-11-16/17/18/19 entries,
+> `docs/SESSION-NOTES.md` 2026-11-16/17/18/19/20 entries,
 > `docs/learning-activities-Plan.md` Stage 0, audit
 > `docs/REVIEW-SCENARIO-QUIZ-58.md`, review `docs/REVIEW-V58.md`. Routine on
 > the other machine: pull first, hard-reload (Ctrl+Shift+R), then resume from
@@ -3247,51 +3251,67 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * Verified live in Brave (browse extension, `127.0.0.1` static server): GR shows Viewers / Ονομασία / Μενού / Κουίζ; EN shows Viewers / Naming / Menu / Quiz; titles are first children, bold 11.52px dark blue nowrap. Classic menu step ends at the Menu row, menu+quiz step ends at Quiz, and the last row still has no dotted border. Headless re-check: same order/borders, EN + GR, screenshots clean. In-memory test scenario only; no stored data touched.
 * `?v=58.28` → `?v=58.29`. `node --check` clean; `probe-scenario-quiz`/`probe-final`/`probe-explain-all`/`probe-coverage56` green. Committed in v58.29.
 
-## 2026-11-20 — locant re-click keeps the chain-first quiz (v58 working tree, owner report, awaiting owner check)
+## 2026-11-20 — locant re-click keeps the chain-first quiz (?v=58.30, owner report)
 * Owner: with selection mode on, clicking a number locant redirects to the main-chain quiz (correct); re-clicking the locant without solving selected the locant and stalled (no prompt/target).
 * Root cause: the redirect rewrote `boxId/$box` to the chain box, which was `.selected` from the first arm; the same-box deselect then disarmed the chain quiz and teaching fell through to the classic locant highlight.
 * Fix: `fMulerQuizArmForBox` records `_clickedBoxId` and the redirect source; the same-box deselect now only runs when the **clicked** box is the armed target box. A locant re-click falls through to a fresh arm: chain target/prompt/box selection re-asserted, `__mulerQuizReturnTo` keeps the locant, and the chain solve still auto-arms it. Explicit re-click on the chain box still disarms.
-* Verified live in Brave (pentanone_2 EN): click comp4 → comp5 selected + chain prompt; re-click comp4 twice → target `compCarbonsCount`, `returnTo compBondPos`, prompt kept, comp4 unselected; solve chain → `compBondPos` auto-arms; chain-box re-click disarms. Probe `probe-loc-quiz` extended (re-click assertion + `sel4/sel5` state), `node --check` clean. `?v=58.29` → `?v=58.30`. Not committed.
+* Verified live in Brave (pentanone_2 EN): click comp4 → comp5 selected + chain prompt; re-click comp4 twice → target `compCarbonsCount`, `returnTo compBondPos`, prompt kept, comp4 unselected; solve chain → `compBondPos` auto-arms; chain-box re-click disarms. Probe `probe-loc-quiz` extended (re-click assertion + `sel4/sel5` state), `node --check` clean. `?v=58.29` → `?v=58.30`. Committed in 9b8f5b5.
 
-## 2026-11-20 — quiz component editor: tags = required vs pre-solved (v58 working tree, owner request, awaiting owner check)
+## 2026-11-20 — quiz component editor: tags = required vs pre-solved (?v=58.31, owner request)
 * Owner: the quiz row's “Απαιτούνται” text should become an editor — every name component as a clickable tag (selected = required, unselected = pre-solved), with a collapsible header; also quiz creation without solving first. Clarified: “Απαίτηση λύσης…” stays the overall gate label; the tag group is “Συνθετικά κουίζ”.
 * Implemented: quiz row always rendered — classic steps get Enable quiz (`data-sc-role="quiz-enable"`, seeds all capable modes); quiz steps get the gate checkbox + collapsible component header (`scQuizReqHead`, count selected/total, `window._scQuizReqOpen`) and tags (`data-sc-role="quiz-mode-<mode>"`, `selected|free|incapable`, name-box labels, semantic tooltips, name-order sort, last-tag guard, stored orphans). Tags write `quiz.modes`/`modeLabels`; `fScenarioQuizComponentList` builds the list from the displayed molecule + orphans.
 * Present: `fScenarioApplyQuiz` marks `capable − required` solved per molecule (free comps, also deferred menu steps), and `fMulerQuizPaintSolved` puts `.freeComp` on non-required capable comps (never `.quizTodo`), so unselected = solved display/no gate. `fScenarioUpdateStep` keeps `old.quiz.modes/modeLabels` over capture (drawer authoritative).
-* Verified live in Brave (ethane EN, in-memory scenario): Enable seeds 2 capable modes (suffix incapable/dashed); toggle bond-type off → modes shrink, header 1/3, tag free; Update keeps the 1-mode set; toggle back restores; collapse/expand works; Present → chain `quizTodo`, bond type `freeComp`, suffix plain; solving chain clears target/todo while bond type stays freeComp. Probe `probe-scenario-quiz` extended (tags/header, toggle off/on, Update keeps set, collapse, freePaint in section 9). `?v=58.30` → `?v=58.31`. Not committed.
+* Verified live in Brave (ethane EN, in-memory scenario): Enable seeds 2 capable modes (suffix incapable/dashed); toggle bond-type off → modes shrink, header 1/3, tag free; Update keeps the 1-mode set; toggle back restores; collapse/expand works; Present → chain `quizTodo`, bond type `freeComp`, suffix plain; solving chain clears target/todo while bond type stays freeComp. Probe `probe-scenario-quiz` extended (tags/header, toggle off/on, Update keeps set, collapse, freePaint in section 9). `?v=58.30` → `?v=58.31`. Committed in 9b8f5b5.
 
-## 2026-11-20 — quiz editor polish (v58 working tree, owner follow-ups, awaiting owner check)
+## 2026-11-20 — quiz editor polish (?v=58.32, owner follow-ups)
 * Owner: (1) clicking a component should not close the step row; (2) the solved-comp-then-save flow should show that comp as a free tag, not selected; (3) the component list should start collapsed.
 * Fix: tag toggle now updates in place (tag classes/aria/tooltips, header count, badge tooltip) instead of `fScenarioRenderList`, so the row stays expanded and scroll is kept. Solved comps display as free (`selected = required AND unsolved`; solved tag click only toasts the state). Capture subtracts authoring-solved modes from `quiz.modes` (solved → free; primary kept if all solved); a just-solved capture refreshes an existing step's set while plain tag edits stay authoritative; primary mode is forced into the final set. `window._scQuizReqOpen` defaults closed.
-* Verified live in Brave: default list closed (`display:none`), tag click keeps the row expanded (collapsed=false, header 1/3→2/3), solve chain then Update stores `modes:["compBondType"]` with chain free + bond selected. `probe-scenario-quiz` collapse assertion updated for the closed default. `node --check` clean. `?v=58.31` → `?v=58.32`. Not committed.
+* Verified live in Brave: default list closed (`display:none`), tag click keeps the row expanded (collapsed=false, header 1/3→2/3), solve chain then Update stores `modes:["compBondType"]` with chain free + bond selected. `probe-scenario-quiz` collapse assertion updated for the closed default. `node --check` clean. `?v=58.31` → `?v=58.32`. Committed in 9b8f5b5.
 
-## 2026-11-20 — locants can be free only when the chain is free (v58.33, owner report, awaiting owner check)
+## 2026-11-20 — locants can be free only when the chain is free (v58.33, owner report)
 * Owner: number locants must not be free unless `compCarbonsCount` is free.
 * Implemented: `fScenarioQuizComponentList` flags `locant` (digit-leading box text; static fallback: compNumber1/2, compBondPos, compEndNumber, compSuffixLocants, compBranchLoc2, comp3loc*). Drawer forces locant tags selected + `chain-locked` while the chain is a required task (click only toasts; count includes them); re-selecting the chain unions its locants and any tag write persists the enforced set. Runtime: `fScenarioQuizRequiredModes` unions capable locant modes when the chain is required and unsolved (legacy chain-only files gate/tint locants; never `.freeComp`); `fScenarioApplyQuiz` free-marking consumes that effective set. Capture unions locants when the chain stays required. New i18n `quizLocantNeedsChain`.
-* Verified live in Brave (pentanone_2 EN): locant comp4 initially `selected chain-locked`; click leaves modes unchanged; freeing the chain then frees the locant; re-selecting the chain re-adds the locant (chain-locked). Legacy `modes:["compCarbonsCount"]` step at Present → `todo` includes `compBondPos`, comp4 `quizTodo`. Probe `probe-scenario-quiz` section 14 added. `?v=58.32` → `?v=58.33`. Not committed.
+* Verified live in Brave (pentanone_2 EN): locant comp4 initially `selected chain-locked`; click leaves modes unchanged; freeing the chain then frees the locant; re-selecting the chain re-adds the locant (chain-locked). Legacy `modes:["compCarbonsCount"]` step at Present → `todo` includes `compBondPos`, comp4 `quizTodo`. Probe `probe-scenario-quiz` section 14 added. `?v=58.32` → `?v=58.33`. Committed in 9b8f5b5.
 
-## 2026-11-20 — quiz master checkbox replaces Enable/Remove (v58.34, owner request, awaiting owner check)
+## 2026-11-20 — quiz master checkbox replaces Enable/Remove (v58.34, owner request)
 * Owner: remove `scQuizRemove` (disliked button).
 * Implemented: one standard `.sshow` master checkbox `data-sc-role="quiz-enabled"` in the quiz row controls existence. Checked → seeds all capable modes (chain rule applied), forces naming/nameClick, shows gate + tags; unchecked → clears `quiz`/`requireSolution` with the classic toast. Enable button and Remove button removed, with their CSS (`.scQuizEnable`, `.scQuizRemove`), probe roles (`quiz-enable`, `quiz-remove`) and lang keys (`quizEnable`, `quizEnableTip`, `quizRemove`, `quizRemoveTip`); new `quizEnabled` + `quizToggleTip`.
-* Verified live in Brave (ethane): no buttons in the row; initial checkbox unchecked with no tags/quiz; check → quiz with 2 capable modes, gate checked, 3 tags, list collapsed; uncheck → quiz null, tags 0, row intact, checkbox false. Probe section 1/3 updated to the checkbox. `?v=58.33` → `?v=58.34`. Not committed.
+* Verified live in Brave (ethane): no buttons in the row; initial checkbox unchecked with no tags/quiz; check → quiz with 2 capable modes, gate checked, 3 tags, list collapsed; uncheck → quiz null, tags 0, row intact, checkbox false. Probe section 1/3 updated to the checkbox. `?v=58.33` → `?v=58.34`. Committed in 9b8f5b5.
 
-## 2026-11-20 — master checkbox keeps the step row open (v58.35, owner follow-up, awaiting owner check)
+## 2026-11-20 — master checkbox keeps the step row open (v58.35, owner follow-up)
 * Owner: toggling the quiz checkbox must not collapse the step row.
 * Fix: the onchange records the row's `data-idx` + expanded state before `fScenarioRenderList`, then re-expands the rebuilt row (removes `collapsed`, sets the minimize icon/aria). Tag clicks already update in place.
-* Verified live in Brave: row expanded → check → row still expanded, quiz on, 3 tags; uncheck → row still expanded, quiz null. `?v=58.34` → `?v=58.35`. Not committed.
+* Verified live in Brave: row expanded → check → row still expanded, quiz on, 3 tags; uncheck → row still expanded, quiz null. `?v=58.34` → `?v=58.35`. Committed in 9b8f5b5.
 
-## 2026-11-20 — quiz checkbox after Go (v58.36, owner report, awaiting owner check)
+## 2026-11-20 — quiz checkbox after Go (v58.36, owner report)
 * Owner: on a preloaded scenario step 5, after Go the Ενεργό κουίζ checkbox still toasted “Ανοίξτε πρώτα το βήμα (Go)…” although the molecule was loaded.
 * Root cause: `_sameMolEn` was computed when the drawer rows rendered (often the boot molecule), and the checkbox onchange used that stale closure value.
 * Fix: the same-molecule comparison now runs inside the onchange against the live `selectedMol`; menu-only steps remain exempt; enabling re-renders tags from the loaded molecule. Probe section 15 added (two-molecule scenario, render on ethane, Go butane, click checkbox on step 2 → quiz created with butane modes).
-* Verified live in Brave: after Go (molNow=butane, step molecule=butane) the checkbox creates `modes:["compCarbonsCount","compBondType"]` for butane. `?v=58.35` → `?v=58.36`. Not committed.
+* Verified live in Brave: after Go (molNow=butane, step molecule=butane) the checkbox creates `modes:["compCarbonsCount","compBondType"]` for butane. `?v=58.35` → `?v=58.36`. Committed in 9b8f5b5.
 
-## 2026-11-20 — menu quizzes are all-capable tasks (v58.37, owner decision, awaiting owner check)
+## 2026-11-20 — menu quizzes are all-capable tasks (v58.37, owner decision)
 * Owner: menu steps must allow a quiz task across the picked molecules; per-component tags don't fit because components differ per molecule. Keep the master + gate checkboxes; show component *types* instead of real name components; manual solving tunes exemptions.
 * Implemented: deferred (`quiz.mol:""`) semantics restored to all-capable — `fScenarioQuizRequiredModes` returns null for them, `fScenarioApplyQuiz` skips the pinned free-complement, so every capable comp of the picked molecule is `quizTodo`/gated, minus its authored `preSolved`. Drawer menu quizzes show read-only type chips (8 types) + hint + per-molecule pre-solved counts, no `quiz-mode-*` tags; enabling stores `{mode:"compCarbonsCount", mol:""}` (nominal primary, no modes). Capture records `preSolved` for every menu-carrying subset molecule (molecule+menu included).
-* Verified live in Brave: menu-only capture with subset [ethane, butane] → master checkbox/ gate only; enable → 8 type chips + hint, no name tags; Present → pick ethane: todo `[compCarbonsCount, compBondType]`, both `quizTodo`, gate false; solving both → todo [], gate true. Probe section 16 added. `?v=58.36` → `?v=58.37`. Not committed.
+* Verified live in Brave: menu-only capture with subset [ethane, butane] → master checkbox/ gate only; enable → 8 type chips + hint, no name tags; Present → pick ethane: todo `[compCarbonsCount, compBondType]`, both `quizTodo`, gate false; solving both → todo [], gate true. Probe section 16 added. `?v=58.36` → `?v=58.37`. Committed in 9b8f5b5.
 
-## 2026-11-20 — switchable menu quiz types (v58.38, owner request, awaiting owner check)
+## 2026-11-20 — switchable menu quiz types (v58.38, owner request)
 * Owner: the menu quiz type chips must be clickable/switchable; unselected types are pre-solved/free for all molecules of the menu.
 * Implemented: `quiz.types` (deferred only) with keys mainChain/locant/bondType/bondPos/fg/groupLocants/branch/substituent; chips are toggle buttons persisting in place (selected/free, `chain-locked` for locants while the chain type is selected). Deferred required = capable comps of the picked molecule whose type is selected (absent = legacy all-capable), minus `preSolved`; unselected types are marked solved/free for that molecule. Type-level chain rule: locant locked while mainChain selected, freeing the chain frees locants, last type cannot be removed. Enable seeds all types; capture keeps them; validation sanitizes; new `fScenarioQuizModeType`/`fScenarioQuizModesForTypes`.
-* Verified live in Brave: all 8 types selected initially (locant chain-locked); bondType off → `quiz.types` shrinks, chip free; Present ethane → todo `[compCarbonsCount]` only, comp6 `freeComp`; locant chip click while chain selected is a no-op; chain off removes chain+locant. Probe section 16 extended. `?v=58.37` → `?v=58.38`. Not committed.
+* Verified live in Brave: all 8 types selected initially (locant chain-locked); bondType off → `quiz.types` shrinks, chip free; Present ethane → todo `[compCarbonsCount]` only, comp6 `freeComp`; locant chip click while chain selected is a no-op; chain off removes chain+locant. Probe section 16 extended. `?v=58.37` → `?v=58.38`. Committed in 9b8f5b5.
+
+## 2026-11-20 — quiz step independence + menu-type semantics (`?v=58.39`, review follow-ups)
+* Owner decisions: each step's quiz must be independent; zero menu types are invalid; `bondPos`/`groupLocants` lock with the main chain; selected hidden/atom-less tags stay removable.
+* Step scope: solved/free/pre-solved state is keyed `scenario:<id>#<step>|molecule` (`fMulerQuizScopeKey` / `fMulerQuizSolvedKeyFor`), so step 1 cannot satisfy step 2; same-step revisits keep progress. Present uses the live scope, authoring capture uses the row scope with a molecule-only fallback for Go-less captures.
+* Menu types: absent = legacy all-capable; non-empty = filtered capable set; empty/no-capable = empty todo (gate passes, never all-capable). The drawer blocks a zero-type cascade (mainChain + locant removal), validation warns on invalid/empty types, `Update` preserves authored `quiz.types`/`preSolved`, and the legacy pinned all-capable path no longer gets a free complement.
+* Chain lock: `bondPos` and `groupLocants` now lock with `mainChain`; the runtime locant union uses the same type map (`fScenarioQuizStaticLocant` shared by the drawer/runtime).
+* Tags: a required hidden/atom-less tag is enabled for removal (`removable`, `quizTagRemoveTip`); unselected incapable tags stay disabled. A just-solved capture stores the solved baseline for the remaining task.
+* Editor split: a menu-less molecule quiz stores `quiz.mol` when enabled (legacy missing `mol` is inferred at render/validation), so it renders the real `scQuizTag` name components; any menu-carrying step (even with a selected molecule) is treated as a menu quiz (deferred when enabled) and renders component-type chips.
+* Probes: `probe-scenario-quiz` sections 17–22 added (step independence, no-capable menu type, zero-type cascade, Update type preservation, hidden-tag removal, molecule-tags/menu-types split); green. `probe-loc-quiz`, `probe-final`, `probe-explain-all`, `probe-coverage56` also green. `node --check` clean.
+* `?v=58.38` → `?v=58.39`. Committed in the v58.39–v58.40 batch.
+
+## 2026-11-20 — pinned footer below viewport + presentation footer hidden (`?v=58.40`, owner decision)
+* Owner: in pinned authoring the credits footer must always start at/below the viewport bottom, regardless of the scenario drawer state; the app keeps its natural height and the extra area is white space. Presentation keeps the header (navigation + Exit) but must not show the credits footer.
+* Implemented: `fScenarioSyncPinnedAuthorHeight()` sets a measured `#authorLayout` min-height (`viewport height − author top + 1px`) before the bar fit, clears it when unpinned, and is re-run by `fScenarioFitAuthorBar`; `pageTitle`/`devNotice` ResizeObservers cover author-top changes. The bar fitter then caps at the viewport (8px gap) instead of the raised footer. Presentation adds `#pageContainer.presenting > footer { display:none }`; Exit restores it by class removal. Header and `calc(100vh - 30px)` presentation height are unchanged.
+* Verified headless Chrome at 1400×900 and 1100×640: footer top ≥ viewport (drawer open/closed, unchanged within 1px), author min-height set, bar max-height ≤ viewport, drawer fits the bar; presentation footer `display:none` with header visible; Exit restores the footer.
+* `?v=58.39` → `?v=58.40`. Committed in the v58.39–v58.40 batch.
 

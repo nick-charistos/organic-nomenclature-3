@@ -8,7 +8,7 @@ changelog.
 
 Greek-first static web app for teaching organic nomenclature (JSME + JSmol +
 vanilla JavaScript; no build step). The live entry point is `index.html` →
-`mulermoc-nom-58.html`. Current live version: **v58.38** (2026-11-20).
+`mulermoc-nom-58.html`. Current live version: **v58.40** (2026-11-20).
 Older versions v42–v57 remain runnable at the repo root but are **frozen**.
 
 ## Read first
@@ -133,28 +133,46 @@ Update docs in the same commit as the change:
   `nameGoneComps`, `styleName.gone`). Owner decision 2026-11-19: eyes remain
   usable on quiz steps as a teacher aid; hiding/removing a required comp
   removes it from the quiz todo set. Do not add a gate without asking.
-- Quiz component editor (v58.31, polished v58.32–34): one master checkbox
-  (`data-sc-role="quiz-enabled"`) owns quiz existence (no Enable/Remove
-  buttons). Tags are binary — selected = required (`quiz.modes`, unsolved),
-  unselected/solved capable = pre-solved (derived `capable − required` at
-  apply, never stored). Solved comps always render as free tags. The list
-  starts collapsed (`_scQuizReqOpen`), and tag clicks update in place (never
-  rebuild the step list). The gate label “Απαίτηση λύσης κουίζ για συνέχεια”
-  is separate from the component-set header (“Συνθετικά κουίζ”). `Update`
-  keeps the drawer-authored set; only a just-solved capture refreshes it from
-  the solved complement, and the primary mode is forced into the final set.
-- Locants depend on the main chain: while `compCarbonsCount` is a required
-  (unsolved) task, number-locant comps must be required too (drawer
-  `chain-locked`; runtime union in `fScenarioQuizRequiredModes`). Free locants
-  are legal only when the chain is free. Do not weaken this without asking.
+- Quiz component editor (v58.31, polished v58.32–34, v58.39): one master
+  checkbox (`data-sc-role="quiz-enabled"`) owns quiz existence (no
+  Enable/Remove buttons). Tags are binary — selected = required
+  (`quiz.modes`, unsolved), unselected/solved capable = pre-solved (derived
+  `capable − required` at apply, never stored). Solved comps render as free
+  tags; a required tag that becomes hidden/atom-less stays removable. The
+  list starts collapsed (`_scQuizReqOpen`), and tag clicks update in place
+  (never rebuild the step list). The gate label “Απαίτηση λύσης κουίζ για
+  συνέχεια” is separate from the component-set header (“Συνθετικά κουίζ”).
+  `Update` keeps the drawer-authored set/types and `preSolved`; a
+  just-solved capture refreshes the solved baseline, and the primary mode is
+  forced into the final pinned set.
+- Quiz progress is step-scoped (v58.39): `scenario:<id>#<step>|molecule`.
+  A comp solved/freed in one step must never satisfy another step; revisiting
+  the same step keeps its own progress. Authoring capture uses the row scope
+  with a molecule-only fallback for Go-less captures.
+- Locants/positions depend on the main chain: while `compCarbonsCount` is a
+  required (unsolved) task, number locants, bond positions, and group locants
+  must be required too (drawer `chain-locked`; runtime union in
+  `fScenarioQuizRequiredModes`). Free locants are legal only when the chain is
+  free. Do not weaken this without asking.
 - Menu quizzes are deferred tasks (`quiz.mol:""`): `quiz.types` selects which
-  component types every picked molecule must solve (absent = legacy
-  all-capable); unselected types are pre-solved/free per molecule, and the
-  authored `preSolved` set exempts specific comps. No name tags in the
-  drawer — switchable quiz-type chips instead. Do not apply the pinned
-  free-complement contract to legacy all-capable menu quizzes.
+  component types every picked molecule must solve. Any step carrying a menu
+  is a menu quiz even when it also has a selected molecule; its editor uses
+  type chips (never real name tags). Only a menu-less molecule step pins
+  `quiz.mol` and renders the real `scQuizTag` components. Absent = legacy
+  all-capable; non-empty = filtered capable set; empty/no-capable = empty task
+  (gate passes, never all-capable). Zero-type drawer cascades are blocked;
+  validation warns on invalid/empty types. Unselected types are
+  pre-solved/free per molecule, and the authored `preSolved` set exempts
+  specific comps. No name tags in the drawer — switchable quiz-type chips
+  instead. Do not apply the pinned free-complement contract to legacy
+  all-capable menu quizzes.
 - Preserve Present/authoring state restoration (step stash/restore, Go
   preview, Exit restores chrome).
+- Layout policy (v58.40): pinned authoring keeps the credits footer at/below
+  the viewport bottom via a measured `#authorLayout` min-height, independent
+  of the scenario drawer state; the app keeps its natural height and the gap
+  is white space. Presentation keeps the header (navigation + Exit) but hides
+  the footer; Exit restores it.
 - Add UI text to `js/mulermoc-nom-lang-58.js`; legacy inline strings exist,
   so keep GR/EN parity and existing fallback behavior in new code. Greek
   values are UTF-8.

@@ -4617,23 +4617,51 @@ function fMulerQuizDisarm() {
 // (green highlight on click, never re-arms). Cleared when select mode
 // toggles off (fresh round); per-molecule sets persist across molecule
 // switches while armed.
-function fMulerQuizSolvedKey() {
+// v58.39: scenario quiz progress is step-scoped. Each Present step gets
+// `scenario:<presentId>#<stepIndex>|molecule`, so a comp solved/free in one
+// step never satisfies another step; revisiting the same step keeps its own
+// progress. Authoring uses the active row scope (set by Go/Update) and falls
+// back to the molecule-only key when no row scope is active.
+function fMulerQuizScopeKey() {
   try {
-    var m = (typeof selectedMol !== "undefined" && selectedMol) ? String(selectedMol) : "";
-    return m || "";
+    if (typeof MuLERMoCScenario !== "undefined" && MuLERMoCScenario.present &&
+        typeof fScenarioPresent === "function") {
+      var ps = fScenarioPresent();
+      if (ps && typeof ps.index !== "undefined") {
+        var pid = MuLERMoCScenario.presentId || "live";
+        return "scenario:" + String(pid) + "#" + String(ps.index);
+      }
+    }
+    if (typeof window !== "undefined" && window.__mulerQuizAuthoringScope) {
+      return String(window.__mulerQuizAuthoringScope);
+    }
+  } catch (e) {}
+  return "";
+}
+function fMulerQuizSolvedKeyFor(mol, scope) {
+  try {
+    var m = (mol === null || typeof mol === "undefined")
+      ? ((typeof selectedMol !== "undefined" && selectedMol) ? String(selectedMol) : "")
+      : String(mol);
+    if (!m) return "";
+    var s = (typeof scope === "undefined") ? fMulerQuizScopeKey() : String(scope || "");
+    return s ? (s + "|" + m) : m;
   } catch (e) { return ""; }
 }
-function fMulerQuizIsSolved(mode) {
+function fMulerQuizSolvedKey() {
+  return fMulerQuizSolvedKeyFor(selectedMol);
+}
+function fMulerQuizIsSolved(mode, scope) {
   try {
-    var k = (typeof fMulerQuizSolvedKey === "function") ? fMulerQuizSolvedKey() : "";
+    var k = (typeof fMulerQuizSolvedKeyFor === "function") ? fMulerQuizSolvedKeyFor(selectedMol, scope) : "";
     if (!k || !mode || mode === "none") return false;
     var map = (typeof window !== "undefined") ? window.__mulerQuizSolved : null;
     return !!(map && map[k] && map[k][mode]);
   } catch (e) { return false; }
 }
-function fMulerQuizMarkSolved(mode) {
+function fMulerQuizMarkSolved(mode, scope) {
   try {
-    var k = (typeof fMulerQuizSolvedKey === "function") ? fMulerQuizSolvedKey() : "";
+    var k = (typeof fMulerQuizSolvedKeyFor === "function") ? fMulerQuizSolvedKeyFor(selectedMol, scope) : "";
     if (!k || !mode || mode === "none") return;
     if (typeof window === "undefined") return;
     if (!window.__mulerQuizSolved) window.__mulerQuizSolved = {};
@@ -4656,7 +4684,11 @@ function fMulerQuizTodoModes(required) {
     if (!panel) return null;
     var req = null;
     try {
-      if (Object.prototype.toString.call(required) === "[object Array]" && required.length) req = required;
+      // v58.39: null/undefined = legacy "whatever is capable"; an array
+      // (including []) is the authored required set. A selected menu type
+      // with no capable component on this molecule therefore yields an empty
+      // todo (gate passes), never an all-capable fallback.
+      if (Object.prototype.toString.call(required) === "[object Array]") req = required;
     } catch (eR) { req = null; }
     var out = [];
     var boxes = [];

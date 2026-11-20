@@ -734,8 +734,11 @@ function fScenarioCapture() {
           // v58.32: components already solved in authoring are pre-solved
           // (free tags), not required. Keep the primary only when everything
           // was solved, so a quiz step always carries a task.
+          // v58.39: read the step-scoped map (with a molecule-only fallback
+          // for Go-less authoring), never another step's progress.
           try {
-            var _solvedLive = (typeof window !== "undefined" && window.__mulerQuizSolved && window.__mulerQuizSolved[String(mol)]) || {};
+            var _capScope = (typeof window !== "undefined" && window.__mulerQuizAuthoringScope) ? String(window.__mulerQuizAuthoringScope) : "";
+            var _solvedLive = (typeof fScenarioQuizSolvedMapFor === "function") ? fScenarioQuizSolvedMapFor(String(mol), _capScope) : {};
             var _reqOnly = [];
             for (var _mi = 0; _mi < _modes.length; _mi++) {
               if (!_solvedLive[_modes[_mi]]) _reqOnly.push(_modes[_mi]);
@@ -769,15 +772,15 @@ function fScenarioCapture() {
       if (step.quiz) {
         step.nameAnalysisMode = "none";
         var _pre = {};
-        var _reqPre = (step.quiz.modes && step.quiz.modes.length) ? step.quiz.modes : null;
         var _putSolved = function (m) {
           try {
-            var e = (typeof window !== "undefined" && window.__mulerQuizSolved && window.__mulerQuizSolved[m]) || null;
+            var _preScope = (typeof window !== "undefined" && window.__mulerQuizAuthoringScope) ? String(window.__mulerQuizAuthoringScope) : "";
+            var e = (typeof fScenarioQuizSolvedMapFor === "function") ? fScenarioQuizSolvedMapFor(String(m), _preScope) : null;
             if (!e) return;
             var arr = [];
             for (var k in e) {
+              if (!Object.prototype.hasOwnProperty.call(e, k)) continue;
               if (!e[k] || typeof k !== "string" || !k || k === "none") continue;
-              if (_reqPre && _reqPre.indexOf(k) < 0) continue;
               if (arr.indexOf(k) < 0) arr.push(k);
             }
             if (arr.length) _pre[String(m)] = arr;
@@ -1380,6 +1383,14 @@ function fScenarioValidate(obj) {
         }
         var qm = (qz.mode === null || qz.mode === undefined) ? "" : String(qz.mode);
         var qmol = (qz.mol === null || qz.mol === undefined) ? "" : String(qz.mol);
+        // v58.39: infer a pinned molecule for legacy menu-less quiz steps that
+        // never stored `mol`; explicit `mol:""` remains deferred/menu.
+        try {
+          var _stepHasMenuPre = Array.isArray(s.menuSubset) && s.menuSubset.length > 1;
+          if ((typeof qz.mol === "undefined" || qz.mol === null) && s.selectedMol && !_stepHasMenuPre) {
+            qmol = String(s.selectedMol);
+          }
+        } catch (eQmInfer) {}
         if (!qm || qm === "none") {
           warnings.push("Step " + (i + 1) + ": quiz task without a mode discarded (classic step kept).");
           return;
@@ -1470,6 +1481,7 @@ function fScenarioValidate(obj) {
               }
             }
             if (_tout.length) st.quiz.types = _tout;
+            else if (!qmol) warnings.push("Step " + (i + 1) + ": menu quiz has no valid types; treated as legacy all-capable.");
           } catch (eTV) {}
         })();
         if (s && typeof s.quizSnapshot !== "undefined" && s.quizSnapshot !== null) {
@@ -2231,6 +2243,16 @@ function fScenarioQuizCapableModes() {
   return out;
 }
 
+// Number-locant mode ids that stay locants even when the visible box text is
+// empty/dash (stored-only or a temporarily blank position). v58.39: shared by
+// the drawer list and the runtime chain rule so both cover bondPos/groupLocants.
+function fScenarioQuizStaticLocant(mode) {
+  try {
+    return ["compNumber1", "compNumber2", "compBondPos", "compEndNumber", "compSuffixLocants", "compBranchLoc2"].indexOf(String(mode)) >= 0 ||
+      /^comp3loc\d*$/.test(String(mode));
+  } catch (e) { return false; }
+}
+
 // Quiz component list for the drawer editor (v58.31): every name component
 // of the displayed molecule, in name order, plus stored modes that no longer
 // exist (orphans, kept removable). Each entry: {mode,label,capable,hidden,orphan,locant}.
@@ -2254,10 +2276,7 @@ function fScenarioQuizComponentList(step, storedOnly) {
     } catch (eP) {}
   };
   var staticLocant = function (m) {
-    try {
-      return ["compNumber1", "compNumber2", "compBondPos", "compEndNumber", "compSuffixLocants", "compBranchLoc2"].indexOf(String(m)) >= 0 ||
-        /^comp3loc\d*$/.test(String(m));
-    } catch (eS) { return false; }
+    return (typeof fScenarioQuizStaticLocant === "function") ? fScenarioQuizStaticLocant(m) : false;
   };
   try {
     var boxes = storedOnly ? [] : document.querySelectorAll("#nameAnalysis .nameCompBox");
@@ -2317,7 +2336,7 @@ function fScenarioQuizCapableLocantModes() {
       var m = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId(id) : "none";
       if (!m || m === "none" || out.indexOf(m) >= 0) continue;
       var txt = String((b.textContent || "")).replace(/^[-\s]+/, "").replace(/[-\s]+$/, "");
-      if (!/^\d/.test(txt)) continue;
+      if (!/^\d/.test(txt) && !((typeof fScenarioQuizStaticLocant === "function") && fScenarioQuizStaticLocant(m))) continue;
       var t = (typeof fMulerQuizResolveTarget === "function") ? fMulerQuizResolveTarget(m) : [];
       if (t && t.length) out.push(m);
     }
@@ -2416,15 +2435,21 @@ function fScenarioQuizRequiredModes(step) {
     // (v58.38); absent types = legacy all-capable. preSolved filtering happens
     // in the todo helper.
     if (String(q.mol || "") === "") {
-      if (Object.prototype.toString.call(q.types) === "[object Array]" && q.types.length) {
+      if (Object.prototype.toString.call(q.types) === "[object Array]") {
         var _cap = (typeof fScenarioQuizCapableModes === "function") ? fScenarioQuizCapableModes() : [];
         var _req = fScenarioQuizModesForTypes(_cap, q.types);
-        // Chain rule: locants are required while the chain is a task.
+        // Chain rule: locants/positions are required while the chain is a
+        // task. v58.39: an empty result is a valid "nothing to solve on this
+        // molecule" set, not legacy all-capable. Use the type map so the
+        // runtime matches the chain-locked `locant`/`bondPos`/`groupLocants`
+        // chips (not only digit-leading boxes).
         try {
           if (q.types.indexOf("mainChain") >= 0) {
-            var _locs = (typeof fScenarioQuizCapableLocantModes === "function") ? fScenarioQuizCapableLocantModes() : [];
-            for (var _ti = 0; _ti < _locs.length; _ti++) {
-              if (_req.indexOf(_locs[_ti]) < 0) _req.push(_locs[_ti]);
+            for (var _ci9 = 0; _ci9 < _cap.length; _ci9++) {
+              var _ct9 = fScenarioQuizModeType(_cap[_ci9]);
+              if ((_ct9 === "locant" || _ct9 === "bondPos" || _ct9 === "groupLocants") && _req.indexOf(_cap[_ci9]) < 0) {
+                _req.push(_cap[_ci9]);
+              }
             }
           }
         } catch (eChainT) {}
@@ -2460,6 +2485,48 @@ function fScenarioQuizTodo(step) {
     if (typeof fMulerQuizTodoModes !== "function") return null;
     return fMulerQuizTodoModes(fScenarioQuizRequiredModes(step));
   } catch (e) { return null; }
+}
+
+// v58.39: step-scoped quiz progress key, e.g. scenario:s3#2.
+function fScenarioQuizScopeId(scenId, idx) {
+  try {
+    return "scenario:" + String(scenId || "live") + "#" + String((typeof idx === "number") ? idx : 0);
+  } catch (e) { return ""; }
+}
+// Solved modes for capture/authoring: the step-scoped set, or the legacy
+// molecule-only set when no scoped marks exist yet (Go-less authoring). The
+// fallback keeps the old authoring flow working while Present stays step-local.
+function fScenarioQuizSolvedMapFor(mol, scope) {
+  var out = {};
+  try {
+    var map = (typeof window !== "undefined") ? window.__mulerQuizSolved : null;
+    if (!map || typeof fMulerQuizSolvedKeyFor !== "function") return out;
+    var sk = fMulerQuizSolvedKeyFor(String(mol), scope);
+    var gk = fMulerQuizSolvedKeyFor(String(mol), "");
+    var keys = [];
+    // Prefer the step-scoped set when it has any marks; the molecule-only
+    // set is only the Go-less authoring fallback.
+    var _hasScoped = false;
+    try {
+      var _se = sk ? map[sk] : null;
+      if (_se) {
+        for (var _smk in _se) {
+          if (Object.prototype.hasOwnProperty.call(_se, _smk) && _se[_smk]) { _hasScoped = true; break; }
+        }
+      }
+    } catch (eHS) { _hasScoped = false; }
+    if (_hasScoped && sk) keys.push(sk);
+    else if (gk) keys.push(gk);
+    for (var ki = 0; ki < keys.length; ki++) {
+      var entry = map[keys[ki]];
+      if (!entry) continue;
+      for (var mode in entry) {
+        if (!Object.prototype.hasOwnProperty.call(entry, mode)) continue;
+        if (entry[mode]) out[String(mode)] = true;
+      }
+    }
+  } catch (e) {}
+  return out;
 }
 
 // Deep copy of a stored task (Update keeps the authored one verbatim).
@@ -2679,13 +2746,14 @@ function fScenarioApplyQuiz(step) {
     // display instead of re-arming (no re-quiz on revisit or re-pick).
     try {
       if (typeof window !== "undefined" && molNow && task && task.mode) {
+        var _qkPre = (typeof fMulerQuizSolvedKeyFor === "function") ? fMulerQuizSolvedKeyFor(molNow) : molNow;
         var _ps0 = (task.preSolved && typeof task.preSolved === "object" && !Array.isArray(task.preSolved)) ? task.preSolved[molNow] : null;
         if (_ps0 && _ps0.length) {
           if (!window.__mulerQuizSolved) window.__mulerQuizSolved = {};
-          if (!window.__mulerQuizSolved[molNow]) window.__mulerQuizSolved[molNow] = {};
+          if (!window.__mulerQuizSolved[_qkPre]) window.__mulerQuizSolved[_qkPre] = {};
           for (var _pi0 = 0; _pi0 < _ps0.length; _pi0++) {
             var _pm0 = String(_ps0[_pi0] || "");
-            if (_pm0 && _pm0 !== "none") window.__mulerQuizSolved[molNow][_pm0] = true;
+            if (_pm0 && _pm0 !== "none") window.__mulerQuizSolved[_qkPre][_pm0] = true;
           }
         }
       }
@@ -2696,21 +2764,29 @@ function fScenarioApplyQuiz(step) {
     // (their only tuning is the authored preSolved baseline above).
     try {
       var _deferredTask = (String((task && task.mol) || "") === "");
-      var _deferredTypes = _deferredTask && (Object.prototype.toString.call(task && task.types) === "[object Array]") && task.types.length > 0;
+      // v58.39: any array (including []) is an authored type set; only an
+      // absent types field is the legacy all-capable menu quiz.
+      var _deferredTypes = _deferredTask && (Object.prototype.toString.call(task && task.types) === "[object Array]");
       // Deferred quizzes with explicit types follow the binary contract
-      // (unselected types = free); legacy all-capable deferred quizzes keep
-      // their neutral practice comps.
-      if ((!_deferredTask || _deferredTypes) && typeof window !== "undefined" && molNow && task && task.mode) {
+      // (unselected types = free); legacy all-capable deferred quizzes and
+      // legacy pinned quizzes (no stored modes) have no free complement —
+      // every capable comp is required there.
+      if (typeof window !== "undefined" && molNow && task && task.mode) {
         var _reqFree = null;
         try { _reqFree = (typeof fScenarioQuizRequiredModes === "function") ? fScenarioQuizRequiredModes(step) : null; } catch (eRF) { _reqFree = null; }
-        if (!_reqFree || !_reqFree.length) _reqFree = [String(task.mode)];
-        var _capFree = (typeof fScenarioQuizCapableModes === "function") ? fScenarioQuizCapableModes() : [];
-        if (!window.__mulerQuizSolved) window.__mulerQuizSolved = {};
-        if (!window.__mulerQuizSolved[molNow]) window.__mulerQuizSolved[molNow] = {};
-        for (var _fi = 0; _fi < _capFree.length; _fi++) {
-          var _fm = String(_capFree[_fi] || "");
-          if (!_fm || _reqFree.indexOf(_fm) >= 0) continue;
-          window.__mulerQuizSolved[molNow][_fm] = true;
+        var _hasFreeContract = (_deferredTask && _deferredTypes) ||
+          (!_deferredTask && Object.prototype.toString.call(_reqFree) === "[object Array]");
+        if (_hasFreeContract) {
+          if (_reqFree === null || typeof _reqFree === "undefined") _reqFree = [String(task.mode)];
+          var _capFree = (typeof fScenarioQuizCapableModes === "function") ? fScenarioQuizCapableModes() : [];
+          var _qkFree = (typeof fMulerQuizSolvedKeyFor === "function") ? fMulerQuizSolvedKeyFor(molNow) : molNow;
+          if (!window.__mulerQuizSolved) window.__mulerQuizSolved = {};
+          if (!window.__mulerQuizSolved[_qkFree]) window.__mulerQuizSolved[_qkFree] = {};
+          for (var _fi = 0; _fi < _capFree.length; _fi++) {
+            var _fm = String(_capFree[_fi] || "");
+            if (!_fm || _reqFree.indexOf(_fm) >= 0) continue;
+            window.__mulerQuizSolved[_qkFree][_fm] = true;
+          }
         }
       }
     } catch (eFree) {}
@@ -5195,6 +5271,49 @@ function fScenarioSetPinned(on) {
 // credits footer and its lower drawer rows become unreachable (scrolling the
 // page to them hides the app). Cap it at the first of footer top / viewport
 // bottom (8px gap); unpinned keeps CSS sizing (85vh under a fixed top).
+// v58.40: pinned authoring also reserves a viewport-tall #authorLayout, so the
+// credits footer starts at/below the viewport bottom regardless of drawer
+// state. The app keeps its natural content height; the extra area is white
+// space and the footer is reached by scrolling.
+function fScenarioSyncPinnedAuthorHeight(pinned) {
+  try {
+    var author = document.getElementById("authorLayout");
+    if (!author) return;
+    var isPinned = (typeof pinned === "boolean")
+      ? pinned
+      : !!(document.body && document.body.classList && document.body.classList.contains("scPinned"));
+    if (!isPinned) {
+      if (author.style.minHeight) author.style.minHeight = "";
+      return;
+    }
+    var r = null;
+    try { r = author.getBoundingClientRect(); } catch (eRect) { r = null; }
+    if (!r) return;
+    var sy = 0;
+    try {
+      var _se = document.scrollingElement;
+      sy = Math.max(
+        (_se && _se.scrollTop) || 0,
+        (document.documentElement && document.documentElement.scrollTop) || 0,
+        (document.body && document.body.scrollTop) || 0,
+        window.scrollY || window.pageYOffset || 0
+      );
+    } catch (eSy) { sy = 0; }
+    var topDoc = r.top + sy;
+    var vh = 0;
+    // Live viewport first: the footer rule is about the actual screen edge.
+    try { vh = window.innerHeight || 0; } catch (eVh) { vh = 0; }
+    if (!(vh > 0)) {
+      try { if (typeof fStableViewportH === "function") vh = fStableViewportH() || 0; } catch (eVh2) { vh = 0; }
+    }
+    if (!(vh > 0) || !isFinite(topDoc)) return;
+    // +1 guard: a sub-pixel footer top inside the viewport would keep the
+    // bar fitter in footer-limited mode and shave the drawer again.
+    var minH = Math.max(0, Math.ceil(vh - topDoc) + 1);
+    var val = minH > 0 ? (minH + "px") : "";
+    if (author.style.minHeight !== val) author.style.minHeight = val;
+  } catch (e) {}
+}
 var _scFitBarTimer = null;
 function fScenarioFitAuthorBar() {
   try {
@@ -5202,6 +5321,9 @@ function fScenarioFitAuthorBar() {
     if (!bar) return;
     var pinned = false;
     try { pinned = document.body.classList.contains("scPinned"); } catch (eP) { pinned = false; }
+    // Reserve the viewport tall author area first; the footer then starts at
+    // or below the viewport bottom, so the bar cap below is viewport-limited.
+    fScenarioSyncPinnedAuthorHeight(pinned);
     if (!pinned) { try { bar.style.maxHeight = ""; } catch (eR) {} return; }
     var r = null;
     try { r = bar.getBoundingClientRect(); } catch (eRect) { r = null; }
@@ -5262,6 +5384,18 @@ function fScenarioInitAuthorBarFit() {
       new ResizeObserver(function () { fScenarioScheduleAuthorBarFit(); }).observe(f);
     }
   } catch (eRO) { /* observer unavailable */ }
+  // v58.40: the pinned author min-height depends on where #authorLayout starts;
+  // title wrapping and the dev-notice banner change that top without resizing
+  // the footer. Re-fit when either changes height.
+  try {
+    if (typeof ResizeObserver !== "undefined") {
+      var _roFit = new ResizeObserver(function () { fScenarioScheduleAuthorBarFit(); });
+      var _titleEl = document.getElementById("pageTitle");
+      var _noticeEl = document.getElementById("devNotice");
+      if (_titleEl) _roFit.observe(_titleEl);
+      if (_noticeEl) _roFit.observe(_noticeEl);
+    }
+  } catch (eRO2) { /* observer unavailable */ }
   fScenarioScheduleAuthorBarFit();
 }
 
@@ -5515,6 +5649,11 @@ function fScenarioExitPresent() {
     /* no drawer */
   }
   var _psx = fScenarioPresent();
+  try {
+    if (_psx && typeof _psx.index !== "undefined") {
+      window.__mulerQuizAuthoringScope = fScenarioQuizScopeId(MuLERMoCScenario.activeId, _psx.index);
+    }
+  } catch (eQScope) {}
   var st = _psx.steps[_psx.index];
   if (st) {
     var s;
@@ -5749,6 +5888,11 @@ function fScenarioBuildUi() {
     $(document).on("click", ".scenarioPanel .scSave", function () {
       var id = fScenarioPanelIdFromEl(this);
       if (id) fScenarioSetActive(id);
+      // v58.39: a new step starts with its own empty solved scope.
+      try {
+        var _actPre = fScenarioActive();
+        if (_actPre) window.__mulerQuizAuthoringScope = fScenarioQuizScopeId(_actPre.id, _actPre.steps.length);
+      } catch (eScPre) {}
       var st = fScenarioCapture();
       if (!st) return;
       var act = fScenarioActive();
@@ -6975,6 +7119,15 @@ function fScenarioRenderOne(scen) {
     // the step is a quiz (replaces the Enable/Remove buttons, v58.34); quiz
     // steps show the gate toggle + the component editor where selected =
     // required, unselected = pre-solved.
+    // v58.39: a legacy/menu-less molecule quiz created before the checkbox
+    // stored `mol` is normalized here so it renders real tags (explicit
+    // `mol:""` still means deferred/menu).
+    try {
+      if (st.quiz && typeof st.quiz.mol === "undefined" && st.selectedMol &&
+          !(Array.isArray(st.menuSubset) && st.menuSubset.length > 1)) {
+        st.quiz.mol = String(st.selectedMol);
+      }
+    } catch (eQmNorm) {}
     var quizRow = document.createElement("div");
     quizRow.className = "scShowRow scStepQuizSettings";
     quizRow.setAttribute("data-sc-row", "quiz");
@@ -7027,7 +7180,7 @@ function fScenarioRenderOne(scen) {
               quizToggle.checked = false;
               return;
             }
-            st.quiz = { kind: "nameComp", mode: String(_cap[0]), modes: _cap.slice(), modeLabels: fScenarioQuizModeLabels(_cap) };
+            st.quiz = { kind: "nameComp", mode: String(_cap[0]), modes: _cap.slice(), modeLabels: fScenarioQuizModeLabels(_cap), mol: String(st.selectedMol || _molNow) };
             st.requireSolution = true;
             st.show = st.show || {};
             st.show.nameClick = true;
@@ -7085,8 +7238,9 @@ function fScenarioRenderOne(scen) {
       // solve-first authoring is needed. Unselected capable comps are derived
       // as pre-solved at apply (capable − required). Menu quizzes (v58.37)
       // show a read-only type summary instead.
-      if (!_menuQuiz) (function (scenId, stepObj) {
+      if (!_menuQuiz) (function (scenId, stepObj, stepIdx) {
         try {
+          var _rowScope = fScenarioQuizScopeId(scenId, stepIdx);
           var _sameMolTag = true;
           try {
             _sameMolTag = !stepObj.selectedMol || (typeof selectedMol !== "undefined" && selectedMol && String(stepObj.selectedMol) === String(selectedMol));
@@ -7107,7 +7261,7 @@ function fScenarioRenderOne(scen) {
           var _solvedOf = function (mode) {
             try {
               if (!_sameMolTag) return false;
-              return !!(typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved(String(mode)));
+              return !!(typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved(String(mode), _rowScope));
             } catch (eSv) { return false; }
           };
           var _selectedCount = function () {
@@ -7135,10 +7289,16 @@ function fScenarioRenderOne(scen) {
             try {
               var solved = _solvedOf(comp.mode);
               var _locLocked = !!(comp.locant && _chainRequired());
-              var sel = ((req.indexOf(comp.mode) >= 0) || _locLocked) && !solved;
+              var _reqNow = (req.indexOf(comp.mode) >= 0) || _locLocked;
+              var sel = _reqNow && !solved;
+              // v58.39: an already-required hidden/atom-less comp stays
+              // removable; only adding an incapable comp is blocked.
+              var _removable = !comp.capable && _reqNow;
               try { tag.classList.toggle("selected", sel); } catch (eC1) {}
               try { tag.classList.toggle("free", !sel); } catch (eC2) {}
               try { tag.classList.toggle("chain-locked", _locLocked); } catch (eC3) {}
+              try { tag.classList.toggle("removable", _removable); } catch (eC4) {}
+              try { tag.disabled = !comp.capable && !_reqNow; } catch (eC5) {}
               tag.setAttribute("aria-pressed", sel ? "true" : "false");
               var tip = comp.hidden
                 ? ((typeof fMulerT === "function") ? fMulerT("quizTagHiddenTip") : "Hidden component — cannot be quizzed")
@@ -7151,6 +7311,7 @@ function fScenarioRenderOne(scen) {
                       : sel
                         ? ((typeof fMulerT === "function") ? fMulerT("quizTagRequiredTip") : "Will be asked in the quiz")
                         : ((typeof fMulerT === "function") ? fMulerT("quizTagFreeTip") : "Will be shown solved");
+              if (_removable) tip += ((typeof fMulerT === "function") ? " · " + fMulerT("quizTagRemoveTip") : " · click to remove");
               tag.setAttribute("data-tooltip", tip + " · " + comp.mode);
             } catch (eTs) {}
           };
@@ -7177,8 +7338,10 @@ function fScenarioRenderOne(scen) {
                 return;
               }
               // Solved comps are pre-solved by the tag contract: clicking one
-              // only explains the state (no re-quiz).
-              if (_solvedOf(mode)) {
+              // only explains the state (no re-quiz). A required hidden/atom-
+              // less comp is the exception: it stays removable (v58.39).
+              var _canRemoveStored = !!(_compDef && !_compDef.capable && req.indexOf(mode) >= 0);
+              if (_solvedOf(mode) && !_canRemoveStored) {
                 if (typeof fScenarioToast === "function") fScenarioToast(((typeof fMulerT === "function") ? fMulerT("quizTagSolvedTip") : "Solved — will be shown solved"));
                 return;
               }
@@ -7252,9 +7415,9 @@ function fScenarioRenderOne(scen) {
           wrap.appendChild(list);
           quizRow.appendChild(wrap);
         } catch (eQr) {}
-      })(scen.id, st);
+      })(scen.id, st, i);
       else {
-        // Menu quiz: read-only type chips + per-molecule pre-solved tuning.
+        // Menu quiz: switchable type chips + per-molecule pre-solved tuning.
         try {
           var mWrap = document.createElement("div");
           mWrap.className = "scQuizReq scQuizMenuReq";
@@ -7283,10 +7446,11 @@ function fScenarioRenderOne(scen) {
             branch: ["διακλαδώσεις", "branches"],
             substituent: ["υποκαταστάτες", "substituents"],
           };
+          var _mLocantKeys = { locant: true, bondPos: true, groupLocants: true };
           var _mChainLocked = function () { return mSel.indexOf("mainChain") >= 0; };
           var _mChipState = function (chip, key) {
             try {
-              var locked = (key === "locant") && _mChainLocked();
+              var locked = !!_mLocantKeys[key] && _mChainLocked();
               var sel = (mSel.indexOf(key) >= 0) || locked;
               chip.classList.toggle("selected", sel);
               chip.classList.toggle("free", !sel);
@@ -7320,7 +7484,7 @@ function fScenarioRenderOne(scen) {
               chip.onclick = function (ev) {
                 try { if (ev && ev.preventDefault) ev.preventDefault(); if (ev && ev.stopPropagation) ev.stopPropagation(); } catch (e0) {}
                 try {
-                  if (key === "locant" && _mChainLocked()) {
+                  if (_mLocantKeys[key] && _mChainLocked()) {
                     if (typeof fScenarioToast === "function") fScenarioToast(((typeof fMulerT === "function") ? fMulerT("quizLocantNeedsChain") : "Needs the main chain in the quiz"));
                     return;
                   }
@@ -7331,15 +7495,27 @@ function fScenarioRenderOne(scen) {
                       return;
                     }
                     mSel.splice(at2, 1);
-                    // Freeing the chain also frees its locked locants.
+                    // Freeing the chain also frees its locked locants/positions.
                     if (key === "mainChain") {
-                      var lci = mSel.indexOf("locant");
-                      if (lci >= 0) mSel.splice(lci, 1);
+                      ["locant", "bondPos", "groupLocants"].forEach(function (lk) {
+                        var lci = mSel.indexOf(lk);
+                        if (lci >= 0) mSel.splice(lci, 1);
+                      });
                     }
                   } else {
                     mSel.push(key);
-                    // Chain selected ⇒ locants required with it (chain rule).
-                    if (key === "mainChain" && mSel.indexOf("locant") < 0) mSel.push("locant");
+                    // Chain selected ⇒ locants/positions required with it.
+                    if (key === "mainChain") {
+                      ["locant", "bondPos", "groupLocants"].forEach(function (lk) {
+                        if (mSel.indexOf(lk) < 0) mSel.push(lk);
+                      });
+                    }
+                  }
+                  // The cascade must not leave a zero-type menu quiz: empty
+                  // types would be read as legacy all-capable at runtime.
+                  if (!mSel.length) {
+                    if (typeof fScenarioToast === "function") fScenarioToast(((typeof fMulerT === "function") ? fMulerT("quizLastRequired") : "Keep at least one component in the quiz."));
+                    return;
                   }
                   mSel.sort(function (a, b) { return SCENARIO_QUIZ_TYPES.indexOf(a) - SCENARIO_QUIZ_TYPES.indexOf(b); });
                   st.quiz.types = mSel.slice();
@@ -7650,6 +7826,13 @@ function fScenarioGo(i) {
   // (Present only — authoring preview always passes).
   try { if (typeof fScenarioNavAllowed === "function" && !fScenarioNavAllowed(i)) return; } catch (eG) {}
   ps.index = i;
+  // v58.39: authoring quiz progress follows the previewed row; Present uses
+  // its own scenario#step scope in fMulerQuizScopeKey().
+  try {
+    if (!MuLERMoCScenario.present) {
+      window.__mulerQuizAuthoringScope = fScenarioQuizScopeId(MuLERMoCScenario.activeId, i);
+    }
+  } catch (eQS) {}
   fScenarioSyncLegacy();
   try {
     history.replaceState(null, "", "#step=" + (i + 1));
@@ -7704,6 +7887,8 @@ function fScenarioUpdateStep(scenId, idx) {
   var s = (scenId && fScenarioGet(scenId)) || fScenarioActive();
   if (!s || !s.steps || idx < 0 || idx >= s.steps.length) return;
   var old = s.steps[idx];
+  // v58.39: capture reads/writes this row's solved scope.
+  try { window.__mulerQuizAuthoringScope = fScenarioQuizScopeId(s.id, idx); } catch (eSc) {}
   var fresh = fScenarioCapture();
   if (!fresh) return; // capture already toasted the reason; no partial overwrite
   var oldKind = !old.selectedMol ? "menu" : "mol";
@@ -7758,6 +7943,16 @@ function fScenarioUpdateStep(scenId, idx) {
           fresh.quiz.modeLabels = (Object.prototype.toString.call(old.quiz.modeLabels) === "[object Array]" && old.quiz.modeLabels.length === fresh.quiz.modes.length)
             ? old.quiz.modeLabels.slice()
             : fScenarioQuizModeLabels(fresh.quiz.modes);
+        }
+        // Menu quizzes store types, not modes: preserve the authored type
+        // subset across Update even when the capture carries a quiz signal
+        // (capture defaults a fresh menu quiz to all types).
+        if (old.quiz && Object.prototype.toString.call(old.quiz.types) === "[object Array]" && old.quiz.types.length) {
+          fresh.quiz.types = old.quiz.types.slice();
+        }
+        if (!_quizSignal && old.quiz && old.quiz.preSolved && typeof old.quiz.preSolved === "object" && !Array.isArray(old.quiz.preSolved)) {
+          var _oldPre = fScenarioCloneQuiz(old.quiz.preSolved);
+          if (_oldPre) fresh.quiz.preSolved = _oldPre;
         }
         // Primary mode must belong to the final required set (both paths).
         try {

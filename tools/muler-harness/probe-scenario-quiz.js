@@ -479,9 +479,9 @@ const clickBtn = async (p, id) => {
   const cap4 = await p.evaluate((id) => {
     try { return fScenarioGet(id).steps[0].quiz || null; } catch (e) { return "err"; }
   }, scid);
-  check(cap4 && cap4.mode === "compCarbonsCount" && cap4.preSolved && cap4.preSolved.ethane &&
+  check(cap4 && Array.isArray(cap4.modes) && cap4.modes.indexOf(cap4.mode) >= 0 && cap4.preSolved && cap4.preSolved.ethane &&
     cap4.preSolved.ethane.indexOf("compCarbonsCount") >= 0,
-    "just-solved capture should store the mode + baseline, got " + JSON.stringify(cap4));
+    "just-solved capture should store a required mode + solved baseline, got " + JSON.stringify(cap4));
   check(cap4 && cap4.preSolved && cap4.preSolved.ethane.indexOf("compBondType") < 0,
     "baseline should only carry modes solved for this step, got " + JSON.stringify(cap4 && cap4.preSolved));
 
@@ -929,6 +929,246 @@ const clickBtn = async (p, id) => {
   check(menuGate === true, "solved menu quiz should pass the gate, got " + JSON.stringify(menuGate));
   await p.evaluate(() => { try { fScenarioExitPresent(); } catch (e) {} });
   await p.waitForTimeout(600);
+
+  // --- 17. each step's quiz is independent (v58.39) ---
+  await openMol(p, "ethane");
+  const indepId = await makeScenario(p, "probeq-step-indep", [
+    {
+      selectedMol: "ethane",
+      quiz: { kind: "nameComp", mode: "compCarbonsCount", mol: "ethane", modes: ["compCarbonsCount"], modeLabels: ["main chain"] },
+      requireSolution: true,
+      showExtra: { nameClick: true, naming: true },
+    },
+    {
+      selectedMol: "ethane",
+      quiz: { kind: "nameComp", mode: "compBondType", mol: "ethane", modes: ["compBondType"], modeLabels: ["bond type"] },
+      requireSolution: true,
+      showExtra: { nameClick: true, naming: true },
+    },
+  ]);
+  check(typeof indepId === "string" && indepId.indexOf("err:") !== 0, "step-independence scenario creation failed: " + indepId);
+  await p.evaluate((id) => { try { fScenarioPresentBegin(id, 0); } catch (e) {} }, indepId);
+  await p.waitForTimeout(1600);
+  const indep0 = await p.evaluate(() => {
+    try {
+      const ps = fScenarioPresent();
+      return { todo: fScenarioQuizTodo(ps.steps[0]), bond: fMulerQuizIsSolved("compBondType") };
+    } catch (e) { return "err"; }
+  });
+  check(indep0 && Array.isArray(indep0.todo) && indep0.todo.indexOf("compCarbonsCount") >= 0,
+    "step 0 should require only its own main-chain task, got " + JSON.stringify(indep0));
+  check(indep0 && indep0.bond === true,
+    "step 0 free complement should be marked in step 0's scope, got " + JSON.stringify(indep0));
+  check(await solveAllTodos(p) === true, "step-independence step 0 solve failed");
+  await p.evaluate(() => { try { fScenarioGo(1); } catch (e) {} });
+  await p.waitForTimeout(1600);
+  const indep1 = await p.evaluate(() => {
+    try {
+      const ps = fScenarioPresent();
+      return { step: ps.index, todo: fScenarioQuizTodo(ps.steps[1]), bond: fMulerQuizIsSolved("compBondType") };
+    } catch (e) { return "err"; }
+  });
+  check(indep1 && indep1.step === 1, "step independence navigation failed, got " + JSON.stringify(indep1));
+  check(indep1 && Array.isArray(indep1.todo) && indep1.todo.indexOf("compBondType") >= 0,
+    "step 1 must require its own bond-type task, got " + JSON.stringify(indep1));
+  check(indep1 && indep1.bond === false,
+    "step 1 must not inherit step 0's solved/free state, got " + JSON.stringify(indep1));
+  await p.evaluate(() => { try { fScenarioExitPresent(); } catch (e) {} });
+  await p.waitForTimeout(600);
+
+  // --- 18. a menu type with no target on the picked molecule is an empty task ---
+  await openMol(p, "ethane");
+  const noCapId = await makeScenario(p, "probeq-menu-nocap", [{
+    selectedMol: null,
+    menuSubset: ["ethane", "butane"],
+    quiz: { kind: "nameComp", mode: "compCarbonsCount", mol: "", types: ["fg"] },
+    requireSolution: true,
+    showExtra: { nameClick: true, naming: true },
+  }]);
+  check(typeof noCapId === "string" && noCapId.indexOf("err:") !== 0, "no-capable menu scenario creation failed: " + noCapId);
+  await p.evaluate((id) => { try { fScenarioPresentBegin(id, 0); } catch (e) {} }, noCapId);
+  await p.waitForTimeout(1400);
+  check(await menuPick(p, "ethane"), "no-capable menu quiz should list ethane");
+  await p.waitForTimeout(700);
+  const noCap = await p.evaluate(() => {
+    try {
+      const ps = fScenarioPresent();
+      return {
+        req: fScenarioQuizRequiredModes(ps.steps[ps.index]),
+        todo: fScenarioQuizTodo(ps.steps[ps.index]),
+        gate: fScenarioNavAllowed(ps.index + 1),
+      };
+    } catch (e) { return "err"; }
+  });
+  check(noCap && Array.isArray(noCap.req) && noCap.req.length === 0,
+    "a selected type with no capable comp should yield an empty required set, got " + JSON.stringify(noCap));
+  check(noCap && Array.isArray(noCap.todo) && noCap.todo.length === 0,
+    "an empty required set must not fall back to all capable, got " + JSON.stringify(noCap));
+  check(noCap && noCap.gate === true,
+    "a menu quiz with no applicable type should not gate, got " + JSON.stringify(noCap));
+  await p.evaluate(() => { try { fScenarioExitPresent(); } catch (e) {} });
+  await p.waitForTimeout(600);
+
+  // --- 19. the chain/locant cascade cannot leave zero menu types ---
+  const zeroId = await makeScenario(p, "probeq-zero-types", [{
+    selectedMol: null,
+    menuSubset: ["ethane", "butane"],
+    quiz: { kind: "nameComp", mode: "compCarbonsCount", mol: "", types: ["mainChain", "locant"] },
+    requireSolution: true,
+    showExtra: { nameClick: true, naming: true },
+  }]);
+  check(typeof zeroId === "string" && zeroId.indexOf("err:") !== 0, "zero-type scenario creation failed: " + zeroId);
+  const zero = await p.evaluate((id) => {
+    try {
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      const chip = row ? row.querySelector('[data-sc-role="quiz-type-mainChain"]') : null;
+      if (!chip) return "missing";
+      const before = (fScenarioGet(id).steps[0].quiz.types || []).slice();
+      chip.click();
+      const after = (fScenarioGet(id).steps[0].quiz.types || []).slice();
+      return { before, after };
+    } catch (e) { return "err"; }
+  }, zeroId);
+  check(zero && Array.isArray(zero.before) && zero.before.length === 2 &&
+    Array.isArray(zero.after) && zero.after.indexOf("mainChain") >= 0 && zero.after.length > 0,
+    "freeing mainChain+locant must not persist an empty type set, got " + JSON.stringify(zero));
+
+  // --- 20. Update preserves the authored menu type subset ---
+  const updateTypesId = await makeScenario(p, "probeq-menu-types-update", [{
+    selectedMol: null,
+    menuSubset: ["ethane", "butane"],
+    quiz: { kind: "nameComp", mode: "compCarbonsCount", mol: "", types: ["mainChain", "locant", "bondType", "bondPos", "fg", "groupLocants", "branch", "substituent"] },
+    requireSolution: true,
+    showExtra: { nameClick: true, naming: true },
+  }]);
+  check(typeof updateTypesId === "string" && updateTypesId.indexOf("err:") !== 0, "menu type update scenario creation failed: " + updateTypesId);
+  const typeBefore = await p.evaluate((id) => {
+    try {
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      const chip = row ? row.querySelector('[data-sc-role="quiz-type-bondType"]') : null;
+      if (chip) chip.click();
+      return (fScenarioGet(id).steps[0].quiz.types || []).slice();
+    } catch (e) { return "err"; }
+  }, updateTypesId);
+  check(Array.isArray(typeBefore) && typeBefore.indexOf("bondType") < 0,
+    "menu type toggle setup failed, got " + JSON.stringify(typeBefore));
+  await p.evaluate(() => {
+    try {
+      window.MulerUserSelection.active = true;
+      window.MulerQuizTarget = "compCarbonsCount";
+    } catch (e) {}
+  });
+  await p.evaluate((id) => { try { fScenarioUpdateStep(id, 0); } catch (e) {} }, updateTypesId);
+  await p.waitForTimeout(900);
+  const typeAfter = await p.evaluate((id) => {
+    try { return (fScenarioGet(id).steps[0].quiz.types || []).slice(); } catch (e) { return "err"; }
+  }, updateTypesId);
+  check(Array.isArray(typeAfter) && typeAfter.indexOf("bondType") < 0,
+    "Update must keep the authored menu type subset, got " + JSON.stringify({ before: typeBefore, after: typeAfter }));
+  await p.evaluate(() => {
+    try { window.MulerQuizTarget = null; window.MulerUserSelection.active = false; } catch (e) {}
+    try { if (typeof fMulerQuizDisarm === "function") fMulerQuizDisarm(); } catch (e) {}
+  });
+
+  // --- 21. a required hidden/atom-less tag stays removable ---
+  await openMol(p, "ethane");
+  await p.evaluate(() => {
+    try {
+      window.nameHiddenComps = ["comp6"];
+      if (typeof fShowNameAnalysis === "function") fShowNameAnalysis();
+    } catch (e) {}
+  });
+  const hiddenId = await makeScenario(p, "probeq-hidden-tag", [{
+    selectedMol: "ethane",
+    quiz: { kind: "nameComp", mode: "compCarbonsCount", mol: "ethane", modes: ["compCarbonsCount", "compBondType"], modeLabels: ["main chain", "bond type"] },
+    requireSolution: true,
+    showExtra: { nameClick: true, naming: true },
+  }]);
+  check(typeof hiddenId === "string" && hiddenId.indexOf("err:") !== 0, "hidden-tag scenario creation failed: " + hiddenId);
+  const hidden = await p.evaluate((id) => {
+    try {
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      const tag = row ? row.querySelector('[data-sc-role="quiz-mode-compBondType"]') : null;
+      if (!tag) return "missing";
+      const before = (fScenarioGet(id).steps[0].quiz.modes || []).slice();
+      const disabled = tag.disabled;
+      tag.click();
+      const after = (fScenarioGet(id).steps[0].quiz.modes || []).slice();
+      return { before, disabled, after };
+    } catch (e) { return "err"; }
+  }, hiddenId);
+  check(hidden && hidden.disabled === false && Array.isArray(hidden.before) && hidden.before.indexOf("compBondType") >= 0 &&
+    Array.isArray(hidden.after) && hidden.after.indexOf("compBondType") < 0,
+    "a required hidden component tag should stay removable, got " + JSON.stringify(hidden));
+  await p.evaluate(() => {
+    try {
+      window.nameHiddenComps = [];
+      if (typeof fShowNameAnalysis === "function") fShowNameAnalysis();
+    } catch (e) {}
+  });
+
+  // --- 22. molecule step keeps real name tags; menu steps keep type chips ---
+  await openMol(p, "ethane");
+  const molTagsId = await makeScenario(p, "probeq-mol-tags", [{ selectedMol: "ethane" }]);
+  check(typeof molTagsId === "string" && molTagsId.indexOf("err:") !== 0, "molecule-tags scenario creation failed: " + molTagsId);
+  const molTagsToggle = await p.evaluate((id) => {
+    try {
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      const box = row ? row.querySelector('input[data-sc-role="quiz-enabled"]') : null;
+      if (!box) return "missing";
+      box.click();
+      return true;
+    } catch (e) { return "err"; }
+  }, molTagsId);
+  await p.waitForTimeout(800);
+  const molTags = await p.evaluate((id) => {
+    try {
+      const sc = fScenarioGet(id);
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      const q = sc && sc.steps[0].quiz;
+      return {
+        quiz: q ? { mode: q.mode, mol: q.mol, modes: q.modes, types: q.types } : null,
+        menuSubset: (sc && sc.steps[0].menuSubset || []).length,
+        realTags: row ? row.querySelectorAll('[data-sc-role^="quiz-mode-"]').length : -1,
+        typeChips: row ? row.querySelectorAll('.scQuizTag.type').length : -1,
+      };
+    } catch (e) { return "err"; }
+  }, molTagsId);
+  check(molTagsToggle === true && molTags && molTags.quiz && molTags.quiz.mol === "ethane" &&
+    molTags.realTags >= 2 && molTags.typeChips === 0,
+    "a menu-less molecule quiz must store quiz.mol and render real name tags, got " + JSON.stringify(molTags));
+
+  const menuMolId = await makeScenario(p, "probeq-menu-mol-tags", [{
+    selectedMol: "ethane",
+    menuSubset: ["ethane", "butane"],
+  }]);
+  check(typeof menuMolId === "string" && menuMolId.indexOf("err:") !== 0, "menu+molecule scenario creation failed: " + menuMolId);
+  const menuMolToggle = await p.evaluate((id) => {
+    try {
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      const box = row ? row.querySelector('input[data-sc-role="quiz-enabled"]') : null;
+      if (!box) return "missing";
+      box.click();
+      return true;
+    } catch (e) { return "err"; }
+  }, menuMolId);
+  await p.waitForTimeout(800);
+  const menuMolTags = await p.evaluate((id) => {
+    try {
+      const sc = fScenarioGet(id);
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      const q = sc && sc.steps[0].quiz;
+      return {
+        quiz: q ? { mode: q.mode, mol: q.mol, modes: q.modes, types: q.types } : null,
+        menuSubset: (sc && sc.steps[0].menuSubset || []).length,
+        realTags: row ? row.querySelectorAll('[data-sc-role^="quiz-mode-"]').length : -1,
+        typeChips: row ? row.querySelectorAll('.scQuizTag.type').length : -1,
+      };
+    } catch (e) { return "err"; }
+  }, menuMolId);
+  check(menuMolToggle === true && menuMolTags && menuMolTags.quiz && menuMolTags.quiz.mol === "" &&
+    menuMolTags.typeChips > 0 && menuMolTags.realTags === 0,
+    "a menu quiz with a selected molecule must stay deferred and render type chips, got " + JSON.stringify(menuMolTags));
 
   console.log(JSON.stringify({ failures, warnings }, null, 1));
   console.log("PAGEERRORS:" + JSON.stringify(errs));
