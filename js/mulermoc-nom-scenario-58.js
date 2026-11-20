@@ -5900,23 +5900,42 @@ function fScenarioBuildUi() {
       fScenarioSyncLegacy();
       fScenarioRenderList(act.id);
       fScenarioOpenDrawer(act.id);
-      // New step visible: pin the drawer scroller to the last row.
-      // Two passes — rAF for the fresh layout + delayed pass once the
-      // .25s .open transition has released max-height (else scroll clamps).
+      // v58.42: open the newly added row and scroll the drawer only as far as
+      // needed to reveal it. The row is rendered collapsed by fScenarioRenderOne.
       try {
         var _panel = act && fScenarioPanelFor(act.id);
         var _drawer = _panel && _panel.querySelector(".scenarioDrawer");
         var _box = _panel && _panel.querySelector(".scSteps");
-        var _rows = _box && _box.querySelectorAll(".srow");
-        if (_drawer && _rows && _rows.length) {
-          var _scrollLast = function () {
-            try { _drawer.scrollTop = _drawer.scrollHeight; } catch (e) { /* best-effort */ }
-          };
-          if (window.requestAnimationFrame) window.requestAnimationFrame(_scrollLast);
-          else _scrollLast();
-          setTimeout(_scrollLast, 280);
+        var _row = _box && _box.querySelector(".srow:last-child");
+        if (_row) {
+          _row.classList.remove("collapsed");
+          var _tb = _row.querySelector(".scCollapse");
+          if (_tb) {
+            try { _tb.innerHTML = (window.MuLERIcons && window.MuLERIcons.minimize) || "▾"; } catch (eIcA) { _tb.textContent = "▾"; }
+            _tb.setAttribute("aria-expanded", "true");
+          }
         }
-      } catch (e) { /* scroll best-effort */ }
+        if (_drawer && _row) {
+          var _revealStep = function () {
+            try {
+              var dr = _drawer.getBoundingClientRect();
+              var rr = _row.getBoundingClientRect();
+              var pad = 8;
+              if (rr.height > dr.height - pad * 2) {
+                // Taller than the drawer: prefer the row head over the bottom.
+                _drawer.scrollTop += rr.top - (dr.top + pad);
+              } else if (rr.bottom > dr.bottom - pad) {
+                _drawer.scrollTop += rr.bottom - (dr.bottom - pad);
+              } else if (rr.top < dr.top + pad) {
+                _drawer.scrollTop -= (dr.top + pad) - rr.top;
+              }
+            } catch (eRev) { /* best-effort */ }
+          };
+          if (window.requestAnimationFrame) window.requestAnimationFrame(_revealStep);
+          else _revealStep();
+          setTimeout(_revealStep, 320);
+        }
+      } catch (e) { /* scroll/open best-effort */ }
       var _note = MuLERMoCScenario.lastCaptureNote;
       MuLERMoCScenario.lastCaptureNote = null;
       fScenarioToast(!st.selectedMol ? "Saved menu-only step " + st.n + " (no molecule selected)." : "Saved step " + st.n + "." + (_note ? " " + _note : ""));

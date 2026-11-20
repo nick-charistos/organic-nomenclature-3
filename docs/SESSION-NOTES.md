@@ -1,9 +1,9 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
 > **Resume pointer (cross-machine):** 2026-11-20 — **v58 is LIVE**
-> (`index.html` → `mulermoc-nom-58.html`, `?v=58.41`, review follow-ups +
+> (`index.html` → `mulermoc-nom-58.html`, `?v=58.42`, review follow-ups +
 > student hover/3D fixes + step-row architecture/corners/density + the
-> 58.17–58.41 feature/UI batch).
+> 58.17–58.42 feature/UI batch).
 > Scenario quiz contract: steps store their required component set
 > (`quiz.modes` + labels; deferred `quiz.types` for menu quizzes), the drawer
 > master checkbox owns quiz existence, Update never destroys an authored task,
@@ -13,15 +13,15 @@
 > is green; the full 2D suite was re-run against v58 and is
 > green (final/quiz/mode-quiz/explain-all/fg/loc/bond/branch/coverage56/
 > smoke56/compact-main/shift/skel-joints; `probe-3d-pick` still owner-side).
-> New in 58.17–58.41: three-state comp eye (shown/veiled/removed, 14px icons,
+> New in 58.17–58.42: three-state comp eye (shown/veiled/removed, 14px icons,
 > explain rows follow), draft author fields + split oracle rows, spin switch,
 > measured viewer-height clamp, pinned bar/footer fit + merge, step-row
 > separators + quiz row last + section titles (Viewers/Naming/Menu/Quiz),
 > safer generated draft headers, the quiz component editor (master checkbox,
 > binary tags, collapsible list), the locant chain rule, switchable menu quiz
 > types, step-independent quiz progress, the pinned-authoring footer below the
-> viewport, the hidden presentation footer, and the shared viewport tooltip
-> layer. Owner decision:
+> viewport, the hidden presentation footer, the shared viewport tooltip layer,
+> and the add-step open/reveal behaviour. Owner decision:
 > comp eyes stay usable on quiz steps (teacher aid; hiding a required comp
 > removes it from the todo set) — revisit if users report.
 > Remaining owner-side: the browser Present matrix (quiz editor tags/menu
@@ -3320,5 +3320,11 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * Owner: tooltips must not clip at parent/drawer/viewport edges; the quiz tags/type chips and last-row controls were visibly clipped.
 * Implemented: new `js/mulermoc-nom-tooltip-58.js` + `#mulerTipLayer` in `css/mulermoc-nom-scenario-58.css`. One fixed bubble on `<body>` (z-index 5000) replaces every `[data-tooltip]` pseudo bubble while active; it flips below/above, clamps to the viewport (8px margin), wraps at `min(440px, 100vw − 24px)`, keeps the shared navy skin/arrow, and hides on scroll, resize, mouseleave, focusout, pointerdown, window blur and Escape. Existing pseudo tooltips remain as the no-JS fallback and are suppressed with `html.mulerTipLayer [data-tooltip]::after/::before { content:none; display:none }`.
 * Verified headless Chrome at 1500×900 and 1100×640: main-app tooltip, real quiz tag, menu type chip and last-row show control show the layer with the correct text; bubble rect stays inside the viewport; pseudo content is `none`; scrolling the drawer hides the layer. No page errors; `node --check` clean.
-* `?v=58.40` → `?v=58.41`.
+* `?v=58.40` → `?v=58.41`. Committed in f107d2c.
+
+## 2026-11-20 — new step opens and scrolls into view (`?v=58.42`, owner request)
+* Owner: after Add step, the new row must appear open and the step list should scroll to show it when necessary.
+* Implemented: the `.scSave` add handler expands the new last row (removes `.collapsed`, sets the minimize icon/aria) and replaces the unconditional `scrollTop = scrollHeight` with a nearest-visibility scroll on the `.scenarioDrawer` scrollport: tall rows align their head, mostly-visible rows do not jump, and rows below are brought just into view. Runs after rAF and again after the 280 ms row transition.
+* Verified headless Chrome at 1400×900 and 1100×640, drawer open/closed: new row is expanded, its head is visible, the drawer scroll changes only when needed, and existing rows keep their order. `node --check` clean.
+* `?v=58.41` → `?v=58.42`.
 

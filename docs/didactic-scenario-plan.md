@@ -391,7 +391,9 @@ Visibility rules:
   drawer (down/up via `.open`, accordion: one open at a time,
   drawer follows the active card — Steps button or bar-gap click
   toggles it; Add opens-only, Export/Play leave the panel untouched;
-  Add also pins the drawer to the new last row). The open card and its
+  Add also expands the new last row and scrolls it into view only when
+  needed — tall rows align their head, mostly-visible rows do not jump).
+  The open card and its
   scroll position survive closing/reopening the bar and Play → Exit: the
   drawer is hidden by CSS while the bar is away, and Exit scrolls it back
   to the presented step. The Steps button (or a bar-gap click) still

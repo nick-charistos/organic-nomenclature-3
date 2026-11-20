@@ -8,7 +8,7 @@ changelog.
 
 Greek-first static web app for teaching organic nomenclature (JSME + JSmol +
 vanilla JavaScript; no build step). The live entry point is `index.html` →
-`mulermoc-nom-58.html`. Current live version: **v58.41** (2026-11-20).
+`mulermoc-nom-58.html`. Current live version: **v58.42** (2026-11-20).
 Older versions v42–v57 remain runnable at the repo root but are **frozen**.
 
 ## Read first
@@ -178,6 +178,9 @@ Update docs in the same commit as the change:
   It flips/clamps inside the viewport and hides on scroll/resize/leave.
   Pseudo bubbles are suppressed only while the layer is active and remain the
   no-JS fallback; add new tooltips via `data-tooltip`, not new bubble CSS.
+- Add step (v58.42): the new last row is expanded and revealed in the
+  `.scenarioDrawer` scrollport only when needed; tall rows align their head,
+  mostly-visible rows do not jump. Keep this behaviour when touching `.scSave`.
 - Add UI text to `js/mulermoc-nom-lang-58.js`; legacy inline strings exist,
   so keep GR/EN parity and existing fallback behavior in new code. Greek
   values are UTF-8.
