@@ -8,7 +8,7 @@ changelog.
 
 Greek-first static web app for teaching organic nomenclature (JSME + JSmol +
 vanilla JavaScript; no build step). The live entry point is `index.html` →
-`mulermoc-nom-58.html`. Current live version: **v58.29** (2026-11-19).
+`mulermoc-nom-58.html`. Current live version: **v58.38** (2026-11-20).
 Older versions v42–v57 remain runnable at the repo root but are **frozen**.
 
 ## Read first
@@ -133,6 +133,26 @@ Update docs in the same commit as the change:
   `nameGoneComps`, `styleName.gone`). Owner decision 2026-11-19: eyes remain
   usable on quiz steps as a teacher aid; hiding/removing a required comp
   removes it from the quiz todo set. Do not add a gate without asking.
+- Quiz component editor (v58.31, polished v58.32–34): one master checkbox
+  (`data-sc-role="quiz-enabled"`) owns quiz existence (no Enable/Remove
+  buttons). Tags are binary — selected = required (`quiz.modes`, unsolved),
+  unselected/solved capable = pre-solved (derived `capable − required` at
+  apply, never stored). Solved comps always render as free tags. The list
+  starts collapsed (`_scQuizReqOpen`), and tag clicks update in place (never
+  rebuild the step list). The gate label “Απαίτηση λύσης κουίζ για συνέχεια”
+  is separate from the component-set header (“Συνθετικά κουίζ”). `Update`
+  keeps the drawer-authored set; only a just-solved capture refreshes it from
+  the solved complement, and the primary mode is forced into the final set.
+- Locants depend on the main chain: while `compCarbonsCount` is a required
+  (unsolved) task, number-locant comps must be required too (drawer
+  `chain-locked`; runtime union in `fScenarioQuizRequiredModes`). Free locants
+  are legal only when the chain is free. Do not weaken this without asking.
+- Menu quizzes are deferred tasks (`quiz.mol:""`): `quiz.types` selects which
+  component types every picked molecule must solve (absent = legacy
+  all-capable); unselected types are pre-solved/free per molecule, and the
+  authored `preSolved` set exempts specific comps. No name tags in the
+  drawer — switchable quiz-type chips instead. Do not apply the pinned
+  free-complement contract to legacy all-capable menu quizzes.
 - Preserve Present/authoring state restoration (step stash/restore, Go
   preview, Exit restores chrome).
 - Add UI text to `js/mulermoc-nom-lang-58.js`; legacy inline strings exist,

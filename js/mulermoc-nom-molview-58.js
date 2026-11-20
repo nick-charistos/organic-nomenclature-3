@@ -4726,7 +4726,19 @@ function fMulerQuizPaintSolved() {
           var compMode = "none";
           try { compMode = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId(id) : "none"; } catch (eM) { compMode = "none"; }
           if (!compMode || compMode === "none") { try { b.classList.remove("quizTodo"); } catch (eR2) {} try { b.classList.remove("freeComp"); } catch (eR2b) {} return; }
-          if (req && req.indexOf(compMode) < 0) { try { b.classList.remove("quizTodo"); } catch (eRQ1) {} try { b.classList.remove("freeComp"); } catch (eRQ2) {} return; }
+          if (req && req.indexOf(compMode) < 0) {
+            // Non-required components are pre-solved by the tag contract
+            // (v58.31): capable ones carry the free marker, never the todo
+            // tint; incapable ones stay plain.
+            var _capFreeBox = false;
+            try {
+              var _tf = (typeof fMulerQuizResolveTarget === "function") ? fMulerQuizResolveTarget(compMode) : [];
+              _capFreeBox = !!(_tf && _tf.length);
+            } catch (eFF) { _capFreeBox = false; }
+            try { b.classList.remove("quizTodo"); } catch (eRQ1) {}
+            try { if (_capFreeBox) b.classList.add("freeComp"); else b.classList.remove("freeComp"); } catch (eRQ2) {}
+            return;
+          }
           var solved = false, capable = false;
           try { solved = (typeof fMulerQuizIsSolved === "function") ? fMulerQuizIsSolved(compMode) : false; } catch (eS) { solved = false; }
           try {
@@ -4911,6 +4923,10 @@ function fMulerQuizArmForBox(boxId, $box) {
     var mode = "none";
     try { mode = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId(boxId) : "none"; } catch (eM) { mode = "none"; }
     if (!mode || mode === "none") return false;
+    // Click origin: a locant click redirects to the chain box below, but the
+    // same-box deselect must only fire for the box the user actually clicked.
+    var _clickedBoxId = boxId;
+    var _redirectedFrom = null;
     // Atom-less targets (hydrocarbon -ιο suffix) never arm: fall through to
     // the classic explanation path instead of a stuck quiz. The effective
     // target resolves branch/bond/registry in one place — modes need no
@@ -4934,6 +4950,7 @@ function fMulerQuizArmForBox(boxId, $box) {
         try { _$cb = (_cb && typeof jQuery !== "undefined") ? jQuery("#" + _cb) : null; } catch (eJ) { _$cb = null; }
         if (_cb && _$cb && _$cb.length) {
           try { if (typeof window !== "undefined") window.__mulerQuizReturnTo = mode; } catch (eR) {}
+          _redirectedFrom = _clickedBoxId;
           try { boxId = _cb; } catch (eB) {}
           try { $box = _$cb; } catch (eB2) {}
           mode = "compCarbonsCount";
@@ -4964,12 +4981,19 @@ function fMulerQuizArmForBox(boxId, $box) {
     // intact — the teaching layer relies on this in Present.
     try {
       if ($box && $box.hasClass && $box.hasClass("selected")) {
-        var _ltT = null;
-        try { _ltT = (typeof window !== "undefined") ? window.MulerQuizTarget : null; } catch (eLT) { _ltT = null; }
-        var _ownQ = !_ltT || (String(_ltT) === String(mode));
-        try { if (_ownQ && typeof fMulerQuizDisarm === "function") fMulerQuizDisarm(); } catch (eD2) {}
-        try { if (_ownQ && typeof window !== "undefined") window.__mulerQuizIntent = null; } catch (eQI2b) {}
-        return false;
+        var _targetBoxId = (typeof fMulerQuizBoxIdForMode === "function") ? fMulerQuizBoxIdForMode(mode) : null;
+        var _clickedIsTarget = !!(_clickedBoxId && _targetBoxId && String(_clickedBoxId) === String(_targetBoxId));
+        // Locant click redirected to the chain: the chain box is selected from
+        // the previous arm, but the user clicked the locant. Re-assert the
+        // chain quiz instead of toggling it off (fall through to the arm).
+        if (_clickedIsTarget || !_redirectedFrom) {
+          var _ltT = null;
+          try { _ltT = (typeof window !== "undefined") ? window.MulerQuizTarget : null; } catch (eLT) { _ltT = null; }
+          var _ownQ = !_ltT || (String(_ltT) === String(mode));
+          try { if (_ownQ && typeof fMulerQuizDisarm === "function") fMulerQuizDisarm(); } catch (eD2) {}
+          try { if (_ownQ && typeof window !== "undefined") window.__mulerQuizIntent = null; } catch (eQI2b) {}
+          return false;
+        }
       }
     } catch (eD) { return false; }
     // Solved components fall through to the classic path (green on click,

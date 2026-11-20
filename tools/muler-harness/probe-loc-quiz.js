@@ -55,6 +55,10 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
     await p.waitForTimeout(800);
     return true;
   }
+  async function clickBox(boxId) {
+    await p.evaluate((id) => { try { document.getElementById(id).click(); } catch (e) {} }, boxId);
+    await p.waitForTimeout(700);
+  }
   async function state() {
     return await p.evaluate(() => {
       const el = document.getElementById("mulerQuizVerdict");
@@ -65,6 +69,7 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
           boxes[id] = b ? (b.textContent || "").trim().slice(0, 24) : null;
         }
       } catch (e) {}
+      const isSel = (id) => { try { const b = document.getElementById(id); return !!(b && b.classList.contains("selected")); } catch (e) { return null; } };
       return {
         prompt: ((document.getElementById("nameAnalysisExplain") || {}).textContent || "").trim(),
         verdict: el ? (el.textContent || "").trim() : "",
@@ -74,6 +79,8 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
         purpose: (typeof fMulerSelectPurpose === "function" ? fMulerSelectPurpose() : "?"),
         solved: fMulerChainSolved(),
         sel: (window.MulerUserSelection && window.MulerUserSelection.atoms2D) || [],
+        sel4: isSel("comp4"),
+        sel5: isSel("comp5"),
         badges: document.querySelectorAll("[id^='mulerSelNum']").length,
         numbers: document.querySelectorAll("#jsmeNomeclatureSVG text[id^='number']").length,
         boxes,
@@ -135,6 +142,16 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
   check(s.target === "compCarbonsCount" && s.returnTo === "compBondPos",
     "pentanone_2 EN: unsolved locant click should redirect to chain, got " + JSON.stringify(s));
   check(/Select the main chain first/i.test(s.prompt), "pentanone_2 EN: prompt must ask for the chain first, got " + JSON.stringify(s.prompt));
+  // 1b. Re-clicking the same unsolved locant re-asserts the chain quiz
+  // (v58.30): no disarm, no locant selection, prompt kept.
+  await clickBox("comp4");
+  s = await state();
+  check(s.target === "compCarbonsCount" && s.returnTo === "compBondPos",
+    "pentanone_2 EN: locant re-click must keep the chain redirect, got " + JSON.stringify(s));
+  check(/Select the main chain first/i.test(s.prompt),
+    "pentanone_2 EN: locant re-click must keep the chain prompt, got " + JSON.stringify(s.prompt));
+  check(s.sel5 === true && s.sel4 === false,
+    "pentanone_2 EN: locant re-click must keep the chain box selected and leave the locant unselected, got " + JSON.stringify({ sel5: s.sel5, sel4: s.sel4 }));
   await solveChain();
   s = await state();
   check(s.solved, "pentanone_2 EN: chain exact should mark the molecule solved");

@@ -642,6 +642,7 @@ function fScenarioCapture() {
   // whatever gets picked.
   try {
     var _liveT = (typeof window !== "undefined") ? window.MulerQuizTarget : null;
+    try { if (typeof window !== "undefined") window.__mulerLastCaptureQuizSignal = false; } catch (eSgInit) {}
     var _liveA = false;
     try { _liveA = (typeof fMulerSelectActive === "function") && fMulerSelectActive(); } catch (eA2) {}
     if (_liveT && _liveA && mol && typeof nameExamples !== "undefined" && nameExamples[mol]) {
@@ -656,6 +657,7 @@ function fScenarioCapture() {
         step.quiz = { kind: "nameComp", mode: String(_js.mode), mol: ((typeof showMenu !== "undefined" && showMenu) || (typeof menuOnly !== "undefined" && menuOnly)) ? "" : String(mol) };
         step.show = step.show || {};
         step.show.nameClick = true;
+        try { if (typeof window !== "undefined") window.__mulerLastCaptureQuizSignal = true; } catch (eSg1) {}
         try { if (typeof window !== "undefined") window.__mulerJustSolved = null; } catch (eJC) {}
       }
     }
@@ -715,6 +717,12 @@ function fScenarioCapture() {
       step.show = step.show || {};
       step.show.nameClick = true;
       step.show.naming = true;
+      // Deferred quizzes default to all component types (v58.38).
+      try {
+        if (String(step.quiz.mol || "") === "" && !(Object.prototype.toString.call(step.quiz.types) === "[object Array]" && step.quiz.types.length)) {
+          step.quiz.types = SCENARIO_QUIZ_TYPES.slice();
+        }
+      } catch (eTy) {}
       // v58.11: pin the required component set to the step's molecule so the
       // gate never depends on which boxes happen to be capable later. The
       // primary mode is always part of it. Deferred (menu, quiz.mol "")
@@ -723,6 +731,27 @@ function fScenarioCapture() {
         if (step.quiz.mol && mol && typeof nameExamples !== "undefined" && nameExamples[mol]) {
           var _modes = fScenarioQuizCapableModes();
           if (_modes.indexOf(String(step.quiz.mode)) < 0) _modes.unshift(String(step.quiz.mode));
+          // v58.32: components already solved in authoring are pre-solved
+          // (free tags), not required. Keep the primary only when everything
+          // was solved, so a quiz step always carries a task.
+          try {
+            var _solvedLive = (typeof window !== "undefined" && window.__mulerQuizSolved && window.__mulerQuizSolved[String(mol)]) || {};
+            var _reqOnly = [];
+            for (var _mi = 0; _mi < _modes.length; _mi++) {
+              if (!_solvedLive[_modes[_mi]]) _reqOnly.push(_modes[_mi]);
+            }
+            if (!_reqOnly.length && _modes.length) _reqOnly = [String(step.quiz.mode || _modes[0])];
+            _modes = _reqOnly;
+          } catch (eSm) {}
+          // v58.33: chain required ⇒ its number locants required too.
+          try {
+            if (_modes.indexOf("compCarbonsCount") >= 0 && typeof fScenarioQuizCapableLocantModes === "function") {
+              var _locsCap = fScenarioQuizCapableLocantModes() || [];
+              for (var _lci = 0; _lci < _locsCap.length; _lci++) {
+                if (_modes.indexOf(_locsCap[_lci]) < 0) _modes.push(_locsCap[_lci]);
+              }
+            }
+          } catch (eLc) {}
           if (_modes.length) {
             step.quiz.modes = _modes;
             step.quiz.modeLabels = fScenarioQuizModeLabels(_modes);
@@ -755,7 +784,7 @@ function fScenarioCapture() {
           } catch (eP1) {}
         };
         if (mol && typeof nameExamples !== "undefined" && nameExamples[mol]) _putSolved(String(mol));
-        if (typeof menuOnly !== "undefined" && menuOnly && Array.isArray(subset)) {
+        if (((typeof showMenu !== "undefined" && showMenu) || (typeof menuOnly !== "undefined" && menuOnly)) && Array.isArray(subset)) {
           for (var _si = 0; _si < subset.length; _si++) { if (subset[_si] && subset[_si] !== mol) _putSolved(String(subset[_si])); }
         }
         var _anyPre = false;
@@ -1426,6 +1455,22 @@ function fScenarioValidate(obj) {
             }
             st.quiz.preSolved = _pm;
           } catch (ePV) { try { st.quiz.preSolved = {}; } catch (ePV2) {} }
+        })();
+        // Deferred type set (v58.38): additive, sanitized to known keys;
+        // absent stays legacy all-capable.
+        (function () {
+          try {
+            var _tv = (qz && typeof qz.types !== "undefined") ? qz.types : undefined;
+            if (_tv === undefined || _tv === null) return;
+            var _tout = [];
+            if (Object.prototype.toString.call(_tv) === "[object Array]") {
+              for (var _ti2 = 0; _ti2 < _tv.length && _tout.length < 16; _ti2++) {
+                var _ts = String(_tv[_ti2] || "");
+                if (SCENARIO_QUIZ_TYPES.indexOf(_ts) >= 0 && _tout.indexOf(_ts) < 0) _tout.push(_ts);
+              }
+            }
+            if (_tout.length) st.quiz.types = _tout;
+          } catch (eTV) {}
         })();
         if (s && typeof s.quizSnapshot !== "undefined" && s.quizSnapshot !== null) {
           warnings.push("Step " + (i + 1) + ": worked-example snapshots are retired (classic replay shows solved steps) — dropped.");
@@ -2186,6 +2231,136 @@ function fScenarioQuizCapableModes() {
   return out;
 }
 
+// Quiz component list for the drawer editor (v58.31): every name component
+// of the displayed molecule, in name order, plus stored modes that no longer
+// exist (orphans, kept removable). Each entry: {mode,label,capable,hidden,orphan,locant}.
+// `locant` marks number-locant boxes (text starts with a digit) — they can be
+// free only when compCarbonsCount is free (v58.33).
+function fScenarioQuizComponentList(step, storedOnly) {
+  var out = [], seen = {};
+  var push = function (mode, label, capable, hidden, orphan, locant) {
+    try {
+      var m = String(mode || "");
+      if (!m || m === "none" || seen[m]) return;
+      seen[m] = true;
+      out.push({
+        mode: m,
+        label: String(label || "").slice(0, 40),
+        capable: capable !== false,
+        hidden: hidden === true,
+        orphan: orphan === true,
+        locant: locant === true,
+      });
+    } catch (eP) {}
+  };
+  var staticLocant = function (m) {
+    try {
+      return ["compNumber1", "compNumber2", "compBondPos", "compEndNumber", "compSuffixLocants", "compBranchLoc2"].indexOf(String(m)) >= 0 ||
+        /^comp3loc\d*$/.test(String(m));
+    } catch (eS) { return false; }
+  };
+  try {
+    var boxes = storedOnly ? [] : document.querySelectorAll("#nameAnalysis .nameCompBox");
+    for (var i = 0; i < boxes.length; i++) {
+      var b = boxes[i];
+      if (!b || !b.classList) continue;
+      var id = b.getAttribute ? b.getAttribute("id") : null;
+      if (!id) continue;
+      var mode = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId(id) : "none";
+      if (!mode || mode === "none") continue;
+      var label = "";
+      try { label = (b.textContent || "").replace(/\s+/g, " ").trim(); } catch (eL) { label = ""; }
+      if (!label) { try { label = fScenarioQuizModeLabel(mode); } catch (eL2) { label = mode; } }
+      var capable = false;
+      try {
+        var t = (typeof fMulerQuizResolveTarget === "function") ? fMulerQuizResolveTarget(mode) : [];
+        capable = !!(t && t.length);
+      } catch (eT) { capable = false; }
+      var hidden = !!(b.classList.contains("comp-hidden") || b.classList.contains("comp-gone"));
+      if (hidden) capable = false;
+      var locant = false;
+      try {
+        var _btxt = String(label || "").replace(/^[-\s]+/, "").replace(/[-\s]+$/, "");
+        locant = /^\d/.test(_btxt) || staticLocant(mode);
+      } catch (eLc) { locant = staticLocant(mode); }
+      push(mode, label, capable, hidden, false, locant);
+    }
+  } catch (eD) {}
+  // Stored modes missing from the current DOM (orphans): keep them visible so
+  // the author can remove them deliberately.
+  try {
+    var q = (step && step.quiz) || null;
+    var stored = (q && Object.prototype.toString.call(q.modes) === "[object Array]") ? q.modes : ((q && q.mode && q.mode !== "none") ? [q.mode] : []);
+    var labels = (q && Object.prototype.toString.call(q.modeLabels) === "[object Array]") ? q.modeLabels : [];
+    for (var s = 0; s < stored.length; s++) {
+      var sm = String(stored[s] || "");
+      if (!sm || sm === "none" || seen[sm]) continue;
+      var sl = labels[s] ? String(labels[s]) : sm;
+      push(sm, sl, true, false, true, staticLocant(sm));
+    }
+  } catch (eS) {}
+  return out;
+}
+
+// Capable number-locant modes on the displayed molecule (v58.33): box text
+// starts with a digit and the target resolves. Used by the chain rule:
+// locants can be free only when compCarbonsCount is free/not required.
+function fScenarioQuizCapableLocantModes() {
+  var out = [];
+  try {
+    var boxes = document.querySelectorAll("#nameAnalysis .nameCompBox");
+    for (var i = 0; i < boxes.length; i++) {
+      var b = boxes[i];
+      if (!b || !b.classList || b.classList.contains("comp-hidden") || b.classList.contains("comp-gone")) continue;
+      var id = b.getAttribute ? b.getAttribute("id") : null;
+      if (!id) continue;
+      var m = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId(id) : "none";
+      if (!m || m === "none" || out.indexOf(m) >= 0) continue;
+      var txt = String((b.textContent || "")).replace(/^[-\s]+/, "").replace(/[-\s]+$/, "");
+      if (!/^\d/.test(txt)) continue;
+      var t = (typeof fMulerQuizResolveTarget === "function") ? fMulerQuizResolveTarget(m) : [];
+      if (t && t.length) out.push(m);
+    }
+  } catch (e) {}
+  return out;
+}
+
+// Menu-quiz component types (v58.38): a deferred quiz can require only the
+// selected component types for every picked molecule; unselected types are
+// pre-solved on that molecule (binary contract).
+var SCENARIO_QUIZ_TYPES = ["mainChain", "locant", "bondType", "bondPos", "fg", "groupLocants", "branch", "substituent"];
+function fScenarioQuizModeType(mode) {
+  try {
+    var m = String(mode || "");
+    if (!m || m === "none") return "";
+    if (m === "compCarbonsCount") return "mainChain";
+    if (m === "compNumber1" || m === "compNumber2" || m === "compEndNumber" || m === "compBranchLoc2" || /^comp3loc\d*$/.test(m)) return "locant";
+    if (m === "compBondType" || m === "compBondType2") return "bondType";
+    if (m === "compBondPos") return "bondPos";
+    if (m === "compSuffix") return "fg";
+    if (m === "compSuffixLocants") return "groupLocants";
+    if (m === "compBranchSub1" || m === "compBranchSub2" || /^comp3b\d*$/.test(m)) return "branch";
+    if (m === "compSecondSub1" || m === "compSecondSub2" || m === "commonAlkyl1" || m === "commonAlkyl2" ||
+        m === "commonEther" || m === "esterAlkyl" || m === "esterEster") return "substituent";
+  } catch (e) {}
+  return "";
+}
+// Filter capable modes by the selected type keys (order preserved).
+function fScenarioQuizModesForTypes(modes, types) {
+  var out = [];
+  try {
+    var sel = {};
+    var list = Array.isArray(types) ? types : [];
+    for (var i = 0; i < list.length; i++) sel[String(list[i])] = true;
+    var arr = Array.isArray(modes) ? modes : [];
+    for (var j = 0; j < arr.length; j++) {
+      var t = fScenarioQuizModeType(arr[j]);
+      if (t && sel[t]) out.push(arr[j]);
+    }
+  } catch (e) {}
+  return out;
+}
+
 // Author-facing label for a required mode (semantic, not the box's name
 // fragment — "main chain" instead of "eth"). Capture-language, like a step
 // title; the drawer shows the stored labels.
@@ -2233,12 +2408,49 @@ function fScenarioQuizModeLabels(modes) {
 
 // The step's stored required-mode set, or null = compute at runtime.
 function fScenarioQuizRequiredModes(step) {
+  var base = null;
   try {
     var q = step && step.quiz;
     if (!q || !q.mode || q.mode === "none") return null;
-    if (Object.prototype.toString.call(q.modes) === "[object Array]" && q.modes.length) return q.modes.slice();
-  } catch (e) {}
-  return null;
+    // Deferred menu quizzes: required = capable comps whose type is selected
+    // (v58.38); absent types = legacy all-capable. preSolved filtering happens
+    // in the todo helper.
+    if (String(q.mol || "") === "") {
+      if (Object.prototype.toString.call(q.types) === "[object Array]" && q.types.length) {
+        var _cap = (typeof fScenarioQuizCapableModes === "function") ? fScenarioQuizCapableModes() : [];
+        var _req = fScenarioQuizModesForTypes(_cap, q.types);
+        // Chain rule: locants are required while the chain is a task.
+        try {
+          if (q.types.indexOf("mainChain") >= 0) {
+            var _locs = (typeof fScenarioQuizCapableLocantModes === "function") ? fScenarioQuizCapableLocantModes() : [];
+            for (var _ti = 0; _ti < _locs.length; _ti++) {
+              if (_req.indexOf(_locs[_ti]) < 0) _req.push(_locs[_ti]);
+            }
+          }
+        } catch (eChainT) {}
+        return _req;
+      }
+      return null;
+    }
+    if (Object.prototype.toString.call(q.modes) === "[object Array]" && q.modes.length) base = q.modes.slice();
+  } catch (e) { return null; }
+  if (!base) return null;
+  // v58.33 chain rule: while the main chain is a required (unsolved) task,
+  // number locants are required too — a free locant without the chain is
+  // meaningless. Enforced per current molecule so legacy files comply.
+  try {
+    if (base.indexOf("compCarbonsCount") >= 0) {
+      var _chainTask = true;
+      try { _chainTask = !(typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved("compCarbonsCount")); } catch (eCh) { _chainTask = true; }
+      if (_chainTask && typeof fScenarioQuizCapableLocantModes === "function") {
+        var _locs = fScenarioQuizCapableLocantModes() || [];
+        for (var _li = 0; _li < _locs.length; _li++) {
+          if (base.indexOf(_locs[_li]) < 0) base.push(_locs[_li]);
+        }
+      }
+    }
+  } catch (eLr) {}
+  return base;
 }
 
 // Todo set for a step (required ∩ capable ∩ unsolved ∩ visible). null =
@@ -2478,6 +2690,30 @@ function fScenarioApplyQuiz(step) {
         }
       }
     } catch (ePS0) {}
+    // v58.31 tag editor contract: unselected capable components are
+    // pre-solved (free = capable − required). v58.37: deferred menu quizzes
+    // are all-capable tasks per picked molecule — no free complement there
+    // (their only tuning is the authored preSolved baseline above).
+    try {
+      var _deferredTask = (String((task && task.mol) || "") === "");
+      var _deferredTypes = _deferredTask && (Object.prototype.toString.call(task && task.types) === "[object Array]") && task.types.length > 0;
+      // Deferred quizzes with explicit types follow the binary contract
+      // (unselected types = free); legacy all-capable deferred quizzes keep
+      // their neutral practice comps.
+      if ((!_deferredTask || _deferredTypes) && typeof window !== "undefined" && molNow && task && task.mode) {
+        var _reqFree = null;
+        try { _reqFree = (typeof fScenarioQuizRequiredModes === "function") ? fScenarioQuizRequiredModes(step) : null; } catch (eRF) { _reqFree = null; }
+        if (!_reqFree || !_reqFree.length) _reqFree = [String(task.mode)];
+        var _capFree = (typeof fScenarioQuizCapableModes === "function") ? fScenarioQuizCapableModes() : [];
+        if (!window.__mulerQuizSolved) window.__mulerQuizSolved = {};
+        if (!window.__mulerQuizSolved[molNow]) window.__mulerQuizSolved[molNow] = {};
+        for (var _fi = 0; _fi < _capFree.length; _fi++) {
+          var _fm = String(_capFree[_fi] || "");
+          if (!_fm || _reqFree.indexOf(_fm) >= 0) continue;
+          window.__mulerQuizSolved[molNow][_fm] = true;
+        }
+      }
+    } catch (eFree) {}
     // Multi-comp completion: the step is done only when every required
     // comp is solved. Auto-arm prefers the primary mode, else the first
     // remaining required one. Unknown set (panel not built) falls back to
@@ -6735,11 +6971,103 @@ function fScenarioRenderOne(scen) {
     // Classic steps render nothing here so future quiz options (attempts,
     // hints, order) drop in without layout churn. Kept last: the quiz row
     // follows the menu-settings row when both are present.
+    // Quiz settings row: always rendered. One master checkbox controls whether
+    // the step is a quiz (replaces the Enable/Remove buttons, v58.34); quiz
+    // steps show the gate toggle + the component editor where selected =
+    // required, unselected = pre-solved.
+    var quizRow = document.createElement("div");
+    quizRow.className = "scShowRow scStepQuizSettings";
+    quizRow.setAttribute("data-sc-row", "quiz");
+    _addRowTitle(quizRow, "rowQuiz", "Κουίζ");
+    // The same-molecule check is made inside onchange: a row rendered before
+    // the author pressed Go would otherwise keep a stale mismatch (v58.36).
+    var quizToggleLabel = document.createElement("label");
+    quizToggleLabel.className = "sshow";
+    quizToggleLabel.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("quizToggleTip") : "Enable/disable the quiz on this step"));
+    var quizToggle = document.createElement("input");
+    quizToggle.type = "checkbox";
+    quizToggle.setAttribute("data-sc-role", "quiz-enabled");
+    quizToggle.checked = _isQuizStep;
+    quizToggle.onchange = function () {
+      try {
+        // Preserve the expanded step row across the structural rebuild below
+        // (checking/unchecking switches classic <-> quiz markup). v58.35
+        var _rowIdx = "";
+        var _wasOpen = false;
+        try { _rowIdx = row.getAttribute("data-idx") || ""; } catch (eRIdx) {}
+        try { _wasOpen = !row.classList.contains("collapsed"); } catch (eWo) {}
+        if (quizToggle.checked) {
+          // Menu-carrying steps are deferred quizzes: every picked molecule
+          // quizzes all its capable comps (v58.37), so only a nominal primary
+          // is stored. No capability/molecule guard here.
+          var _menuNow = !st.selectedMol || (Array.isArray(st.menuSubset) && st.menuSubset.length > 1);
+          if (_menuNow) {
+            var _modeNow = "";
+            try { _modeNow = (typeof window !== "undefined" && window.MulerQuizTarget) ? String(window.MulerQuizTarget) : ""; } catch (eMn2) { _modeNow = ""; }
+            if (!_modeNow || _modeNow === "none") _modeNow = "compCarbonsCount";
+            st.quiz = { kind: "nameComp", mode: _modeNow, mol: "", types: SCENARIO_QUIZ_TYPES.slice() };
+            st.requireSolution = true;
+            st.show = st.show || {};
+            st.show.nameClick = true;
+            st.show.naming = true;
+          } else {
+            // Compare now, not at render time (Go may have loaded the molecule
+            // after this row was built).
+            var _molNow = "";
+            try { _molNow = (typeof selectedMol !== "undefined" && selectedMol) ? String(selectedMol) : ""; } catch (eMn) { _molNow = ""; }
+            var _sameMolNow = !st.selectedMol || !!(_molNow && String(st.selectedMol) === _molNow);
+            if (!_sameMolNow) {
+              if (typeof fScenarioToast === "function") fScenarioToast(((typeof fMulerT === "function") ? fMulerT("quizGoFirst") : "Open the step first (Go) to load its molecule."));
+              quizToggle.checked = false;
+              return;
+            }
+            var _cap = (typeof fScenarioQuizCapableModes === "function") ? fScenarioQuizCapableModes() : [];
+            if (!_cap.length) {
+              if (typeof fScenarioToast === "function") fScenarioToast(((typeof fMulerT === "function") ? fMulerT("quizNoCapable") : "No components with atoms to quiz."));
+              quizToggle.checked = false;
+              return;
+            }
+            st.quiz = { kind: "nameComp", mode: String(_cap[0]), modes: _cap.slice(), modeLabels: fScenarioQuizModeLabels(_cap) };
+            st.requireSolution = true;
+            st.show = st.show || {};
+            st.show.nameClick = true;
+            st.show.naming = true;
+          }
+        } else {
+          st.quiz = null;
+          try { delete st.requireSolution; } catch (eDel) {}
+        }
+        fScenarioSyncLegacy();
+        fScenarioRenderList(scen.id);
+        if (_wasOpen) {
+          try {
+            var _selRe = '.scenarioPanel[data-scenario-id="' + String(scen.id).replace(/"/g, "") + '"] .srow[data-idx="' + _rowIdx + '"]';
+            var _rowRe = document.querySelector(_selRe);
+            if (_rowRe) {
+              _rowRe.classList.remove("collapsed");
+              var _tbRe = _rowRe.querySelector(".scCollapse");
+              if (_tbRe) {
+                try { _tbRe.innerHTML = (window.MuLERIcons && window.MuLERIcons.minimize) || "▾"; } catch (eIcR) { _tbRe.textContent = "▾"; }
+                _tbRe.setAttribute("aria-expanded", "true");
+              }
+            }
+          } catch (eReopen) {}
+        }
+        if (typeof fScenarioToast === "function") {
+          fScenarioToast(quizToggle.checked
+            ? fMulerPre("Το κουίζ ενεργοποιήθηκε.", "Quiz enabled.")
+            : fMulerPre("Το κουίζ αφαιρέθηκε — το βήμα είναι κλασικό.", "Quiz removed — step is classic now."));
+        }
+      } catch (eTgl) { try { quizToggle.checked = _isQuizStep; } catch (eTg2) {} }
+    };
+    quizToggleLabel.appendChild(quizToggle);
+    quizToggleLabel.appendChild(document.createTextNode(" " + ((typeof fMulerT === "function") ? fMulerT("quizEnabled") : "Quiz enabled")));
+    quizRow.appendChild(quizToggleLabel);
+    // Menu-carrying quizzes are deferred: components differ per molecule, so
+    // the drawer shows quiz types (read-only) instead of name tags (v58.37).
+    var _menuQuiz = !st.selectedMol || (Array.isArray(st.menuSubset) && st.menuSubset.length > 1) ||
+      (String((st.quiz && st.quiz.mol) || "") === "");
     if (_isQuizStep) {
-      var quizRow = document.createElement("div");
-      quizRow.className = "scShowRow scStepQuizSettings";
-      quizRow.setAttribute("data-sc-row", "quiz");
-      _addRowTitle(quizRow, "rowQuiz", "Κουίζ");
       var quizReqLabel = document.createElement("label");
       quizReqLabel.className = "sshow";
       quizReqLabel.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("requireSolution") : "Απαίτηση λύσης κουίζ για συνέχεια"));
@@ -6753,39 +7081,296 @@ function fScenarioRenderOne(scen) {
       quizReqLabel.appendChild(quizReqCheck);
       quizReqLabel.appendChild(document.createTextNode(" " + ((typeof fMulerT === "function") ? fMulerT("requireSolution") : "Απαίτηση λύσης")));
       quizRow.appendChild(quizReqLabel);
-      // Required components (v58.11): the step stores its set, so the author
-      // can see exactly what the lesson will ask for.
-      var quizInfo = document.createElement("span");
-      quizInfo.className = "scQuizReq";
-      quizInfo.setAttribute("data-sc-role", "quiz-requirements");
-      var _qlRow = Array.isArray(st.quiz.modeLabels) ? st.quiz.modeLabels : [];
-      var _reqTxt = _qlRow.length
-        ? _qlRow.join(" · ")
-        : (Array.isArray(st.quiz.modes) && st.quiz.modes.length
-          ? st.quiz.modes.join(" · ")
-          : ((typeof fMulerT === "function") ? fMulerT("quizPerMolecule") : "per molecule"));
-      quizInfo.textContent = ((typeof fMulerT === "function") ? fMulerT("quizRequires") : "Requires") + ": " + _reqTxt;
-      quizRow.appendChild(quizInfo);
-      // Explicit removal (replaces the old "disarmed Update clears" flow).
-      var quizRemoveBtn = document.createElement("button");
-      quizRemoveBtn.type = "button";
-      quizRemoveBtn.className = "scQuizRemove";
-      quizRemoveBtn.setAttribute("data-sc-role", "quiz-remove");
-      quizRemoveBtn.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("quizRemoveTip") : "Remove the quiz from this step"));
-      quizRemoveBtn.textContent = ((typeof fMulerT === "function") ? fMulerT("quizRemove") : "Remove");
-      quizRemoveBtn.onclick = function (ev) {
-        try { if (ev && ev.preventDefault) ev.preventDefault(); if (ev && ev.stopPropagation) ev.stopPropagation(); } catch (e0) {}
+      // Component editor (v58.31): tags write quiz.modes directly, so no
+      // solve-first authoring is needed. Unselected capable comps are derived
+      // as pre-solved at apply (capable − required). Menu quizzes (v58.37)
+      // show a read-only type summary instead.
+      if (!_menuQuiz) (function (scenId, stepObj) {
         try {
-          st.quiz = null;
-          try { delete st.requireSolution; } catch (eDel) {}
-          fScenarioSyncLegacy();
-          fScenarioRenderList(scen.id);
-          if (typeof fScenarioToast === "function") fScenarioToast(fMulerPre("Το κουίζ αφαιρέθηκε — το βήμα είναι κλασικό.", "Quiz removed — step is classic now."));
-        } catch (eRem) {}
-      };
-      quizRow.appendChild(quizRemoveBtn);
-      settingsBlock.appendChild(quizRow);
+          var _sameMolTag = true;
+          try {
+            _sameMolTag = !stepObj.selectedMol || (typeof selectedMol !== "undefined" && selectedMol && String(stepObj.selectedMol) === String(selectedMol));
+          } catch (eSm3) { _sameMolTag = true; }
+          var comps = (typeof fScenarioQuizComponentList === "function") ? fScenarioQuizComponentList(stepObj, !_sameMolTag) : [];
+          var req = (Object.prototype.toString.call(stepObj.quiz.modes) === "[object Array]" && stepObj.quiz.modes.length)
+            ? stepObj.quiz.modes.slice()
+            : ((stepObj.quiz.mode && stepObj.quiz.mode !== "none") ? [String(stepObj.quiz.mode)] : []);
+          var wrap = document.createElement("div");
+          wrap.className = "scQuizReq";
+          wrap.setAttribute("data-sc-role", "quiz-requirements");
+          var open = !!(typeof window !== "undefined" && window._scQuizReqOpen === true);
+          var head = document.createElement("button");
+          head.type = "button";
+          head.className = "scQuizReqHead";
+          head.setAttribute("data-sc-role", "quiz-req-toggle");
+          head.setAttribute("aria-expanded", open ? "true" : "false");
+          var _solvedOf = function (mode) {
+            try {
+              if (!_sameMolTag) return false;
+              return !!(typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved(String(mode)));
+            } catch (eSv) { return false; }
+          };
+          var _selectedCount = function () {
+            var n = 0;
+            var chainReq = (req.indexOf("compCarbonsCount") >= 0) && !_solvedOf("compCarbonsCount");
+            for (var ci2 = 0; ci2 < comps.length; ci2++) {
+              var cm = comps[ci2];
+              if (!cm || !cm.capable) continue;
+              if (_solvedOf(cm.mode)) continue;
+              if (req.indexOf(cm.mode) >= 0 || (cm.locant && chainReq)) n++;
+            }
+            return n;
+          };
+          var _chainRequired = function () {
+            return (req.indexOf("compCarbonsCount") >= 0) && !_solvedOf("compCarbonsCount");
+          };
+          var _headTxt = function () {
+            return ((typeof fMulerT === "function") ? fMulerT("quizComponents") : "Quiz components") + " " + _selectedCount() + "/" + comps.length + " " + (open ? "▾" : "▸");
+          };
+          head.textContent = _headTxt();
+          var list = document.createElement("div");
+          list.className = "scQuizReqList";
+          list.style.display = open ? "" : "none";
+          var _tagState = function (tag, comp) {
+            try {
+              var solved = _solvedOf(comp.mode);
+              var _locLocked = !!(comp.locant && _chainRequired());
+              var sel = ((req.indexOf(comp.mode) >= 0) || _locLocked) && !solved;
+              try { tag.classList.toggle("selected", sel); } catch (eC1) {}
+              try { tag.classList.toggle("free", !sel); } catch (eC2) {}
+              try { tag.classList.toggle("chain-locked", _locLocked); } catch (eC3) {}
+              tag.setAttribute("aria-pressed", sel ? "true" : "false");
+              var tip = comp.hidden
+                ? ((typeof fMulerT === "function") ? fMulerT("quizTagHiddenTip") : "Hidden component — cannot be quizzed")
+                : !comp.capable
+                  ? ((typeof fMulerT === "function") ? fMulerT("quizTagIncapableTip") : "No atoms to quiz on this molecule")
+                  : _locLocked
+                    ? ((typeof fMulerT === "function") ? fMulerT("quizLocantNeedsChain") : "Needs the main chain in the quiz")
+                    : solved
+                      ? ((typeof fMulerT === "function") ? fMulerT("quizTagSolvedTip") : "Solved — will be shown solved")
+                      : sel
+                        ? ((typeof fMulerT === "function") ? fMulerT("quizTagRequiredTip") : "Will be asked in the quiz")
+                        : ((typeof fMulerT === "function") ? fMulerT("quizTagFreeTip") : "Will be shown solved");
+              tag.setAttribute("data-tooltip", tip + " · " + comp.mode);
+            } catch (eTs) {}
+          };
+          var _refreshTags = function () {
+            try {
+              var tags = list.querySelectorAll(".scQuizTag");
+              for (var ti = 0; ti < tags.length; ti++) {
+                (function (tag) {
+                  var m = tag.getAttribute("data-mode") || "";
+                  var base = null;
+                  for (var xi = 0; xi < comps.length; xi++) { if (comps[xi].mode === m) { base = comps[xi]; break; } }
+                  if (base) _tagState(tag, base);
+                })(tags[ti]);
+              }
+            } catch (eRt) {}
+          };
+          var _toggleMode = function (mode) {
+            try {
+              // Number locants need the main chain in the quiz (v58.33).
+              var _compDef = null;
+              for (var cdi = 0; cdi < comps.length; cdi++) { if (comps[cdi].mode === mode) { _compDef = comps[cdi]; break; } }
+              if (_compDef && _compDef.locant && _chainRequired()) {
+                if (typeof fScenarioToast === "function") fScenarioToast(((typeof fMulerT === "function") ? fMulerT("quizLocantNeedsChain") : "Needs the main chain in the quiz"));
+                return;
+              }
+              // Solved comps are pre-solved by the tag contract: clicking one
+              // only explains the state (no re-quiz).
+              if (_solvedOf(mode)) {
+                if (typeof fScenarioToast === "function") fScenarioToast(((typeof fMulerT === "function") ? fMulerT("quizTagSolvedTip") : "Solved — will be shown solved"));
+                return;
+              }
+              var cur = (Object.prototype.toString.call(stepObj.quiz.modes) === "[object Array]") ? stepObj.quiz.modes.slice() : req.slice();
+              var at = cur.indexOf(mode);
+              if (at >= 0) {
+                if (cur.length <= 1) {
+                  if (typeof fScenarioToast === "function") fScenarioToast(((typeof fMulerT === "function") ? fMulerT("quizLastRequired") : "Keep at least one component in the quiz."));
+                  return;
+                }
+                cur.splice(at, 1);
+              } else cur.push(mode);
+              // Chain still required: persist its locants with it.
+              try {
+                var _chainAfter = (cur.indexOf("compCarbonsCount") >= 0) && !_solvedOf("compCarbonsCount");
+                if (_chainAfter) {
+                  for (var lpi = 0; lpi < comps.length; lpi++) {
+                    if (comps[lpi].locant && comps[lpi].capable && cur.indexOf(comps[lpi].mode) < 0) cur.push(comps[lpi].mode);
+                  }
+                }
+              } catch (eCy) {}
+              // Keep the component list's name order.
+              var order = [];
+              for (var oi = 0; oi < comps.length; oi++) order.push(comps[oi].mode);
+              cur.sort(function (a, b) { var ia = order.indexOf(a), ib = order.indexOf(b); if (ia < 0) ia = 999; if (ib < 0) ib = 999; return ia - ib; });
+              stepObj.quiz.modes = cur;
+              stepObj.quiz.modeLabels = fScenarioQuizModeLabels(cur);
+              if (cur.indexOf(String(stepObj.quiz.mode)) < 0) stepObj.quiz.mode = cur[0];
+              req = cur;
+              fScenarioSyncLegacy();
+              // In-place update: no list rebuild, so the step row stays open
+              // and the drawer keeps its scroll.
+              _refreshTags();
+              head.textContent = _headTxt();
+              try {
+                var rowEl = (typeof fScenarioPanelFor === "function") ? fScenarioPanelFor(scenId) : null;
+                var badge = rowEl ? rowEl.querySelector(".scQuizBadge") : null;
+                if (badge) {
+                  var _bt = ((typeof fMulerT === "function") ? fMulerT("quizStepBadge") : "Quiz step") + ": " + (stepObj.quiz.modeLabels || []).join(", ");
+                  badge.setAttribute("data-tooltip", _bt);
+                }
+              } catch (eBadge) {}
+            } catch (eTg) {}
+          };
+          for (var ci = 0; ci < comps.length; ci++) {
+            (function (comp) {
+              var tag = document.createElement("button");
+              tag.type = "button";
+              tag.className = "scQuizTag" + (comp.capable ? "" : " incapable") + (comp.orphan ? " orphan" : "");
+              tag.setAttribute("data-sc-role", "quiz-mode-" + comp.mode);
+              tag.setAttribute("data-mode", comp.mode);
+              tag.disabled = !comp.capable;
+              tag.textContent = comp.label || comp.mode;
+              _tagState(tag, comp);
+              tag.onclick = function (ev) {
+                try { if (ev && ev.preventDefault) ev.preventDefault(); if (ev && ev.stopPropagation) ev.stopPropagation(); } catch (e0) {}
+                _toggleMode(comp.mode);
+              };
+              list.appendChild(tag);
+            })(comps[ci]);
+          }
+          head.onclick = function (ev) {
+            try { if (ev && ev.preventDefault) ev.preventDefault(); if (ev && ev.stopPropagation) ev.stopPropagation(); } catch (e0) {}
+            open = !open;
+            try { if (typeof window !== "undefined") window._scQuizReqOpen = open; } catch (eO) {}
+            list.style.display = open ? "" : "none";
+            head.setAttribute("aria-expanded", open ? "true" : "false");
+            head.textContent = _headTxt();
+          };
+          wrap.appendChild(head);
+          wrap.appendChild(list);
+          quizRow.appendChild(wrap);
+        } catch (eQr) {}
+      })(scen.id, st);
+      else {
+        // Menu quiz: read-only type chips + per-molecule pre-solved tuning.
+        try {
+          var mWrap = document.createElement("div");
+          mWrap.className = "scQuizReq scQuizMenuReq";
+          mWrap.setAttribute("data-sc-role", "quiz-requirements");
+          var mHead = document.createElement("div");
+          mHead.className = "scQuizReqHeadStatic";
+          mHead.textContent = ((typeof fMulerT === "function") ? fMulerT("quizTypes") : "Quiz types");
+          mWrap.appendChild(mHead);
+          var mHint = document.createElement("div");
+          mHint.className = "scQuizMenuHint";
+          mHint.textContent = ((typeof fMulerT === "function") ? fMulerT("quizMenuHint") : "Applies to every picked molecule · solve components with Go to exempt");
+          mWrap.appendChild(mHint);
+          var mList = document.createElement("div");
+          mList.className = "scQuizReqList";
+          var mTypes = SCENARIO_QUIZ_TYPES.slice();
+          var mSel = (Object.prototype.toString.call(st.quiz.types) === "[object Array]" && st.quiz.types.length)
+            ? st.quiz.types.slice()
+            : SCENARIO_QUIZ_TYPES.slice();
+          var mChipLabels = {
+            mainChain: ["κύρια αλυσίδα", "main chain"],
+            locant: ["θέσεις", "locants"],
+            bondType: ["τύπος δεσμού", "bond type"],
+            bondPos: ["θέση δεσμού", "bond position"],
+            fg: ["χαρακτηριστική ομάδα", "functional group"],
+            groupLocants: ["θέσεις ομάδας", "group locants"],
+            branch: ["διακλαδώσεις", "branches"],
+            substituent: ["υποκαταστάτες", "substituents"],
+          };
+          var _mChainLocked = function () { return mSel.indexOf("mainChain") >= 0; };
+          var _mChipState = function (chip, key) {
+            try {
+              var locked = (key === "locant") && _mChainLocked();
+              var sel = (mSel.indexOf(key) >= 0) || locked;
+              chip.classList.toggle("selected", sel);
+              chip.classList.toggle("free", !sel);
+              chip.classList.toggle("chain-locked", locked);
+              chip.setAttribute("aria-pressed", sel ? "true" : "false");
+              var tipKey = locked ? "quizLocantNeedsChain" : (sel ? "quizTagRequiredTip" : "quizTagFreeTip");
+              var tip = ((typeof fMulerT === "function") ? fMulerT(tipKey) : (locked ? "Needs the main chain in the quiz" : (sel ? "Will be asked in the quiz" : "Will be shown solved")));
+              chip.setAttribute("data-tooltip", tip + " · " + ((typeof fMulerT === "function") ? fMulerT("quizPerMolecule") : "per molecule"));
+            } catch (eMs) {}
+          };
+          var _mRefresh = function () {
+            try {
+              var chips = mList.querySelectorAll(".scQuizTag.type");
+              for (var cj = 0; cj < chips.length; cj++) {
+                (function (ch) { _mChipState(ch, ch.getAttribute("data-type") || ""); })(chips[cj]);
+              }
+            } catch (eMr) {}
+          };
+          for (var mti = 0; mti < mTypes.length; mti++) {
+            (function (key) {
+              var chip = document.createElement("button");
+              chip.type = "button";
+              chip.className = "scQuizTag type";
+              chip.setAttribute("data-sc-role", "quiz-type-" + key);
+              chip.setAttribute("data-type", key);
+              var pair = mChipLabels[key] || [key, key];
+              var en = false;
+              try { en = (typeof fMulerIsEN === "function") && fMulerIsEN(); } catch (eLg) { en = false; }
+              chip.textContent = en ? pair[1] : pair[0];
+              _mChipState(chip, key);
+              chip.onclick = function (ev) {
+                try { if (ev && ev.preventDefault) ev.preventDefault(); if (ev && ev.stopPropagation) ev.stopPropagation(); } catch (e0) {}
+                try {
+                  if (key === "locant" && _mChainLocked()) {
+                    if (typeof fScenarioToast === "function") fScenarioToast(((typeof fMulerT === "function") ? fMulerT("quizLocantNeedsChain") : "Needs the main chain in the quiz"));
+                    return;
+                  }
+                  var at2 = mSel.indexOf(key);
+                  if (at2 >= 0) {
+                    if (mSel.length <= 1) {
+                      if (typeof fScenarioToast === "function") fScenarioToast(((typeof fMulerT === "function") ? fMulerT("quizLastRequired") : "Keep at least one component in the quiz."));
+                      return;
+                    }
+                    mSel.splice(at2, 1);
+                    // Freeing the chain also frees its locked locants.
+                    if (key === "mainChain") {
+                      var lci = mSel.indexOf("locant");
+                      if (lci >= 0) mSel.splice(lci, 1);
+                    }
+                  } else {
+                    mSel.push(key);
+                    // Chain selected ⇒ locants required with it (chain rule).
+                    if (key === "mainChain" && mSel.indexOf("locant") < 0) mSel.push("locant");
+                  }
+                  mSel.sort(function (a, b) { return SCENARIO_QUIZ_TYPES.indexOf(a) - SCENARIO_QUIZ_TYPES.indexOf(b); });
+                  st.quiz.types = mSel.slice();
+                  fScenarioSyncLegacy();
+                  _mRefresh();
+                } catch (eTg2) {}
+              };
+              mList.appendChild(chip);
+            })(mTypes[mti]);
+          }
+          mWrap.appendChild(mList);
+          try {
+            var preS = (st.quiz && st.quiz.preSolved && typeof st.quiz.preSolved === "object" && !Array.isArray(st.quiz.preSolved)) ? st.quiz.preSolved : null;
+            var preParts = [];
+            for (var pk in preS) {
+              if (!Object.prototype.hasOwnProperty.call(preS, pk)) continue;
+              var pv = preS[pk];
+              if (pv && pv.length) preParts.push(String(pk) + ": " + pv.length);
+            }
+            if (preParts.length) {
+              var preEl = document.createElement("div");
+              preEl.className = "scQuizPreSolved";
+              preEl.textContent = ((typeof fMulerT === "function") ? fMulerT("quizPreSolved") : "Author pre-solved") + " — " + preParts.join(" · ");
+              mWrap.appendChild(preEl);
+            }
+          } catch (ePre) {}
+          quizRow.appendChild(mWrap);
+        } catch (eMq) {}
+      }
     }
+    settingsBlock.appendChild(quizRow);
     // Class-bound step actions (order-free): Go previews, Present jumps
     // straight into presentation at this step, the rest edit/reorder/delete.
     (function (scenId, idx) {
@@ -7159,6 +7744,29 @@ function fScenarioUpdateStep(scenId, idx) {
       if (typeof old.requireSolution !== "undefined") fresh.requireSolution = !!old.requireSolution;
       fresh.show.nameClick = true;
       fresh.show.naming = true;
+      // Drawer tags are authoritative for an existing quiz step: a live
+      // capture may refresh the primary mode / solved baseline, but must not
+      // overwrite the authored required set. The exception is a just-solved
+      // capture (v58.32): the solved complement refreshes the set so solved
+      // comps become free and the rest stay required.
+      try {
+        var _quizSignal = false;
+        try { _quizSignal = (typeof window !== "undefined" && window.__mulerLastCaptureQuizSignal === true); } catch (eSig) {}
+        try { if (typeof window !== "undefined") window.__mulerLastCaptureQuizSignal = false; } catch (eSig2) {}
+        if (!_quizSignal && old.quiz && Object.prototype.toString.call(old.quiz.modes) === "[object Array]" && old.quiz.modes.length) {
+          fresh.quiz.modes = old.quiz.modes.slice();
+          fresh.quiz.modeLabels = (Object.prototype.toString.call(old.quiz.modeLabels) === "[object Array]" && old.quiz.modeLabels.length === fresh.quiz.modes.length)
+            ? old.quiz.modeLabels.slice()
+            : fScenarioQuizModeLabels(fresh.quiz.modes);
+        }
+        // Primary mode must belong to the final required set (both paths).
+        try {
+          if (Object.prototype.toString.call(fresh.quiz.modes) === "[object Array]" && fresh.quiz.modes.length &&
+              fresh.quiz.modes.indexOf(String(fresh.quiz.mode)) < 0) {
+            fresh.quiz.mode = fresh.quiz.modes[0];
+          }
+        } catch (ePm) {}
+      } catch (eQm) {}
     } else if (old.quiz && old.quiz.mode) {
       var _oldQuiz = fScenarioCloneQuiz(old.quiz);
       if (_oldQuiz) {

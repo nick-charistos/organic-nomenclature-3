@@ -286,7 +286,7 @@ const clickBtn = async (p, id) => {
       const req = row ? row.querySelector('input[data-sc-role="require-solution"]') : null;
       const quizRow = row ? row.querySelector('[data-sc-row="quiz"]') : null;
       const info = row ? row.querySelector('[data-sc-role="quiz-requirements"]') : null;
-      const remove = row ? row.querySelector('[data-sc-role="quiz-remove"]') : null;
+      const toggle = row ? row.querySelector('input[data-sc-role="quiz-enabled"]') : null;
       const naming = row ? row.querySelector('input[data-sc-role="naming"]') : null;
       const nameClick = row ? row.querySelector('input[data-sc-role="name-click"]') : null;
       return {
@@ -295,7 +295,7 @@ const clickBtn = async (p, id) => {
         req: req ? { checked: !!req.checked, disabled: !!req.disabled } : null,
         quizRow: !!quizRow,
         info: info ? (info.textContent || "").trim() : null,
-        remove: !!remove,
+        toggle: toggle ? { checked: !!toggle.checked } : null,
         namingHidden: naming ? getComputedStyle(naming.closest("label")).display === "none" : null,
         nameClickHidden: nameClick ? getComputedStyle(nameClick.closest("label")).display === "none" : null,
       };
@@ -305,13 +305,95 @@ const clickBtn = async (p, id) => {
     "quiz row should offer require-solution checked, got " + JSON.stringify(rowInfo));
   check(rowInfo && rowInfo.info && /comp|αλυσ|chain|eth|an/i.test(rowInfo.info),
     "quiz row should describe the required components, got " + JSON.stringify(rowInfo && rowInfo.info));
-  check(rowInfo && rowInfo.remove === true, "quiz row should offer explicit removal");
+  check(rowInfo && rowInfo.toggle && rowInfo.toggle.checked === true,
+    "quiz row master checkbox should be checked on quiz steps, got " + JSON.stringify(rowInfo && rowInfo.toggle));
   check(rowInfo && rowInfo.namingHidden === true && rowInfo.nameClickHidden === true,
     "naming master + interaction should be hidden on quiz steps, got " + JSON.stringify(rowInfo));
   check(rowInfo && rowInfo.badge && /quiz|κουίζ/i.test(rowInfo.badge),
     "quiz badge should be localized, got " + JSON.stringify(rowInfo && rowInfo.badge));
   check(rowInfo && rowInfo.badgeTip && !/compCarbonsCount/.test(rowInfo.badgeTip),
     "quiz badge tooltip should use labels, not mode ids, got " + JSON.stringify(rowInfo && rowInfo.badgeTip));
+  // --- 1a. component editor tags (v58.31): selected = required, free = pre-solved ---
+  const tagInfo = await p.evaluate((id) => {
+    try {
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      const tags = row ? Array.from(row.querySelectorAll('[data-sc-role^="quiz-mode-"]')) : [];
+      const q = fScenarioGet(id).steps[0].quiz;
+      return {
+        count: tags.length,
+        selected: tags.filter((t) => t.classList.contains("selected")).length,
+        disabled: tags.filter((t) => t.disabled).length,
+        head: (row.querySelector(".scQuizReqHead") || {}).textContent || "",
+        modes: q.modes || [],
+      };
+    } catch (e) { return "err"; }
+  }, scid);
+  check(tagInfo && tagInfo.count >= 2 && tagInfo.selected === tagInfo.modes.length,
+    "quiz tags should list components with selected = required, got " + JSON.stringify(tagInfo));
+  check(tagInfo && /Quiz components|Συνθετικά/i.test(tagInfo.head) && !/Requires|Απαιτούνται/.test(tagInfo.head),
+    "component header should name the component set, not the gate label, got " + JSON.stringify(tagInfo && tagInfo.head));
+  const toggleOff = await p.evaluate((id) => {
+    try {
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      const q = fScenarioGet(id).steps[0].quiz;
+      const tags = Array.from(row.querySelectorAll('[data-sc-role^="quiz-mode-"]'));
+      const hit = tags.find((t) => t.classList.contains("selected") && t.getAttribute("data-mode") !== q.mode && !t.disabled);
+      if (!hit) return "noalt";
+      const mode = hit.getAttribute("data-mode");
+      hit.click();
+      return mode;
+    } catch (e) { return "err"; }
+  }, scid);
+  await p.waitForTimeout(700);
+  const offInfo = await p.evaluate(([id, mode]) => {
+    try {
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      const q = fScenarioGet(id).steps[0].quiz;
+      const tag = row.querySelector('[data-sc-role="quiz-mode-' + mode + '"]');
+      return { modes: q.modes, tag: tag ? tag.className : null, head: (row.querySelector(".scQuizReqHead") || {}).textContent || "" };
+    } catch (e) { return "err"; }
+  }, [scid, toggleOff]);
+  check(typeof toggleOff === "string" && toggleOff !== "noalt" && toggleOff !== "err" &&
+    offInfo && offInfo.modes.indexOf(toggleOff) < 0 && /free/.test(offInfo.tag || ""),
+    "unselecting a tag should drop it from quiz.modes and mark it free, got " + JSON.stringify({ mode: toggleOff, off: offInfo }));
+  // Update keeps the drawer-authored set while the mode is off.
+  check(await rowButton(p, scid, ".scUpdate") === true, "tag-set Update should capture");
+  const keptOff = await p.evaluate((id) => {
+    try { return fScenarioGet(id).steps[0].quiz.modes || []; } catch (e) { return "err"; }
+  }, scid);
+  check(Array.isArray(keptOff) && keptOff.indexOf(toggleOff) < 0,
+    "Update must keep the drawer set (off tag must stay off), got " + JSON.stringify({ mode: toggleOff, modes: keptOff }));
+  // Restore for the following sections.
+  await p.evaluate(([id, mode]) => {
+    try {
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      const t = row.querySelector('[data-sc-role="quiz-mode-' + mode + '"]');
+      if (t) t.click();
+    } catch (e) {}
+  }, [scid, toggleOff]);
+  await p.waitForTimeout(700);
+  const restoredModes = await p.evaluate((id) => {
+    try { return fScenarioGet(id).steps[0].quiz.modes || []; } catch (e) { return "err"; }
+  }, scid);
+  check(Array.isArray(restoredModes) && restoredModes.indexOf(toggleOff) >= 0,
+    "re-selecting a tag should restore it in quiz.modes, got " + JSON.stringify({ mode: toggleOff, modes: restoredModes }));
+  const collapseInfo = await p.evaluate((id) => {
+    try {
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      const head = row.querySelector(".scQuizReqHead");
+      const list = row.querySelector(".scQuizReqList");
+      const initial = { aria: head.getAttribute("aria-expanded"), display: list.style.display };
+      head.click();
+      const opened = { aria: head.getAttribute("aria-expanded"), display: list.style.display };
+      head.click();
+      const closed = { aria: head.getAttribute("aria-expanded"), display: list.style.display };
+      return { initial, opened, closed };
+    } catch (e) { return "err"; }
+  }, scid);
+  check(collapseInfo && collapseInfo.initial && collapseInfo.initial.aria === "false" && collapseInfo.initial.display === "none" &&
+    collapseInfo.opened && collapseInfo.opened.aria === "true" && collapseInfo.opened.display === "" &&
+    collapseInfo.closed && collapseInfo.closed.aria === "false" && collapseInfo.closed.display === "none",
+    "component list should start collapsed and toggle open/closed, got " + JSON.stringify(collapseInfo));
   // --- 1b. v58.14 row architecture: two-row head + text/settings body ---
   const struct = await p.evaluate((id) => {
     try {
@@ -359,20 +441,22 @@ const clickBtn = async (p, id) => {
     JSON.stringify(afterKept.modes) === JSON.stringify(beforeKept.modes),
     "Update without a quiz signal must keep the task, got " + JSON.stringify({ before: beforeKept, after: afterKept }));
 
-  // --- 3. explicit removal makes it classic ---
+  // --- 3. master checkbox off makes it classic ---
   await p.evaluate((id) => {
     try {
       const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
-      const btn = row ? row.querySelector('[data-sc-role="quiz-remove"]') : null;
-      if (btn) btn.click();
+      const box = row ? row.querySelector('input[data-sc-role="quiz-enabled"]') : null;
+      if (box && box.checked) box.click();
     } catch (e) {}
   }, scid);
   await p.waitForTimeout(800);
   const afterRemove = await p.evaluate((id) => {
     try {
       const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      const box = row ? row.querySelector('input[data-sc-role="quiz-enabled"]') : null;
       return {
         quiz: fScenarioGet(id).steps[0].quiz || null,
+        toggleChecked: box ? !!box.checked : null,
         quizRow: !!(row && row.querySelector('[data-sc-row="quiz"]')),
         namingHidden: (() => {
           const n = row && row.querySelector('input[data-sc-role="naming"]');
@@ -381,8 +465,9 @@ const clickBtn = async (p, id) => {
       };
     } catch (e) { return "err"; }
   }, scid);
-  check(afterRemove && afterRemove.quiz === null && afterRemove.quizRow === false && afterRemove.namingHidden === false,
-    "explicit removal should clear the quiz and restore classic rows, got " + JSON.stringify(afterRemove));
+  check(afterRemove && afterRemove.quiz === null && afterRemove.toggleChecked === false &&
+    afterRemove.quizRow === true && afterRemove.namingHidden === false,
+    "master checkbox off should clear the quiz and restore classic rows, got " + JSON.stringify(afterRemove));
 
   // --- 4. just-solved capture stores the task + authored baseline ---
   await p.evaluate(() => { try { document.getElementById("selectAtomsBtn").click(); } catch (e) {} });
@@ -609,6 +694,12 @@ const clickBtn = async (p, id) => {
   st = await state(p);
   check(st.step === 0 && st.todo && st.todo.length === 1 && st.todo[0] === "compCarbonsCount",
     "stored set should narrow the requirement, got " + JSON.stringify(st.todo));
+  const freePaint = await p.evaluate(() => {
+    const c = (id) => { const e = document.getElementById(id); return e ? e.className : null; };
+    return { req: c("comp5"), free: c("comp6") };
+  });
+  check(/quizTodo/.test(freePaint.req || "") && /freeComp/.test(freePaint.free || ""),
+    "v58.31: required comp quizTodo + unselected capable comp freeComp, got " + JSON.stringify(freePaint));
   const r9 = await solveMode(p, "compCarbonsCount");
   check(r9 === true, "narrowed chain should solve, got " + JSON.stringify(r9));
   await clickBtn(p, "scNext");
@@ -705,6 +796,139 @@ const clickBtn = async (p, id) => {
   check(await clickAtom(p, 1), "locked click still resolves");
   st = await state(p);
   check(st.sel.length === 0, "locked reps should not take picks, got " + JSON.stringify(st.sel));
+
+  // --- 14. chain rule (v58.33): locants can't be free while the chain is required ---
+  await openMol(p, "pentanone_2");
+  const ruleId = await makeScenario(p, "probeq-chainrule", [{
+    selectedMol: "pentanone_2",
+    quiz: { kind: "nameComp", mode: "compCarbonsCount", mol: "pentanone_2", modes: ["compCarbonsCount"], modeLabels: ["main chain"] },
+    requireSolution: true,
+    showExtra: { nameClick: true, naming: true },
+  }]);
+  check(typeof ruleId === "string" && ruleId.indexOf("err:") !== 0, "chain-rule scenario creation failed: " + ruleId);
+  const ruleTag = await p.evaluate((id) => {
+    try {
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      const loc = row ? row.querySelector('[data-sc-role="quiz-mode-compBondPos"]') : null;
+      return loc ? { cls: loc.className, aria: loc.getAttribute("aria-pressed") } : "missing";
+    } catch (e) { return "err"; }
+  }, ruleId);
+  check(ruleTag && /chain-locked/.test(ruleTag.cls || "") && ruleTag.aria === "true",
+    "locant tag should be locked+selected while the chain is required, got " + JSON.stringify(ruleTag));
+  const lockedModes = await p.evaluate((id) => {
+    try {
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      const loc = row.querySelector('[data-sc-role="quiz-mode-compBondPos"]');
+      if (!loc) return "missing";
+      loc.click();
+      return fScenarioGet(id).steps[0].quiz.modes;
+    } catch (e) { return "err"; }
+  }, ruleId);
+  await p.waitForTimeout(500);
+  check(Array.isArray(lockedModes) && lockedModes.indexOf("compBondPos") < 0,
+    "locked locant click must not change quiz.modes, got " + JSON.stringify(lockedModes));
+  await p.evaluate((id) => { try { fScenarioPresentBegin(id, 0); } catch (e) {} }, ruleId);
+  await p.waitForTimeout(1700);
+  const rulePresent = await p.evaluate(() => {
+    try {
+      const c = (id) => { const e = document.getElementById(id); return e ? e.className : null; };
+      let todo = null;
+      try { const ps = fScenarioPresent(); todo = fScenarioQuizTodo(ps.steps[ps.index]); } catch (e) {}
+      return { loc: c("comp4"), todo };
+    } catch (e) { return "err"; }
+  });
+  check(rulePresent && /quizTodo/.test(rulePresent.loc || "") &&
+    Array.isArray(rulePresent.todo) && rulePresent.todo.indexOf("compBondPos") >= 0,
+    "legacy chain-only set must require the locant at Present, got " + JSON.stringify(rulePresent));
+  await p.evaluate(() => { try { fScenarioExitPresent(); } catch (e) {} });
+  await p.waitForTimeout(600);
+
+  // --- 15. quiz master checkbox after Go (v58.36): no stale molecule guard ---
+  await openMol(p, "ethane");
+  const goId = await makeScenario(p, "probeq-goquiz", [
+    { selectedMol: "ethane" },
+    { selectedMol: "butane" },
+  ]);
+  check(typeof goId === "string" && goId.indexOf("err:") !== 0, "go-quiz scenario creation failed: " + goId);
+  await p.evaluate((id) => { try { fScenarioSetActive(id); fScenarioGo(1); } catch (e) {} }, goId);
+  await p.waitForTimeout(1700);
+  const goClick = await p.evaluate((id) => {
+    try {
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow[data-idx="1"]');
+      const box = row ? row.querySelector('input[data-sc-role="quiz-enabled"]') : null;
+      if (!box) return "missing";
+      box.click();
+      return true;
+    } catch (e) { return "err"; }
+  }, goId);
+  await p.waitForTimeout(900);
+  const goAfter = await p.evaluate((id) => {
+    try { return { quiz: fScenarioGet(id).steps[1].quiz || null, mol: (typeof selectedMol !== "undefined") ? selectedMol : null }; }
+    catch (e) { return "err"; }
+  }, goId);
+  check(goClick === true && goAfter && goAfter.quiz && Array.isArray(goAfter.quiz.modes) && goAfter.quiz.modes.length > 0,
+    "quiz checkbox after Go must enable the step's loaded molecule, got " + JSON.stringify(goAfter));
+
+  // --- 16. menu quizzes (v58.37): all capable per picked molecule, no tags ---
+  await openMol(p, "ethane");
+  const menuId = await makeScenario(p, "probeq-menuquiz", [{
+    selectedMol: null,
+    menuSubset: ["ethane", "butane"],
+    quiz: { kind: "nameComp", mode: "compCarbonsCount", mol: "" },
+    requireSolution: true,
+    showExtra: { nameClick: true, naming: true },
+  }]);
+  check(typeof menuId === "string" && menuId.indexOf("err:") !== 0, "menu-quiz scenario creation failed: " + menuId);
+  const menuDrawer = await p.evaluate((id) => {
+    try {
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      return {
+        tags: row ? row.querySelectorAll('[data-sc-role^="quiz-mode-"]').length : -1,
+        types: row ? row.querySelectorAll('.scQuizTag.type').length : 0,
+        hint: (row && row.querySelector(".scQuizMenuHint") || {}).textContent || "",
+        enabled: !!(row && row.querySelector('input[data-sc-role="quiz-enabled"]') && row.querySelector('input[data-sc-role="quiz-enabled"]').checked),
+      };
+    } catch (e) { return "err"; }
+  }, menuId);
+  check(menuDrawer && menuDrawer.tags === 0 && menuDrawer.types > 0 && /picked molecule|μόριο/i.test(menuDrawer.hint) && menuDrawer.enabled === true,
+    "menu quiz drawer should show type chips (no name tags), got " + JSON.stringify(menuDrawer));
+  // Type chips are switchable (v58.38): unselect bond type.
+  const typeToggle = await p.evaluate((id) => {
+    try {
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      const chip = row ? row.querySelector('[data-sc-role="quiz-type-bondType"]') : null;
+      if (!chip) return "missing";
+      chip.click();
+      const q = fScenarioGet(id).steps[0].quiz;
+      return { types: q.types || null, cls: chip.className };
+    } catch (e) { return "err"; }
+  }, menuId);
+  await p.waitForTimeout(400);
+  check(typeToggle && Array.isArray(typeToggle.types) && typeToggle.types.indexOf("bondType") < 0 && /free/.test(typeToggle.cls || ""),
+    "unselecting a quiz type should persist quiz.types and mark the chip free, got " + JSON.stringify(typeToggle));
+  await p.evaluate((id) => { try { fScenarioPresentBegin(id, 0); } catch (e) {} }, menuId);
+  await p.waitForTimeout(1400);
+  check(await menuPick(p, "ethane"), "menu quiz should list ethane");
+  const menuTodo = await p.evaluate(() => {
+    try { const ps = fScenarioPresent(); return fScenarioQuizTodo(ps.steps[ps.index]); } catch (e) { return "err"; }
+  });
+  check(Array.isArray(menuTodo) && menuTodo.length === 1 && menuTodo[0] === "compCarbonsCount",
+    "typed menu quiz should require only the selected types, got " + JSON.stringify(menuTodo));
+  const menuFree = await p.evaluate(() => {
+    try {
+      const e = document.getElementById("comp6");
+      return e ? e.className : null;
+    } catch (e) { return "err"; }
+  });
+  check(/freeComp/.test(menuFree || ""), "unselected type should be pre-solved on the picked molecule, got " + JSON.stringify(menuFree));
+  const menuSolved = await solveAllTodos(p);
+  check(menuSolved === true, "menu quiz todos should solve, got " + JSON.stringify(menuSolved));
+  const menuGate = await p.evaluate(() => {
+    try { const ps = fScenarioPresent(); return fScenarioNavAllowed(ps.index + 1); } catch (e) { return "err"; }
+  });
+  check(menuGate === true, "solved menu quiz should pass the gate, got " + JSON.stringify(menuGate));
+  await p.evaluate(() => { try { fScenarioExitPresent(); } catch (e) {} });
+  await p.waitForTimeout(600);
 
   console.log(JSON.stringify({ failures, warnings }, null, 1));
   console.log("PAGEERRORS:" + JSON.stringify(errs));
