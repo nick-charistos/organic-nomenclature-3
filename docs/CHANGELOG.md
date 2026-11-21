@@ -6,7 +6,7 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ## [v58] (scenario quiz contract; LIVE, `index.html` → v58)
 
-Forked from v57 (`mulermoc-nom-58.html` + `js/*-58.js` + `css/*-58.css` + `jsme-nick-nomeclature-moc2-data_58.js` + `spt/init-3-58.spt` + `zz-test-core58.html`, `?v=58.48`; `ui-icons.js` stays shared). v57 files untouched (frozen). No chemistry changes.
+Forked from v57 (`mulermoc-nom-58.html` + `js/*-58.js` + `css/*-58.css` + `jsme-nick-nomeclature-moc2-data_58.js` + `spt/init-3-58.spt` + `zz-test-core58.html`, `?v=58.49`; `ui-icons.js` stays shared). v57 files untouched (frozen). No chemistry changes.
 
 ### Scenario authoring (v58 working tree)
 - Audit first: step schema vs quiz state, Present-guard inventory, `nameClick=true` chain, step-change vs quiz state, solved sets vs steps, capture requirements, draft interplay, probe surface. Findings note → schema → consolidated contract (see `docs/learning-activities-Plan.md`, Stage 0).
@@ -58,6 +58,7 @@ Forked from v57 (`mulermoc-nom-58.html` + `js/*-58.js` + `css/*-58.css` + `jsme-
 - Real quiz component labels (`?v=58.46`, owner report): non-live steps were showing `scQuizTag` text such as “main chain / bond type / functional group” because `quiz.modeLabels` stored the generic mode/type names. New `fScenarioQuizModeLabelsFor()` stores the live name-box text (eth/an/ol…) when the step molecule is live, keeps a per-molecule label cache, and falls back to old labels/type names only when nothing else exists. Used by capture, the master checkbox, tag toggles, the pin repair, Update and the drawer render refresh, so stored/orphan tags show real component fragments. Existing steps self-heal after one Go/render (or a recheck while the step is live). No schema change (`modeLabels` is still a string array). `?v=58.45` → `?v=58.46`. `probe-scenario-quiz` extended with the real-label assertions and green.
 - MolWave public brand (`?v=58.47`): add the `MolWave • Organic Nomenclature` lockup to the app header and credits footer, with `Mol`/`Wave` styling. The browser tab title is branded and language-aware (`MolWave: Organic Nomenclature` / `MolWave: Ονοματολογία Οργανικών Ενώσεων`); the educational page heading remains language-specific. The footer uses the same bullet separator as the header. README and current-tree docs use the official `MolWave` capitalization. `?v=58.46` → `?v=58.47`. CSS/branding visual check; no chemistry or quiz behavior change.
 - Footer lockup polish (`?v=58.48`, owner follow-up): remove the unused footer separator span and CSS override. The header keeps its bullet; the footer's MolWave badge sits directly beside “Organic Nomenclature”, with no separator. `?v=58.47` → `?v=58.48`.
+- Branded heading + no empty title gap (`?v=58.49`, owner follow-up): the header MolWave lockup is the accessible page heading (`role="heading" aria-level="1"`), while the descriptive `#pageTitle` remains empty in authoring and is hidden when empty via `#pageContainer:not(.presenting) #pageTitle:empty`. Presentation still writes/step title into `#pageTitle` and shows it. Logo texts remain English for now. `?v=58.48` → `?v=58.49`.
 
 ## [v57] (3D atom/bond picking via JSmol pickCallback; LIVE, `index.html` → v57)
 

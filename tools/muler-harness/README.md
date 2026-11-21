@@ -65,7 +65,7 @@ rerun only the probe for that layer. See `AGENTS.md` → Verification.
   `allowSelect` gating (hide entry when off, uncheck-while-active exits),
   Present block (toggle no-op + CSS hides the entry). Hard-fail.
 - `probe-compact-main.js` — main-chain versus free compacted-label semantics: COOH/HCOOH/CN resolve to the anchor carbon under a main-chain target, NO2 stays a fragment, free selection stays a fragment; checks C-only paint, hover box, badge, exact reward, the free-mode backplate edge, clear/marker restore and methanal (no highlight geometry).
-- `probe-scenario-quiz.js` — v58 scenario quiz contract (`?v=58.46`): capture
+- `probe-scenario-quiz.js` — v58 scenario quiz contract (`?v=58.49`): capture
   stores the task + its required component set + labels, `Update` keeps an
   authored task and `startMode`, the drawer's explicit Remove clears it, the
   drawer Start select + `.is-start` marker work, Present stays idle with

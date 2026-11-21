@@ -1,9 +1,9 @@
 # Session notes — 2026-11-21 (resume point for next session, other machine)
 
 > **Resume pointer (cross-machine):** 2026-11-21 — **v58 is LIVE**
-> (`index.html` → `mulermoc-nom-58.html`, `?v=58.48`, review follow-ups +
+> (`index.html` → `mulermoc-nom-58.html`, `?v=58.49`, review follow-ups +
 > student hover/3D fixes + step-row architecture/corners/density + the
-> 58.17–58.48 feature/UI batch).
+> 58.17–58.49 feature/UI batch).
 > Scenario quiz contract: steps store their required component set
 > (`quiz.modes` + labels; deferred `quiz.types` for menu quizzes), the drawer
 > master checkbox owns quiz existence, Update never destroys an authored task,
@@ -14,7 +14,7 @@
 > is green; the full 2D suite was re-run against v58 and is
 > green (final/quiz/mode-quiz/explain-all/fg/loc/bond/branch/coverage56/
 > smoke56/compact-main/shift/skel-joints; `probe-3d-pick` still owner-side).
-> New in 58.17–58.48: three-state comp eye (shown/veiled/removed, 14px icons,
+> New in 58.17–58.49: three-state comp eye (shown/veiled/removed, 14px icons,
 > explain rows follow), draft author fields + split oracle rows, spin switch,
 > measured viewer-height clamp, pinned bar/footer fit + merge, step-row
 > separators + quiz row last + section titles (Viewers/Naming/Menu/Quiz),
@@ -3371,3 +3371,9 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * Removed the unused footer separator span and `footer .molwaveLogoSeparator` rule. Header keeps its bullet; footer's MolWave badge sits directly next to “Organic Nomenclature”.
 * Bumped all 14 asset refs to `?v=58.48`; docs current-tree banners synced.
 * Verified header/footer visually in Brave; `node --check js/mulermoc-nom-teaching-58.js` and `git diff --check` clean. No behavior probes (tiny branding markup/style correction).
+
+## 2026-11-21 — header as page heading, empty title gap (`?v=58.49`, owner follow-up)
+* Header MolWave lockup is now the accessible page heading (`role="heading" aria-level="1"`); the visible tagline remains English for now.
+* Kept the empty `#pageTitle` node for presentation step titles, added `#pageContainer:not(.presenting) #pageTitle:empty { display:none; }` so authoring has no blank h1 gap. `fScenarioFillStepPanel` still writes/shows the step title in Present.
+* Bumped all 14 asset refs to `?v=58.49`; docs banners synced.
+* Verified authoring header/title area and Present step-title path; `git diff --check` clean. No chemistry/quiz probes (branding/layout only).

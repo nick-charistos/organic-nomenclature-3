@@ -6,7 +6,7 @@
 
 var MULER_STRINGS = {
   appTitle: { gr: "MolWave: Ονοματολογία Οργανικών Ενώσεων", en: "MolWave: Organic Nomenclature" },
-  pageTitle: { gr: "Ονοματολογία Άκυκλων Οργανικών Ενώσεων", en: "Acyclic Organic Compounds Nomenclature" },
+  pageTitle: { gr: "", en: "" },
   menu: { gr: "☰ Μενού", en: "☰ Menu" },
   molecule: { gr: "Μόριο", en: "Molecule" },
   settings: { gr: "Ρυθμίσεις", en: "Settings" },

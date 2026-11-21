@@ -1845,6 +1845,13 @@ background: var(--vibrantGreen);
    display: block;
 }
 
+/* v58.49: the branded header now carries the page identity, so an empty
+   #pageTitle must not leave an h1 gap in authoring. Presentation still shows
+   it as soon as fScenarioFillStepPanel writes the step title. */
+#pageContainer:not(.presenting) #pageTitle:empty {
+   display: none;
+}
+
 /* Presentation top text: span exactly the visible app columns. JS measures the
    union of the visible menu/viewer/analysis columns and sets these vars; the
    fallbacks keep the old full-width behavior if measurement is unavailable.
@@ -2559,9 +2566,7 @@ body.scPinned #creditsUs {
    margin-right: 0;
 }
 
-#authorLayout {
-   margin: 0 10px;
-}
+
 
 body.scPinned #authorLayout {
    position: relative;

@@ -90,6 +90,10 @@ header {
   align-items: center;
 }
 
+#authorLayout {
+   margin: 10px;
+}
+
 .molwaveLogo {
   font-family: "Roboto Condensed", sans-serif;
   padding-left: 20px;

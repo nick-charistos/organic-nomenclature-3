@@ -2,7 +2,7 @@
 
 Date: 2026-11-18. Tree: `a9e598f` (`?v=58.10`) at review time. Status:
 **resolved in `?v=58.11`**, with later v58 work recorded below (current:
-`?v=58.48`); the findings are kept verbatim as the record of what
+`?v=58.49`); the findings are kept verbatim as the record of what
 was wrong and why.
 Scope: `11d5886` (fork) → `a9e598f`; the real delta is `72699c2`,
 `29287c3`, `bf2aca5`, `a9e598f` + the new probe.
@@ -42,7 +42,7 @@ Verification: `probe-scenario-quiz` (13 sections) green; `probe-quiz`,
 files. Owner-side browser matrix remains (drawer list/Remove, Esc, revisit,
 menu arm, non-quiz step).
 
-### Later v58 work (58.12–58.48, after the review)
+### Later v58 work (58.12–58.49, after the review)
 
 Recorded here so this file reflects the shipped tree; none of these are
 review findings.
@@ -134,6 +134,9 @@ review findings.
 - **58.47** — public MolWave brand lockup in header/footer and localized
   browser title.
 - **58.48** — remove the unnecessary footer separator; header keeps its bullet.
+- **58.49** — header MolWave lockup becomes the accessible page heading; an
+  empty `#pageTitle` is hidden in authoring, while presentation still uses it
+  for step titles.
 
 Known trade-offs / accepted decisions: comp eyes on quiz steps are
 intentionally left live (owner, 2026-11-19); the pinned-bar 220px floor can

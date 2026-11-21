@@ -8,7 +8,7 @@ changelog.
 
 Greek-first static web app for teaching organic nomenclature (JSME + JSmol +
 vanilla JavaScript; no build step). The live entry point is `index.html` →
-`mulermoc-nom-58.html`. Current live version: **v58.48** (2026-11-21).
+`mulermoc-nom-58.html`. Current live version: **v58.49** (2026-11-21).
 Older versions v42–v57 remain runnable at the repo root but are **frozen**.
 
 ## Read first
@@ -184,6 +184,10 @@ Update docs in the same commit as the change:
   type”). Use `fScenarioQuizModeLabelsFor()` for every label write; it prefers
   live name boxes, then a per-molecule cache, then old labels, then the type
   fallback. Non-live stored/orphan tags must show fragments, not type names.
+- Page title (v58.49): the header MolWave lockup is the accessible h1
+  (`role="heading" aria-level="1"`). Keep the empty `#pageTitle` node — Present
+  still writes the step title into it. Authoring hides it only while empty
+  (`#pageContainer:not(.presenting) #pageTitle:empty`); do not remove the node.
 - Quiz progress is step-scoped (v58.39): `scenario:<id>#<step>|molecule`.
   A comp solved/freed in one step must never satisfy another step; revisiting
   the same step keeps its own progress. Authoring capture uses the row scope
