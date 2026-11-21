@@ -9049,7 +9049,7 @@ function fViewerMaxHeightEnsureFullBtn() {
   b.type = "button";
   b.id = "viewerMaxHeightFull";
   b.className = "viewerFullBtn";
-  b.textContent = "Full";
+  b.textContent = "Auto";
   try { b.title = ((typeof fMulerT === "function") ? fMulerT("fullHeight") : "Πλήρες ύψος οθόνης — προσαρμόζεται σε κάθε οθόνη προβολής"); } catch (eT) { b.title = "Πλήρες ύψος οθόνης — προσαρμόζεται σε κάθε οθόνη προβολής"; }
   b.setAttribute("aria-label", (typeof fMulerT === "function") ? fMulerT("fullHeight") : "Πλήρες ύψος οθόνης — προσαρμόζεται σε κάθε οθόνη προβολής");
   b.setAttribute("aria-pressed", "false");
@@ -9166,7 +9166,7 @@ function fViewerBothHeightEnsureFullBtn() {
   b.type = "button";
   b.id = "viewerBothHeightFull";
   b.className = "viewerFullBtn";
-  b.textContent = "Full";
+  b.textContent = "Auto";
   try { b.title = ((typeof fMulerT === "function") ? fMulerT("fullHeight") : "Πλήρες ύψος οθόνης — προσαρμόζεται σε κάθε οθόνη προβολής"); } catch (eT) { b.title = "Πλήρες ύψος οθόνης — προσαρμόζεται σε κάθε οθόνη προβολής"; }
   b.setAttribute("aria-label", (typeof fMulerT === "function") ? fMulerT("fullHeight") : "Πλήρες ύψος οθόνης — προσαρμόζεται σε κάθε οθόνη προβολής");
   b.setAttribute("aria-pressed", "false");

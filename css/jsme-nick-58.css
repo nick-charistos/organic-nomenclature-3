@@ -775,7 +775,7 @@ footer span.molwaveLogoSub {
 }
 
 .viewerFullBtn.active {
-  background: var(--darkBlue);
+  background: var(--lightBlue);
   border-color: var(--darkBlue);
   color: #fff;
 }
