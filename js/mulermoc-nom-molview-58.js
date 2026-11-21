@@ -1224,6 +1224,9 @@ function fToggleAtomSelect() {
     } catch (eD) {}
     try { if (!makeActive && typeof fMulerSelectClear === "function") fMulerSelectClear(); } catch (eC) {}
     try { if (!makeActive && typeof fMulerQuizDisarm === "function") fMulerQuizDisarm(); } catch (eQD) {}
+    // v58.51: leaving pick mode drops a lingering quiz prompt (the panel was
+    // empty before entering; prompt wrappers are ours, classic markup is not).
+    try { if (!makeActive && typeof fMulerQuizDropPrompt === "function") fMulerQuizDropPrompt(); } catch (eDP) {}
     // v57 quiz rounds: leaving select mode clears solved progress (fresh
     // round next arm); the paint call below strips the tints (inactive).
     // v58: the just-solved capture record goes with it.
@@ -1238,6 +1241,22 @@ function fToggleAtomSelect() {
     try { if (typeof fUpdateSVG === "function") fUpdateSVG(); } catch (eU) {}
     // v57 quiz rounds: (re-)paint to-do tints on arm; strip them on exit.
     try { if (typeof fMulerQuizPaintSolved === "function") fMulerQuizPaintSolved(); } catch (ePS4) {}
+    // v58.51: authoring parity — entering pick mode on a previewed quiz step
+    // shows the same idle start prompt students see. Must run after
+    // fClearHighlights() above, which empties the explain panel (the disarm
+    // call earlier runs before that wipe). Outside scenario mode (default app
+    // picking = the practice path) the same prompt is shown directly.
+    try {
+      if (makeActive) {
+        var _scoped = false;
+        try { _scoped = !!(typeof MuLERMoCScenario !== "undefined" && (MuLERMoCScenario.authoring || MuLERMoCScenario.present)); } catch (eSc) {}
+        if (_scoped) {
+          if (typeof fScenarioQuizIdlePrompt === "function") fScenarioQuizIdlePrompt();
+        } else if (typeof selectedMol !== "undefined" && selectedMol && typeof fMulerQuizIdlePrompt === "function") {
+          fMulerQuizIdlePrompt();
+        }
+      }
+    } catch (eQP) {}
   } catch (e) {}
 }
 
@@ -4594,9 +4613,37 @@ function fMulerQuizVerdict(kind, cmp) {
   } catch (e) {}
 }
 
-function fMulerQuizPrompt() {
+// v58.51: every quiz prompt is one `div.scQuizPrompt` inside the explain
+// panel; the idle start prompt adds `scQuizStartPrompt` as a modifier. Clearing
+// first keeps repeated calls from stacking wrappers and mirrors the old
+// textContent write (the prompt owns the panel until the first pick).
+function fMulerQuizPromptEl(extraCls) {
   try {
     var ex = document.getElementById("nameAnalysisExplain");
+    if (!ex) return null;
+    try { ex.textContent = ""; } catch (eC) {}
+    var d = document.createElement("div");
+    d.className = "scQuizPrompt" + (extraCls ? " " + extraCls : "");
+    ex.appendChild(d);
+    return d;
+  } catch (e) { return null; }
+}
+
+// v58.51: drop a lone quiz prompt from the explain panel (leaving pick mode).
+// Only removes a top-level wrapper the prompt renderer created — the classic
+// explanation/overview markup is never touched.
+function fMulerQuizDropPrompt() {
+  try {
+    var ex = document.getElementById("nameAnalysisExplain");
+    if (!ex || !ex.children || ex.children.length !== 1) return;
+    var only = ex.children[0];
+    var cls = String((only && only.className) || "");
+    if (/(^|\s)scQuizPrompt(\s|$)/.test(cls)) ex.innerHTML = "";
+  } catch (e) {}
+}
+
+function fMulerQuizPrompt() {
+  try {
     var pickKey = "quizPick";
     try {
       if (typeof fMulerSelectPurpose === "function") {
@@ -4611,7 +4658,8 @@ function fMulerQuizPrompt() {
         else if (_pp === "mainChain" && typeof window !== "undefined" && window.__mulerQuizReturnTo) pickKey = "quizChainFirst";
       }
     } catch (eP) {}
-    if (ex) { try { ex.textContent = (typeof fMulerT === "function") ? fMulerT(pickKey) : ""; } catch (eT) {} }
+    var d = fMulerQuizPromptEl();
+    if (d) { try { d.textContent = (typeof fMulerT === "function") ? fMulerT(pickKey) : ""; } catch (eT) {} }
     // The prompt owns the panel until the first pick; Refresh then owns the
     // verdict line (live numberless hints, final direction/order).
     if (typeof fMulerQuizVerdict === "function") fMulerQuizVerdict("clear", null);
@@ -4620,18 +4668,13 @@ function fMulerQuizPrompt() {
 
 // v58.44: idle start prompt for quiz steps with no armed target. The scenario
 // layer calls this only in Present, only when the step is a quiz with a
-// non-empty todo and no live target. The prompt gets its own class so the
-// scenario stylesheet can skin it (the explain div itself is unclassed).
+// non-empty todo and no live target. v58.51: it is a regular `scQuizPrompt`
+// wrapper plus the `scQuizStartPrompt` modifier the scenario stylesheet skins.
 function fMulerQuizIdlePrompt() {
   try {
-    var ex = document.getElementById("nameAnalysisExplain");
-    if (!ex) return;
     if (typeof fMulerQuizVerdict === "function") fMulerQuizVerdict("clear", null);
-    try { ex.textContent = ""; } catch (eC) {}
-    var d = document.createElement("div");
-    d.className = "scQuizStartPrompt";
-    d.textContent = (typeof fMulerT === "function") ? fMulerT("quizSelectStart") : "Select a component to solve the quiz";
-    ex.appendChild(d);
+    var d = fMulerQuizPromptEl("scQuizStartPrompt");
+    if (d) d.textContent = (typeof fMulerT === "function") ? fMulerT("quizSelectStart") : "Select a component to solve the quiz";
   } catch (e) {}
 }
 

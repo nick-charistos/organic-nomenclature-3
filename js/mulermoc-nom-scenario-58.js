@@ -2730,25 +2730,45 @@ function fScenarioNavAllowed(idx) {
 }
 
 // v58.44: idle start prompt for a Present quiz step with no armed target.
-// Keeps the prompt out of authoring/classic/deferred-no-molecule/solved
-// states. Called from the apply path and after a disarm.
+// v58.51: authoring preview parity — with picking active, the previewed quiz
+// step shows the same prompt (pick toggle and Go onto the step). Returns true
+// when the prompt was written; the authoring apply tail uses that to cancel
+// the pending stored-highlight replay, which would otherwise overwrite it.
+// Called from the apply path, after a disarm and from pick-mode entry.
 function fScenarioQuizIdlePrompt() {
   try {
-    if (typeof fMulerSelectPresenting !== "function" || !fMulerSelectPresenting()) return;
-    if (typeof fScenarioPresent !== "function") return;
+    var _isP = false;
+    try { _isP = (typeof fMulerSelectPresenting === "function") && fMulerSelectPresenting(); } catch (eP) { _isP = false; }
+    if (!_isP) {
+      // Authoring is opt-in: authoring mode, not presenting, picking active.
+      var _authPick = false;
+      try {
+        _authPick = !!(typeof MuLERMoCScenario !== "undefined" && MuLERMoCScenario.authoring &&
+          !MuLERMoCScenario.present &&
+          typeof fMulerSelectActive === "function" && fMulerSelectActive());
+      } catch (eAP) { _authPick = false; }
+      if (!_authPick) return false;
+    }
+    if (typeof fScenarioPresent !== "function") return false;
     var ps = fScenarioPresent();
-    if (!ps || !ps.steps || !ps.steps.length) return;
+    if (!ps || !ps.steps || !ps.steps.length) return false;
     var st = ps.steps[ps.index];
-    if (!st || !st.quiz || !st.quiz.mode || st.quiz.mode === "none") return;
+    if (!st || !st.quiz || !st.quiz.mode || st.quiz.mode === "none") return false;
     var molNow = "";
     try { molNow = (typeof selectedMol !== "undefined" && selectedMol) ? String(selectedMol) : ""; } catch (eIM) { molNow = ""; }
-    if (!molNow) return; // deferred menu quiz: pick a molecule first
-    if (st.quiz.mol && String(st.quiz.mol) !== molNow) return;
-    if (typeof window !== "undefined" && window.MulerQuizTarget) return;
+    if (!molNow) return false; // deferred menu quiz: pick a molecule first
+    if (st.quiz.mol && String(st.quiz.mol) !== molNow) return false;
+    if (typeof window !== "undefined" && window.MulerQuizTarget) return false;
     var _todo = fScenarioQuizTodo(st);
-    if (_todo !== null && _todo.length === 0) return;
+    if (_todo !== null && _todo.length === 0) return false;
+    // Authoring has no fScenarioApplyQuiz to paint the task tints; mirror the
+    // Present idle branch so required/free components stay visible.
+    if (!_isP) {
+      try { if (typeof fMulerQuizPaintSolved === "function") fMulerQuizPaintSolved(); } catch (ePT) {}
+    }
     if (typeof fMulerQuizIdlePrompt === "function") fMulerQuizIdlePrompt();
-  } catch (e) {}
+    return true;
+  } catch (e) { return false; }
 }
 
 // Step-applied quiz handling (called at the end of fScenarioApply).
@@ -3231,6 +3251,16 @@ function fScenarioApply(step) {
   // 8. v58 scenario quizzes: Present auto-arms the step's task (student
   // mode). No-ops without quiz fields.
   try { if (typeof fScenarioApplyQuiz === "function") fScenarioApplyQuiz(step); } catch (eQ) {}
+  // 9. v58.51: authoring preview parity — with picking active, the previewed
+  // quiz step shows the same idle start prompt students see. The prompt owns
+  // the explain panel, so cancel the pending stored-highlight replay that
+  // would otherwise repaint the classic explanation over it (Present does
+  // this inside fScenarioApplyQuiz).
+  try {
+    if (!MuLERMoCScenario.present && typeof fScenarioQuizIdlePrompt === "function" && fScenarioQuizIdlePrompt()) {
+      if (MuLERMoCScenario.pending3D) MuLERMoCScenario.pending3D.done = true;
+    }
+  } catch (eQP) {}
   return true;
 }
 
