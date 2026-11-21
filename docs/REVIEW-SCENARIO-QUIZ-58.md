@@ -3,7 +3,7 @@
 Date: 2026-11-16. Tree: v58 fork (byte-identical to v57 at fork; all
 cites are `js/mulermoc-nom-*-58.js`). No code changed by this audit.
 
-> **Status 2026-11-21 (`?v=58.47`):** this audit is the historical input to
+> **Status 2026-11-21 (`?v=58.48`):** this audit is the historical input to
 > the implemented contract. The shipped schema is
 > `step.quiz {kind, mode, modes, modeLabels, mol, prompt(legacy, unused),
 > preSolved, types(deferred menu quizzes), startMode}` + `requireSolution`;
