@@ -2,14 +2,14 @@
 
 > **Name:** **MolWave** is the product brand; **MuLERMoCs** (*Multiple-Level External Representations for Molecular Concepts*) is retained as the research-framework codename for methods continuity. (`Namelecule` is a separate variant by Yiannis, not the product name.)
 
-A Greek-first interactive learning platform for organic nomenclature, built around molecular structure, naming logic, and multiple representations. It is a no-build static web app (JSME, JSmol, jQuery, vanilla JavaScript; live v58 adds scenario quiz steps — student mode, multi-component completion, deferred menu quizzes — over the v57 3D atom/bond picking, the v55 tiered draft 3D, the v54 molecule edit/create drafts, the v53 full English UI + molecule-naming layer and the Snap-free v52 base, Greek default preserved) intended to be embedded in Drupal.
+A Greek-first interactive learning platform for organic nomenclature, built around molecular structure, naming logic, and multiple representations. It is a no-build static web app (JSME, JSmol, jQuery, vanilla JavaScript; live v59 adds a normalized 2D dataset (147 molecules, one 1.17/0.78 frame, valence-complete expanded forms) over the v58 scenario quiz steps — student mode, multi-component completion, deferred menu quizzes — over the v57 3D atom/bond picking, the v55 tiered draft 3D, the v54 molecule edit/create drafts, the v53 full English UI + molecule-naming layer and the Snap-free v52 base, Greek default preserved) intended to be embedded in Drupal.
 
 Designed and developed by Nickolas Charistos
 
 **Product lockup:** `MolWave • Organic Nomenclature` (header and credits footer); the browser tab title is localized to Greek or English.
 
-**Current baseline:** v58 is live (`index.html` → v58) — **141 molecules** plus author-created customs, full English version (`?lang=en`, Greek default; per-step scenario language, molecule-carrying switch) over the v52 base: unified rich note editor (inline WYSIWYG, modal WYSIWYG + HTML source, lazy legacy-text upgrade, staged Apply/Cancel); safe rich HTML notes (DOMPurify), rule-table components, compact icon toolbar, Snap-free native `MuSVG` 2D overlay. New in v58: scenario quiz steps (`step.quiz {kind, mode, modes, modeLabels, mol, preSolved}` + `requireSolution`) — Present arms only the author-selected `startMode`, otherwise waits for the student to choose a component; each step stores its required name components and completes when they are all solved, author pre-solved components behave classically (`.freeComp`), menu steps defer the quiz to every picked molecule with switchable component types, and editing a step never drops the task (master checkbox + binary component tags in the drawer, no Remove button). New in v57: 3D atom/bond picking via JSmol `pickCallback`; v56 added 2D atom/bond selection. New in v55: tiered draft 3D (PubChem → JSmol remote → local UFF minimize) with Accept on any tier. New in v54: molecule Edit/New drafts with engine + PubChem preview (GR + predicted EN), per-name correctness verdicts, Accept into custom molecules with generated 2D variants and per-molecule save. The main JSME applet stays in depict mode (2D highlight pipeline); drafts live in a dedicated edit applet. The default preloaded scenario is `Αλκάνια-Αιθάνιο-τεστ`. See [docs/Presentation-Step-Rich-Text-PLAN.md](docs/Presentation-Step-Rich-Text-PLAN.md).
-**Authoring line:** v58 is the live authoring line — see [docs/CHANGELOG.md](docs/CHANGELOG.md) (`[v58]`), [docs/learning-activities-Plan.md](docs/learning-activities-Plan.md) and [docs/STAGE2-AUTHORING-54.md](docs/STAGE2-AUTHORING-54.md). Open: 2B author correction, exercise types.
+**Current baseline:** v59 is live (`index.html` → v58) — **147 molecules** plus author-created customs, full English version (`?lang=en`, Greek default; per-step scenario language, molecule-carrying switch) over the v52 base: unified rich note editor (inline WYSIWYG, modal WYSIWYG + HTML source, lazy legacy-text upgrade, staged Apply/Cancel); safe rich HTML notes (DOMPurify), rule-table components, compact icon toolbar, Snap-free native `MuSVG` 2D overlay. New in v58: scenario quiz steps (`step.quiz {kind, mode, modes, modeLabels, mol, preSolved}` + `requireSolution`) — Present arms only the author-selected `startMode`, otherwise waits for the student to choose a component; each step stores its required name components and completes when they are all solved, author pre-solved components behave classically (`.freeComp`), menu steps defer the quiz to every picked molecule with switchable component types, and editing a step never drops the task (master checkbox + binary component tags in the drawer, no Remove button). New in v57: 3D atom/bond picking via JSmol `pickCallback`; v56 added 2D atom/bond selection. New in v55: tiered draft 3D (PubChem → JSmol remote → local UFF minimize) with Accept on any tier. New in v54: molecule Edit/New drafts with engine + PubChem preview (GR + predicted EN), per-name correctness verdicts, Accept into custom molecules with generated 2D variants and per-molecule save. The main JSME applet stays in depict mode (2D highlight pipeline); drafts live in a dedicated edit applet. The default preloaded scenario is `Αλκάνια-Αιθάνιο-τεστ`. See [docs/Presentation-Step-Rich-Text-PLAN.md](docs/Presentation-Step-Rich-Text-PLAN.md).
+**Authoring line:** v59 is the live authoring line — see [docs/CHANGELOG.md](docs/CHANGELOG.md) (`[v58]`), [docs/learning-activities-Plan.md](docs/learning-activities-Plan.md) and [docs/STAGE2-AUTHORING-54.md](docs/STAGE2-AUTHORING-54.md). Open: 2B author correction, exercise types.
 **Previous version:** v57 remains runnable at root (`mulermoc-nom-57.html`), along with v56…v42.
 **Entry point:** [index.html](index.html) → [mulermoc-nom-58.html](mulermoc-nom-58.html) (live); `mulermoc-nom-57.html` and earlier versions `mulermoc-nom-56.html`…`-42.html` runnable alongside
 
@@ -30,7 +30,7 @@ Designed and developed by Nickolas Charistos
 | Scenario module (LEARN authoring + presentation) | [js/mulermoc-nom-scenario-55.js](js/mulermoc-nom-scenario-55.js) |
 | EN chrome + naming + oracle | [js/mulermoc-nom-lang-55.js](js/mulermoc-nom-lang-55.js), [js/mulermoc-nom-name-en-55.js](js/mulermoc-nom-name-en-55.js), [js/mulermoc-nom-iupac-55.js](js/mulermoc-nom-iupac-55.js) |
 | Shared icon helper | [js/ui-icons.js](js/ui-icons.js) |
-| Molecule data (141 molecules — 141 `nameExamples` keys) | [js/jsme-nick-nomeclature-moc2-data_55.js](js/jsme-nick-nomeclature-moc2-data_55.js) |
+| Molecule data (147 molecules — 147 `nameExamples` keys) | [js/jsme-nick-nomeclature-moc2-data_59.js](js/jsme-nick-nomeclature-moc2-data_59.js) |
 | Styles | [css/jsme-nick-55.css](css/jsme-nick-55.css), [css/mulermoc-nom-scenario-55.css](css/mulermoc-nom-scenario-55.css) |
 | Stored scenarios | [scenarios/](scenarios/) (`Αλκάνια-Αιθάνιο-τεστ` default, `Αλκάνια-Αιθάνιο` legacy retained, `Αλκένια-Αιθένιο`, `Αλκένια-Ονοματολογία_και_διακλαδώσεις`; Greek filenames stay URL-encoded in `?scenario=` links) |
 
@@ -41,7 +41,7 @@ Designed and developed by Nickolas Charistos
 | Site | Serves | Status |
 |---|---|---|
 | [organic-nomenclature-2](https://nick-charistos.github.io/organic-nomenclature-2/) | v42 | frozen — emergency hotfixes only |
-| [organic-nomenclature-3](https://nick-charistos.github.io/organic-nomenclature-3/) | v58 live | active — all new work happens here |
+| [organic-nomenclature-3](https://nick-charistos.github.io/organic-nomenclature-3/) | v59 live | active — all new work happens here |
 
 Root holds the files of the current live set (`*58*`; `mulermoc-nom-57.html` back through `mulermoc-nom-42.html` are kept runnable alongside). Older file sets live in [archive/](archive/README.md) (non-runnable museum). Runnable history via git tags `v41`–`v44`.
 
@@ -49,7 +49,7 @@ Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (o
 
 ---
 
-## What works now (v58 live — scenario quiz steps over v57 3D picking, v55 tiered draft 3D, v54 draft flow, v53 English layer and the v52 base, 141 molecules, Snap-free viewer)
+## What works now (v59 live — scenario quiz steps over v57 3D picking, v55 tiered draft 3D, v54 draft flow, v53 English layer and the v52 base, 147 molecules, Snap-free viewer)
 
 ### Chemistry engine
 - Greek IUPAC naming for alkanes/alkenes/alkynes, branched chains, halides, alcohols, aldehydes/ketones, carboxylic acids (incl. hydroxy/amino/oxo/keto), nitriles, amines, ethers (systematic + common names), esters (two-word names).
@@ -83,7 +83,7 @@ Not tracked on GitHub (not needed to run): RDKit experiments, most of `imgs/` (o
 - Unsaturated ethers/esters and wider ester coverage; rings and aromatics not supported.
 - v48: browser click-through pending for the confirm dialog, both height controls, pin/unpin, the per-alkyl-group highlight, and long-name auto-fit (`docs/SESSION-NOTES.md`); scenario exports still stamp `"app": "mulermoc-nom-44"` (informational only — validation ignores it).
 - v49: browser click-through pending for the acyclic-alkane parent-chain fix (new + existing alkanes), the explicit terminal-`1` locant change (`3-μεθυλο-1-βουτένιο`), the 73rd molecule + 3D SDF, the imported scenarios, the alkyl table on branch/locant components, and the enyne `-ιν-` rule tile.
-- v49: carbon-branch orientation compares locant sets only; alphabetical priority for carbon substituents (as already done for halogen/nitro) is not yet applied, so a future mixed ethyl/methyl alkane with tied locant sets could orient arbitrarily (not exercised by the current 141 molecules).
+- v49: carbon-branch orientation compares locant sets only; alphabetical priority for carbon substituents (as already done for halogen/nitro) is not yet applied, so a future mixed ethyl/methyl alkane with tied locant sets could orient arbitrarily (not exercised by the current 147 molecules).
 - v50: browser click-through pending for the side text rails (left/right, wide/narrow fallback, menu steps, long notes, top↔side switching, 2D/3D refit), the no-molecule naming placeholder, and presentation naming-chrome behavior, plus the v49 items above. Also pending: the 7 alkynes added post-live (73 → 80 keys) and the skeletal `C`-label removal for any sp carbon — alkynes, enynes, yne-ketone/aldehyde, nitriles, allene (2D only; 3D framing deferred).
 - v52: the unified rich note editor (inline WYSIWYG, modal WYSIWYG + HTML source, lazy legacy-text upgrade), WYSIWYG selection mapping, staged Apply/Cancel, dirty-close confirm, and modal-only image/table/predefined inserts (UL/OL inline) are live. Headless Chrome smoke tests passed; Firefox, touch devices, and real-scenario click-through remain pending. The v51 safe rich-note renderer, rule-table components, the 141-molecule data set, and the native `MuSVG` Snap replacement remain live. The `MuSVG.parse()` OOM/XML crash is fixed; Chrome and Firefox automated matrices pass, with the two pre-existing skeletal JSmol failures (`butadiene_1_3`, `propadiene`) still open. The earlier jsdom suite (95 sanitizer + 38 scenario-integration checks) predates later changes and needs updating before reuse. Remaining manual coverage: rich-note editing in real scenarios (including the new lists, per-block size/alignment, image dialog, top-card column alignment, and side-rail behavior), 3D views and highlights for the 18 v51 + 38 v52 additions, the icon dropdown/skip icons, 2D/3D refit, the JSmol local/CDN loader, and jQuery 4; extending branch prefixes to amines/halides/mixed functional groups remains open.
 - Stored scenarios: `Αλκάνια-Αιθάνιο-τεστ.scenario.json` is the default (7 steps: ethane walkthrough + alkane menu browsing + 3D alkane models; steps 5–7 place the note in a left rail with longer text), while the previous `Αλκάνια-Αιθάνιο.scenario.json` is retained on disk for explicit `?scenario=` links but is no longer preloaded; plus the imported `Αλκένια-Αιθένιο` (7) and `Αλκένια-Ονοματολογία_και_διακλαδώσεις` (22); wider scenario library and EPAL/Lyceum two-level notes still to be written.
@@ -97,7 +97,7 @@ All layers reuse the same v58 engine (v57/v54/v52/v51 are previous runnable copi
 | # | Layer | Contract | State |
 |---|---|---|---|
 | 1 | **LEARN** | teacher-authored linear scenarios; presentation + self-paced learning | working scaffold (authoring + presentation); stored scenarios `Αλκάνια-Αιθάνιο-τεστ` (default), `Αλκάνια-Αιθάνιο` (legacy), `Αλκένια-Αιθένιο`, `Αλκένια-Ονοματολογία_και_διακλαδώσεις` |
-| 2 | **EXPLORE** | free browsing of all molecules (left menu) | working (141 molecules); next: bounded EXPLORE-lite (~15 mols) + menu search |
+| 2 | **EXPLORE** | free browsing of all molecules (left menu) | working (147 molecules); next: bounded EXPLORE-lite (~15 mols) + menu search |
 | 3 | **PRACTICE** | exercises with corrective feedback (3 types v1) | not started — see [LAYERS-PLAN](docs/LAYERS-PLAN.md) |
 | 4 | **PLAY** | gamified quizzes; responses + times logged for research statistics | not started — Drupal owns auth/session/logging; see [LAYERS-PLAN](docs/LAYERS-PLAN.md) |
 
@@ -131,7 +131,7 @@ Out of scope for now: quiz SPA, participant logging, CSV export, server-side cla
 
 ## Documents
 
-- [CHANGELOG.md](docs/CHANGELOG.md) — authoritative history (v58 live); [learning-activities-Plan.md](docs/learning-activities-Plan.md) — scenario quiz contract + activity families; [STAGE2-AUTHORING-54.md](docs/STAGE2-AUTHORING-54.md) — draft flow + roadmap; [DATA-PHASE-PLAN.md](docs/DATA-PHASE-PLAN.md) — data-phase plan; [STUDENT-IMPORT.md](docs/STUDENT-IMPORT.md) — recurring `thesis-work` import procedure
+- [CHANGELOG.md](docs/CHANGELOG.md) — authoritative history (v59 live); [learning-activities-Plan.md](docs/learning-activities-Plan.md) — scenario quiz contract + activity families; [STAGE2-AUTHORING-54.md](docs/STAGE2-AUTHORING-54.md) — draft flow + roadmap; [DATA-PHASE-PLAN.md](docs/DATA-PHASE-PLAN.md) — data-phase plan; [STUDENT-IMPORT.md](docs/STUDENT-IMPORT.md) — recurring `thesis-work` import procedure
 - [didactic-scenario-plan.md](docs/didactic-scenario-plan.md) — scenario schema and authoring flow
 - [LAYERS-PLAN.md](docs/LAYERS-PLAN.md) — layer contracts, exercise types, research logging schema
 - [DEVELOPMENT-PLAN.md](docs/DEVELOPMENT-PLAN.md), [PROJECT-PLAN.md](docs/PROJECT-PLAN.md), [PROJECT-PLAN-GR.md](docs/PROJECT-PLAN-GR.md) — product/research plans (may lag the code)
@@ -143,7 +143,7 @@ Out of scope for now: quiz SPA, participant logging, CSV export, server-side cla
 
 ## Status summary
 
-- Baseline: **v58 live** (`index.html` → v58; scenario quiz steps — student mode, all-quizTodo completion, deferred menu quizzes — over v57 3D atom/bond picking, v55 tiered draft 3D, v54 molecule Edit/New drafts, the v53 full English `?lang=en` layer and the v52 base, 141 molecules, Snap-free native `MuSVG`; default scenario `Αλκάνια-Αιθάνιο-τεστ`); v57/v56/v54/v53/v52/v51/v50/v49/v48/v47/v46/v45/v44 runnable at root, v43 frozen at tag `v43`, v42 frozen in repo2
+- Baseline: **v59 live** (`index.html` → v59; scenario quiz steps — student mode, all-quizTodo completion, deferred menu quizzes — over v57 3D atom/bond picking, v55 tiered draft 3D, v54 molecule Edit/New drafts, the v53 full English `?lang=en` layer and the v52 base, 147 molecules, Snap-free native `MuSVG`; default scenario `Αλκάνια-Αιθάνιο-τεστ`); v57/v56/v54/v53/v52/v51/v50/v49/v48/v47/v46/v45/v44 runnable at root, v43 frozen at tag `v43`, v42 frozen in repo2
 - Previous live: **v57** (`mulermoc-nom-57.html`; 3D atom/bond picking via JSmol `pickCallback`, quiz progress tints, reps lock)
 - Focus: **LEARN pilot (stored scenarios) + bounded EXPLORE-lite**
 - Near-term: **finish v52 manual coverage (rich note editor in real scenarios, Firefox/touch, 3D + highlights for the 18 v51 molecules, icon toolbar, 2D/3D refit, JSmol loader, jQuery 4); fix the two pre-existing skeletal JSmol failures; then generic branch prefixes beyond hydrocarbon/acyclic alcohol; v51/v50/v49 backlog verification; scenario library verification; bounded EXPLORE-lite (~15 mols + menu search)**

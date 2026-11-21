@@ -8,34 +8,34 @@ changelog.
 
 Greek-first static web app for teaching organic nomenclature (JSME + JSmol +
 vanilla JavaScript; no build step). The live entry point is `index.html` →
-`mulermoc-nom-58.html`. Current live version: **v58.50** (2026-11-21).
-Older versions v42–v57 remain runnable at the repo root but are **frozen**.
+`mulermoc-nom-59.html`. Current live version: **v59.01** (2026-11-21).
+Older versions v42–v58 remain runnable at the repo root but are **frozen**.
 
 ## Read first
 
 - `README.md` — product/feature baseline.
-- `docs/CHANGELOG.md` (`[v58]`) — versioned change record.
+- `docs/CHANGELOG.md` (`[v59]`) — versioned change record.
 - `docs/SESSION-NOTES.md` — cross-machine resume pointer and dated entries.
 - `docs/didactic-scenario-plan.md` — LEARN/scenario layer.
 - `docs/REVIEW-V58.md`, `docs/REVIEW-SCENARIO-QUIZ-58.md` — accepted decisions.
 - `tools/muler-harness/README.md` — probes, server, environment overrides.
 
-## Live tree (v58)
+## Live tree (v59)
 
-- Page: `mulermoc-nom-58.html`
-- Scripts: `js/mulermoc-nom-{tooltip,core,molview,teaching,note,scenario,iupac,lang,name-en}-58.js`
-- Styles: `css/jsme-nick-58.css` (app/naming), `css/mulermoc-nom-scenario-58.css` (scenario UI)
-- Data: `js/jsme-nick-nomeclature-moc2-data_58.js`
-- Init: `spt/init-3-58.spt`; harness page: `zz-test-core58.html`
+- Page: `mulermoc-nom-59.html`
+- Scripts: `js/mulermoc-nom-{tooltip,core,molview,teaching,note,scenario,iupac,lang,name-en}-59.js`
+- Styles: `css/jsme-nick-59.css` (app/naming), `css/mulermoc-nom-scenario-59.css` (scenario UI)
+- Data: `js/jsme-nick-nomeclature-moc2-data_59.js` (147 molecules)
+- Init: `spt/init-3-59.spt`; harness page: `zz-test-core59.html`
 - Shared (not forked): `js/ui-icons.js`, `js/vendor/`, `jsme/`; JSmol is CDN-loaded
 - Verification: `tools/muler-harness/`
 
 ## Versioning and forks
 
-- Bump `?v=58.NN` on every CSS/JS `<link>`/`<script>` reference in
-  `mulermoc-nom-58.html` when changing those assets. Docs-only changes do not
+- Bump `?v=59.NN` on every CSS/JS `<link>`/`<script>` reference in
+  `mulermoc-nom-59.html` when changing those assets. Docs-only changes do not
   need a version bump.
-- Do **not** edit v57 or older files, and do not create a new version fork
+- Do **not** edit v58 or older files, and do not create a new version fork
   unless the user asks.
 - Keep scenario/data schemas additive and backward-compatible unless an owner
   decision explicitly allows a break. Old scenario files must still import.
@@ -86,7 +86,7 @@ placement, or small UI-control changes; use the visual check instead.
 | Explain overview | `probe-explain-all` |
 | 2D picks/selection | `probe-final` + `probe-coverage56` |
 | Naming quiz family | matching `probe-{quiz,fg-quiz,loc-quiz,bond-quiz,branch-quiz,mode-quiz}.js` |
-| Shared core/molview/schema | all `*-58.js` checks + `probe-final` + `probe-scenario-quiz` |
+| Shared core/molview/schema | all `*-59.js` checks + `probe-final` + `probe-scenario-quiz` |
 | 3D picking | `probe-3d-pick` (may remain owner-side/manual) |
 
 ### Run-once rules
@@ -100,7 +100,7 @@ placement, or small UI-control changes; use the visual check instead.
 ### Full lane (major advance / release only)
 
 For a new version that ships behavior changes, or when the owner asks:
-`node --check` all `js/*-58.js`, then `probe-scenario-quiz`, `probe-final`,
+`node --check` all `js/*-59.js`, then `probe-scenario-quiz`, `probe-final`,
 `probe-explain-all`, `probe-coverage56` (add naming probes if that layer was
 touched). Not for CSS/UI-only batches.
 
@@ -115,9 +115,9 @@ cd tools\muler-harness
 $env:MULER_BASE = "http://localhost:8901"
 node probe-scenario-quiz.js
 
-# Back at the repo root: check all v58 scripts.
+# Back at the repo root: check all v59 scripts.
 cd ..\..
-Get-ChildItem js\*-58.js | ForEach-Object { node --check $_.FullName }
+Get-ChildItem js\*-59.js | ForEach-Object { node --check $_.FullName }
 ```
 
 Chrome defaults to the path at the top of each probe; override with
@@ -129,7 +129,7 @@ update the probe deliberately, with the user’s agreement.
 
 Update docs in the same commit as the change:
 
-- `docs/CHANGELOG.md` — new `?v=58.NN` bullet under `[v58]`, and update the
+- `docs/CHANGELOG.md` — new `?v=59.NN` bullet under `[v59]`, and update the
   fork line's version.
 - `docs/SESSION-NOTES.md` — top resume pointer (version + status) and a dated
   entry with what changed and what was verified.
@@ -162,14 +162,15 @@ Update docs in the same commit as the change:
   `Update` keeps the drawer-authored set/types and `preSolved`; a
   just-solved capture refreshes the solved baseline, and the primary mode is
   forced into the final pinned set.
-- Quiz start (v58.44): Present never auto-arms. `quiz.startMode` is set only by
-  the drawer Start component select (None default; options = required comps;
-  the chosen tag gets `.is-start`). It is armed on entry only when still
-  required and capable; otherwise the step stays idle with the
-  `.scQuizStartPrompt` in `#nameAnalysisExplain`. The gate holds until the
-  required todo is solved even if nothing was armed. Capture never sets
-  `startMode`, select mode alone never creates a quiz, and legacy steps have
-  no start. Keep the start in sync when tags change (removing it clears it).
+- Quiz start (v58.44; prompt wrapper v58.51): Present never auto-arms.
+  `quiz.startMode` is set only by the drawer Start component select (None
+  default; options = required comps; the chosen tag gets `.is-start`). It is
+  armed on entry only when still required and capable; otherwise the step stays
+  idle with the `.scQuizStartPrompt` modifier on a single `div.scQuizPrompt` in
+  `#nameAnalysisExplain`. The gate holds until the required todo is solved even
+  if nothing was armed. Capture never sets `startMode`, select mode alone never
+  creates a quiz, and legacy steps have no start. Keep the start in sync when
+  tags change (removing it clears it).
 - Deferred quiz markers (v58.44): `quiz.mol:""` is valid only on a
   menu-carrying step. `fScenarioQuizPinMolecule()` pins it to `selectedMol`,
   drops the menu-only `types`, and materializes capable `modes` when the step
@@ -188,6 +189,24 @@ Update docs in the same commit as the change:
   (`role="heading" aria-level="1"`). Keep the empty `#pageTitle` node — Present
   still writes the step title into it. Authoring hides it only while empty
   (`#pageContainer:not(.presenting) #pageTitle:empty`); do not remove the node.
+- 2D data frame (v59.00): every stored form uses heavy bonds = 1.17 and H
+  bonds = 0.78. **The expanded form is derived from the condensed form** — it
+  keeps the condensed's heavy atom order, coordinates and orientation and only
+  adds explicit H (O–H/N–H; NH₂ is two separate H atoms at H–N–H ≈ 120°), drops
+  S-groups and opens nitro as N⁺(–O⁻)(=O). `mainChain_Expanded` equals
+  `mainChain_Condensed`. Never give the expanded form its own skeleton or
+  orientation; S-groups are display-only, so their hidden atoms
+  (`COOH`, `CN`, `N^O2`) keep the same coordinates and are drawn explicitly in
+  expanded. Condensed/skeletal keep their school abbreviations. X–H bond lines
+  (C–H, O–H, N–H …) use the grey `atomColors2D.H`. Carbonyl school geometry:
+  terminal acids put both O at ±60° from the chain (O=C–O = 120°), terminal
+  aldehydes put the C=O collinear (`CCC=O`); ketones keep 90°, esters keep the
+  bridging O. Carbon branch backbones run vertically off the horizontal chain
+  (branch root directly above/below its chain atom; the branch's deepest path
+  continues straight; side children horizontal). Expanded C–H and O–H bonds are
+  orthogonal (0/90/180/270); terminal sp groups (C≡N, terminal C≡C) continue
+  the chain linearly; formate H–C=O is linear (H opposite the C=O). Regenerate
+  with `tools/muler-harness/normalize-2d.js` and re-run its audit.
 - Quiz progress is step-scoped (v58.39): `scenario:<id>#<step>|molecule`.
   A comp solved/freed in one step must never satisfy another step; revisiting
   the same step keeps its own progress. Authoring capture uses the row scope
@@ -233,10 +252,10 @@ Update docs in the same commit as the change:
   `aria-pressed` button marks the mode. The range input has a flat skin (no
   thumb shadow, no track border). Legacy `null` still loads/renders but the UI
   never writes it.
-- Add UI text to `js/mulermoc-nom-lang-58.js`; legacy inline strings exist,
+- Add UI text to `js/mulermoc-nom-lang-59.js`; legacy inline strings exist,
   so keep GR/EN parity and existing fallback behavior in new code. Greek
   values are UTF-8.
-- Do not change chemistry/naming behavior unless the task asks for it; v58 is
+- Do not change chemistry/naming behavior unless the task asks for it; v59 keeps
   the compatibility baseline.
 - Do not commit ignored artifacts (screenshots, `node_modules/`,
   `tools/muler-harness/package*.json`, compare outputs).
@@ -251,7 +270,7 @@ Update docs in the same commit as the change:
   green, `git status`/diff inspected.
 - Stage only the intended files; do not blind-stage unrelated work.
 - Prefer one coherent commit per batch unless the user asks otherwise.
-  Message style: `v58.NN: short summary`, with a body listing the changes and
+  Message style: `v59.NN: short summary`, with a body listing the changes and
   the verification that ran.
 - Never push unless explicitly asked.
 

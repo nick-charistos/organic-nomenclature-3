@@ -919,8 +919,8 @@
 }
 
 #scenarioAuthorBar .scenarioDrawer .scStepQuizSettings .scQuizTag.selected {
-   background: var(--lightEarth);
-   border-color: var(--lightBlue);
+   background: var(--veryLightOrchid);
+   border-color: var(--orchidDark);
    color: #000;
    opacity: 1 !important;
 }
@@ -959,7 +959,7 @@
 /* v58.44: author-chosen start component. Outline marker on the tag; the
    dropdown below the tags sets/clears it (None = student chooses). */
 #scenarioAuthorBar .scenarioDrawer .scStepQuizSettings .scQuizTag.is-start {
-background: var(--vibrantGreen);
+background: var(--orchidDark);
   color: #fff;
 }
 
@@ -987,13 +987,13 @@ background: var(--vibrantGreen);
 /* v58.44: idle start prompt in the explain panel (quiz step, no armed comp).
    The student picks a name component; the prompt is replaced by the pick
    prompt as soon as one is armed. */
-#nameAnalysisExplain .scQuizStartPrompt {
+#nameAnalysisExplain .scQuizStartPrompt, #nameAnalysisExplain .scQuizPrompt {
    padding: 10px 12px;
    font-family: "Roboto Condensed", sans-serif;
    font-size: 1rem;
-   color: var(--darkBlue);
-   background: var(--veryLightBlue);
-   border: 1px dashed var(--lightBlue);
+   color: #000;
+   background: var(--veryLightOrchid);
+   border: 1px dashed var(--orchidDark);
    border-radius: 5px;
    text-align: center;
 }

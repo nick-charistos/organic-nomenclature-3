@@ -1,0 +1,2631 @@
+{
+ "generatedAt": "2026-11-21T16:42:38.756Z",
+ "design": "expanded = condensed + H",
+ "molecules": {
+  "ethyne": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "keep"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "ethyl_4_dimethyl_3_5_heptyne_1": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "methyl_4_pentyne_2": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "methyl_3_pentyne_1": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "methyl_3_butyne_1": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "butyne_2": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "butyne_1": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "methyl_3_butene_1": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "methyl_2_propene": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "ethyl_3_dimethyl_2_5_hexene_2": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "ethyl_3_dimethyl_2_5_hexane": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "methane": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "keep"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "methanoicacid": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "ethane": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "ethene": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "ethanal": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "ethanenitrile": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "propane": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "propene": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "propadiene": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "propionicacid": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4181,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "butane": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "butanal": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "butanenitrile": {
+   "condensed": {
+    "mode": "relayout",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "pentane": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "butene_1": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "propanol_1": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "penten_4_ol_2": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "penten_1_one_3": {
+   "condensed": {
+    "mode": "relayout",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "butanol_1": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "pentanone_2": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "butene_2": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "pentadiene_1_3": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "propyne": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "propanal": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "butanoic_acid": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4181,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "propanenitrile": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "pentanoic_acid": {
+   "condensed": {
+    "mode": "relayout",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "pentanal": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "butene_3_ol_2": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "penten_2_ol_1": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "pentyn_4_one_2": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "propenoic_acid": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4181,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "propynal": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "penten_3_yne_1": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "hexen_1_yne_4": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "buten_1_yne_3": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "hexen_2_yne_4": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "chlorobutane_1": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "bromopropane_2": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "bromo_4_butene_1": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "bromo_3_chloropentane_1": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "bromo_2_chlorobutane_3": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "propanediol_1_2": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "propanedioic_acid": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4181,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "propanetriol": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "dichlorobutane_2_2": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "trichloropentane_1_1_2": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "hydroxypropanoic_acid_2": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "hydroxybutanenitrile_2": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "Oxopropanoic_acid": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "aminobutanoic_acid_3": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "hydroxypropanenitrile_2": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "oxobutanoic_acid": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 1,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "dihydroxybutanedioic_acid_2_3": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "ethanol": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "propanone": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "butanone": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "nitroethane": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4181,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "nitropropane_2": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "methyl_2_pentane": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "dimethyl_2_3_butane": {
+   "condensed": {
+    "mode": "relayout",
+    "scale": 1.4181,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "ethyl_methyl_ether": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "dimethylether": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "ethanoic_methyl_ester": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "propanoic_methyl_ester": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "diethyl_ether": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "isopropyl_methyl_ether": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "methyl_methanoate": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "isopropyl_ethanoate": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 1
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "butadiene_1_2": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "butadiene_1_3": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "butanol_2": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "dimethyl_2_2_pentanol_3": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "dimethyl_2_3_pentadiene_1_3": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "dimethyl_2_3_penten_1_yne_4": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "ethyl_3_dimethyl_4_5_hexadiene_1_4": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "ethyl_3_methyl_4_hexen_3_yn_5_ol_2": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "ethyl_4_dimethyl_2_3_hepten_2_yne_5": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "keep"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "isopropyl_4_dimethyl_3_5_heptanol_2": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "keep"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "methyl_2_buten_1_yne_3": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "methyl_2_propanediol_1_2": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "methyl_3_buten_3_ol_2": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "methyl_3_pentadiene_1_3": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "keep"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "methyl_3_pentyn_4_ol_2": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "methyl_4_pentanol_2": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "keep"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "methyl_4_penten_4_yn_2_ol_1": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "pentadiene_1_4": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "pentanone_3": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 0.625,
+    "moved": 1
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "keep"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "dimethyl_2_4_pentanone_3": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 0.625,
+    "moved": 3
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "keep"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "trimethyl_3_4_4_pentanone_2": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 0.625,
+    "moved": 4
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "keep"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "diethyl_4_5_dimethyl_2_6_heptanone_3": {
+   "condensed": {
+    "mode": "relayout",
+    "scale": 0.625,
+    "moved": 3
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "keep"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "penten_1_yn_4_one_3": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 0.625,
+    "moved": 1
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "keep"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "dimethyl_4_5_hexen_5_yn_1_one_3": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 0.625,
+    "moved": 3
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "keep"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "methyl_6_hepten_3_dione_2_5": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 0.625,
+    "moved": 3
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "keep"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "ethyl_3_methyl_4_octen_3_yn_5_dione_2_7": {
+   "condensed": {
+    "mode": "school",
+    "scale": 0.625,
+    "moved": 4
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "isopropyl_4_dimethyl_3_6_octen_3_yn_7_dione_2_5": {
+   "condensed": {
+    "mode": "school",
+    "scale": 0.625,
+    "moved": 6
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "methanal": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "propenal": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 0.8333,
+    "moved": 1
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 1,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "methyl_2_propenal": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 0.8333,
+    "moved": 2
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 1,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "methyl_2_propanal": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 0.8333,
+    "moved": 2
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 1,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "dimethyl_2_3_butanal": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 0.8333,
+    "moved": 3
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 1,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "ethyl_2_methyl_3_pentanal": {
+   "condensed": {
+    "mode": "school",
+    "scale": 0.8333,
+    "moved": 3
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "keep"
+   },
+   "carbonyl": {
+    "fixed": 1,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "ethyl_4_isopropyl_3_methyl_2_hexanal": {
+   "condensed": {
+    "mode": "school",
+    "scale": 0.8333,
+    "moved": 4
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 1,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "ethyl_4_penten_4_yn_2_al": {
+   "condensed": {
+    "mode": "school",
+    "scale": 0.8333,
+    "moved": 2
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 1,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "propanedial": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 0.8333,
+    "moved": 2
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 2,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "methyl_3_penten_2_dial": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 0.8333,
+    "moved": 3
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "keep"
+   },
+   "carbonyl": {
+    "fixed": 2,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "isopropyl_2_buten_2_dial": {
+   "condensed": {
+    "mode": "school",
+    "scale": 0.8333,
+    "moved": 3
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 2,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "ethyl_2_methyl_3_hexen_2_yn_4_dial": {
+   "condensed": {
+    "mode": "school",
+    "scale": 0.8333,
+    "moved": 4
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 2,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "methyl_propyl_ether": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "ethyl_propyl_ether": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "keep"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "ethyl_isopropyl_ether": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "keep"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "butyl_methyl_ether": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "keep"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "isobutyl_isopropyl_ether": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "keep"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "ethyl_sec_butyl_ether": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "keep"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "tert_butyl_isopropyl_ether": {
+   "condensed": {
+    "mode": "keep",
+    "scale": 1,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "keep"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "methyl_2_propanoic_acid": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 0.8333,
+    "moved": 1
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "keep"
+   },
+   "carbonyl": {
+    "fixed": 1,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "dimethyl_2_2_propanoic_acid": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 0.8333,
+    "moved": 2
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "keep"
+   },
+   "carbonyl": {
+    "fixed": 1,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "ethyl_2_methyl_3_pentanoic_acid": {
+   "condensed": {
+    "mode": "school",
+    "scale": 0.8333,
+    "moved": 2
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "keep"
+   },
+   "carbonyl": {
+    "fixed": 2,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "ethyl_3_isopropyl_2_dimethyl_4_5_hexanoic_acid": {
+   "condensed": {
+    "mode": "school",
+    "scale": 0.8333,
+    "moved": 4
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 2,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "methyl_2_propenoic_acid": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 0.8333,
+    "moved": 1
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "keep"
+   },
+   "carbonyl": {
+    "fixed": 1,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "ethyl_2_methyl_3_penten_2_yn_4_oic_acid": {
+   "condensed": {
+    "mode": "school",
+    "scale": 0.8333,
+    "moved": 2
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 2,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "ethyl_3_isopropyl_2_dimethyl_4_5_hexadien_2_4_dioic_acid": {
+   "condensed": {
+    "mode": "school",
+    "scale": 0.8333,
+    "moved": 4
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 4,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "ethyl_2_isopropyl_3_dimethyl_6_6_hepten_2_yn_4_dioic_acid": {
+   "condensed": {
+    "mode": "school",
+    "scale": 0.8333,
+    "moved": 4
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 4,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "penten_2_yn_4_oic_acid": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 0.8333,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 1,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "hexen_2_yn_4_dioic_acid": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 0.8333,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 2,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "sec_butyl_ethanoate": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "butyl_propanoate": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "tert_butyl_methanoate": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "isobutyl_2_methylpropanoate": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "isopropyl_2_3_dimethylbutanoate": {
+   "condensed": {
+    "mode": "scale",
+    "scale": 1.4182,
+    "moved": 0
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "scale"
+   },
+   "carbonyl": {
+    "fixed": 0,
+    "failures": 0
+   },
+   "issues": []
+  },
+  "methyl_2_butane": {
+   "condensed": {
+    "mode": "new"
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "new"
+   },
+   "issues": []
+  },
+  "methyl_3_pentane": {
+   "condensed": {
+    "mode": "new"
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "new"
+   },
+   "issues": []
+  },
+  "ethyl_3_pentane": {
+   "condensed": {
+    "mode": "new"
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "new"
+   },
+   "issues": []
+  },
+  "dimethyl_2_2_propane": {
+   "condensed": {
+    "mode": "new"
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "new"
+   },
+   "issues": []
+  },
+  "dimethyl_2_2_butane": {
+   "condensed": {
+    "mode": "new"
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "new"
+   },
+   "issues": []
+  },
+  "ethyl_3_methyl_2_pentane": {
+   "condensed": {
+    "mode": "new"
+   },
+   "expanded": {
+    "mode": "derived"
+   },
+   "skeletal": {
+    "mode": "new"
+   },
+   "issues": []
+  }
+ },
+ "summary": {
+  "molecules": 147,
+  "modes": {
+   "keep": 63,
+   "derived": 147,
+   "scale": 202,
+   "relayout": 5,
+   "school": 12,
+   "new": 12
+  },
+  "issueCount": 0,
+  "problems": 0
+ },
+ "problems": [],
+ "dataBytes": 490520
+}

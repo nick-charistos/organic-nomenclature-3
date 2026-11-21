@@ -1,7 +1,7 @@
 # muler-harness (headless verification)
 
 Playwright + installed Chrome probes for the MuLERMoC live working tree
-(currently v58 — the suite targets `mulermoc-nom-58.html`; v57 and older
+(currently v59 — the suite targets `mulermoc-nom-59.html`; v57 and older
 pages stay in the repo but are frozen, so the probes follow the live build).
 Run from the repo root. Requires node + Playwright (`npm i playwright-core`
 once, anywhere on NODE_PATH or in this dir) and a Chrome binary.

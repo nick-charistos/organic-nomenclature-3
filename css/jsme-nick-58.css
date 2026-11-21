@@ -18,6 +18,7 @@
   --orchidDefault: #dc6acf;
   --orchidDark:#b62ba6;
   --orchidLight:#ECACE4;
+  --veryLightOrchid:#f7def4;
 
   --redAlert: #b90000;
 
@@ -2161,7 +2162,11 @@ footer span.molwaveLogoSub {
    feedback/precedence; .boxed/.unboxed lose on specificity. Stripped on
    disarm (classic look restored). */
 .nameCompBox.quizTodo {
-  background-color: var(--veryLightEarth);
+  background-color: var(--veryLightOrchid);
+}
+
+.nameCompBox.quizTodo:hover {
+  background-color: var(--orchidLight);
 }
 
 /* v58 multi-comp: `.freeComp` is a state marker on capable+solved name boxes
@@ -2272,6 +2277,14 @@ footer span.molwaveLogoSub {
   font-weight: bold;
   border-color: var(--vibrantGreen);
   /* box-shadow: 1px 1px 3px 0px rgba(0,0,0,0.5); */
+}
+
+
+
+.nameCompBox.quizTodo.selected {
+  background-color: var(--orchidDark);
+  border-color: var(--orchidDark);
+
 }
 
 .nameCompBox.selected.unboxed {

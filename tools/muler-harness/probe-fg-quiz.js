@@ -30,7 +30,7 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
   p.on("pageerror", (e) => errs.push(String(e.message).slice(0, 150)));
 
   async function open(mol) {
-    await p.goto(BASE + "/mulermoc-nom-58.html?lang=en&mol=" + mol, { waitUntil: "load", timeout: 60000 });
+    await p.goto(BASE + "/mulermoc-nom-59.html?lang=en&mol=" + mol, { waitUntil: "load", timeout: 60000 });
     await waitReady(p, (typeof failures !== "undefined" ? failures : []));
   }
   async function armSelectAndBox(boxId) {

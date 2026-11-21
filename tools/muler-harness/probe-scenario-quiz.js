@@ -83,7 +83,7 @@ async function clickAtom(p, atom1) {
 }
 
 async function openMol(p, mol) {
-  await p.goto(BASE + "/mulermoc-nom-58.html?lang=en&mol=" + mol, { waitUntil: "load", timeout: 60000 });
+  await p.goto(BASE + "/mulermoc-nom-59.html?lang=en&mol=" + mol, { waitUntil: "load", timeout: 60000 });
   await waitReady(p);
 }
 

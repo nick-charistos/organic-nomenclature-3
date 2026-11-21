@@ -4,9 +4,102 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ---
 
-## [v58] (scenario quiz contract; LIVE, `index.html` → v58)
+## [v59] (2D data upgrade; LIVE, `index.html` → v59)
 
-Forked from v57 (`mulermoc-nom-58.html` + `js/*-58.js` + `css/*-58.css` + `jsme-nick-nomeclature-moc2-data_58.js` + `spt/init-3-58.spt` + `zz-test-core58.html`, `?v=58.50`; `ui-icons.js` stays shared). v57 files untouched (frozen). No chemistry changes.
+Forked from v58.50 (`mulermoc-nom-59.html` + `js/*-59.js` + `css/*-59.css` +
+`jsme-nick-nomeclature-moc2-data_59.js` + `spt/init-3-59.spt` +
+`zz-test-core59.html`, `?v=59.01`; `ui-icons.js`, `js/vendor/`, `jsme/` and
+`mols/` stay shared). Chemistry/naming results and the scenario quiz contract
+are v58's — only data geometry and the MOL pipeline changed.
+
+- **147 molecules.** The six branched alkanes the sibling project ships as
+  `nameExamplesCustom` are now native entries: `methyl_2_butane`,
+  `methyl_3_pentane`, `ethyl_3_pentane`, `dimethyl_2_2_propane`,
+  `dimethyl_2_2_butane`, `ethyl_3_methyl_2_pentane` (formula + main chains from
+  the generated pack, 3D SDFs copied to `mols/nomeclature-moc2/`).
+- **One 2D frame.** Every stored form uses heavy bonds = **1.17** and H bonds =
+  **0.78**; the old mix (0.825 / 1.17 / 1.40 / 1.87 medians, expanded C–H at
+  0.825 / 0.619 / 0.78, up to 3.5× stretched bonds) is gone. The condensed form
+  is normalized first (uniform scale, subtree bond repair, full relayout only
+  for 5 genuinely broken drawings); the skeletal form keeps its own zigzag
+  order and is rescaled/repaired on its own.
+- **Expanded = condensed + H (design rule).** The expanded form is derived from
+  the final condensed molfile, so it keeps the **same heavy atom order,
+  coordinates and orientation** and only adds explicit H (and drops S-groups).
+  `mainChain_Expanded` now equals `mainChain_Condensed`. Audit: **0** condensed
+  ↔ expanded orientation mismatches and **0** atom/coordinate/bond-table
+  mismatches across all 147 molecules. (v58 had 0 flips but 52 shape
+  differences; an intermediate per-form normalization had introduced 18
+  flipped expanded forms — fixed here.)
+- **Complete expanded H.** Every expanded form is valence-complete: O–H and N–H
+  appear on the 22 molecules that lacked them (32 H; NH₂ is two separate H
+  atoms at H–N–H ≈ 120°), plus one missing C–H in `trichloropentane_1_1_2`.
+  H atoms are appended at the end. S-group abbreviations keep their atoms in
+  the condensed file (`COOH`, `CN`, `N^O2`); expanded draws those same atoms
+  explicitly instead of the label.
+- **Branch backbones vertical.** Condensed branch roots now sit directly
+  above/below their chain atom and the branch's deepest path continues
+  straight, so every carbon branch backbone is vertical off the horizontal
+  chain (side children go horizontal, alternating). Only the 12 molecules that
+  violated this were re-laid out (`mode: school`), coordinates only — atom
+  order, chain arrays and S-groups unchanged; stale `M  SBV` label vectors are
+  dropped on those. Audit: 0 branch-verticality violations across 147.
+- **Orthogonal expanded H, linear sp.** Every C–H and O–H bond snaps to the
+  0/90/180/270 grid (the free axis is chosen; a blocked one keeps its fallback),
+  so terminal hydrogens never sit on diagonals. Terminal sp groups continue the
+  chain linearly — `butanenitrile`'s C≡N was 117° and is now 180°; terminal
+  alkynes follow the same rule. Formate esters (HCOO–R) put the formyl H
+  opposite the C=O so H–C=O is linear, while normal aldehydes keep the C=O
+  collinear with the carbon chain. Audit: 0 off-grid H, 0 bent sp centres.
+- **Carbonyl school geometry.** Terminal acids now place the two O symmetrically
+  at ±60° from the chain (O=C–O = 120°, one above / one below); terminal
+  aldehydes put the C=O collinear with the chain (`CCC=O`). Applied to the
+  condensed form, so the derived expanded inherits it: 29 carbonyls fixed
+  across 22 molecules (13 acid OH + 16 aldehyde C=O). Ketones keep their 90°
+  chain-perpendicular O and esters their bridging geometry. If the mirror side
+  is occupied, the offending terminal branch is nudged (bond length kept)
+  before the fix is abandoned; blocked fixes are reported.
+- **Grey hydrogen bonds.** `molview-59` colours every X–H bond line (C–H,
+  O–H, N–H …) with `atomColors2D.H`, matching the grey H labels; previously
+  only C–H was greyed.
+- **Nitro opens in expanded.** `nitroethane`/`nitropropane_2` expanded drop the
+  `N^O2` SUP abbreviation and draw N⁺(–O⁻)(=O) (JSME default); the condensed
+  form keeps the school label. Expanded forms carry no S-groups at all.
+- **Lossless V2000 I/O (`core-59`).** `fParseMolV2000` keeps the atom property
+  tail (mass/charge/parity/H count/valence/mapping), bond stereo, every `M`
+  line, the counts line, line endings and the SDF trailer; `fWriteMolV2000`
+  re-emits them and remaps `M CHG/ISO/RAD`, `M SAL/SBL` and scales `M SBV`
+  label coordinates. All 422 stored molfiles round-trip byte-identically.
+- **Generator (`core-59`).** `MOLGEN_CC_LEN 1.17` / `MOLGEN_CH_LEN 0.78`;
+  charge-aware H valence (N⁺ 4, O⁺ 3, O⁻ 1); bond-length-preserving terminal
+  lean; a full-circle fallback when every sector collides; O–H opposite the
+  C–O bond and NH₂ at ±60°.
+- **Data pipeline.** `tools/muler-harness/normalize-2d.js` regenerates
+  `data_59.js` from the v58 data + the alkane pack and writes
+  `2d-upgrade-report.json` (per-form mode, bond stats, atom/bond/charge/
+  S-group/chain/overlap invariants). `tools/muler-harness/contact-sheet.js`
+  renders the old/new contact sheets for visual review.
+- **v58.51 quiz prompts + orchid quiz styling ported.** Rebased the fork on
+  v58.51: prompts are one `div.scQuizPrompt` wrapper in `#nameAnalysisExplain`
+  (`fMulerQuizPromptEl`), the idle start prompt adds `.scQuizStartPrompt`,
+  repeated calls replace instead of stacking, `fToggleAtomSelect` re-asserts or
+  drops the prompt (`fMulerQuizDropPrompt`), and authoring `Go` shows the idle
+  prompt while picking (`pending3D` cancelled). The v58 CSS comes along:
+  `--veryLightOrchid`, orchid `.quizTodo` / `.quizTodo.selected` /
+  `.scQuizTag.selected` / `.is-start` and the shared `.scQuizPrompt` +
+  `.scQuizStartPrompt` skin. All v59 asset refs bumped to `?v=59.01`.
+- **Verification:** `node --check` clean; 422/422 byte-identical round-trip;
+  audit 147 molecules / 0 issues (heavy 1.17 ± 3%, H 0.78 ± 3%, expanded =
+  condensed atom/coordinate/bond-table prefix, chain arrays, charges,
+  S-groups, no overlaps, expanded valence-complete);
+  `probe-final`, `probe-coverage56`, `probe-fg-quiz`, `probe-compact-main`,
+  `probe-explain-all`, `probe-scenario-quiz` green on v59; visual pass on the
+  two owner-reported flipped molecules, the 5 relayouts, the 22 +H molecules
+  and the 6 new alkanes.
+
+## [v58] (scenario quiz contract; frozen under v59)
+
+Forked from v57 (`mulermoc-nom-58.html` + `js/*-58.js` + `css/*-58.css` + `jsme-nick-nomeclature-moc2-data_58.js` + `spt/init-3-58.spt` + `zz-test-core58.html`, `?v=58.51`; `ui-icons.js` stays shared). v57 files untouched (frozen). No chemistry changes.
 
 ### Scenario authoring (v58 working tree)
 - Audit first: step schema vs quiz state, Present-guard inventory, `nameClick=true` chain, step-change vs quiz state, solved sets vs steps, capture requirements, draft interplay, probe surface. Findings note → schema → consolidated contract (see `docs/learning-activities-Plan.md`, Stage 0).
@@ -60,6 +153,7 @@ Forked from v57 (`mulermoc-nom-58.html` + `js/*-58.js` + `css/*-58.css` + `jsme-
 - Footer lockup polish (`?v=58.48`, owner follow-up): remove the unused footer separator span and CSS override. The header keeps its bullet; the footer's MolWave badge sits directly beside “Organic Nomenclature”, with no separator. `?v=58.47` → `?v=58.48`.
 - Branded heading + no empty title gap (`?v=58.49`, owner follow-up): the header MolWave lockup is the accessible page heading (`role="heading" aria-level="1"`), while the descriptive `#pageTitle` remains empty in authoring and is hidden when empty via `#pageContainer:not(.presenting) #pageTitle:empty`. Presentation still writes/step title into `#pageTitle` and shows it. Logo texts remain English for now. `?v=58.48` → `?v=58.49`.
 - 3D rotation moves to the viewer toolbar (`?v=58.50`, owner request): the `#rotateCheck` checkbox leaves the 3D settings bar; the owner-supplied `imgs/rotate-3D.svg` is registered as `MuLERIcons.rotate3D` and becomes the latched `#rotate3DBtn` in `#view3DTools` (rotate · zoom − · zoom + · save, first so it sits left of zoom out). New `fToggleRotate3D()` flips the same `rotateFlag` global and sends the same `rotate spin 60;` / `rotate off;`, and `rotate3D()` now ends with `fSyncRotate3DBtn()` so every existing caller (Present apply, Exit restore, 3D reload, initial load) keeps the button's `.active`/`aria-pressed` truthful. Scenario spin capture/apply/stash are unchanged (`step.view3D.spin` → `rotateFlag`); only `fScenarioSyncSpinUi()` and the pre-load sync now mirror into the button. The button rides the same 3D tools cluster as zoom/save in Present (the step's `3D controls` row owns its visibility, exactly like zoom — no extra per-step gate); each step still applies its stored spin on entry, and the teacher can stop/start it manually. EN gets `rotate3D` ("Rotate 3D"), and the dead `#rotateCheck` handler/selector/CSS are removed. `?v=58.49` → `?v=58.50`.
+- Quiz prompts share one wrapper (`?v=58.51`, owner request): the pick prompts (`quizPick*`, `quizChainFirst`) stopped being bare text in `#nameAnalysisExplain`, so only the idle prompt was classed. New `fMulerQuizPromptEl(extraCls)` clears the panel and appends one `div.scQuizPrompt`; `fMulerQuizPrompt()` writes its pick string into it and `fMulerQuizIdlePrompt()` uses `div.scQuizPrompt.scQuizStartPrompt`. Styling is unchanged (no new CSS): the start prompt keeps its dashed box via `.scQuizStartPrompt`, other prompts stay visually plain and now have the generic `.scQuizPrompt` hook. Authoring preview parity: `fScenarioQuizIdlePrompt()` now also runs with picking active in authoring (the previewed quiz step must still match its molecule, no live target, todos remaining), so turning pick mode on — and Go onto a quiz step while it is on — shows the same start prompt (plus the required/free tints). `fToggleAtomSelect()` re-asserts it after `fClearHighlights()` and drops a lone `.scQuizPrompt` when pick mode is switched off; the authoring apply tail cancels `pending3D` so the stored-highlight replay cannot repaint over the prompt. Outside scenario mode (default app), switching pick mode on with a molecule loaded shows the same start prompt directly. The verdict line (`#mulerQuizVerdict`) and all quiz logic are untouched. `?v=58.50` → `?v=58.51`.
 
 ## [v57] (3D atom/bond picking via JSmol pickCallback; LIVE, `index.html` → v57)
 
