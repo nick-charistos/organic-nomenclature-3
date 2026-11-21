@@ -25,7 +25,9 @@
 > `probe-compact-main`, `probe-explain-all`, `probe-scenario-quiz` green;
 > visual pass on the owner-reported flipped molecules, the 5 relayouts, the
 > 22 +H and 6 new molecules. Fork rebased on **v58.51** (`.scQuizPrompt`
-> wrapper) and the orchid quiz CSS; v59 asset refs bumped to `?v=59.01`.
+> wrapper) and the orchid quiz CSS; v59 asset refs bumped to `?v=59.02`.
+> v59.02 removes the «Κανόνες Ονοματολογίας» bullet from the grouping selector
+> (rule mode/data/`?grouping=rule` kept).
 > Not committed — owner review pending. v58.51 stays runnable and frozen.
 >
 > **Previous pointer (v58.50):** 2026-11-21 — **v58 is LIVE**

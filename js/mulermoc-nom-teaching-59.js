@@ -573,7 +573,6 @@ function fInitNomeclatureMenu() {
     <div class='radioCheckContainer ${moleculeGroupingMode === "all" ? "selectedRadio" : "unselectedRadio"}' data-grouping-mode='all'>${(typeof fMulerT === "function") ? fMulerT("allMolecules") : "Όλα τα μόρια"}<span class='radioCheck'></span></div>
     <div class='radioCheckContainer ${moleculeGroupingMode === "chemclass" ? "selectedRadio" : "unselectedRadio"}' data-grouping-mode='chemclass'>${(typeof fMulerT === "function") ? fMulerT("chemClasses") : "Χημικές Τάξεις"}<span class='radioCheck'></span></div>
     <div class='radioCheckContainer ${moleculeGroupingMode === "series" ? "selectedRadio" : "unselectedRadio"}' data-grouping-mode='series'>${(typeof fMulerT === "function") ? fMulerT("homolSeries") : "Ομόλογες Σειρές"}<span class='radioCheck'></span></div>
-    <div class='radioCheckContainer ${moleculeGroupingMode === "rule" ? "selectedRadio" : "unselectedRadio"}' data-grouping-mode='rule'>${(typeof fMulerT === "function") ? fMulerT("nomenclatureRules") : "Κανόνες Ονοματολογίας"}<span class='radioCheck'></span></div>
     </div><div class='menuNomeclature2Container'>`;
 
   if (moleculeGroupingMode === "all") {

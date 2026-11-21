@@ -8,7 +8,7 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 Forked from v58.50 (`mulermoc-nom-59.html` + `js/*-59.js` + `css/*-59.css` +
 `jsme-nick-nomeclature-moc2-data_59.js` + `spt/init-3-59.spt` +
-`zz-test-core59.html`, `?v=59.01`; `ui-icons.js`, `js/vendor/`, `jsme/` and
+`zz-test-core59.html`, `?v=59.02`; `ui-icons.js`, `js/vendor/`, `jsme/` and
 `mols/` stay shared). Chemistry/naming results and the scenario quiz contract
 are v58's — only data geometry and the MOL pipeline changed.
 
@@ -88,6 +88,11 @@ are v58's — only data geometry and the MOL pipeline changed.
   `--veryLightOrchid`, orchid `.quizTodo` / `.quizTodo.selected` /
   `.scQuizTag.selected` / `.is-start` and the shared `.scQuizPrompt` +
   `.scQuizStartPrompt` skin. All v59 asset refs bumped to `?v=59.01`.
+- **Rule grouping bullet removed (v59.02).** The `.groupingMode` selector now
+  offers Όλα τα μόρια / Χημικές Τάξεις / Ομόλογες Σειρές only. The `rule` mode
+  itself is kept intact: `moleculeGroupingMode === "rule"`, the `ruleExamples`
+  data, the rule-theory panel (`#ruleTheory`) and `?grouping=rule` still work
+  (no UI control; URL/programmatic entry renders the rule groups).
 - **Verification:** `node --check` clean; 422/422 byte-identical round-trip;
   audit 147 molecules / 0 issues (heavy 1.17 ± 3%, H 0.78 ± 3%, expanded =
   condensed atom/coordinate/bond-table prefix, chain arrays, charges,
