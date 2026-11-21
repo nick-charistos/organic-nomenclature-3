@@ -1618,7 +1618,7 @@ function fScenarioSyncControlUi() {
   try {
     if (typeof atomSymbols3DFlag !== "undefined") fScenarioSetCheck("atomSymbolsCheck", !!atomSymbols3DFlag, "selectedCheck", "unselectedCheck");
     if (typeof hydrogens3DFlag !== "undefined") fScenarioSetCheck("hydrogensCheck", !!hydrogens3DFlag, "selectedCheck", "unselectedCheck");
-    if (typeof rotateFlag !== "undefined") fScenarioSetCheck("rotateCheck", !!rotateFlag, "selectedCheck", "unselectedCheck");
+    if (typeof fSyncRotate3DBtn === "function") fSyncRotate3DBtn();
   } catch (e) {
     /* controls unavailable */
   }
@@ -1655,11 +1655,12 @@ function fScenarioSyncControlUi() {
   }
 }
 
-// Spin switch only (cheap): the bar's rotateCheck must mirror the step's
-// view3D.spin after the async spin restore, not only at the pre-load sync.
+// Spin switch only (cheap): the 3D toolbar button (#rotate3DBtn) must mirror
+// the step's view3D.spin after the async spin restore, not only at the
+// pre-load sync.
 function fScenarioSyncSpinUi() {
   try {
-    fScenarioSetCheck("rotateCheck", !!(typeof rotateFlag !== "undefined" && rotateFlag), "selectedCheck", "unselectedCheck");
+    if (typeof fSyncRotate3DBtn === "function") fSyncRotate3DBtn();
   } catch (e) { /* controls unavailable */ }
 }
 

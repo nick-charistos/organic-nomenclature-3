@@ -179,6 +179,7 @@ var MULER_STRINGS = {
   zoomIn: { gr: "Μεγέθυνση", en: "Zoom in" },
   zoomOut: { gr: "Σμίκρυνση", en: "Zoom out" },
   saveImage: { gr: "Αποθήκευση εικόνας", en: "Save image" },
+  rotate3D: { gr: "Περιστροφή 3D", en: "Rotate 3D" },
   noMolHint: { gr: "Επιλέξτε μόριο για ανάλυση ονόματος", en: "Select a molecule for name analysis" },
   present: { gr: "Παρουσίαση", en: "Present" },
   presentFromStep: { gr: "Παρουσίαση από αυτό το βήμα", en: "Present from this step" },
@@ -554,6 +555,7 @@ function fMulerPaintStaticChrome() {
   setTip("#zoomOut3DBtn", fMulerT("zoomOut") + " 3D");
   setTip("#zoomIn3DBtn", fMulerT("zoomIn") + " 3D");
   setTip("#save3DBtn", fMulerT("saveImage") + " 3D");
+  setTip("#rotate3DBtn", fMulerT("rotate3D"));
   setTip("#view2DBtn", fMulerT("show2D"));
   setTip("#view3DBtn", fMulerT("show3D"));
   setTip("#editMolBtn", fMulerT("editMol"));
@@ -735,7 +737,7 @@ function fMulerTranslateTips(root) {
       "#scenarioToast", ".nameStyleExpand",
       ".sshow", ".scTabText", ".scStepTitleLabel", ".scMolBadge",
       ".scNoteFontSize option", "#dropLabel", ".dropLi",
-      "#hydrogensCheck", "#rotateCheck",
+      "#hydrogensCheck",
       "#nameAnalysisExplain .explainText", ".scNoteEditorTitle"];
     for (var s = 0; s < sels.length; s++) {
       var nodes;

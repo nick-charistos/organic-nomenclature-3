@@ -232,12 +232,16 @@ Visibility rules:
   (`#svgAtomColorCheck`) moved out of this bar into the Ρυθμίσεις panel
   (v48), merged with the `Χρωματισμός ατόμων 2D` atom/group radios.
 * `show.controls.3D` toggles `#controls3D`:
-  `Υδρογόνα C-H`, `#dropMenu` style, `Περιστροφή`. Irrelevant when that
+  `Υδρογόνα C-H` + `#dropMenu` style. Irrelevant when that
   viewer is hidden. Per-step drawer checkbox `3D controls` (default
   unchecked; disabled unless the step's 3D viewer is visible). On apply
   the bar visuals (3D checkboxes, style dropdown label) mirror the step's
   stored values. `Σύμβολα ατόμων` (`#atomSymbolsCheck`) moved out of this
   bar into the Ρυθμίσεις panel as its own `Σύμβολα ατόμων 3D` row (v48).
+  3D spin (`view3D.spin`) is not part of this bar since v58.50: it is the
+  `#rotate3DBtn` toggle in `#view3DTools`, shown with the other 3D tools
+  (same bar gate as zoom/save), and each step still applies its stored spin
+  on entry.
 * `show.save` toggles `#save2DBtn` / `#save3DBtn`
   independently of `controls`. Default `false`; there is no authoring
   checkbox for it, so in practice the save-image buttons now ride their

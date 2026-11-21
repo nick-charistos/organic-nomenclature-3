@@ -1768,10 +1768,8 @@ $(document).ready(function () {
     showHydrogens3D();
   });
 
-  $("#rotateCheck").on("click", function () {
-    rotateFlag = !rotateFlag;
-    rotate3D();
-  });
+  // 3D spin is toggled by #rotate3DBtn in the viewer toolbar (v58.50);
+  // it drives the same rotateFlag + rotate3D() pair.
 
   svgAtomColors2DFlag = true
   // $("#svgAtomColorCheck").removeClass("selectedCheck").addClass("unselectedCheck");

@@ -1681,11 +1681,6 @@ footer span.molwaveLogoSub {
   font-weight: normal;
 }
 
-#rotateCheck.checkBoxContainer {
-  margin-left: 5px;
-  margin-right: 10px;
-}
-
 .inactive {
   opacity: 0.3;
 }
@@ -3120,8 +3115,21 @@ color: var(--veryLightEarth);
   color: #fff;
 }
 
-/* The 3D trio (zoom pair + save) shares one anchored cluster, symmetric
-   with the 2D tools. */
+/* Latched tool state (3D rotate toggle, v58.50): mirrors .viewerFullBtn.active
+   so "spin on" stays visible after the pointer leaves the button. */
+.viewerToolBtn.active {
+  background-color: var(--lightBlue);
+  border-color: var(--darkBlue);
+  color: #fff;
+}
+
+.viewerToolBtn:focus-visible {
+  outline: 2px solid var(--darkBlue);
+  outline-offset: 1px;
+}
+
+/* The 3D tools (zoom pair + save + rotate) share one anchored cluster,
+   symmetric with the 2D tools. */
 #view3DTools {
   position: absolute;
   right: 5px;

@@ -1,9 +1,9 @@
 # Session notes — 2026-11-21 (resume point for next session, other machine)
 
 > **Resume pointer (cross-machine):** 2026-11-21 — **v58 is LIVE**
-> (`index.html` → `mulermoc-nom-58.html`, `?v=58.49`, review follow-ups +
+> (`index.html` → `mulermoc-nom-58.html`, `?v=58.50`, review follow-ups +
 > student hover/3D fixes + step-row architecture/corners/density + the
-> 58.17–58.49 feature/UI batch).
+> 58.17–58.50 feature/UI batch).
 > Scenario quiz contract: steps store their required component set
 > (`quiz.modes` + labels; deferred `quiz.types` for menu quizzes), the drawer
 > master checkbox owns quiz existence, Update never destroys an authored task,
@@ -14,7 +14,7 @@
 > is green; the full 2D suite was re-run against v58 and is
 > green (final/quiz/mode-quiz/explain-all/fg/loc/bond/branch/coverage56/
 > smoke56/compact-main/shift/skel-joints; `probe-3d-pick` still owner-side).
-> New in 58.17–58.49: three-state comp eye (shown/veiled/removed, 14px icons,
+> New in 58.17–58.50: three-state comp eye (shown/veiled/removed, 14px icons,
 > explain rows follow), draft author fields + split oracle rows, spin switch,
 > measured viewer-height clamp, pinned bar/footer fit + merge, step-row
 > separators + quiz row last + section titles (Viewers/Naming/Menu/Quiz),
@@ -23,7 +23,8 @@
 > types, step-independent quiz progress, the pinned-authoring footer below the
 > viewport, the hidden presentation footer, the shared viewport tooltip layer,
 > the add-step open/reveal behaviour, the two-state viewer-height controls,
-> and the explicit quiz start component + idle start prompt.
+> the 3D rotate toolbar button (replaces the bar checkbox), and the explicit
+> quiz start component + idle start prompt.
 > Owner decision:
 > comp eyes stay usable on quiz steps (teacher aid; hiding a required comp
 > removes it from the todo set) — revisit if users report.
@@ -3377,3 +3378,12 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * Kept the empty `#pageTitle` node for presentation step titles, added `#pageContainer:not(.presenting) #pageTitle:empty { display:none; }` so authoring has no blank h1 gap. `fScenarioFillStepPanel` still writes/shows the step title in Present.
 * Bumped all 14 asset refs to `?v=58.49`; docs banners synced.
 * Verified authoring header/title area and Present step-title path; `git diff --check` clean. No chemistry/quiz probes (branding/layout only).
+
+## 2026-11-21 — 3D rotate button replaces the bar checkbox (`?v=58.50`, owner request)
+* Registered the owner-supplied `imgs/rotate-3D.svg` as `MuLERIcons.rotate3D` in the shared `js/ui-icons.js` (Illustrator viewBox kept, title/ids stripped, `currentColor`, 16px attrs like the neighbours).
+* Removed `#rotateCheck` from the 3D settings bar. New `#rotate3DBtn` in `#view3DTools` (rotate · zoom − · zoom + · save; rotate is first, left of zoom out) uses the icon and the shared `.viewerToolBtn` look, with `.active` + `aria-pressed` for the latched state and a GR/EN tooltip (“Περιστροφή 3D” / “Rotate 3D”).
+* Behavior is the same switch underneath: `fToggleRotate3D()` flips the existing `rotateFlag` and calls `rotate3D()` (`rotate spin 60;` / `rotate off;`). `rotate3D()` now finishes with `fSyncRotate3DBtn()`, so Present apply, Exit restore, 3D reloads and initial load all keep the button’s state truthful without new call sites. Spin capture/apply/stash (`step.view3D.spin` ↔ `rotateFlag`) is untouched; `fScenarioSyncSpinUi()` and the pre-load control sync now mirror into the button instead of the checkbox.
+* Owner decision: no extra per-step gate — it rides the 3D tools cluster with zoom/save in Present (visibility follows the step’s `3D controls` row, exactly like zoom); each step still applies its stored spin on entry and the teacher can stop/start it manually.
+* Removed the dead `$("#rotateCheck")` handler, the `#rotateCheck` EN text selector and its CSS rule.
+* Bumped all 14 asset refs to `?v=58.50`; CHANGELOG, README, didactic-scenario-plan and AGENTS current-tree banners synced.
+* Verified `node --check` on all `js/*-58.js`, `git diff --check`, and targeted headless checks against `mulermoc-nom-58.html` (no `#rotateCheck`, icon hydrated in `#view3DTools`, click latches/unlatches `rotateFlag` + `aria-pressed`/`.active`, EN tooltip “Rotate 3D” through `#mulerTipLayer`, author stash/restore + `fScenarioSyncControlUi`/`fScenarioSyncSpinUi` mirror the global, no page errors) plus icon screenshots in both states. The probe suite stays v59-targeted in this tree, so it was not run.

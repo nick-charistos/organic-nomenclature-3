@@ -12625,6 +12625,25 @@ function rotate3D() {
   } else {
     fJSmolScript(jmolAppletNomeclature, "rotate  off;");
   }
+  fSyncRotate3DBtn();
+}
+
+// The 3D toolbar button is the spin switch (replaced #rotateCheck, v58.50).
+// State lives in the `rotateFlag` global; this only mirrors it so every
+// caller of rotate3D() (Present apply, Exit restore, 3D reload) keeps the
+// button truthful.
+function fSyncRotate3DBtn() {
+  var b = null;
+  try { b = document.getElementById("rotate3DBtn"); } catch (eB) { b = null; }
+  if (!b) return;
+  var on = !!rotateFlag;
+  try { b.classList.toggle("active", on); } catch (eC) { /* class best-effort */ }
+  try { b.setAttribute("aria-pressed", on ? "true" : "false"); } catch (eA) { /* attr best-effort */ }
+}
+
+function fToggleRotate3D() {
+  rotateFlag = !rotateFlag;
+  rotate3D();
 }
 
 // ── fGetNameBoxes ─────────────────────────────────────────────────────────
