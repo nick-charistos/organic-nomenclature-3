@@ -766,6 +766,7 @@ function fShowCreditLibs() {
   }
   let myCredits = `
   <div class='creditsContainer creditsAbout'>
+  <div class='molwaveLogo'> <span class='molwaveLogoMain'><span>Mol</span><span>Wave</span></span> <span class='molwaveLogoSeparator'> &bull; </span> <span class='molwaveLogoSub'>Organic Nomenclature</span></div>
     <div class=''>${aboutText}</div>
   </div>
   <div class='creditsContainer creditsLib'>

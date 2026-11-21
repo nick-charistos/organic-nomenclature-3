@@ -85,6 +85,72 @@ header {
   background-color: #fff;
   border-bottom: 1px solid var(--veryLightBlue);
   width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.molwaveLogo {
+  font-family: "Roboto Condensed", sans-serif;
+  padding-left: 20px;
+  color: var(--darkBlue);
+}
+
+.molwaveLogoMain {
+   font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.molwaveLogoMain span:first-child {
+  /* font-size: 1.1rem; */
+  color: var(--darkBlue);
+}
+
+.molwaveLogoMain span:last-child {
+  /* font-size: 1.1rem; */
+  color: var(--lightBlue);
+}
+
+.molwaveLogoSeparator {
+  /* color: var(--darkEarth); */
+  /* border: 1px solid var(--darkBlue);
+  padding: 0;  */
+ }
+
+
+.molwaveLogoSub {
+  color: var(--vibrantGreen);
+  font-weight: normal;
+  /* padding-left: 3px; */
+}
+
+footer .molwaveLogo {
+  margin-bottom: 7px;
+  margin-top: 10px;
+}
+
+footer .molwaveLogoMain   {
+  background-color: var(--lightBlue);
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+
+footer .molwaveLogo span  {
+  font-size: 1.4rem;
+}
+
+footer .molwaveLogo .molwaveLogoMain span:first-child {
+    color: var(--darkBlue);
+}
+footer .molwaveLogo .molwaveLogoMain span:last-child {
+  font-weight: normal;
+    color: #fff;
+}
+
+footer span.molwaveLogoSub {
+  font-size: 1.25rem;
+  color: var(--veryLightBlue);
+
 }
 
 #mainAppContainer {

@@ -8,7 +8,7 @@ changelog.
 
 Greek-first static web app for teaching organic nomenclature (JSME + JSmol +
 vanilla JavaScript; no build step). The live entry point is `index.html` →
-`mulermoc-nom-58.html`. Current live version: **v58.46** (2026-11-21).
+`mulermoc-nom-58.html`. Current live version: **v58.47** (2026-11-21).
 Older versions v42–v57 remain runnable at the repo root but are **frozen**.
 
 ## Read first

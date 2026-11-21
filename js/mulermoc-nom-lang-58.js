@@ -5,6 +5,7 @@
 // scenarios content stays author-language (gr default).
 
 var MULER_STRINGS = {
+  appTitle: { gr: "MolWave: Ονοματολογία Οργανικών Ενώσεων", en: "MolWave: Organic Nomenclature" },
   pageTitle: { gr: "Ονοματολογία Άκυκλων Οργανικών Ενώσεων", en: "Acyclic Organic Compounds Nomenclature" },
   menu: { gr: "☰ Μενού", en: "☰ Menu" },
   molecule: { gr: "Μόριο", en: "Molecule" },
@@ -474,8 +475,8 @@ function fMulerPaintStaticChrome() {
   var lang = "gr";
   try { lang = fMulerLang(); } catch (e) {}
   try { document.documentElement.lang = lang === "en" ? "en" : "el"; } catch (e) {}
-  // Keep document.title in sync for EN tabs/bookmarks.
-  try { document.title = fMulerT("pageTitle"); } catch (e) {}
+  // Keep the branded browser-tab title in sync with the selected language.
+  try { document.title = fMulerT("appTitle"); } catch (e) {}
   var set = function (sel, txt) {
     try {
       var el = document.querySelector(sel);

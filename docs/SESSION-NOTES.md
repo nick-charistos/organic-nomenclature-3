@@ -1,9 +1,9 @@
-# Session notes — 2026-11-07 (resume point for next session, other machine)
+# Session notes — 2026-11-21 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** 2026-11-20 — **v58 is LIVE**
-> (`index.html` → `mulermoc-nom-58.html`, `?v=58.46`, review follow-ups +
+> **Resume pointer (cross-machine):** 2026-11-21 — **v58 is LIVE**
+> (`index.html` → `mulermoc-nom-58.html`, `?v=58.47`, review follow-ups +
 > student hover/3D fixes + step-row architecture/corners/density + the
-> 58.17–58.46 feature/UI batch).
+> 58.17–58.47 feature/UI batch).
 > Scenario quiz contract: steps store their required component set
 > (`quiz.modes` + labels; deferred `quiz.types` for menu quizzes), the drawer
 > master checkbox owns quiz existence, Update never destroys an authored task,
@@ -14,7 +14,7 @@
 > is green; the full 2D suite was re-run against v58 and is
 > green (final/quiz/mode-quiz/explain-all/fg/loc/bond/branch/coverage56/
 > smoke56/compact-main/shift/skel-joints; `probe-3d-pick` still owner-side).
-> New in 58.17–58.46: three-state comp eye (shown/veiled/removed, 14px icons,
+> New in 58.17–58.47: three-state comp eye (shown/veiled/removed, 14px icons,
 > explain rows follow), draft author fields + split oracle rows, spin switch,
 > measured viewer-height clamp, pinned bar/footer fit + merge, step-row
 > separators + quiz row last + section titles (Viewers/Naming/Menu/Quiz),
@@ -3360,5 +3360,9 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * Root cause found in the owner's live Brave tab: the “type comps” were real `.scQuizTag` stored/orphan tags, not menu `.scQuizTag.type` chips. Non-live steps fall back to `quiz.modeLabels`, and those labels were stored from `fScenarioQuizModeLabels()` — the generic mode/type names (“main chain”, “bond type”), not the live name fragments (eth/an/ol). Adding another step makes the previous step non-live, so it showed type names; the live step looked correct.
 * Implemented `fScenarioQuizModeLabelsFor(modes, step)`: live name-box labels when the step molecule is live → per-molecule `window.__mulerQuizLabelCache` → old labels by mode → type fallback. Used by capture, master-checkbox enable, tag toggle, pin repair and Update fallback; the drawer render refreshes labels before building tags, so existing steps self-heal after one Go/render and switching away keeps the real fragments.
 * Probe: the add-1 / enable / add-2 sequence now also asserts stored `modeLabels` and rendered non-live tag texts contain real fragments and not “main chain / bond type / functional group”.
-* Verified: `probe-scenario-quiz` green; all `js/*-58.js` `node --check` clean; `git diff --check`; 14 refs at `?v=58.46`. Not committed.
+* Verified: `probe-scenario-quiz` green; all `js/*-58.js` `node --check` clean; `git diff --check`; 14 refs at `?v=58.46`. Included in v58.46 commit `aef8767`.
 
+## 2026-11-21 — MolWave public brand lockup (`?v=58.47`)
+* Reviewed the owner-added header/footer lockup. Kept the brand styling; matched the footer separator to the header and set the browser-tab title to localized MolWave branding while retaining the descriptive H1.
+* Synced the README and current-tree docs to the official spelling/capitalization `MolWave`; v58.47 cache-busts all 14 HTML asset refs.
+* Verification: light CSS visual check plus `node --check js/mulermoc-nom-lang-58.js` and `git diff --check`. No chemistry/quiz probes (branding-only).
