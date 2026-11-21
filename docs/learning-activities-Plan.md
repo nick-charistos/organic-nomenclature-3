@@ -58,21 +58,30 @@ well-posed and turn the rank-ordering caveat into a non-issue.
 ## Build plan
 - **Stage 0 — scenario quiz contract (v58, done, live-verified).** Steps
   carry quiz tasks (`step.quiz {kind, mode, modes, modeLabels, mol,
-  preSolved, types}` + `requireSolution`, default on); the drawer master
-  checkbox owns quiz existence. Capture precedence: live target →
-  just-solved → shown comp (if resolvable) → main-chain default (if
-  resolvable) → classic; any menu-carrying step stores a deferred task (`mol: ""`) so the
+  preSolved, types, startMode}` + `requireSolution`, default on); the drawer
+  master checkbox owns quiz existence. Capture precedence: live target →
+  just-solved → classic (v58.44: select-ON alone never creates a quiz); any
+  menu-carrying step stores a deferred task (`mol: ""`) so the
   quiz follows every picked molecule. The required component set is captured
   with the step (`modes`, author labels) and filtered through
-  `fMulerQuizTodoModes(required)` for gate/tint/auto-arm; deferred steps
+  `fMulerQuizTodoModes(required)` for gate/tint; deferred steps
   compute it per picked molecule from `types` (absent = legacy all-capable,
   non-empty = filtered, empty/no-capable = empty task). Any menu-carrying
   step is a menu quiz (type chips) even with a selected molecule; only a
   menu-less molecule step pins `quiz.mol` and uses the real name-component
   tags. `Update` keeps the
-  authored task, `types` and `preSolved` unless the capture carries a
-  just-solved signal. Present auto-arms with fresh picks (primary else first
-  required); done = every required `.quizTodo` solved. Author/run-solved
+  authored task, `types`, `preSolved` and `startMode` unless the capture
+  carries a just-solved signal. Present never auto-arms: the drawer's Start
+  component select stores `startMode`; only that comp is armed on entry.
+  With no start, the step stays idle and shows the `.scQuizStartPrompt`
+  until the student picks a component. Done = every required `.quizTodo`
+  solved, and the gate holds even before the first arm. A deferred
+  `quiz.mol:""` marker is valid only on a menu-carrying step; on a menu-less
+  molecule step it is pinned to the step molecule (menu-only `types` dropped)
+  on load/render/Update/apply. The drawer chooses name tags vs type chips from
+  the step shape, never `quiz.mol`. v58.46 stores real name-component labels
+  (`eth`/`an`/`ol`), not generic type names, and caches them per molecule for
+  non-live steps. Author/run-solved
   capable boxes get `.freeComp` (normal classic, marker only) and never block
   the gate. Solved/free state is step-scoped, so each step is independent
   while revisits keep their own progress. Non-quiz steps tear down student

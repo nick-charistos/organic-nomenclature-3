@@ -184,9 +184,14 @@ Visibility rules:
   fills the live viewport on whatever screen plays the step, resolved per
   screen and stored as the string, never as px; `warning`
   on non-empty invalid input) overrides. The author
-  sets it in the Ρυθμίσεις panel (unchecked = Auto, checked = slider px with
-  a fixed 150–1000px range, or the `Full` toggle for the viewport-relative
-  height). Applied in playback
+  sets it in the Ρυθμίσεις panel (v58.43: the row is label + `Full` button +
+  slider + px readout; no Auto/Manual checkbox. The slider is disabled while
+  Full is active and enabled for a specific height; the px readout is hidden
+  in Full and shows `Npx` only while the slider is active. No Full/Auto text;
+  the lit button marks the mode. The button sits where the old checkbox was,
+  before the slider). Legacy `null`
+  values still load and display their computed height; the first slider move
+  stores a number. Applied in playback
   too (via `fScenarioApplyViewerMaxHeight`), stashed/restored around
   Present like the other live settings. Both viewers share a min-height floor
   (`VIEWER_MIN_H`, live **150px** — owner-tuned down from 240; the CSS
@@ -207,8 +212,10 @@ Visibility rules:
   sanitized, `warning` on non-empty invalid input) **overrides** the split for
   both, so 300 → 150px each and 1000 → 500px each (the page scrolls if the total
   no longer fits; the `<430px` phone cap still trims). The author sets it in the
-  Ρυθμίσεις panel (unchecked = Auto, checked = fixed 300–1000px slider, or the
-  `Full` toggle, live re-fit on drag). Applied in playback too (via
+  Ρυθμίσεις panel (v58.43: same two-state row as the single-viewer control —
+  `Full` button in the old checkbox slot + 300–1000px slider + px readout;
+  the slider is disabled while Full is active and enabled for a specific
+  combined height, and the px readout is hidden in Full). Applied in playback too (via
   `fScenarioApplyViewerMaxHeight`), stashed/restored around Present like the
   other live settings; independent of the single-viewer cap (each governs its
   own visibility case). The viewport budget (`total` in `fViewerHeights2D3D`)
@@ -438,9 +445,19 @@ Visibility rules:
    default checked — off hides the whole `analysisCol` in Present and disables
    the rest) + `Name controls`, `Name interact`, `Ορατότητα συνθετικών`,
    `.scStepQuizSettings` for quiz steps (master `quiz-enabled` checkbox, the
-   gate checkbox, and the collapsible component tags — selected = required,
-   unselected/solved = pre-solved; any menu-carrying step, even with a
-   selected molecule, uses switchable type chips instead of name tags),
+   gate checkbox, the collapsible component tags — selected = required,
+   unselected/solved = pre-solved — and v58.44 start select: None by default,
+   options = required comps, chosen tag `.is-start`; any menu-carrying step, even with a
+   selected molecule, uses switchable type chips instead of name tags. Present
+   never auto-arms: it arms only the stored `quiz.startMode`, otherwise shows
+   `.scQuizStartPrompt` and waits for the student; the gate holds until the
+   required set is solved. A deferred `quiz.mol:""` marker on a step with no
+   menu is repaired to the step molecule on load/render/Update/apply (the
+   menu-only `types` are dropped), and the drawer picks name tags vs type chips
+   from the step shape (`selectedMol`/`menuSubset`), never `quiz.mol`, so a
+   menu step updated without picks cannot show type chips on a molecule step.
+   v58.46 stores real name-component labels in `quiz.modeLabels` (not generic
+   type names); non-live steps use a per-molecule label cache),
    plus `Ταξινομήσεις Μένου` (`Μόρια` default-checked,
   `Χημικές Τάξεις`, `Ομόλογες Σειρές` — presentation-only menu views,
   shown only on menu-carrying steps, all-off valid → flat fallback;
@@ -627,7 +644,7 @@ Done in v43 (`mulermoc-nom-43.html`, last suffixed copy; carried through v44 int
    assertions (manual click-through pending).
 6. ✅ CHANGELOG v43 entry (`index.html` → 43 in repo3 only).
 
-Remaining: v58 is live (`index.html` → 58 — scenario quiz steps with student mode, stored required component set, deferred menu quizzes with switchable types, and the master-checkbox/component-tag editor; 3D atom/bond picking via JSmol `pickCallback`; 2D atom/bond quizzes; step drawer rebuilt in v58.14–v58.16; unified inline/modal rich note editor with WYSIWYG + HTML source, lazy legacy-text upgrade, staged Apply/Cancel and dirty-close confirm; safe rich HTML notes, rule-table components, compact icon toolbar, 141 molecules, and a Snap-free native `MuSVG` 2D overlay; default preload `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json`; see `CHANGELOG.md [v58]`). It retains the v51 rich notes, the v50 per-step presentation text position (top/left/right fourth-column sticky rail) + persistent naming shell, and the v49 MSc-student import (see `CHANGELOG.md [v57]`/`[v56]`/`[v51]`/`[v50]`/`[v49]`); `*57*`–`*44*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced. Then quizzes/games on the
+Remaining: v58 is live (`index.html` → 58 — scenario quiz steps with student mode, stored required component set, deferred menu quizzes with switchable types, the master-checkbox/component-tag editor, and v58.44 idle start with an author-chosen start component + `.scQuizStartPrompt`; 3D atom/bond picking via JSmol `pickCallback`; 2D atom/bond quizzes; step drawer rebuilt in v58.14–v58.16; unified inline/modal rich note editor with WYSIWYG + HTML source, lazy legacy-text upgrade, staged Apply/Cancel and dirty-close confirm; safe rich HTML notes, rule-table components, compact icon toolbar, 141 molecules, and a Snap-free native `MuSVG` 2D overlay; default preload `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json`; see `CHANGELOG.md [v58]`). It retains the v51 rich notes, the v50 per-step presentation text position (top/left/right fourth-column sticky rail) + persistent naming shell, and the v49 MSc-student import (see `CHANGELOG.md [v57]`/`[v56]`/`[v51]`/`[v50]`/`[v49]`); `*57*`–`*44*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced. Then quizzes/games on the
 same reuse contract. The stepper's main-chain pool index is captured per step (`chainIdx`, v47 additive) and re-asserted on apply; only the transient EXPLORE walk UI position is not step state.
 
 ## 8. Open questions for development (moveto timing closed 2026-10-04)

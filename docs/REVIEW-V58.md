@@ -2,7 +2,7 @@
 
 Date: 2026-11-18. Tree: `a9e598f` (`?v=58.10`) at review time. Status:
 **resolved in `?v=58.11`**, with later v58 work recorded below (current:
-`?v=58.42`); the findings are kept verbatim as the record of what
+`?v=58.46`); the findings are kept verbatim as the record of what
 was wrong and why.
 Scope: `11d5886` (fork) → `a9e598f`; the real delta is `72699c2`,
 `29287c3`, `bf2aca5`, `a9e598f` + the new probe.
@@ -42,7 +42,7 @@ Verification: `probe-scenario-quiz` (13 sections) green; `probe-quiz`,
 files. Owner-side browser matrix remains (drawer list/Remove, Esc, revisit,
 menu arm, non-quiz step).
 
-### Later v58 work (58.12–58.42, after the review)
+### Later v58 work (58.12–58.46, after the review)
 
 Recorded here so this file reflects the shipped tree; none of these are
 review findings.
@@ -106,6 +106,31 @@ review findings.
 - **58.42** — Add step expands the new last row and scrolls the drawer only as
   far as needed to reveal it; tall rows align their head, mostly-visible rows
   do not jump.
+- **58.43** — the two viewer-height rows drop the Auto/Manual checkboxes: label +
+  `Full` button (old checkbox slot) + slider + px readout. The slider is
+  disabled while Full is active and enabled for a specific height; the px
+  readout is hidden in Full and appears only for a specific height. The range
+  input is flattened (no thumb shadow/track border); legacy `null` still loads
+  silently.
+- **58.44** — Present stops auto-arming quiz steps. The drawer adds a
+  `Start component` select (`quiz.startMode`, None by default) and marks the
+  chosen tag; only that comp arms on entry. With no start the step stays idle
+  with `.scQuizStartPrompt`, while the gate still holds on the required set.
+  Select mode alone no longer creates a quiz on Add/Update; Update keeps the
+  start. A deferred `quiz.mol:""` marker left on a menu-less molecule step is
+  pinned to its molecule (menu-only `types` dropped, capable modes materialized
+  when live) on load/render/Update/apply. The drawer's menu-vs-name-tag choice
+  uses the step shape, never `quiz.mol`, so stale type chips cannot appear.
+- **58.45** — cache-busted asset refs: the 58.44 fixes were edited under the
+  same `?v=58.44` URL, so a browser could keep the earlier 58.44 JS (helper
+  present, old type-chip predicate). Every asset ref is now `?v=58.45`; no
+  behavior change beyond a fresh fetch. Hard reload once.
+- **58.46** — real quiz component labels: non-live steps were showing
+  `.scQuizTag` text like “main chain / bond type” because `quiz.modeLabels`
+  stored generic type names. `fScenarioQuizModeLabelsFor()` now stores live
+  name-box fragments (with a per-molecule cache for non-live steps) at
+  capture/enable/toggle/pin/Update and refreshes labels on the drawer render,
+  so stored/orphan tags show real components.
 
 Known trade-offs / accepted decisions: comp eyes on quiz steps are
 intentionally left live (owner, 2026-11-19); the pinned-bar 220px floor can

@@ -30,6 +30,16 @@ Assumptions (edit the constant at the top of each probe if yours differ):
 Scripts are read-only against the app; screenshots land in the current
 working directory.
 
+## When to run probes
+
+Probes are milestone checks, not edit-time checks. Run the table covering the
+changed layer **once on the final tree** at the end of a behavior batch; do
+not run them for docs, copy/i18n, CSS/layout/skin, icons, tooltips or small
+UI-control tweaks (use a screenshot or a targeted headless check instead).
+The full four-probe lane is for a major advance/release. A docs/CSS-only
+follow-up after a green run does not invalidate that run; if code changes,
+rerun only the probe for that layer. See `AGENTS.md` → Verification.
+
 - `server.js [port]` — minimal static file server for the repo root
   (no-cache, correct MIME incl. `.sdf`). Start first, in the background:
   `node tools/muler-harness/server.js 8901`
@@ -55,14 +65,20 @@ working directory.
   `allowSelect` gating (hide entry when off, uncheck-while-active exits),
   Present block (toggle no-op + CSS hides the entry). Hard-fail.
 - `probe-compact-main.js` — main-chain versus free compacted-label semantics: COOH/HCOOH/CN resolve to the anchor carbon under a main-chain target, NO2 stays a fragment, free selection stays a fragment; checks C-only paint, hover box, badge, exact reward, the free-mode backplate edge, clear/marker restore and methanal (no highlight geometry).
-- `probe-scenario-quiz.js` — v58 scenario quiz contract (`?v=58.42`): capture
+- `probe-scenario-quiz.js` — v58 scenario quiz contract (`?v=58.46`): capture
   stores the task + its required component set + labels, `Update` keeps an
-  authored task, the drawer's explicit Remove clears it, Present auto-arms,
+  authored task and `startMode`, the drawer's explicit Remove clears it, the
+  drawer Start select + `.is-start` marker work, Present stays idle with
+  `.scQuizStartPrompt` (no auto-arm; only the authored `startMode` arms),
   the gate holds until every required comp is solved, the solved display
   restores (authored `preSolved` too), `requireSolution:false` never gates,
   a stored set narrows the requirement (legacy steps stay all-capable),
   forward jumps clamp to the next step, menu steps gate until a molecule is
-  picked, reselect resets progress and the solved display locks reps.
+  picked and stay idle after the pick, reselect resets progress and the solved
+  display locks reps, and a deferred quiz marker on a menu-less molecule step
+  is pinned (name tags, no type chips) on render and after an Update that
+  cleared the menu. The drawer's menu-vs-name choice uses the step shape, so
+  the add-1 / enable quiz / add-2 / reopen sequence keeps step 1's name tags.
   Also asserts the student-mode 2D hover ring (present on quiz steps, absent
   on passive ones) and the applet-side picking mode (`Jmol ... "show
   picking"` → `atom` on quiz steps, `off` on passive steps, no traffic on
@@ -79,7 +95,7 @@ working directory.
 Conventions: selection state lives in `window.MulerUserSelection`;
 all pick/render functions fail closed (return null / no-op on any gap).
 
-Coverage note (58.17–58.42): the comp-eye three-state cycle, draft author
+Coverage note (58.17–58.46): the comp-eye three-state cycle, draft author
 fields/oracle split, Present spin switch, viewer-height clamp, pinned
 bar/footer fit and drawer row titles were verified live in Chrome
 (owner-side). The quiz editor (master checkbox/tags, menu type chips, locant
@@ -89,6 +105,16 @@ owner-side browser matrix still pending. The pinned footer below the viewport
 (drawer open/closed), hidden presentation footer and the shared viewport
 tooltip layer were checked headless at 1400×900/1100×640 and 1500×900/1100×640.
 The add-step open/reveal rule was checked headless at 1400×900 and 1100×640,
-drawer open/closed.
+drawer open/closed. The two-state viewer-height rows (no checkboxes, Full
+button before the slider, px readout hidden in Full, disabled-in-Full slider,
+flat track/thumb, legacy null, step apply/capture) were checked headless at
+1400×900 and 1100×640. The v58.44 quiz start contract is covered by
+`probe-scenario-quiz`: select-ON Add stays classic, the drawer Start select +
+tag marker + Update persistence, Present idle (`quiz.startMode` absent → no
+target + `.scQuizStartPrompt`), `startMode` arming, menu idle after pick, the
+gate holding before the first arm, the deferred-marker pin repair
+(menu-less molecule step renders name tags after render/Update), and the
+add-1 / enable / add-2 / reopen sequence, including real component labels on
+non-live steps (no “main chain / bond type” tag text).
 The suite also covers the quiz contract, step-row structure, student
 hover/picking, the solved 3D green and the existing 2D picking paths.

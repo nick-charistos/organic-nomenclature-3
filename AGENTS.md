@@ -8,7 +8,7 @@ changelog.
 
 Greek-first static web app for teaching organic nomenclature (JSME + JSmol +
 vanilla JavaScript; no build step). The live entry point is `index.html` →
-`mulermoc-nom-58.html`. Current live version: **v58.42** (2026-11-20).
+`mulermoc-nom-58.html`. Current live version: **v58.46** (2026-11-21).
 Older versions v42–v57 remain runnable at the repo root but are **frozen**.
 
 ## Read first
@@ -54,11 +54,14 @@ Older versions v42–v57 remain runnable at the repo root but are **frozen**.
 - `lang` — GR/EN UI strings; add new keys here.
 - `name-en` — English name assembly.
 
-## Verification (risk-based)
+## Verification (milestone-first)
 
-Probes are acceptance/regression checks, **not** edit-time checks. Do not run
-the full suite after every small edit; batch it at the end of a session or
-batch. Always run the cheap checks below.
+Probes are milestone acceptance/regression checks, **not** edit-time checks.
+Run them when a batch changes observable behavior, chemistry/naming,
+scenario/quiz logic, schema, or shared core/molview behavior — and run them
+**once on the frozen tree at the end of the batch**, not after each edit.
+Do **not** run probes for docs, copy/i18n, CSS/layout/skin, icons, tooltip
+placement, or small UI-control changes; use the visual check instead.
 
 ### Always (seconds)
 
@@ -66,12 +69,19 @@ batch. Always run the cheap checks below.
 - `git diff --check` (no trailing whitespace).
 - Load the page and take a screenshot for CSS/layout changes.
 
-### Targeted (when a feature is complete)
+### Quick lane (default while iterating)
 
 | Touched | Run |
 |---|---|
 | Docs only | `git diff --check`; no browser/probes |
-| CSS/layout only | Visual check at desktop width (and narrow if relevant) |
+| CSS/layout/skin only | Visual check at desktop width (and narrow if relevant) |
+| Copy/i18n only | Visual check of the affected screen |
+| UI control, no logic change | `node --check` + a targeted headless check of that control |
+
+### Milestone lane (once, when a behavior batch is complete)
+
+| Touched | Run |
+|---|---|
 | Scenario drawer/Present/quiz | `probe-scenario-quiz` |
 | Explain overview | `probe-explain-all` |
 | 2D picks/selection | `probe-final` + `probe-coverage56` |
@@ -79,13 +89,20 @@ batch. Always run the cheap checks below.
 | Shared core/molview/schema | all `*-58.js` checks + `probe-final` + `probe-scenario-quiz` |
 | 3D picking | `probe-3d-pick` (may remain owner-side/manual) |
 
-### Full lane (end of session/batch, before commit)
+### Run-once rules
 
-- `node --check` all `js/*-58.js`.
-- `probe-scenario-quiz`, `probe-final`, `probe-explain-all`,
-  `probe-coverage56`; add naming probes if that layer was touched.
-- Report which checks ran in the session note/commit message. Never commit a
-  red suite; fix or revert.
+- Run the milestone lane once, on the final tree at the end of the batch.
+- If code changes after a green run, rerun only the probe covering that layer.
+- A docs/CSS/UI-only follow-up after a green run does **not** invalidate it.
+- Never run the same probe twice on an unchanged tree.
+- Report which probes ran; never commit a red suite — fix or revert.
+
+### Full lane (major advance / release only)
+
+For a new version that ships behavior changes, or when the owner asks:
+`node --check` all `js/*-58.js`, then `probe-scenario-quiz`, `probe-final`,
+`probe-explain-all`, `probe-coverage56` (add naming probes if that layer was
+touched). Not for CSS/UI-only batches.
 
 ### Commands (PowerShell)
 
@@ -145,6 +162,28 @@ Update docs in the same commit as the change:
   `Update` keeps the drawer-authored set/types and `preSolved`; a
   just-solved capture refreshes the solved baseline, and the primary mode is
   forced into the final pinned set.
+- Quiz start (v58.44): Present never auto-arms. `quiz.startMode` is set only by
+  the drawer Start component select (None default; options = required comps;
+  the chosen tag gets `.is-start`). It is armed on entry only when still
+  required and capable; otherwise the step stays idle with the
+  `.scQuizStartPrompt` in `#nameAnalysisExplain`. The gate holds until the
+  required todo is solved even if nothing was armed. Capture never sets
+  `startMode`, select mode alone never creates a quiz, and legacy steps have
+  no start. Keep the start in sync when tags change (removing it clears it).
+- Deferred quiz markers (v58.44): `quiz.mol:""` is valid only on a
+  menu-carrying step. `fScenarioQuizPinMolecule()` pins it to `selectedMol`,
+  drops the menu-only `types`, and materializes capable `modes` when the step
+  molecule is live; it runs on load, drawer render, Update and Present apply.
+  The drawer's menu-vs-name-tag choice uses the step shape
+  (`!selectedMol` or `menuSubset.length > 1`) exactly like the master
+  checkbox — never `quiz.mol`. A menu-less molecule step must never render
+  menu type chips; do not weaken this repair. Multi-pick and menu-only steps
+  keep their type chips.
+- Quiz labels (v58.46): `quiz.modeLabels` stores the **real name-component
+  text** (eth/an/ol), never generic mode/type names (“main chain”, “bond
+  type”). Use `fScenarioQuizModeLabelsFor()` for every label write; it prefers
+  live name boxes, then a per-molecule cache, then old labels, then the type
+  fallback. Non-live stored/orphan tags must show fragments, not type names.
 - Quiz progress is step-scoped (v58.39): `scenario:<id>#<step>|molecule`.
   A comp solved/freed in one step must never satisfy another step; revisiting
   the same step keeps its own progress. Authoring capture uses the row scope
@@ -181,6 +220,15 @@ Update docs in the same commit as the change:
 - Add step (v58.42): the new last row is expanded and revealed in the
   `.scenarioDrawer` scrollport only when needed; tall rows align their head,
   mostly-visible rows do not jump. Keep this behaviour when touching `.scSave`.
+- Viewer-height rows (v58.43): two states only — the `Full` button (built in
+  JS, in the old checkbox slot before the slider) or a specific px height
+  (slider). The slider is disabled while Full is active and enabled for a
+  specific height; no Auto/Manual checkbox, no `Full`/`Auto` text. The px
+  readout is hidden while Full is active and shows `Npx` only for a specific
+  height. Full shows the effective height implicitly and the lit
+  `aria-pressed` button marks the mode. The range input has a flat skin (no
+  thumb shadow, no track border). Legacy `null` still loads/renders but the UI
+  never writes it.
 - Add UI text to `js/mulermoc-nom-lang-58.js`; legacy inline strings exist,
   so keep GR/EN parity and existing fallback behavior in new code. Greek
   values are UTF-8.

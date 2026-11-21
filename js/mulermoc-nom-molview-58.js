@@ -705,6 +705,26 @@ function fViewerHeightControlsSync() {
   try { fViewerBothHeightSync(); } catch (eS2) { /* slider sync best-effort */ }
 }
 
+// v58.43: in Full the value readout is the effective pixel height, so it must
+// follow viewport/layout changes while the Ρυθμίσεις panel is open.
+(function () {
+  try {
+    if (window._viewerHtSyncResizeHook) return;
+    window._viewerHtSyncResizeHook = true;
+    var _vhT = null;
+    window.addEventListener("resize", function () {
+      var panel = null;
+      try { panel = document.getElementById("viewerSettingsPanel"); } catch (eP) { panel = null; }
+      if (!panel || !panel.classList.contains("open")) return;
+      if (_vhT) clearTimeout(_vhT);
+      _vhT = setTimeout(function () {
+        _vhT = null;
+        try { fViewerHeightControlsSync(); } catch (eS) { /* slider sync best-effort */ }
+      }, 220);
+    });
+  } catch (eH) { /* resize hook best-effort */ }
+})();
+
 // Viewer-settings registry (v55.x): one entry per panel row that mirrors a
 // JS global (checkboxes whose truth lives only in DOM classes — originalJSME,
 // autoLinearize, bondAtoms, numberingAtoms/Bonds — are captured/applied
@@ -4598,6 +4618,23 @@ function fMulerQuizPrompt() {
   } catch (e) {}
 }
 
+// v58.44: idle start prompt for quiz steps with no armed target. The scenario
+// layer calls this only in Present, only when the step is a quiz with a
+// non-empty todo and no live target. The prompt gets its own class so the
+// scenario stylesheet can skin it (the explain div itself is unclassed).
+function fMulerQuizIdlePrompt() {
+  try {
+    var ex = document.getElementById("nameAnalysisExplain");
+    if (!ex) return;
+    if (typeof fMulerQuizVerdict === "function") fMulerQuizVerdict("clear", null);
+    try { ex.textContent = ""; } catch (eC) {}
+    var d = document.createElement("div");
+    d.className = "scQuizStartPrompt";
+    d.textContent = (typeof fMulerT === "function") ? fMulerT("quizSelectStart") : "Select a component to solve the quiz";
+    ex.appendChild(d);
+  } catch (e) {}
+}
+
 function fMulerQuizDisarm() {
   try { if (typeof window !== "undefined") window.MulerQuizTarget = null; } catch (eT) {}
   try { if (typeof window !== "undefined") window.__mulerQuizReturnTo = null; } catch (eR) {}
@@ -4610,6 +4647,10 @@ function fMulerQuizDisarm() {
   // v58.12: the target is gone, so the applet's picking mode must follow even
   // when the caller does not repaint afterwards (idempotent sync).
   try { if (typeof fMulerSelectSync3DPicking === "function") fMulerSelectSync3DPicking(); } catch (eSP) {}
+  // v58.44: no auto-arm — a manual disarm inside a Present quiz step returns
+  // to the idle start prompt. The scenario wrapper ignores authoring,
+  // classic steps, deferred-no-molecule and fully solved states.
+  try { if (typeof fScenarioQuizIdlePrompt === "function") fScenarioQuizIdlePrompt(); } catch (eIP) {}
 }
 
 // Quiz progress (v57 quizzes with variants): per-molecule solved set.
@@ -8986,15 +9027,15 @@ document.addEventListener("click", function (e) {
   }
 });
 
-// ── single-viewer max-height control (v48) ───────────────────────────────
-// Ρυθμίσεις row: a checkbox (unchecked = Auto, checked = Manual) plus a px
-// slider. Auto caps a lone viewer at the both-visible height; Manual uses the
-// slider value; "full" (the Full toggle) resolves per playback screen.
-// Only the live global `viewerMaxH` is set here — scenario steps own
-// persistence (show.viewerMaxHeight). fResizeViewers() recomputes.
+// ── single-viewer max-height control (v48; v58.43 simplified) ────────────
+// Two states only: Full (button) or a specific pixel height (slider). The
+// legacy null/Auto value is still accepted from old files and displays its
+// computed height; the first slider move stores a number. Only the live global
+// `viewerMaxH` is set here — scenario steps own persistence
+// (show.viewerMaxHeight). fResizeViewers() recomputes.
 //
-// `fViewerMaxHeightFull` (below) no longer ceilings the slider — it documents
-// the live full single-viewer height the "full" sentinel resolves to.
+// `fViewerMaxHeightFull` (below) documents the live full single-viewer height
+// the "full" sentinel resolves to.
 function fViewerMaxHeightFull() {
   try { return Math.max(VIEWER_MIN_H, Math.round(fViewerHeights2D3D(true).full || 0)); }
   catch (eF) { return VIEWER_MIN_H; }
@@ -9016,7 +9057,12 @@ function fViewerMaxHeightEnsureFullBtn() {
     if (ev && ev.preventDefault) ev.preventDefault();
     fViewerMaxHeightToggleFull();
   });
-  row.appendChild(b);
+  // v58.43: the Full control replaces the old manual/Auto checkbox and sits
+  // immediately before the slider.
+  var rng = null;
+  try { rng = document.getElementById("viewerMaxHeightRange"); } catch (eR2) { rng = null; }
+  if (rng && rng.parentNode === row) row.insertBefore(b, rng);
+  else row.appendChild(b);
 }
 
 function fViewerMaxHeightToggleFull() {
@@ -9036,17 +9082,11 @@ function fViewerMaxHeightToggleFull() {
 }
 
 function fViewerMaxHeightSync() {
-  var chk = document.getElementById("viewerMaxHeightCheck");
   var rng = document.getElementById("viewerMaxHeightRange");
   var val = document.getElementById("viewerMaxHeightVal");
-  if (!chk || !rng) return;
+  if (!rng) return;
   fViewerMaxHeightEnsureFullBtn();
   var full = viewerMaxH === "full";
-  var manual = viewerMaxH != null;
-  try {
-    chk.classList.toggle("selectedCheck", manual);
-    chk.classList.toggle("unselectedCheck", !manual);
-  } catch (eC) { /* class toggle best-effort */ }
   var btn = null;
   try { btn = document.getElementById("viewerMaxHeightFull"); } catch (eB) { /* no DOM */ }
   if (btn) {
@@ -9055,18 +9095,17 @@ function fViewerMaxHeightSync() {
       btn.setAttribute("aria-pressed", full ? "true" : "false");
     } catch (eA) { /* button state best-effort */ }
   }
-  // Fixed ceiling (v52): the slider no longer follows the screen height.
   rng.min = String(VIEWER_MIN_H);
   rng.max = String(VIEWER_SINGLE_MAX);
-  rng.disabled = !manual || full;
-  if (full) {
-    // Park the slider at max while Full owns the value; the readout names it.
-    rng.value = String(VIEWER_SINGLE_MAX);
-    if (val) val.textContent = "Full";
-    return;
-  }
+  // v58.43: Full owns the height and deactivates the slider; a specific px
+  // height activates it. No checkbox/Auto state in the UI.
+  rng.disabled = full;
   var shown;
-  if (manual) {
+  if (full) {
+    // Effective single-viewer height (never the word "Full").
+    var vf = fViewerHeights2D3D();
+    shown = Math.round((vf.h2 || vf.h3) || fViewerMaxHeightFull());
+  } else if (viewerMaxH != null) {
     shown = Math.round(viewerMaxH);
   } else {
     var vh = fViewerHeights2D3D();
@@ -9075,60 +9114,50 @@ function fViewerMaxHeightSync() {
   if (shown < VIEWER_MIN_H) shown = VIEWER_MIN_H;
   if (shown > VIEWER_SINGLE_MAX) shown = VIEWER_SINGLE_MAX;
   rng.value = String(shown);
-  if (val) val.textContent = shown + "px";
+  // v58.43: the px readout is hidden while Full owns the height; it appears
+  // only when the slider is active (a specific height).
+  if (val) {
+    val.textContent = full ? "" : (shown + "px");
+    val.style.visibility = full ? "hidden" : "";
+  }
 }
 
 function fViewerMaxHeightFromUi() {
-  var chk = document.getElementById("viewerMaxHeightCheck");
   var rng = document.getElementById("viewerMaxHeightRange");
-  if (!chk || !rng) return;
-  if (chk.classList.contains("selectedCheck")) {
-    // The Full toggle owns the value while active — a checkbox tick from the
-    // generic handler must not overwrite it with the parked slider value.
-    if (viewerMaxH !== "full") {
-      var v = parseInt(rng.value, 10);
-      if (isNaN(v)) v = VIEWER_MIN_H;
-      if (v < VIEWER_MIN_H) v = VIEWER_MIN_H;
-      if (v > VIEWER_SINGLE_MAX) v = VIEWER_SINGLE_MAX;
-      viewerMaxH = v;
-    }
-  } else {
-    viewerMaxH = null;
-  }
+  if (!rng) return;
+  var v = parseInt(rng.value, 10);
+  if (isNaN(v)) v = VIEWER_MIN_H;
+  if (v < VIEWER_MIN_H) v = VIEWER_MIN_H;
+  if (v > VIEWER_SINGLE_MAX) v = VIEWER_SINGLE_MAX;
+  viewerMaxH = v; // moving the slider is an explicit specific height
   fViewerMaxHeightSync();
   try { fResizeViewers(); } catch (eR) { /* resize best-effort */ }
 }
 
 function fInitViewerMaxHeight() {
-  var chk = document.getElementById("viewerMaxHeightCheck");
   var rng = document.getElementById("viewerMaxHeightRange");
-  if (!chk || !rng) {
+  if (!rng) {
     // Script may run before the static panel is parsed; retry once then bind.
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", fInitViewerMaxHeight);
     }
     return;
   }
-  // The generic .checkBoxContainer handler toggles the class on the same
-  // click; defer a tick so the post-toggle state is what we read.
-  if (!chk.dataset.vmhBound) {
-    chk.dataset.vmhBound = "1";
-    chk.addEventListener("click", function () { setTimeout(fViewerMaxHeightFromUi, 0); });
-  }
-  if (rng && !rng.dataset.vmhBound) {
+  if (!rng.dataset.vmhBound) {
     rng.dataset.vmhBound = "1";
     rng.addEventListener("input", fViewerMaxHeightFromUi);
   }
   fViewerMaxHeightSync();
 }
 
-// ── double-viewer height control (v48) ───────────────────────────────────
-// Ρυθμίσεις row: a checkbox (unchecked = Auto = the equal split both viewers
-// get today, checked = Manual) plus a fixed slider (see VIEWER_BOTH_MIN/MAX).
-// When two viewers are visible, Manual sets their COMBINED height — each
-// viewer takes half. "full" (the Full toggle) fills the live viewport instead.
-// Only the live global `viewerBothH` is set here — scenario steps own
-// persistence (show.viewerBothHeight). fResizeViewers() recomputes.
+// ── double-viewer height control (v48; v58.43 simplified) ────────────────
+// Two states only: Full (button) or a specific combined pixel height (slider,
+// see VIEWER_BOTH_MIN/MAX). When two viewers are visible the slider sets their
+// COMBINED height — each viewer takes half. The legacy null/Auto value is
+// still accepted from old files and displays its computed height; the first
+// slider move stores a number. Only the live global `viewerBothH` is set here
+// — scenario steps own persistence (show.viewerBothHeight). fResizeViewers()
+// recomputes.
 function fViewerBothHeightEnsureFullBtn() {
   var row = null;
   try { row = document.getElementById("viewerBothHeightSetting"); } catch (eR) { /* no DOM */ }
@@ -9145,7 +9174,12 @@ function fViewerBothHeightEnsureFullBtn() {
     if (ev && ev.preventDefault) ev.preventDefault();
     fViewerBothHeightToggleFull();
   });
-  row.appendChild(b);
+  // v58.43: the Full control replaces the old manual/Auto checkbox and sits
+  // immediately before the slider.
+  var rng = null;
+  try { rng = document.getElementById("viewerBothHeightRange"); } catch (eR2) { rng = null; }
+  if (rng && rng.parentNode === row) row.insertBefore(b, rng);
+  else row.appendChild(b);
 }
 
 function fViewerBothHeightToggleFull() {
@@ -9165,17 +9199,11 @@ function fViewerBothHeightToggleFull() {
 }
 
 function fViewerBothHeightSync() {
-  var chk = document.getElementById("viewerBothHeightCheck");
   var rng = document.getElementById("viewerBothHeightRange");
   var val = document.getElementById("viewerBothHeightVal");
-  if (!chk || !rng) return;
+  if (!rng) return;
   fViewerBothHeightEnsureFullBtn();
   var full = viewerBothH === "full";
-  var manual = viewerBothH != null;
-  try {
-    chk.classList.toggle("selectedCheck", manual);
-    chk.classList.toggle("unselectedCheck", !manual);
-  } catch (eC) { /* class toggle best-effort */ }
   var btn = null;
   try { btn = document.getElementById("viewerBothHeightFull"); } catch (eB) { /* no DOM */ }
   if (btn) {
@@ -9186,63 +9214,54 @@ function fViewerBothHeightSync() {
   }
   rng.min = String(VIEWER_BOTH_MIN);
   rng.max = String(VIEWER_BOTH_MAX);
-  rng.disabled = !manual || full;
-  if (full) {
-    rng.value = String(VIEWER_BOTH_MAX);
-    if (val) val.textContent = "Full";
-    return;
-  }
+  // v58.43: Full owns the height and deactivates the slider; a specific
+  // combined px height activates it. No checkbox/Auto state in the UI.
+  rng.disabled = full;
   var shown;
-  if (manual) {
+  if (full) {
+    // Responsive combined height currently in effect (never the word "Full").
+    var vf = fViewerHeights2D3D();
+    shown = Math.round((vf.h2 || 0) + (vf.h3 || 0) || VIEWER_BOTH_MIN);
+  } else if (viewerBothH != null) {
     shown = Math.round(viewerBothH);
   } else {
-    // Auto: the combined height the equal split currently yields (2D + 3D).
+    // Legacy Auto: the combined height the equal split currently yields.
     var vh = fViewerHeights2D3D();
     shown = Math.round((vh.h2 || 0) + (vh.h3 || 0) || VIEWER_BOTH_MIN);
   }
   if (shown < VIEWER_BOTH_MIN) shown = VIEWER_BOTH_MIN;
   if (shown > VIEWER_BOTH_MAX) shown = VIEWER_BOTH_MAX;
   rng.value = String(shown);
-  if (val) val.textContent = shown + "px";
+  // v58.43: the px readout is hidden while Full owns the height; it appears
+  // only when the slider is active (a specific combined height).
+  if (val) {
+    val.textContent = full ? "" : (shown + "px");
+    val.style.visibility = full ? "hidden" : "";
+  }
 }
 
 function fViewerBothHeightFromUi() {
-  var chk = document.getElementById("viewerBothHeightCheck");
   var rng = document.getElementById("viewerBothHeightRange");
-  if (!chk || !rng) return;
-  if (chk.classList.contains("selectedCheck")) {
-    // The Full toggle owns the value while active — see single-viewer note.
-    if (viewerBothH !== "full") {
-      var v = parseInt(rng.value, 10);
-      if (isNaN(v)) v = VIEWER_BOTH_MIN;
-      if (v < VIEWER_BOTH_MIN) v = VIEWER_BOTH_MIN;
-      if (v > VIEWER_BOTH_MAX) v = VIEWER_BOTH_MAX;
-      viewerBothH = v;
-    }
-  } else {
-    viewerBothH = null;
-  }
+  if (!rng) return;
+  var v = parseInt(rng.value, 10);
+  if (isNaN(v)) v = VIEWER_BOTH_MIN;
+  if (v < VIEWER_BOTH_MIN) v = VIEWER_BOTH_MIN;
+  if (v > VIEWER_BOTH_MAX) v = VIEWER_BOTH_MAX;
+  viewerBothH = v; // moving the slider is an explicit specific height
   fViewerBothHeightSync();
   try { fResizeViewers(); } catch (eR) { /* resize best-effort */ }
 }
 
 function fInitViewerBothHeight() {
-  var chk = document.getElementById("viewerBothHeightCheck");
   var rng = document.getElementById("viewerBothHeightRange");
-  if (!chk || !rng) {
+  if (!rng) {
     // Script may run before the static panel is parsed; retry once then bind.
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", fInitViewerBothHeight);
     }
     return;
   }
-  // The generic .checkBoxContainer handler toggles the class on the same
-  // click; defer a tick so the post-toggle state is what we read.
-  if (!chk.dataset.vbhBound) {
-    chk.dataset.vbhBound = "1";
-    chk.addEventListener("click", function () { setTimeout(fViewerBothHeightFromUi, 0); });
-  }
-  if (rng && !rng.dataset.vbhBound) {
+  if (!rng.dataset.vbhBound) {
     rng.dataset.vbhBound = "1";
     rng.addEventListener("input", fViewerBothHeightFromUi);
   }

@@ -3,15 +3,16 @@
 Date: 2026-11-16. Tree: v58 fork (byte-identical to v57 at fork; all
 cites are `js/mulermoc-nom-*-58.js`). No code changed by this audit.
 
-> **Status 2026-11-20 (`?v=58.42`):** this audit is the historical input to
+> **Status 2026-11-20 (`?v=58.46`):** this audit is the historical input to
 > the implemented contract. The shipped schema is
 > `step.quiz {kind, mode, modes, modeLabels, mol, prompt(legacy, unused),
-> preSolved, types(deferred menu quizzes)}` + `requireSolution`;
+> preSolved, types(deferred menu quizzes), startMode}` + `requireSolution`;
 > `quizSnapshot` was retired (classic replay shows solved steps), and `modes`
 > is the stored required set described in Q7/H1 of `docs/REVIEW-V58.md`.
 > Later work supersedes the audit's Remove/read-only-list references: the
-> master checkbox + binary tags (v58.31–34), switchable menu types (v58.37–38)
-> and step-scoped progress (v58.39) are the current contract. Editor split:
+> master checkbox + binary tags (v58.31–34), switchable menu types (v58.37–38),
+> step-scoped progress (v58.39) and the explicit start component with no
+> Present auto-arm (v58.44) are the current contract. Editor split:
 > menu-less molecule quizzes render real name tags (`quiz.mol` pinned);
 > menu-carrying steps render component-type chips even with a selected
 > molecule.

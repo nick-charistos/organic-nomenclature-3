@@ -1,12 +1,15 @@
 // probe-scenario-quiz: v58 scenario quizzes, headless Chrome (2D only).
-// Contract (v58.11, ?v=58.11):
-//  - a step stores {kind, mode, modes, modeLabels, mol, preSolved}; `modes` is
-//    the required component set captured from the step's molecule (empty for
-//    deferred menu quizzes);
+// Contract (v58.44, ?v=58.44):
+//  - a step stores {kind, mode, modes, modeLabels, mol, preSolved, startMode};
+//    `modes` is the required component set captured from the step's molecule
+//    (empty for deferred menu quizzes); `startMode` is optional and only set
+//    by the drawer's Start component select;
 //  - Update never destroys an authored task (removal is an explicit button);
-//  - Present auto-arms a fresh attempt, the gate holds until every required
-//    comp is solved, solved steps show their display, menu steps defer to the
-//    picked molecule, and no forward jump can skip a gated step.
+//  - Present never auto-arms: it arms only the author-chosen startMode, else
+//    shows the .scQuizStartPrompt until the student picks a component. The gate
+//    holds until every required comp is solved; solved steps show their
+//    display, menu steps defer to the picked molecule, and no forward jump can
+//    skip a gated step.
 const { chromium } = require("playwright-core");
 const CHROME = process.env.MULER_CHROME || "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe";
 const BASE = process.env.MULER_BASE || "http://localhost:8901";
@@ -51,6 +54,12 @@ async function state(p) {
         task: (() => { try { const t = fScenarioStudentTask(); return t ? t.quiz.mode : null; } catch (e) { return "?"; } })(),
         solved: (() => { try { return JSON.parse(JSON.stringify(window.__mulerQuizSolved || {})); } catch (e) { return "?"; } })(),
         blocked: (() => { try { return fMulerSelectPresentBlocked(); } catch (e) { return "?"; } })(),
+        prompt: (() => {
+          try {
+            const pr = document.querySelector("#nameAnalysisExplain .scQuizStartPrompt");
+            return pr ? { text: (pr.textContent || "").trim(), cls: pr.className } : null;
+          } catch (e) { return "?"; }
+        })(),
       };
     } catch (e) { return { err: String((e && e.message) || e).slice(0, 140) }; }
   });
@@ -485,7 +494,7 @@ const clickBtn = async (p, id) => {
   check(cap4 && cap4.preSolved && cap4.preSolved.ethane.indexOf("compBondType") < 0,
     "baseline should only carry modes solved for this step, got " + JSON.stringify(cap4 && cap4.preSolved));
 
-  // --- 5. select-ON Add with nothing armed stores a default quiz ---
+  // --- 5. select-ON Add with nothing armed stays classic (v58.44) ---
   await openMol(p, "ethane");
   await p.evaluate(() => { document.getElementById("selectAtomsBtn").click(); });
   await p.waitForTimeout(400);
@@ -495,10 +504,100 @@ const clickBtn = async (p, id) => {
   }, addId);
   await p.waitForTimeout(800);
   const added = await p.evaluate((id) => {
-    try { const sc = fScenarioGet(id); const s = sc.steps[sc.steps.length - 1]; return s ? (s.quiz || null) : null; } catch (e) { return "err"; }
+    try { const sc = fScenarioGet(id); const s = sc.steps[sc.steps.length - 1]; return s ? { quiz: s.quiz || null } : null; } catch (e) { return "err"; }
   }, addId);
-  check(added && added.mode === "compCarbonsCount" && Array.isArray(added.modes) && added.modes.length >= 2,
-    "select-ON Add should store the default task + set, got " + JSON.stringify(added));
+  check(added && !added.quiz,
+    "select-ON Add must not create a quiz (explicit drawer enable only), got " + JSON.stringify(added));
+  // The drawer master checkbox is the explicit author action; the start
+  // select defaults to None and lists only the required comps.
+  const startEnable = await p.evaluate((id) => {
+    try {
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      const en = row ? row.querySelector('input[data-sc-role="quiz-enabled"]') : null;
+      if (!en) return "missing";
+      en.click();
+      return true;
+    } catch (e) { return "err"; }
+  }, addId);
+  await p.waitForTimeout(700);
+  const startBefore = await p.evaluate((id) => {
+    try {
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      const sel = row ? row.querySelector('[data-sc-role="quiz-start"]') : null;
+      const q = fScenarioGet(id).steps[0].quiz || {};
+      return { has: !!sel, value: sel ? sel.value : null, opts: sel ? Array.from(sel.options).map((o) => o.value) : [], modes: q.modes || [], start: q.startMode || null };
+    } catch (e) { return "err"; }
+  }, addId);
+  check(startEnable === true, "quiz enable click failed, got " + JSON.stringify(startEnable));
+  check(startBefore && startBefore.has && startBefore.value === "" && startBefore.start === null,
+    "start select should default to None, got " + JSON.stringify(startBefore));
+  check(startBefore && startBefore.opts.length === (startBefore.modes || []).length + 1,
+    "start options should be None + required comps, got " + JSON.stringify(startBefore));
+  const startPick = await p.evaluate((id) => {
+    try {
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      const sel = row.querySelector('[data-sc-role="quiz-start"]');
+      const mode = (fScenarioGet(id).steps[0].quiz.modes || [])[0];
+      sel.value = mode;
+      sel.dispatchEvent(new Event("change", { bubbles: true }));
+      return { mode, stored: fScenarioGet(id).steps[0].quiz.startMode || null, marker: !!row.querySelector('.scQuizTag.is-start') };
+    } catch (e) { return "err"; }
+  }, addId);
+  check(startPick && startPick.stored === startPick.mode && startPick.marker === true,
+    "start select should store + mark the comp, got " + JSON.stringify(startPick));
+  await p.evaluate((id) => { try { fScenarioUpdateStep(id, 0); } catch (e) {} }, addId);
+  await p.waitForTimeout(900);
+  const startKept = await p.evaluate((id) => {
+    try { return fScenarioGet(id).steps[0].quiz.startMode || null; } catch (e) { return "err"; }
+  }, addId);
+  check(startKept === startPick.mode, "Update must preserve quiz.startMode, got " + JSON.stringify({ want: startPick.mode, got: startKept }));
+  // v58.44 owner sequence: add step 1, enable its quiz, switch molecule, add
+  // step 2, then reopen/re-render step 1. The molecule quiz must stay name
+  // tags — never fall back to menu type chips from a stale quiz.mol.
+  await p.evaluate(() => {
+    try {
+      const hit = Array.from(document.querySelectorAll(".menuLi")).find((x) => (x.getAttribute("id") || "") === "butane");
+      if (hit) hit.click();
+    } catch (e) {}
+  });
+  await p.waitForTimeout(1000);
+  await p.evaluate((id) => {
+    try { const btn = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .scSave'); if (btn) btn.click(); } catch (e) {}
+  }, addId);
+  await p.waitForTimeout(1000);
+  await p.evaluate((id) => { try { fScenarioRenderList(id); } catch (e) {} }, addId);
+  await p.waitForTimeout(700);
+  const seq = await p.evaluate((id) => {
+    try {
+      const sc = fScenarioGet(id);
+      const rows = Array.from(document.querySelectorAll('.scenarioPanel[data-scenario-id="' + id + '"] .srow'));
+      return {
+        steps: sc.steps.length,
+        step0: {
+          quizMol: sc.steps[0].quiz ? sc.steps[0].quiz.mol : null,
+          labels: sc.steps[0].quiz ? (sc.steps[0].quiz.modeLabels || []) : [],
+          tagTexts: rows[0] ? Array.from(rows[0].querySelectorAll(".scQuizTag")).map((t) => t.textContent) : [],
+          real: rows[0] ? rows[0].querySelectorAll('[data-sc-role^="quiz-mode-"]').length : -1,
+          chips: rows[0] ? rows[0].querySelectorAll('.scQuizTag.type').length : -1,
+        },
+        step1: {
+          mol: sc.steps[1] ? sc.steps[1].selectedMol : null,
+          quiz: sc.steps[1] ? (sc.steps[1].quiz || null) : null,
+        },
+      };
+    } catch (e) { return "err"; }
+  }, addId);
+  check(seq && seq.steps === 2 && seq.step0 && seq.step0.quizMol === "ethane" &&
+    seq.step0.real > 0 && seq.step0.chips === 0,
+    "add-1/quiz/add-2 sequence must keep step 1 name tags, got " + JSON.stringify(seq));
+  check(seq && seq.step0 && Array.isArray(seq.step0.labels) && seq.step0.labels.length > 0 &&
+    !seq.step0.labels.some((l) => /main chain|bond type|functional group/i.test(l)),
+    "stored modeLabels must be real component text, not type names, got " + JSON.stringify(seq && seq.step0 && seq.step0.labels));
+  check(seq && seq.step0 && Array.isArray(seq.step0.tagTexts) && seq.step0.tagTexts.length > 0 &&
+    !seq.step0.tagTexts.some((t) => /main chain|bond type|functional group/i.test(t)),
+    "a non-live molecule step must show name fragments, not type labels, got " + JSON.stringify(seq && seq.step0 && seq.step0.tagTexts));
+  check(seq && seq.step1 && seq.step1.mol === "butane" && !seq.step1.quiz,
+    "the second added step should stay classic, got " + JSON.stringify(seq && seq.step1));
 
   // --- 6. menu capture (intent) + Present: gate before the first pick ---
   await openMol(p, "ethane");
@@ -551,8 +650,12 @@ const clickBtn = async (p, id) => {
   check(st.step === 0, "menu quiz step must not advance before a molecule is picked, got index " + st.step);
   check(await menuPick(p, "propane") === true, "menu pick should work in Present");
   st = await state(p);
-  check(st.target === "compCarbonsCount", "menu pick should auto-arm the deferred quiz, got " + JSON.stringify(st.target));
+  check(st.step === 0 && !st.target && st.prompt && /Select a component/i.test(st.prompt.text),
+    "menu pick must stay idle with the start prompt, got " + JSON.stringify({ i: st.step, t: st.target, p: st.prompt }));
   check(st.quiz && st.quiz.mol === "" && st.quiz.mode === "compCarbonsCount", "deferred task should stay per-molecule");
+  check(await armBox(p, "comp5", "compCarbonsCount"), "menu idle chain arm failed");
+  st = await state(p);
+  check(st.target === "compCarbonsCount", "menu student pick should arm the deferred quiz, got " + JSON.stringify(st.target));
   const rm6 = await solveAllTodos(p);
   check(rm6 === true, "menu quiz should be solvable, got " + JSON.stringify(rm6));
   await clickBtn(p, "scNext");
@@ -572,19 +675,22 @@ const clickBtn = async (p, id) => {
   check(st.present === true && st.step === 0 && !st.target, "passive step should apply clean, got " + JSON.stringify({ t: st.target, i: st.step }));
   await clickBtn(p, "scNext");
   st = await state(p);
+  check(st.step === 1 && !st.target && st.prompt && /Select a component/i.test(st.prompt.text) && !st.task,
+    "Present must start the quiz idle with the start prompt, got " + JSON.stringify({ i: st.step, t: st.target, p: st.prompt, task: st.task }));
+  // legacy (no stored set) => all capable comps are required
+  check(st.todo && st.todo.indexOf("compCarbonsCount") >= 0 && st.todo.indexOf("compBondType") >= 0,
+    "legacy step should require every capable comp, got " + JSON.stringify(st.todo));
+  // the student picks the chain component
+  check(await armBox(p, "comp5", "compCarbonsCount"), "student chain arm failed");
+  st = await state(p);
   check(st.step === 1 && st.target === "compCarbonsCount" && st.task === "compCarbonsCount",
-    "Present must auto-arm the quiz step, got " + JSON.stringify({ i: st.step, t: st.target }));
-  // v58.12: student-mode hover + 3D picking on a quiz step (both were dead
-  // when the step armed: raw Present hover guards + a picking tail computed
-  // before the task armed).
+    "student pick should arm the chain, got " + JSON.stringify({ i: st.step, t: st.target, task: st.task }));
+  // v58.12: student-mode hover + 3D picking on an armed quiz step
   const hovQuiz = await hoverAtom(p, 1);
   check(hovQuiz === true, "hover ring should show on a Present quiz step, got " + JSON.stringify(hovQuiz));
   const pickQuiz = await pickingState(p);
   if (pickQuiz === "noapplet" || pickQuiz === "err") warn("3D applet unavailable — picking assertions skipped");
   else check(pickQuiz === "atom", "3D picking should be armed on a quiz step, got " + JSON.stringify(pickQuiz));
-  // legacy (no stored set) => all capable comps are required
-  check(st.todo && st.todo.indexOf("compCarbonsCount") >= 0 && st.todo.indexOf("compBondType") >= 0,
-    "legacy step should require every capable comp, got " + JSON.stringify(st.todo));
   check(await clickAtom(p, 1), "student pick should land");
   st = await state(p);
   check(st.sel.length === 1, "student pick should register, got " + JSON.stringify(st.sel));
@@ -678,7 +784,8 @@ const clickBtn = async (p, id) => {
   await p.evaluate((id) => { try { fScenarioPresentBegin(id, 0); } catch (e) {} }, freeId);
   await p.waitForTimeout(1300);
   st = await state(p);
-  check(st.step === 0 && st.target === "compCarbonsCount", "ungated quiz step should still arm, got " + JSON.stringify(st.target));
+  check(st.step === 0 && !st.target && st.prompt && /Select a component/i.test(st.prompt.text),
+    "ungated quiz step should start idle with the prompt, got " + JSON.stringify({ t: st.target, p: st.prompt }));
   await clickBtn(p, "scNext");
   st = await state(p);
   check(st.step === 1, "requireSolution:false must not gate, got index " + st.step);
@@ -694,6 +801,8 @@ const clickBtn = async (p, id) => {
   st = await state(p);
   check(st.step === 0 && st.todo && st.todo.length === 1 && st.todo[0] === "compCarbonsCount",
     "stored set should narrow the requirement, got " + JSON.stringify(st.todo));
+  check(!st.target && st.prompt && /Select a component/i.test(st.prompt.text),
+    "stored-set quiz should start idle with the prompt, got " + JSON.stringify({ t: st.target, p: st.prompt }));
   const freePaint = await p.evaluate(() => {
     const c = (id) => { const e = document.getElementById(id); return e ? e.className : null; };
     return { req: c("comp5"), free: c("comp6") };
@@ -736,6 +845,7 @@ const clickBtn = async (p, id) => {
   st = await state(p);
   check(st.step === 0 && !st.target && st.todo && st.todo.length === 0,
     "authored-solved step should present as solved, got " + JSON.stringify({ t: st.target, todo: st.todo }));
+  check(!st.prompt, "authored-solved step must not show the start prompt, got " + JSON.stringify(st.prompt));
   const preCls = await p.evaluate(() => {
     try {
       const b = document.getElementById("comp5");
@@ -1169,6 +1279,96 @@ const clickBtn = async (p, id) => {
   check(menuMolToggle === true && menuMolTags && menuMolTags.quiz && menuMolTags.quiz.mol === "" &&
     menuMolTags.typeChips > 0 && menuMolTags.realTags === 0,
     "a menu quiz with a selected molecule must stay deferred and render type chips, got " + JSON.stringify(menuMolTags));
+
+  // --- 23. menu-less molecule step never keeps a deferred quiz marker (v58.44) ---
+  await openMol(p, "ethane");
+  const pinId = await makeScenario(p, "probeq-pin-molecule", [
+    {
+      selectedMol: "ethane",
+      quiz: { kind: "nameComp", mode: "compCarbonsCount", mol: "", types: ["mainChain", "bondType"] },
+      requireSolution: true,
+      showExtra: { nameClick: true, naming: true },
+    },
+    {
+      selectedMol: "ethane",
+      menuSubset: ["ethane", "propane"],
+      quiz: { kind: "nameComp", mode: "compCarbonsCount", mol: "", types: ["mainChain"] },
+      requireSolution: true,
+      showExtra: { nameClick: true, naming: true },
+    },
+    {
+      selectedMol: null,
+      menuSubset: ["propane", "butane"],
+      quiz: { kind: "nameComp", mode: "compCarbonsCount", mol: "", types: ["mainChain"] },
+      requireSolution: true,
+      showExtra: { nameClick: true, naming: true },
+    },
+  ]);
+  check(typeof pinId === "string" && pinId.indexOf("err:") !== 0, "pin-molecule scenario creation failed: " + pinId);
+  const pinRows = await p.evaluate((id) => {
+    const rows = Array.from(document.querySelectorAll('.scenarioPanel[data-scenario-id="' + id + '"] .srow'));
+    return fScenarioGet(id).steps.map((s, i) => ({
+      quizMol: s.quiz ? s.quiz.mol : null,
+      modes: s.quiz ? (s.quiz.modes || null) : null,
+      types: s.quiz ? (s.quiz.types || null) : null,
+      real: rows[i] ? rows[i].querySelectorAll('[data-sc-role^="quiz-mode-"]').length : -1,
+      chips: rows[i] ? rows[i].querySelectorAll('.scQuizTag.type').length : -1,
+    }));
+  }, pinId);
+  check(pinRows && pinRows[0] && pinRows[0].quizMol === "ethane" && !pinRows[0].types &&
+    Array.isArray(pinRows[0].modes) && pinRows[0].modes.length > 0 &&
+    pinRows[0].real > 0 && pinRows[0].chips === 0,
+    "menu-less molecule quiz must be pinned + render name tags, got " + JSON.stringify(pinRows && pinRows[0]));
+  check(pinRows && pinRows[1] && pinRows[1].quizMol === "" && pinRows[1].chips > 0 && pinRows[1].real === 0,
+    "multi-menu step must stay deferred + type chips, got " + JSON.stringify(pinRows && pinRows[1]));
+  check(pinRows && pinRows[2] && pinRows[2].quizMol === "" && pinRows[2].chips > 0 && pinRows[2].real === 0,
+    "menu-only step must stay deferred + type chips, got " + JSON.stringify(pinRows && pinRows[2]));
+  // Update the multi-menu step with no live picks: the old deferred marker is
+  // preserved but the menu is gone, so it must pin instead of staying chips.
+  await p.evaluate((id) => {
+    try { fScenarioGet(id).menuPick = []; } catch (e) {}
+    try { fScenarioUpdateStep(id, 1); } catch (e) {}
+  }, pinId);
+  await p.waitForTimeout(1100);
+  const pinAfter = await p.evaluate((id) => {
+    const s = fScenarioGet(id).steps[1];
+    const rows = Array.from(document.querySelectorAll('.scenarioPanel[data-scenario-id="' + id + '"] .srow'));
+    return {
+      quizMol: s.quiz ? s.quiz.mol : null,
+      subset: (s.menuSubset || []).length,
+      types: s.quiz ? (s.quiz.types || null) : null,
+      real: rows[1] ? rows[1].querySelectorAll('[data-sc-role^="quiz-mode-"]').length : -1,
+      chips: rows[1] ? rows[1].querySelectorAll('.scQuizTag.type').length : -1,
+    };
+  }, pinId);
+  check(pinAfter && pinAfter.quizMol === "ethane" && pinAfter.subset === 0 && !pinAfter.types &&
+    pinAfter.real > 0 && pinAfter.chips === 0,
+    "Update must pin a deferred quiz when the menu is gone, got " + JSON.stringify(pinAfter));
+  // The render predicate must not depend on quiz.mol at all. Disable the pin
+  // repair for one render and poison the marker: the step shape alone must
+  // still render name tags.
+  const shapeOnly = await p.evaluate((id) => {
+    try {
+      const s = fScenarioGet(id).steps[0];
+      const old = fScenarioQuizPinMolecule;
+      try {
+        fScenarioQuizPinMolecule = function () { return false; };
+        s.quiz.mol = "";
+        s.quiz.types = ["mainChain", "bondType"];
+        fScenarioRenderList(id);
+        const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+        return {
+          real: row ? row.querySelectorAll('[data-sc-role^="quiz-mode-"]').length : -1,
+          chips: row ? row.querySelectorAll('.scQuizTag.type').length : -1,
+          marker: s.quiz.mol,
+        };
+      } finally {
+        fScenarioQuizPinMolecule = old;
+      }
+    } catch (e) { return "err"; }
+  }, pinId);
+  check(shapeOnly && shapeOnly.real > 0 && shapeOnly.chips === 0 && shapeOnly.marker === "",
+    "drawer menu-vs-name choice must come from the step shape, not quiz.mol, got " + JSON.stringify(shapeOnly));
 
   console.log(JSON.stringify({ failures, warnings }, null, 1));
   console.log("PAGEERRORS:" + JSON.stringify(errs));

@@ -1,19 +1,20 @@
 # Session notes — 2026-11-07 (resume point for next session, other machine)
 
 > **Resume pointer (cross-machine):** 2026-11-20 — **v58 is LIVE**
-> (`index.html` → `mulermoc-nom-58.html`, `?v=58.42`, review follow-ups +
+> (`index.html` → `mulermoc-nom-58.html`, `?v=58.46`, review follow-ups +
 > student hover/3D fixes + step-row architecture/corners/density + the
-> 58.17–58.42 feature/UI batch).
+> 58.17–58.46 feature/UI batch).
 > Scenario quiz contract: steps store their required component set
 > (`quiz.modes` + labels; deferred `quiz.types` for menu quizzes), the drawer
 > master checkbox owns quiz existence, Update never destroys an authored task,
-> Present auto-arms + gates on the stored set, Esc clears picks on
+> Present never auto-arms (it arms only the drawer-chosen `startMode`, else
+> shows `.scQuizStartPrompt`) and gates on the stored set, Esc clears picks on
 > quiz steps (no longer exits the lesson), forward jumps can't skip a gated
 > step, menu steps gate until a molecule is picked. `probe-scenario-quiz.js`
 > is green; the full 2D suite was re-run against v58 and is
 > green (final/quiz/mode-quiz/explain-all/fg/loc/bond/branch/coverage56/
 > smoke56/compact-main/shift/skel-joints; `probe-3d-pick` still owner-side).
-> New in 58.17–58.42: three-state comp eye (shown/veiled/removed, 14px icons,
+> New in 58.17–58.46: three-state comp eye (shown/veiled/removed, 14px icons,
 > explain rows follow), draft author fields + split oracle rows, spin switch,
 > measured viewer-height clamp, pinned bar/footer fit + merge, step-row
 > separators + quiz row last + section titles (Viewers/Naming/Menu/Quiz),
@@ -21,7 +22,9 @@
 > binary tags, collapsible list), the locant chain rule, switchable menu quiz
 > types, step-independent quiz progress, the pinned-authoring footer below the
 > viewport, the hidden presentation footer, the shared viewport tooltip layer,
-> and the add-step open/reveal behaviour. Owner decision:
+> the add-step open/reveal behaviour, the two-state viewer-height controls,
+> and the explicit quiz start component + idle start prompt.
+> Owner decision:
 > comp eyes stay usable on quiz steps (teacher aid; hiding a required comp
 > removes it from the todo set) — revisit if users report.
 > Remaining owner-side: the browser Present matrix (quiz editor tags/menu
@@ -3326,5 +3329,36 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * Owner: after Add step, the new row must appear open and the step list should scroll to show it when necessary.
 * Implemented: the `.scSave` add handler expands the new last row (removes `.collapsed`, sets the minimize icon/aria) and replaces the unconditional `scrollTop = scrollHeight` with a nearest-visibility scroll on the `.scenarioDrawer` scrollport: tall rows align their head, mostly-visible rows do not jump, and rows below are brought just into view. Runs after rAF and again after the 280 ms row transition.
 * Verified headless Chrome at 1400×900 and 1100×640, drawer open/closed: new row is expanded, its head is visible, the drawer scroll changes only when needed, and existing rows keep their order. `node --check` clean.
-* `?v=58.41` → `?v=58.42`.
+* `?v=58.41` → `?v=58.42`. Committed in 7d7580f.
+
+## 2026-11-20 — two-state viewer-height controls (`?v=58.43`, owner request)
+* Owner: the two viewer-height checkboxes are redundant — the user either sets Full or a specific height. Put the Full buttons where the checkboxes were, and never write “Full” in the value readout.
+* Implemented: removed `#viewerMaxHeightCheck` / `#viewerBothHeightCheck` from `mulermoc-nom-58.html`; the JS-built Full buttons now insert before their sliders in the old checkbox slot. The slider is disabled while Full is active and enabled for a specific height (owner follow-up: restore the old inactive-when-Full behavior). Each row is label + `Full` + slider + px readout; the lit `aria-pressed` button marks Full, and the px readout is hidden in Full and shows `Npx` only when the slider is active (single: h2/h3; both: combined h2+h3). Moving the enabled slider stores that value and clears Full; clicking Full returns to the responsive sentinel. The native range gets a flat skin (appearance:none, no thumb shadow, no track border). Legacy `null`/Auto still loads, displays its computed height and stores a number on the first move; the internal null fallback is unchanged for old scenario files. Added a throttled resize resync while the settings panel is open.
+* Verified headless Chrome at 1400×900 and 1100×640: DOM order (label, Full, range, value), both checkboxes gone, initial Full with disabled sliders and hidden values, slider→specific (`420px`, Full off, slider enabled, value visible), Full click (`full`, button lit, slider disabled, value hidden), flat track/thumb styles (no border/shadow), step apply/capture round-trips (`"full"` + `480px`), legacy null with no lit button and enabled sliders. `node --check` clean.
+* `?v=58.42` → `?v=58.43`.
+
+## 2026-11-20 — verification policy: milestone-first (process, no version)
+* Owner: probes were slowing down small UI work — run them for major app advances, not CSS/UI tweaks.
+* `AGENTS.md` now splits verification into a Quick lane (docs/CSS/copy/UI-control: `node --check` + visual/targeted headless check), a Milestone lane (behavior batches: the relevant probe once on the final tree), and a Full lane (major advance/release: the four-probe suite). Run-once rules: a docs/CSS/UI-only follow-up does not invalidate a green run; after code changes rerun only the affected layer.
+* `tools/muler-harness/README.md` mirrors the policy.
+* No `?v=` change; docs/process only. Verification: `git diff --check`.
+
+## 2026-11-20 — explicit quiz start, no Present auto-arm (`?v=58.44`, owner request)
+* Owner: a quiz step must not auto-select a component in Present. The author sets the start/armed comp in the step settings; with none set, show a prompt with a styleable class.
+* Implemented: additive `quiz.startMode`, set only by the new drawer `Start component` select (None default, options = required comps; the chosen tag gets `.is-start`; removing it from the required tags clears it). Present arms only `startMode` when still required/capable; otherwise it stays idle and shows `.scQuizStartPrompt` (“Select a component to solve the quiz”) in `#nameAnalysisExplain`, and the required/free tints still paint. The nav gate now holds on the authored required todo even before the first arm (fail-open only when no required box is resolvable). Select mode alone no longer creates a quiz on Add/Update; the master checkbox or an armed/solved capture is the signal. `Update` preserves `startMode`.
+* Updated `probe-scenario-quiz.js`: classic select-ON Add, drawer start select + marker + Update persistence, Present idle prompt/no target, menu idle after pick, manual arms, gate before/after solving, solved display without the prompt.
+* Bug fix (owner report, “spooky” type chips): a menu step Updated with no live picks kept the old deferred `quiz.mol:""` marker while the new capture cleared `menuSubset`/`show.menu`, so the drawer rendered menu type chips on a molecule step until the quiz was rechecked. New `fScenarioQuizPinMolecule()` pins a deferred marker to `selectedMol`, drops the menu-only `types`, and materializes capable modes when the step molecule is live; it runs on load, drawer render, Update and Present apply. The drawer's menu-vs-name-tag choice now uses the same step-shape predicate as the master checkbox (`!selectedMol`/`menuSubset.length>1`), never `quiz.mol`. Multi-pick/menu-only steps keep their chips. Probe covers the exact add-1 / enable / add-2 / reopen sequence.
+* Verified: `probe-scenario-quiz` green (including the pin regression); `probe-final`, `probe-explain-all`, `probe-coverage56` green on the same functional tree; all `js/*-58.js` `node --check` clean; headless checks at 1400×900 (idle prompt, manual arm, startMode arm, gate, drawer marker, menu idle, pin repair).
+* `?v=58.43` → `?v=58.44`. Not committed yet (v58.43 also pending).
+
+## 2026-11-21 — cache-busted asset refs (`?v=58.45`, fix)
+* The 58.44 fixes were edited while the HTML still referenced `?v=58.44`, so a browser could keep the earlier 58.44 JS (helper present, old `quiz.mol` type-chip decision). `typeof fScenarioQuizPinMolecule === "function"` therefore did not prove the predicate change was loaded.
+* Bumped all 14 asset refs in `mulermoc-nom-58.html` to `?v=58.45`. No behavior change beyond forcing a fresh fetch of the current 58.44 code. Hard reload once.
+* Verification: `node --check` all v58 JS; `git diff --check`; 14 refs at 58.45. No new probe run (code unchanged). Not committed.
+
+## 2026-11-21 — real quiz component labels (`?v=58.46`, owner report)
+* Root cause found in the owner's live Brave tab: the “type comps” were real `.scQuizTag` stored/orphan tags, not menu `.scQuizTag.type` chips. Non-live steps fall back to `quiz.modeLabels`, and those labels were stored from `fScenarioQuizModeLabels()` — the generic mode/type names (“main chain”, “bond type”), not the live name fragments (eth/an/ol). Adding another step makes the previous step non-live, so it showed type names; the live step looked correct.
+* Implemented `fScenarioQuizModeLabelsFor(modes, step)`: live name-box labels when the step molecule is live → per-molecule `window.__mulerQuizLabelCache` → old labels by mode → type fallback. Used by capture, master-checkbox enable, tag toggle, pin repair and Update fallback; the drawer render refreshes labels before building tags, so existing steps self-heal after one Go/render and switching away keeps the real fragments.
+* Probe: the add-1 / enable / add-2 sequence now also asserts stored `modeLabels` and rendered non-live tag texts contain real fragments and not “main chain / bond type / functional group”.
+* Verified: `probe-scenario-quiz` green; all `js/*-58.js` `node --check` clean; `git diff --check`; 14 refs at `?v=58.46`. Not committed.
 
