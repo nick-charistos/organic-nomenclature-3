@@ -13,6 +13,7 @@
 
   --darkBlue: #1b275d;
   --vibrantGreen: #5fad56;
+  --vibrantGreen2:#5ed651;
   --veryLightEarth: #fff1de;
 
   --orchidDefault: #dc6acf;
@@ -160,7 +161,7 @@ footer .molwaveLogo .molwaveLogoMain span:last-child {
 
 footer span.molwaveLogoSub {
   font-size: 1.25rem;
-  color: var(--veryLightBlue);
+  color: var(--vibrantGreen2);
 
 }
 

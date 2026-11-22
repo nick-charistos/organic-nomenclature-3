@@ -6243,6 +6243,7 @@ function fScenarioBuildUi() {
       tab.id = "scenarioAuthorTab";
       tab.type = "button";
       tab.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("teachingScenarios") : "Σενάρια διδασκαλίας"));
+      tab.setAttribute("aria-label", ((typeof fMulerT === "function") ? fMulerT("teachingScenarios") : "Σενάρια διδασκαλίας"));
       tab.innerHTML = '<span class="scTabIcon" aria-hidden="true">' + ((window.MuLERIcons && window.MuLERIcons.presentationLine) || (window.MuLERIcons && window.MuLERIcons.screen) || "✎") + '</span><span class="scTabText">' + ((typeof fMulerT === "function") ? fMulerT("scenariosShort") : "Σενάρια") + '</span>';
       tab.onclick = function () {
         fScenarioSetAuthoring(!MuLERMoCScenario.authoring);

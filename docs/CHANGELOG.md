@@ -8,7 +8,7 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 Forked from v58.50, rebased on v58.51 (`mulermoc-nom-59.html` + `js/*-59.js` + `css/*-59.css` +
 `jsme-nick-nomeclature-moc2-data_59.js` + `spt/init-3-59.spt` +
-`zz-test-core59.html`, `?v=59.06`; `ui-icons.js`, `js/vendor/`, `jsme/` and
+`zz-test-core59.html`, `?v=59.07`; `ui-icons.js`, `js/vendor/`, `jsme/` and
 `mols/` stay shared). Chemistry/naming results and the scenario quiz contract
 are v58's — only data geometry and the MOL pipeline changed.
 
@@ -134,6 +134,14 @@ are v58's — only data geometry and the MOL pipeline changed.
   `docs/archive/SESSION-NOTES-pre-v54.md`; removed the obsolete OpenCode
   migration notes and stale v45 flowcharts. Updated README/AGENTS links and
   refreshed the English teacher guide for v59. No code change.
+- **Mobile scenario layout (v59.07).** The authoring tab height is content-
+  driven (`auto`; 128px on desktop) and becomes icon-only on screens ?700px
+  wide or ?520px tall: 20px icon, 56px minimum height, localized
+  `aria-label`. The pinned authoring bar caps at `100vw` (was 480px); the
+  unpinned bar caps at `calc(100vw - 40px)` so its handle stays on-screen.
+  Measured at 360/390/430px: bar equals viewport width, panel fits, no
+  horizontal overflow. The credits footer subtitle accent uses a dedicated
+  vibrant-green token.
 - **Verification:** `node --check` clean; 422/422 byte-identical round-trip;
   audit 147 molecules / 0 issues (heavy 1.17 ± 3%, H 0.78 ± 3%, expanded =
   condensed atom/coordinate/bond-table prefix, chain arrays, charges,
