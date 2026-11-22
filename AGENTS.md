@@ -8,8 +8,21 @@ changelog.
 
 Greek-first static web app for teaching organic nomenclature (JSME + JSmol +
 vanilla JavaScript; no build step). The live entry point is `index.html` →
-`mulermoc-nom-59.html`. Current live version: **v59.05** (2026-11-22).
+`mulermoc-nom-59.html`. Current live version: **v59.06** (2026-11-22).
 Older versions v42–v58 remain runnable at the repo root but are **frozen**.
+
+## Working mode (owner preference, 2026-11-22)
+
+Speed over ceremony. Unless the owner explicitly asks, do **not**:
+
+- run probes or long verification suites;
+- create screenshots or other test images;
+- update docs, changelogs, session notes, README or version banners;
+- commit or push.
+
+Make the requested edit, use `node --check` only as a quick syntax guard when
+needed, and report what changed. The owner verifies manually. This section
+overrides the verification and commit rules elsewhere in this file.
 
 ## Read first
 

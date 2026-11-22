@@ -6112,6 +6112,7 @@ function fScenarioBuildUi() {
           _btn.setAttribute("aria-expanded", "true");
         }
       } catch (eIc) {}
+      try { fScenarioRowGo(row); } catch (eGo) {}
     });
     // Keyboard path: tabbing into a collapsed title expands the row.
     $(document).on("focusin", ".scenarioPanel .srow.collapsed input.scStepTitle", function () {
@@ -6242,7 +6243,7 @@ function fScenarioBuildUi() {
       tab.id = "scenarioAuthorTab";
       tab.type = "button";
       tab.setAttribute("data-tooltip", ((typeof fMulerT === "function") ? fMulerT("teachingScenarios") : "Σενάρια διδασκαλίας"));
-      tab.innerHTML = '<span class="scTabIcon">✎</span><span class="scTabText">' + ((typeof fMulerT === "function") ? fMulerT("scenariosShort") : "Σενάρια") + '</span>';
+      tab.innerHTML = '<span class="scTabIcon" aria-hidden="true">' + ((window.MuLERIcons && window.MuLERIcons.presentationLine) || (window.MuLERIcons && window.MuLERIcons.screen) || "✎") + '</span><span class="scTabText">' + ((typeof fMulerT === "function") ? fMulerT("scenariosShort") : "Σενάρια") + '</span>';
       tab.onclick = function () {
         fScenarioSetAuthoring(!MuLERMoCScenario.authoring);
       };
@@ -6669,6 +6670,7 @@ function fScenarioRenderOne(scen) {
             }
           }
         } catch (eAcc) {}
+        try { fScenarioRowGo(row); } catch (eGo) {}
       }
       try {
         collapseBtn.innerHTML = _c
@@ -7971,6 +7973,20 @@ function fScenarioGoAlignPick(step) {
   fScenarioSyncLegacy();
   fScenarioPaintPickUi();
   if (dropped > 0) fScenarioToast("Dropped " + dropped + " unknown molecule(s) from the step menu.");
+}
+
+// Opening a collapsed step previews it too (same path as .scGo). Closing,
+// editing or action-button clicks never re-apply a stored step.
+function fScenarioRowGo(row) {
+  try {
+    if (!row || !row.getAttribute) return;
+    var idx = parseInt(row.getAttribute("data-idx"), 10);
+    if (!(idx >= 0)) return;
+    var panel = (row.closest) ? row.closest(".scenarioPanel") : null;
+    var sid = (panel && panel.getAttribute) ? String(panel.getAttribute("data-scenario-id") || "") : "";
+    if (sid && sid !== MuLERMoCScenario.activeId) fScenarioSetActive(sid);
+    fScenarioGo(idx);
+  } catch (e) {}
 }
 
 function fScenarioGo(i) {

@@ -2195,11 +2195,14 @@ function fMulerSelectNormalizeMainChainCompacts() {
 
 // Hover-ring skin (v56 selection follow-up; orchid v59.05): stroke-only, no
 // fill — visually distinct from the solid orchid fill and component green.
-// The hover reads a step darker (--orchidDark) than a pick (--orchidDefault).
+// The hover reads a step darker (--orchidDark) than the 2D fill (--orchidLight)
+// or the 3D fill (--orchidDefault).
 var MULER_HOVER_PAD = 45;   // ring margin around label boxes, SVG units
 var MULER_HOVER_SW = 30;    // ring stroke width, SVG units
 var MULER_HOVER_DOT_R = 210;  // implicit-carbon ring radius, SVG units
 var MULER_HOVER_BOND_W = 110; // bond hover stroke width, SVG units
+var MULER_HOVER_BOND_END_PAD = 70; // stop this far outside a label box (stroke half + gap)
+var MULER_HOVER_BOND_MAX_TRIM_FRAC = 0.4; // keep at least 20% of the line visible
 var MULER_HOVER_OPACITY = 0.55; // ring translucency (bonds keep their own 0.5)
 
 // Per-render geometry cache for hit-testing (hover reads it at mousemove
@@ -2276,6 +2279,77 @@ function fMulerHoverClear() {
   } catch (e) {}
 }
 
+// Distance from a label box centre (squared; relative comparison only).
+function fMulerHoverBoxDist2(box, x, y) {
+  try {
+    var dx = x - box.x, dy = y - box.y;
+    return dx * dx + dy * dy;
+  } catch (e) { return Infinity; }
+}
+
+// How far a ray leaving (px,py) takes to clear an expanded label box.
+// Returns 0 when the point is not inside the label box (nothing to trim).
+function fMulerHoverBoxExit(box, px, py, dx, dy) {
+  try {
+    var left = box.x - box.w / 2, right = box.x + box.w / 2;
+    var top = box.y - box.h / 2, bottom = box.y + box.h / 2;
+    if (px < left || px > right || py < top || py > bottom) return 0;
+    var pad = MULER_HOVER_BOND_END_PAD;
+    var tx = dx > 0 ? (right + pad - px) / dx : dx < 0 ? (left - pad - px) / dx : Infinity;
+    var ty = dy > 0 ? (bottom + pad - py) / dy : dy < 0 ? (top - pad - py) / dy : Infinity;
+    var d = Math.min(tx, ty);
+    return (d > 0 && isFinite(d)) ? d : 0;
+  } catch (e) { return 0; }
+}
+
+// v59.06: condensed/expanded draw text over the bond lines, so a full-length
+// hover bar runs across both labels. Trim each end at the label box (with the
+// stroke half-width as margin); skeletal/zigzag keep the full bond.
+function fMulerHoverBondLineTrimmed(line, group, geom) {
+  try {
+    var m = (typeof mode2D !== "undefined") ? String(mode2D) : "";
+    if (m !== "condensed" && m !== "expanded") return line;
+    var bl = (typeof bondList !== "undefined" && bondList && group) ? bondList[group.bond] : null;
+    if (!bl || !(bl[0] > 0) || !(bl[1] > 0)) return line;
+    var anchors = (geom && geom.anchors) || [];
+    var box1 = null, box2 = null;
+    for (var i = 0; i < anchors.length; i++) {
+      var a = anchors[i];
+      if (!a || !(a.w > 0) || !(a.h > 0)) continue;
+      if (a.atom + 1 === bl[0]) box1 = a;
+      else if (a.atom + 1 === bl[1]) box2 = a;
+    }
+    if (!box1 && !box2) return line;
+    var x1 = line.x1, y1 = line.y1, x2 = line.x2, y2 = line.y2;
+    var dx = x2 - x1, dy = y2 - y1;
+    var len = Math.sqrt(dx * dx + dy * dy);
+    if (!(len > 0) || !isFinite(len)) return line;
+    var ux = dx / len, uy = dy / len;
+    var startBox = null, endBox = null;
+    if (box1 && box2) {
+      if (fMulerHoverBoxDist2(box1, x1, y1) <= fMulerHoverBoxDist2(box2, x1, y1)) {
+        startBox = box1; endBox = box2;
+      } else {
+        startBox = box2; endBox = box1;
+      }
+    } else {
+      var only = box1 || box2;
+      if (fMulerHoverBoxDist2(only, x1, y1) <= fMulerHoverBoxDist2(only, x2, y2)) startBox = only;
+      else endBox = only;
+    }
+    var d1 = startBox ? fMulerHoverBoxExit(startBox, x1, y1, ux, uy) : 0;
+    var d2 = endBox ? fMulerHoverBoxExit(endBox, x2, y2, -ux, -uy) : 0;
+    var cap = len * MULER_HOVER_BOND_MAX_TRIM_FRAC;
+    if (d1 > cap) d1 = cap;
+    if (d2 > cap) d2 = cap;
+    if (!(d1 > 0) && !(d2 > 0)) return line;
+    return {
+      x1: x1 + ux * d1, y1: y1 + uy * d1,
+      x2: x2 - ux * d2, y2: y2 - uy * d2,
+    };
+  } catch (e) { return line; }
+}
+
 // Hover ring paint (DOM overlay only — never the applet channel, never a
 // re-render: safe at mousemove rate). One persistent layer, rebuilt per move;
 // the fUpdateSVG innerHTML rebuild wipes it implicitly on re-render.
@@ -2350,6 +2424,7 @@ function fMulerHoverPaint(pick, geom) {
         if (G && G.lines) {
           for (var li = 0; li < G.lines.length; li++) {
             var L = G.lines[li];
+            try { L = fMulerHoverBondLineTrimmed(L, G, geom); } catch (eT) {}
             var ln = document.createElementNS(NS, "line");
             ln.setAttribute("x1", Math.round(L.x1)); ln.setAttribute("y1", Math.round(L.y1));
             ln.setAttribute("x2", Math.round(L.x2)); ln.setAttribute("y2", Math.round(L.y2));

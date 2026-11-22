@@ -8,7 +8,7 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 Forked from v58.50, rebased on v58.51 (`mulermoc-nom-59.html` + `js/*-59.js` + `css/*-59.css` +
 `jsme-nick-nomeclature-moc2-data_59.js` + `spt/init-3-59.spt` +
-`zz-test-core59.html`, `?v=59.05`; `ui-icons.js`, `js/vendor/`, `jsme/` and
+`zz-test-core59.html`, `?v=59.06`; `ui-icons.js`, `js/vendor/`, `jsme/` and
 `mols/` stay shared). Chemistry/naming results and the scenario quiz contract
 are v58's — only data geometry and the MOL pipeline changed.
 
@@ -118,6 +118,15 @@ are v58's — only data geometry and the MOL pipeline changed.
   boxes/tags. Verified: `probe-final`, `probe-coverage56` and
   `probe-compact-main` green; visual pass on the 2D picks/numbering (white
   outline), the hover ring and the 3D tint (3D keeps `--orchidDefault`).
+- **Authoring/selection polish (v59.06).** Opening a collapsed scenario step
+  now previews it through the same path as the row's Go button (closing the
+  row and editing controls never re-apply the stored step). The authoring
+  handle uses the new `presentationLine` icon
+  (`imgs/presentation-line-svgrepo-com.svg`, inlined in `ui-icons.js`,
+  `currentColor`) and is 40px wide. In condensed/expanded 2D the bond hover is
+  trimmed at the label boxes (plus the stroke half-width), so it no longer
+  runs across the text; skeletal/zigzag and 3D keep the full-length hover.
+  Verified: `probe-scenario-quiz`, `probe-final` and `probe-coverage56` green.
 - **Verification:** `node --check` clean; 422/422 byte-identical round-trip;
   audit 147 molecules / 0 issues (heavy 1.17 ± 3%, H 0.78 ± 3%, expanded =
   condensed atom/coordinate/bond-table prefix, chain arrays, charges,
