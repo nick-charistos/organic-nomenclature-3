@@ -1,9 +1,9 @@
-# Detailed naming algorithm flowcharts (v57)
+# Detailed naming algorithm flowcharts (v59)
 
 These diagrams follow the 2D Greek naming path in
-[mulermoc-nom-core-57.js](../js/mulermoc-nom-core-57.js). They describe what
+[mulermoc-nom-core-59.js](../js/mulermoc-nom-core-59.js). They describe what
 the code does, not a complete implementation of IUPAC rules. The
-[overview](NAMING-FLOWCHART-57.md) shows how the stages fit together. English
+[overview](NAMING-FLOWCHART.md) shows how the stages fit together. English
 naming and the separate 3D analysis path are outside this document.
 
 ## 1. Analyse the structure

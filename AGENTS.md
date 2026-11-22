@@ -27,6 +27,7 @@ overrides the verification and commit rules elsewhere in this file.
 ## Read first
 
 - `README.md` — product/feature baseline.
+- `docs/README.md` — current-doc index (`docs/archive/` is historical only).
 - `docs/CHANGELOG.md` (`[v59]`) — versioned change record.
 - `docs/SESSION-NOTES.md` — cross-machine resume pointer and dated entries.
 - `docs/didactic-scenario-plan.md` — LEARN/scenario layer.

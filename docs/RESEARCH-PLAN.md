@@ -95,7 +95,7 @@ DeFT also identifies **design parameters** that affect learning:
 
 **Independent variables (manipulated)**
 - Representation condition: {2D-condensed | 2D-expanded | 2D-skeletal | 3D | 2D+3D simultaneous}
-- Quiz scenario: {A | B | C | D | E} (see DEVELOPMENT-PLAN.md)
+- Quiz scenario: {A | B | C | D | E} (see `docs/archive/plans/DEVELOPMENT-PLAN.md`)
 - Rule group: {0–8} (complexity level)
 
 **Dependent variables (measured)**
@@ -172,7 +172,7 @@ DeFT also identifies **design parameters** that affect learning:
 
 ---
 
-## Required App Features for Research (must be in DEVELOPMENT-PLAN.md)
+## Required App Features for Research (must be in `docs/archive/plans/DEVELOPMENT-PLAN.md`)
 
 These must be designed into the quiz SPA **before** any data collection, not retrofitted:
 
@@ -214,4 +214,3 @@ These must be designed into the quiz SPA **before** any data collection, not ret
 3. What constitutes a valid transfer test for this domain — a structurally novel molecule, a novel rule application, or a different representation of a studied molecule?
 4. Ethics approval scope: student population, data storage, GDPR compliance for logging (especially if server-side)
 5. Should spatial ability be a covariate or a stratification variable for group assignment?
-

@@ -1,12 +1,12 @@
 # Chemistry review — `core-56.js` and `molview-56.js` (v56)
 
-Date: 2026-11-13. Scope: all chemistry in [js/mulermoc-nom-core-56.js](../js/mulermoc-nom-core-56.js) (structure analysis, group detection, main-chain choice, numbering, naming, 3D mirror) and the chemistry paths of [js/mulermoc-nom-molview-56.js](../js/mulermoc-nom-molview-56.js) (draft sandbox, condensed-formula renderer, systematic Greek substituent variants, quiz chain comparison). UI, highlighting and layout code in molview was not reviewed.
+Date: 2026-11-13. Scope: all chemistry in [js/mulermoc-nom-core-56.js](../../../js/mulermoc-nom-core-56.js) (structure analysis, group detection, main-chain choice, numbering, naming, 3D mirror) and the chemistry paths of [js/mulermoc-nom-molview-56.js](../../../js/mulermoc-nom-molview-56.js) (draft sandbox, condensed-formula renderer, systematic Greek substituent variants, quiz chain comparison). UI, highlighting and layout code in molview was not reviewed.
 
 Status: items 1–7 and the orientation items O1–O2 below are **fixed** in this change set. Everything under "Open / recommended" is documented but not changed.
 
 ## Verification
 
-Regression page: [zz-test-core56.html](../zz-test-core56.html) (serve the repo root, e.g. `python -m http.server 8099`, open the page; title becomes `CORE56-DONE PASS|FAIL`, full JSON in `#out`).
+Regression page: [zz-test-core56.html](../../../zz-test-core56.html) (serve the repo root, e.g. `python -m http.server 8099`, open the page; title becomes `CORE56-DONE PASS|FAIL`, full JSON in `#out`).
 
 - All 141 stored molecules: Greek name, English name, slot list, functional groups and main chain compared before/after, plus the 3D mirror (`fParseSDF3D` → `fDetectMolType3D` → `fCalcMainChain3D`) for all 141 stored SDFs. **0 differences** against `HEAD`.
 - 31 drawn probes (SMILES → MOL → the draft path `fAnalyseStructure` / `fDetectMolType` / `fGuessName` + EN transliteration), each with an expected English name or an expected decline. **31/31 pass.**

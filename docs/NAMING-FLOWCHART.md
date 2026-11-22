@@ -1,6 +1,6 @@
-# Naming algorithm flowchart (v57)
+# Naming algorithm flowchart (v59)
 
-High-level flow based on [mulermoc-nom-core-57.js](../js/mulermoc-nom-core-57.js).
+High-level flow based on [mulermoc-nom-core-59.js](../js/mulermoc-nom-core-59.js).
 
 ```mermaid
 flowchart TD

@@ -7,7 +7,7 @@
 ---
 
 ## Research Dimension
-The quiz system is also a **research tool**. Full research design, theoretical framework (CTML + DeFT), RQs, study distribution, and methodology are in **[RESEARCH-PLAN.md](RESEARCH-PLAN.md)**.
+The quiz system is also a **research tool**. Full research design, theoretical framework (CTML + DeFT), RQs, study distribution, and methodology are in **[RESEARCH-PLAN.md](../../RESEARCH-PLAN.md)**.
 
 Summary: comparing which molecular representation (2D-condensed / 2D-expanded / 2D-annotated-skeletal / 2D-skeletal / 3D) leads to better identification accuracy and faster learning. Every student interaction must be logged with the active representation.
 

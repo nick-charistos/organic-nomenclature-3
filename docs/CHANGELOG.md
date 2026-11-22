@@ -127,6 +127,13 @@ are v58's — only data geometry and the MOL pipeline changed.
   trimmed at the label boxes (plus the stroke half-width), so it no longer
   runs across the text; skeletal/zigzag and 3D keep the full-length hover.
   Verified: `probe-scenario-quiz`, `probe-final` and `probe-coverage56` green.
+- **Docs consolidated (docs-only).** Added `docs/README.md` as the current-doc
+  index and `docs/archive/README.md` for historical material. Moved superseded
+  plans, session handoffs, reviews, thesis notes and the import procedure to
+  `docs/archive/`; split pre-v54 session notes to
+  `docs/archive/SESSION-NOTES-pre-v54.md`; removed the obsolete OpenCode
+  migration notes and stale v45 flowcharts. Updated README/AGENTS links and
+  refreshed the English teacher guide for v59. No code change.
 - **Verification:** `node --check` clean; 422/422 byte-identical round-trip;
   audit 147 molecules / 0 issues (heavy 1.17 ± 3%, H 0.78 ± 3%, expanded =
   condensed atom/coordinate/bond-table prefix, chain arrays, charges,
@@ -219,7 +226,7 @@ Forked from v55 (`mulermoc-nom-56.html` + `js/*-56.js` + `css/*-56.css` + `jsme-
 - Bond hover and clicks are disabled while the main-chain quiz is armed; bond clicks leave existing picks intact. Atom picking and free-selection bond behavior remain unchanged. The viewer script URL is cache-busted to `?v=56.2`.
 
 ### Chemistry review fixes (v56 working tree, 2026-11-13)
-- Review report: `docs/REVIEW-CORE-MOLVIEW-56.md`. Regression page `zz-test-core56.html` (141 stored molecules + 3D mirror identical to HEAD; 31 drawn probes pass).
+- Review report: `docs/archive/reviews/REVIEW-CORE-MOLVIEW-56.md`. Regression page `zz-test-core56.html` (141 stored molecules + 3D mirror identical to HEAD; 31 drawn probes pass).
 - `core-56.js`: numeric locant sorts; multi-group naming rewritten per substituent type (halogens now named as prefixes, principal alcohol/ketone locant emitted); fail-closed whitelist of supported elements/groups (`fDeclineNaming` for amines, imines, nitroso, S/P, ether/ester mixes, multi-FG + C=C); polynitro multiplier; nitro detection tightened (exactly C + 2 O) and nitro O no longer misread as ketone/aldehyde (2D and 3D); `fAnchorCarbonOf` for nitro anchors; only the senior of alcohol/ketone/amine is "principal" for numbering; acid outranks ester for C1.
 - `molview-56.js`: expanded-mode hydrogen picks remain distinct hydrogen atoms in quiz comparisons; the proposed H-to-carbon fold was reverted. Its script URL is cache-busted to `?v=56.1`.
 
@@ -412,8 +419,8 @@ New parallel file set `mulermoc-nom-53.html` + `js/*-53.js` + `css/*-53.css`, fo
 - Live full run: 100 match (92 systematic + 8 retained), 10 mismatch (implied-locant omissions + retained common groups/names, §B/§C/P3 queue), 34 missing (15 novel §E molecules + 19 bulk-run throttled), 0 pending/delegated/Greek-fallback.
 
 ### Docs
-- `docs/REVIEW-EN-53.md`: human-review handoff (§A–§E oracle queues, §F–§N validation log).
-- `docs/TEACHER-GUIDE-EN-53.md`: short teacher guide (switching, authoring, per-step language, marker legend).
+- `docs/archive/reviews/REVIEW-EN-53.md`: human-review handoff (§A–§E oracle queues, §F–§N validation log).
+- `docs/TEACHER-GUIDE-EN.md`: short teacher guide (switching, authoring, per-step language, marker legend).
 - `docs/CHEM-LIBRARIES.md`: evaluated 2D/3D/cheminformatics/naming libraries with links, pros/cons, project fit.
 
 ## [v52] (unified rich note editor: inline WYSIWYG, modal WYSIWYG + HTML source, lazy legacy text upgrade; was live, `index.html` → v52 before v53)
@@ -477,7 +484,7 @@ New parallel file set `mulermoc-nom-52.html` + `js/*-52.js` + `css/*-52.css`, fo
 - Core (`core-52.js`): ported acyclic aldehyde/ketone/monoether graph guards, ketone-locant preservation, C4 alkyl names (iso-/sec-/tert-), ether prefix/common-label grouping, and candidate-path filtering. Existing v52 ether naming remains covered by the new rooted-fragment logic.
 - Viewer (`molview-52.js`): methanal (`HCHO`) keeps both hydrogens and avoids phantom compact-label rectangles; sequential ketone numbering wrapper plus ketone explanation/rule cases; ether branch groups, `etherInfo`-based common-name parts, and ether branch-highlight fallbacks; optional `initialZoom3D`; 3D atom-symbol restoration guard. Fitting/uniform-frame and palette experiments from thesis-work were not ported.
 - Teaching (`teaching-52.js`): added the alkoxy rule table alongside the existing alkyl table; both remain available through `namingRules`. The note editor now exposes `rule-table:alkoxy` as a sixth predefined component.
-- Docs: added `docs/THESIS-WORK-V52-STEP-TEXT.md` (Greek feature brief for the thesis-work line, focused on the step-text/authoring upgrade) and refreshed current-state docs.
+- Docs: added `docs/archive/thesis/THESIS-WORK-V52-STEP-TEXT.md` (Greek feature brief for the thesis-work line, focused on the step-text/authoring upgrade) and refreshed current-state docs.
 - Verification: data loads as 126/126 `nameExamples` + `window.MOL2D` keys with no missing MOL registrations; headless Chrome named all 28 additions without exceptions (ketones/diones, aldehydes/dials, ethers), methanal renders `HCHO` and explains as an aldehyde, and the alkoxy/alkyl tables resolve. Ether click checks: all 7 new monoethers render correct common names (including `ισοβουτυλοϊσοπροπυλαιθέρας`), IUPAC locant/prefix and common alkyl clicks produce 2D highlights/numbering, and alkoxy prefix selections populate/select the alkoxy table with the same collapsed-until-opened tile behavior as other rule tables. Hardened `fIsAcyclicMonoetherGraph` plus the `fShowRule` alkoxy call site against missing analysis arrays; cold page load and non-ether prefix clicks are clean. `git diff --check` clean.
 
 ### 2026-10-28 — Carboxylic-acid extension (v52, live)
@@ -654,7 +661,7 @@ New parallel file set `mulermoc-nom-51.html` + `js/*-51.js` + `css/*-51.css`, fo
 - Snap.svg has been removed from v51; the 2D overlay now uses the native `MuSVG` helper. jQuery 4.0.0 is vendored but needs a browser compatibility pass (no removed APIs were found by static grep).
 
 ### Docs / checks
-- Added `docs/Presentation-Step-Rich-Text-PLAN.md` (locked decisions, security model, phases) and refreshed `docs/didactic-scenario-plan.md`.
+- Added `docs/archive/plans/Presentation-Step-Rich-Text-PLAN.md` (locked decisions, security model, phases) and refreshed `docs/didactic-scenario-plan.md`.
 - Static: `node --check` passes on all v51 JS; CSS brace balance `305/305` (`jsme-nick-51.css`) and `275/275` (`scenario-51.css`); local v51 HTML asset refs resolve; no duplicate ids in the v51 HTML.
 - Earlier runtime suite (Node 22 + jsdom 26 + the vendored DOMPurify/jQuery): 95/95 sanitizer checks and 38/38 scenario-integration checks passed before the presentation wide/focus controls were removed. Those tests still reference the removed `openFocus`/wide APIs, so update and rerun them before reuse. Coverage included tag/attribute/class stripping, links and images (including control-character and encoded `javascript:` variants), table wrapping, all five component keys, missing components, image error fallback, action registry, text/legacy fallback, fail-closed without DOMPurify, plain-text conversion, and jQuery 4 basics.
 - Fixed during the runtime suite: remove `USE_PROFILES` so `ALLOWED_TAGS` is a strict allowlist (`<h2>` was previously retained); separate block/`<br>` text nodes with spaces (or newlines) in `toPlainText` (`<p>a</p><p>b</p>` was `ab`); reject control characters in note URLs; fail closed if post-clean/component expansion throws; title-only steps no longer render an empty note body; keep image alt text and component markers when converting a rich note to text.
