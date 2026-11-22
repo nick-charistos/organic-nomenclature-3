@@ -569,11 +569,11 @@ function fInitNomeclatureMenu() {
   var _menuCollapseTip = _menuCollapsedNow ? "Ανάπτυξη μενού" : "Σύμπτυξη μενού";
   try { if (typeof fMulerT === "function") _menuCollapseTip = fMulerT(_menuCollapsedNow ? "expandMenu" : "collapseMenu"); } catch (eMCT) {}
   let myHTML = `<div class='panelTitle'><button id='menuCollapseBtn' type='button' class='menuCollapseBtn' data-tooltip='${_menuCollapseTip}' aria-label='${_menuCollapseTip}' aria-expanded='${_menuCollapsedNow ? "false" : "true"}'>☰</button><span class='menuTitleText'>${(typeof fMulerT === "function") ? fMulerT("examples") : "Μενού"}</span></div>
-    <div class='groupingMode' role='group' aria-label='${(typeof fMulerT === "function") ? fMulerT("molGrouping") : "Ομαδοποίηση μορίων"}'>
-    <div class='radioCheckContainer ${moleculeGroupingMode === "all" ? "selectedRadio" : "unselectedRadio"}' data-grouping-mode='all'>${(typeof fMulerT === "function") ? fMulerT("allMolecules") : "Όλα τα μόρια"}<span class='radioCheck'></span></div>
-    <div class='radioCheckContainer ${moleculeGroupingMode === "chemclass" ? "selectedRadio" : "unselectedRadio"}' data-grouping-mode='chemclass'>${(typeof fMulerT === "function") ? fMulerT("chemClasses") : "Χημικές Τάξεις"}<span class='radioCheck'></span></div>
-    <div class='radioCheckContainer ${moleculeGroupingMode === "series" ? "selectedRadio" : "unselectedRadio"}' data-grouping-mode='series'>${(typeof fMulerT === "function") ? fMulerT("homolSeries") : "Ομόλογες Σειρές"}<span class='radioCheck'></span></div>
-    </div><div class='menuNomeclature2Container'>`;
+    <fieldset class='groupingMode' aria-label='${(typeof fMulerT === "function") ? fMulerT("molGrouping") : "Ομαδοποίηση μορίων"}'>
+    <label class='nativeOption'><input type='radio' name='groupingMode' value='all' data-grouping-mode='all'${moleculeGroupingMode === "all" ? " checked" : ""}> ${(typeof fMulerT === "function") ? fMulerT("allMolecules") : "Όλα τα μόρια"}</label>
+    <label class='nativeOption'><input type='radio' name='groupingMode' value='chemclass' data-grouping-mode='chemclass'${moleculeGroupingMode === "chemclass" ? " checked" : ""}> ${(typeof fMulerT === "function") ? fMulerT("chemClasses") : "Χημικές Τάξεις"}</label>
+    <label class='nativeOption'><input type='radio' name='groupingMode' value='series' data-grouping-mode='series'${moleculeGroupingMode === "series" ? " checked" : ""}> ${(typeof fMulerT === "function") ? fMulerT("homolSeries") : "Ομόλογες Σειρές"}</label>
+    </fieldset><div class='menuNomeclature2Container'>`;
 
   if (moleculeGroupingMode === "all") {
     let counter = 0;
@@ -1120,108 +1120,47 @@ $(document).ready(function () {
     if (typeof fShowNameAnalysis === "function") fShowNameAnalysis();
   });
 
-  // ---- Drop menu: init early so upstream errors don't prevent it loading ----
-  let dropState = false;
-  let selectedLabel;
-
-  let menuItmes = ["Σφαίρες και Ράβδοι", "Χωροπληρωτικό", "Ράβδοι"];
-  try {
-    if (typeof fVisStyleLabels === "function" && typeof fMulerLang === "function" && fMulerLang() === "en") {
-      const _vl = fVisStyleLabels();
-      menuItmes = [_vl.ballnstick, _vl.spacefill, _vl.sticks];
-    }
-  } catch (e) { }
-  fCreateDropMenu(menuItmes);
-
-  $("html").on("click", function () {
-    $("#dropLiContainer").slideUp(100);
-    $("#dropLabel").removeClass("open").addClass("closed");
-    dropState = false;
-  });
-
-  $(document).on("click", "#dropLabel", function (event) {
-    event.stopPropagation();
-    dropState = !dropState;
-    $("#dropLiContainer").slideToggle(100);
-    if (dropState) {
-      $(this).removeClass("closed").addClass("open");
-    } else {
-      $(this).removeClass("open").addClass("closed");
-    }
-  });
-
-  $(document).on("click", ".dropLi", function () {
-    selectedLabel = $(this).html();
-    $("#dropLabel").html(selectedLabel);
-    $("#dropLiContainer").slideUp(100);
-    dropState = false;
-    $("#dropLabel").removeClass("open").addClass("closed");
-  });
-
-  $(document).on("click", ".molvis .dropLi", function () {
-    const myID = $(this).attr("id");
-    switch (myID) {
-      case "dropLi0":
-        vis3D = "ballnstick";
-        break;
-      case "dropLi1":
-        vis3D = "spacefill";
-        break;
-      case "dropLi2":
-        vis3D = "sticks";
-        break;
-    }
+  // ---- Native 3D style select (v59.10) ----
+  (function () {
+    var sel = document.getElementById("style3D");
+    if (!sel) return;
+    try {
+      if (typeof fVisStyleLabels === "function") {
+        var vl = fVisStyleLabels();
+        if (vl) {
+          if (sel.options[0]) sel.options[0].textContent = vl.ballnstick;
+          if (sel.options[1]) sel.options[1].textContent = vl.spacefill;
+          if (sel.options[2]) sel.options[2].textContent = vl.sticks;
+        }
+      }
+    } catch (e) { /* labels best-effort */ }
+    sel.value = (typeof vis3D !== "undefined") ? vis3D : "ballnstick";
+  })();
+  $(document).on("change", "#style3D", function () {
+    var val = this.value;
+    if (val !== "ballnstick" && val !== "spacefill" && val !== "sticks") return;
+    vis3D = val;
     fSetMolVis3D(vis3D);
   });
   // ---- End drop menu early init ----
 
   // Add data (2D structure files ) to nameExamples object
 
-  $("#zigzagCheck")
-    .addClass("disabledCheck")
-    .removeClass("selectedCheck")
-    .addClass("unselectedCheck");
+  $("#zigzagCheck input[type='checkbox']").prop("disabled", true).prop("checked", false);
 
-  $("#radio2DMode").on("click", ".mode2DOption", function () {
-    if ($(this).hasClass("disabledRadio")) {
-      return;
-    }
+  $("#radio2DMode").on("change", "input[name='mode2D']", function () {
+    if (this.disabled) return;
     // Draft session (v54 Stage 2): radios are hidden while editing; guard in
     // case the bar is reached anyway — finish the draft first.
     if (typeof window !== "undefined" && window.MulerDraft) {
       try { if (typeof fScenarioToast === "function") fScenarioToast(fMolDraftT("draftLocked", "Finish the draft first (Submit/Cancel).")); } catch (eD) { }
+      fUpdateDiagr2DButton();
       return;
     }
-    let currMode2DNo = $(this)
-      .parent()
-      .children(".radioCheckContainer")
-      .index(this);
-    switch (currMode2DNo) {
-      case 0:
-        mode2D = "condensed";
-        modeSuffix = "_2D_Condensed";
-        $("#zigzagCheck")
-          .addClass("disabledCheck")
-          .removeClass("selectedCheck")
-          .addClass("unselectedCheck");
-        break;
-      case 1:
-        mode2D = "expanded";
-        modeSuffix = "_2D_Expanded";
-        $("#zigzagCheck")
-          .addClass("disabledCheck")
-          .removeClass("selectedCheck")
-          .addClass("unselectedCheck");
-        break;
-      case 2:
-        mode2D = "skeletal";
-        modeSuffix = "_2D_Skeletal";
-        $("#zigzagCheck")
-          .removeClass("disabledCheck")
-          .removeClass("selectedCheck")
-          .addClass("unselectedCheck");
-        break;
-    }
+    var val = this.value;
+    mode2D = val === "expanded" ? "expanded" : val === "skeletal" ? "skeletal" : "condensed";
+    modeSuffix = val === "expanded" ? "_2D_Expanded" : val === "skeletal" ? "_2D_Skeletal" : "_2D_Condensed";
+    fUpdateDiagr2DButton();
 
     fUpdateChainModeButton();
     if (!selectedMol || !nameExamples[selectedMol]) {
@@ -1233,23 +1172,17 @@ $(document).ready(function () {
     fShowNameAnalysis();
   });
 
-  $("#zigzagCheck").on("click", function () {
-    if ($(this).hasClass("disabledCheck")) {
-      return;
-    }
-    // Draft session (v54 Stage 2): see the mode2DOption guard above.
+  $("#zigzagCheck input[type='checkbox']").on("change", function () {
+    if (this.disabled) return;
+    // Draft session (v54 Stage 2): see the mode2D guard above.
     if (typeof window !== "undefined" && window.MulerDraft) {
       try { if (typeof fScenarioToast === "function") fScenarioToast(fMolDraftT("draftLocked", "Finish the draft first (Submit/Cancel).")); } catch (eD) { }
+      fUpdateDiagr2DButton();
       return;
     }
-    // Generic .checkBoxContainer handler fires after this and toggles the class,
-    // so read the CURRENT class to determine what state we are moving TO.
-    if ($(this).hasClass("unselectedCheck")) {
-      mode2D = "condensedZigZag";
-    } else {
-      mode2D = "skeletal";
-    }
+    mode2D = this.checked ? "condensedZigZag" : "skeletal";
     modeSuffix = "_2D_Skeletal";
+    fUpdateDiagr2DButton();
     fUpdateChainModeButton();
     if (!selectedMol || !nameExamples[selectedMol]) {
       return;
@@ -1732,7 +1665,7 @@ $(document).ready(function () {
     }
   });
 
-  $(document).on("click", ".groupingMode [data-grouping-mode]", function () {
+  $(document).on("change", ".groupingMode input[data-grouping-mode]", function () {
     const selectedMode = $(this).data("grouping-mode");
     if (selectedMode === moleculeGroupingMode) return;
     const previousMol = selectedMol;
@@ -1759,13 +1692,13 @@ $(document).ready(function () {
 
   //////////////////////////////////////////////////////////
 
-  $("#atomSymbolsCheck").on("click", function () {
-    atomSymbols3DFlag = !atomSymbols3DFlag;
+  $("#atomSymbolsCheck input[type='checkbox']").on("change", function () {
+    atomSymbols3DFlag = !!this.checked;
     showAtomSymbols3D();
   });
 
-  $("#hydrogensCheck").on("click", function () {
-    hydrogens3DFlag = !hydrogens3DFlag;
+  $("#hydrogensCheck input[type='checkbox']").on("change", function () {
+    hydrogens3DFlag = !!this.checked;
     showHydrogens3D();
   });
 

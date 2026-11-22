@@ -8,7 +8,7 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 Forked from v58.50, rebased on v58.51 (`mulermoc-nom-59.html` + `js/*-59.js` + `css/*-59.css` +
 `jsme-nick-nomeclature-moc2-data_59.js` + `spt/init-3-59.spt` +
-`zz-test-core59.html`, `?v=59.09`; `ui-icons.js`, `js/vendor/`, `jsme/` and
+`zz-test-core59.html`, `?v=59.10`; `ui-icons.js`, `js/vendor/`, `jsme/` and
 `mols/` stay shared). Chemistry/naming results and the scenario quiz contract
 are v58's — only data geometry and the MOL pipeline changed.
 
@@ -158,6 +158,13 @@ are v58's — only data geometry and the MOL pipeline changed.
   a draft also collapses the menu (previous state restored on teardown).
   Verified: `probe-scenario-quiz` and `probe-final` green; mobile authoring
   checked at 360/390/430px.
+- **Native viewer/menu controls (v59.10).** The 2D representation row and
+  3D controls now use native radios, checkboxes and a native style select
+  (28px rows, was 36). Menu grouping is a native fieldset/radio group. Existing
+  IDs/classes stay as compatibility hooks for scenarios and probes. The 3D
+  style select replaces the custom dropdown; EN labels and scenario control
+  sync were updated. Verified: `probe-final`, `probe-mode-quiz` and
+  `probe-scenario-quiz` green; headless mode/zigzag/3D flag checks pass.
 - **Verification:** `node --check` clean; 422/422 byte-identical round-trip;
   audit 147 molecules / 0 issues (heavy 1.17 ± 3%, H 0.78 ± 3%, expanded =
   condensed atom/coordinate/bond-table prefix, chain arrays, charges,

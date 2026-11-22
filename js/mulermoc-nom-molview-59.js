@@ -9875,18 +9875,13 @@ function fUpdateChainModeButton() {
 // back to the first available representation (condensed > expanded > skeletal).
 
 function fUpdateDiagr2DButton() {
-  const $modeBtns = $("#radio2DMode .radioCheckContainer");
-  const $condBtn = $modeBtns.eq(0);
-  const $expBtn = $modeBtns.eq(1);
-  const $diagrBtn = $modeBtns.eq(2);
-  const $zigzagCheck = $("#zigzagCheck");
+  const $modeInputs = $("#radio2DMode input[name='mode2D']");
   const ex = selectedMol ? nameExamples[selectedMol] : null;
   const hasCondensed2D = !selectedMol || !!ex?.structure2D_Condensed;
   const hasExpanded2D = !selectedMol || !!ex?.structure2D_Expanded;
   const hasSkeletal2D = !selectedMol || !!ex?.structure2D_Skeletal;
-  $condBtn.toggleClass("disabledRadio", !hasCondensed2D);
-  $expBtn.toggleClass("disabledRadio", !hasExpanded2D);
-  $diagrBtn.toggleClass("disabledRadio", !hasSkeletal2D);
+  const available = [hasCondensed2D, hasExpanded2D, hasSkeletal2D];
+  const $zigInput = $("#zigzagCheck input[type='checkbox']");
 
   const modeAvailable =
     mode2D === "condensed"
@@ -9905,32 +9900,15 @@ function fUpdateDiagr2DButton() {
       mode2D = "skeletal";
       modeSuffix = "_2D_Skeletal";
     }
-    const fallbackIdx =
-      mode2D === "expanded" ? 1 : mode2D === "condensed" ? 0 : 2;
-    $modeBtns.removeClass("selectedRadio").addClass("unselectedRadio");
-    $modeBtns
-      .eq(fallbackIdx)
-      .removeClass("unselectedRadio")
-      .addClass("selectedRadio");
   }
-
-  if (hasSkeletal2D) {
-    if (mode2D === "skeletal" || mode2D === "condensedZigZag") {
-      // $zigzagCheck.show();
-      $zigzagCheck.removeClass("disabledCheck");
-      if (mode2D === "condensedZigZag") {
-        $zigzagCheck.removeClass("unselectedCheck").addClass("selectedCheck");
-      } else {
-        $zigzagCheck.removeClass("selectedCheck").addClass("unselectedCheck");
-      }
-    } else {
-      $zigzagCheck.addClass("disabledCheck");
-      $zigzagCheck.removeClass("selectedCheck").addClass("unselectedCheck");
-    }
-  } else {
-    $zigzagCheck.addClass("disabledCheck");
-    $zigzagCheck.removeClass("selectedCheck").addClass("unselectedCheck");
-  }
+  const activeIdx = mode2D === "expanded" ? 1 : mode2D === "condensed" ? 0 : 2;
+  $modeInputs.each(function (i) {
+    this.disabled = !available[i];
+    this.checked = (i === activeIdx);
+  });
+  const zigOn = hasSkeletal2D && (mode2D === "skeletal" || mode2D === "condensedZigZag");
+  $zigInput.prop("disabled", !zigOn);
+  $zigInput.prop("checked", mode2D === "condensedZigZag");
 }
 
 // ── fSyncAtomColorModeDisabled ────────────────────────────────────────────
@@ -18893,7 +18871,7 @@ function fSetMolVis3D(theVisModel) {
       break;
     case "sticks":
       mySpt =
-        " select all and not _Xx;  spacefill off; wireframe 0.2;  set labelFront on;" +
+        " select all and not _Xx;  spacefill off; wireframe 90%;  set labelFront on;" +
         JmolSelection;
       break;
   }

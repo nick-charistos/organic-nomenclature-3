@@ -18,8 +18,8 @@
 
 <title>MolWave: Ονοματολογία Οργανικών Ενώσεων</title>
 
-  <link rel="stylesheet" href="css/jsme-nick-59.css?v=59.09" />
-  <link rel="stylesheet" href="css/mulermoc-nom-scenario-59.css?v=59.09" />
+  <link rel="stylesheet" href="css/jsme-nick-59.css?v=59.10" />
+  <link rel="stylesheet" href="css/mulermoc-nom-scenario-59.css?v=59.10" />
 
   <script src="jsme/jsme.nocache.js"></script>
   <script src="js/vendor/jquery/jquery-4.0.0.min.js"></script>
@@ -206,19 +206,23 @@
             </div>
             <div id="radio2DMode">
               <div class="radioGroupContainer HFlex">
-                <div class="HFlex" style="align-items: center">
-                  <div class="radioCheckContainer mode2DOption selectedRadio">
-                    Συνεπτυγμένος<span class="radioCheck"></span>
-                  </div>
-                  <div class="radioCheckContainer mode2DOption unselectedRadio">
-                    Ανεπτυγμένος<span class="radioCheck"></span>
-                  </div>
-                  <div class="radioCheckContainer mode2DOption unselectedRadio">
-                    Σκελετικός<span class="radioCheck"></span>
-                  </div>
-                  <div id="zigzagCheck" class="checkBoxContainer unselectedCheck" style="margin-left: 10px">
-                    Σύμβολα CH<sub>n</sub><span class="checkBox"></span>
-                  </div>
+                <div class="HFlex nativeOptions" style="align-items: center">
+                  <label class="mode2DOption nativeOption">
+                    <input type="radio" name="mode2D" value="condensed" checked />
+                    <span>Συνεπτυγμένος</span>
+                  </label>
+                  <label class="mode2DOption nativeOption">
+                    <input type="radio" name="mode2D" value="expanded" />
+                    <span>Ανεπτυγμένος</span>
+                  </label>
+                  <label class="mode2DOption nativeOption">
+                    <input type="radio" name="mode2D" value="skeletal" />
+                    <span>Σκελετικός</span>
+                  </label>
+                  <label id="zigzagCheck" class="nativeOption">
+                    <input type="checkbox" />
+                    <span>Σύμβολα CH<sub>n</sub></span>
+                  </label>
                 </div>
                 <div id="view2DTools" class="HFlex">
                   <button id="zoomOutBtn" class="viewerToolBtn" onclick="fZoom2D(-1)" data-tooltip="Σμίκρυνση 2D">
@@ -244,14 +248,20 @@
               </script>
             </div>
             <div id="controls3D" class="HFlex">
-              <div class="HFlex" style="align-items: center">
-                <div id="hydrogensCheck" class="checkBoxContainer selectedCheck">
-                  Υδρογόνα <span style="color: #666">C</span>-H<span class="checkBox"></span>
-                </div>
-                <div id="atomSymbolsCheck" class="checkBoxContainer selectedCheck" data-lang="atomSymbolsBar">
-                  Σύμβολα ατόμων <span class="checkBox"></span>
-                </div>
-                <div id="dropMenu" style="margin-top: 2px"></div>
+              <div class="HFlex nativeOptions" style="align-items: center">
+                <label id="hydrogensCheck" class="nativeOption">
+                  <input type="checkbox" checked />
+                  <span>Υδρογόνα <span style="color: #666">C</span>-H</span>
+                </label>
+                <label id="atomSymbolsCheck" class="nativeOption">
+                  <input type="checkbox" checked />
+                  <span data-lang="atomSymbolsBar">Σύμβολα ατόμων</span>
+                </label>
+                <select id="style3D" aria-label="Στυλ 3D">
+                  <option value="ballnstick">Σφαίρες και Ράβδοι</option>
+                  <option value="spacefill">Χωροπληρωτικό</option>
+                  <option value="sticks">Ράβδοι</option>
+                </select>
               </div>
               <div id="view3DTools" class="HFlex">
                 <button id="rotate3DBtn" class="viewerToolBtn" onclick="fToggleRotate3D()" data-tooltip="Περιστροφή 3D" aria-label="Περιστροφή 3D" aria-pressed="false">
@@ -295,21 +305,21 @@
     </footer>
   </div>
 
-  <script src="js/jsme-nick-nomeclature-moc2-data_59.js?v=59.09"></script>
+  <script src="js/jsme-nick-nomeclature-moc2-data_59.js?v=59.10"></script>
   <!-- Accepted custom molecules (v54 Stage 2): save one MULERMOC_<name>_data.js
        per molecule from Ρυθμίσεις → Προσαρμοσμένα μόρια. Drop collected
        files next to the data file and register each one, e.g.:
-       <script src="js/MULERMOC_dimethyl_ether_data.js?v=59.09"></script> -->
-  <script src="js/ui-icons.js?v=59.09"></script>
-  <script src="js/mulermoc-nom-tooltip-59.js?v=59.09"></script>
-  <script src="js/mulermoc-nom-core-59.js?v=59.09"></script>
-  <script src="js/mulermoc-nom-molview-59.js?v=59.09"></script>
-  <script src="js/mulermoc-nom-teaching-59.js?v=59.09"></script>
-  <script src="js/mulermoc-nom-note-59.js?v=59.09"></script>
-  <script src="js/mulermoc-nom-scenario-59.js?v=59.09"></script>
-  <script src="js/mulermoc-nom-iupac-59.js?v=59.09"></script>
-  <script src="js/mulermoc-nom-lang-59.js?v=59.09"></script>
-  <script src="js/mulermoc-nom-name-en-59.js?v=59.09"></script>
+       <script src="js/MULERMOC_dimethyl_ether_data.js?v=59.10"></script> -->
+  <script src="js/ui-icons.js?v=59.10"></script>
+  <script src="js/mulermoc-nom-tooltip-59.js?v=59.10"></script>
+  <script src="js/mulermoc-nom-core-59.js?v=59.10"></script>
+  <script src="js/mulermoc-nom-molview-59.js?v=59.10"></script>
+  <script src="js/mulermoc-nom-teaching-59.js?v=59.10"></script>
+  <script src="js/mulermoc-nom-note-59.js?v=59.10"></script>
+  <script src="js/mulermoc-nom-scenario-59.js?v=59.10"></script>
+  <script src="js/mulermoc-nom-iupac-59.js?v=59.10"></script>
+  <script src="js/mulermoc-nom-lang-59.js?v=59.10"></script>
+  <script src="js/mulermoc-nom-name-en-59.js?v=59.10"></script>
   <script>
     window.JSApplet = window.JSApplet || {};
   </script>

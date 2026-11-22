@@ -538,13 +538,23 @@ function fMulerPaintStaticChrome() {
   } catch (e) {}
   try {
     var modes = document.querySelectorAll("#radio2DMode .mode2DOption");
-    if (modes[0] && modes[0].firstChild) modes[0].firstChild.textContent = fMulerT("condensed") + " ";
-    if (modes[1] && modes[1].firstChild) modes[1].firstChild.textContent = fMulerT("expanded") + " ";
-    if (modes[2] && modes[2].firstChild) modes[2].firstChild.textContent = fMulerT("skeletal") + " ";
+    if (modes[0]) {
+      var m0 = modes[0].querySelector("span");
+      if (m0) m0.textContent = fMulerT("condensed");
+    }
+    if (modes[1]) {
+      var m1 = modes[1].querySelector("span");
+      if (m1) m1.textContent = fMulerT("expanded");
+    }
+    if (modes[2]) {
+      var m2 = modes[2].querySelector("span");
+      if (m2) m2.textContent = fMulerT("skeletal");
+    }
   } catch (e) {}
   try {
     var zz = document.getElementById("zigzagCheck");
-    if (zz) zz.innerHTML = (lang === "en" ? "CH<sub>n</sub> symbols" : "Σύμβολα CH<sub>n</sub>") + '<span class="checkBox"></span>';
+    var zspan = zz ? zz.querySelector("span") : null;
+    if (zspan) zspan.innerHTML = (lang === "en" ? "CH<sub>n</sub> symbols" : "Σύμβολα CH<sub>n</sub>");
   } catch (e) {}
   try {
     var cands = document.querySelectorAll("#atomColorMode .atomColorModeRadio");
@@ -737,6 +747,7 @@ function fMulerTranslateTips(root) {
       "#chainStepperBox .settingLabel", ".scTitleText", ".nameEmptyHint",
       "#viewerCol .panelTitle > span", "#nameAnalysis .panelTitle > span", "#nomeclature2Menu > .panelTitle",
       ".radioCheckContainer", ".crossMenuLi[data-group-key]", ".scConfirmNo", ".scConfirmYes",
+      ".groupingMode .nativeOption",
       "#scenarioToast", ".nameStyleExpand",
       ".sshow", ".scTabText", ".scStepTitleLabel", ".scMolBadge",
       ".scNoteFontSize option", "#dropLabel", ".dropLi",

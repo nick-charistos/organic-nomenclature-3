@@ -1547,6 +1547,11 @@ function fScenarioRepaintStaticChrome() {
 function fScenarioSetCheck(id, on, selectedCls, unselectedCls) {
   var el = document.getElementById(id);
   if (!el) return;
+  var input = null;
+  try {
+    input = el.matches && el.matches("input") ? el : (el.querySelector ? el.querySelector("input[type='checkbox'], input[type='radio']") : null);
+  } catch (eI) { input = null; }
+  if (input) input.checked = !!on;
   el.classList.remove(on ? unselectedCls : selectedCls);
   el.classList.add(on ? selectedCls : unselectedCls);
 }
@@ -1573,12 +1578,8 @@ function fScenarioSyncControlUi() {
   try {
     var m2d = typeof mode2D !== "undefined" ? mode2D : "condensed";
     var idx = m2d === "expanded" ? 1 : (m2d === "skeletal" || m2d === "condensedZigZag") ? 2 : 0;
-    var btns = document.querySelectorAll("#radio2DMode .mode2DOption");
-    for (var k = 0; k < btns.length; k++) {
-      if (btns[k].classList.contains("disabledRadio")) continue;
-      btns[k].classList.remove(k === idx ? "unselectedRadio" : "selectedRadio");
-      btns[k].classList.add(k === idx ? "selectedRadio" : "unselectedRadio");
-    }
+    var btns = document.querySelectorAll("#radio2DMode input[name='mode2D']");
+    for (var k = 0; k < btns.length; k++) btns[k].checked = (k === idx);
   } catch (e) {
     /* controls unavailable */
   }
@@ -1591,10 +1592,8 @@ function fScenarioSyncControlUi() {
   }
   // (2D color panel rows sync via the registry loop above.)
   try {
-    // Same labels as fCreateDropMenu (teaching layer).
-    var visLabels = (typeof fVisStyleLabels === "function") ? fVisStyleLabels() : { ballnstick: "Σφαίρες και Ράβδοι", spacefill: "Χωροπληρωτικό", sticks: "Ράβδοι" };
-    var dl = document.getElementById("dropLabel");
-    if (dl && typeof vis3D !== "undefined" && visLabels[vis3D]) dl.innerHTML = visLabels[vis3D];
+    var _sel3d = document.getElementById("style3D");
+    if (_sel3d && typeof vis3D !== "undefined") _sel3d.value = vis3D;
   } catch (e) {
     /* controls unavailable */
   }
