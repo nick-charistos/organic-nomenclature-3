@@ -15,6 +15,15 @@
   var tip = null;
   var current = null;
   var timer = null;
+  // Touch/pen taps synthesize hover + focus; without this flag the tooltip
+  // would reappear after pointerdown and stay there (no mouseout on touch).
+  var touchPointer = false;
+
+  function hoverCapable() {
+    try {
+      return !!(window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches);
+    } catch (e) { return true; }
+  }
 
   function ensureTip() {
     if (tip && tip.parentNode) return tip;
@@ -99,6 +108,7 @@
     ensureTip();
 
     document.addEventListener("mouseover", function (ev) {
+      if (touchPointer || !hoverCapable()) return;
       var el = closestTip(ev.target);
       if (!el) return;
       if (current === el) return;
@@ -113,16 +123,25 @@
     }, true);
 
     document.addEventListener("focusin", function (ev) {
+      if (touchPointer) return;
       var el = closestTip(ev.target);
       if (el) schedule(el);
     }, true);
     document.addEventListener("focusout", function () { hideTip(); }, true);
 
-    document.addEventListener("pointerdown", hideTip, true);
+    document.addEventListener("pointerdown", function (ev) {
+      touchPointer = !!(ev && ev.pointerType && ev.pointerType !== "mouse");
+      hideTip();
+    }, true);
+    document.addEventListener("pointermove", function (ev) {
+      if (ev && ev.pointerType === "mouse") touchPointer = false;
+    }, true);
     window.addEventListener("scroll", hideTip, true);
     window.addEventListener("resize", hideTip);
     window.addEventListener("blur", hideTip);
     document.addEventListener("keydown", function (ev) {
+      // Keyboard focus is not a touch focus: allow its tooltip again.
+      touchPointer = false;
       if (ev && (ev.key === "Escape" || ev.key === "Esc")) hideTip();
     }, true);
   }
