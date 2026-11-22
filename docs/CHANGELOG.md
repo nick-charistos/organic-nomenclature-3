@@ -8,7 +8,7 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 Forked from v58.50, rebased on v58.51 (`mulermoc-nom-59.html` + `js/*-59.js` + `css/*-59.css` +
 `jsme-nick-nomeclature-moc2-data_59.js` + `spt/init-3-59.spt` +
-`zz-test-core59.html`, `?v=59.07`; `ui-icons.js`, `js/vendor/`, `jsme/` and
+`zz-test-core59.html`, `?v=59.08`; `ui-icons.js`, `js/vendor/`, `jsme/` and
 `mols/` stay shared). Chemistry/naming results and the scenario quiz contract
 are v58's — only data geometry and the MOL pipeline changed.
 
@@ -142,6 +142,12 @@ are v58's — only data geometry and the MOL pipeline changed.
   Measured at 360/390/430px: bar equals viewport width, panel fits, no
   horizontal overflow. The credits footer subtitle accent uses a dedicated
   vibrant-green token.
+- **Portrait menu header (v59.08).** At ?768px portrait the menu title text
+  is hidden and the authoring pick checkbox plus the collapse button form one
+  centered group (picker first). Both are position-static, so the hamburger
+  no longer jumps to the right edge or sits under the fixed scenario tab; the
+  picker stays usable. The collapsed state keeps the picker hidden and
+  centers the hamburger.
 - **Verification:** `node --check` clean; 422/422 byte-identical round-trip;
   audit 147 molecules / 0 issues (heavy 1.17 ± 3%, H 0.78 ± 3%, expanded =
   condensed atom/coordinate/bond-table prefix, chain arrays, charges,

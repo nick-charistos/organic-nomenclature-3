@@ -3633,6 +3633,34 @@ color: var(--veryLightEarth);
     writing-mode: horizontal-tb;
   }
 
+  /* Portrait menu header: one centered control group. The authoring pick
+     checkbox (when present) sits left of the hamburger; the "Menu" text is
+     hidden so the group never drifts under the fixed scenario tab. High
+     specificity overrides the absolute left/right placement above. */
+  #menuCol #nomeclature2Menu .panelTitle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 8px 0;
+  }
+  #menuCol #nomeclature2Menu .panelTitle .menuTitleText {
+    display: none;
+  }
+  #menuCol #nomeclature2Menu .panelTitle > #menuCollapseBtn,
+  #menuCol #nomeclature2Menu .panelTitle > #scPickToggle {
+    position: relative;
+    left: auto;
+    right: auto;
+    top: auto;
+    transform: none;
+    flex: 0 0 auto;
+  }
+  #menuCol #nomeclature2Menu .panelTitle > #scPickToggle {
+    order: -1;
+  }
+
   #menuCol {
     width: 100%;
     min-width: unset;
