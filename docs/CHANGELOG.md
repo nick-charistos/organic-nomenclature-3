@@ -8,7 +8,7 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 Forked from v58.50, rebased on v58.51 (`mulermoc-nom-59.html` + `js/*-59.js` + `css/*-59.css` +
 `jsme-nick-nomeclature-moc2-data_59.js` + `spt/init-3-59.spt` +
-`zz-test-core59.html`, `?v=59.08`; `ui-icons.js`, `js/vendor/`, `jsme/` and
+`zz-test-core59.html`, `?v=59.09`; `ui-icons.js`, `js/vendor/`, `jsme/` and
 `mols/` stay shared). Chemistry/naming results and the scenario quiz contract
 are v58's — only data geometry and the MOL pipeline changed.
 
@@ -148,6 +148,16 @@ are v58's — only data geometry and the MOL pipeline changed.
   no longer jumps to the right edge or sits under the fixed scenario tab; the
   picker stays usable. The collapsed state keeps the picker hidden and
   centers the hamburger.
+- **Mobile authoring refinements (v59.09).** Portrait authoring is now an
+  in-flow accordion above the footer: the title row is always visible and
+  starts collapsed, the scenario tab and close button are hidden, pinning is
+  disabled, and the title/New/Import controls expand the panel. The collapse
+  toggle uses the shared minimize/maximize icon. `#scenarioPanels` uses 5px
+  side padding, and the molecule menu list caps at 210px. The dev/WIP notice is
+  hidden by default and appears only during New/Edit molecule drafts; entering
+  a draft also collapses the menu (previous state restored on teardown).
+  Verified: `probe-scenario-quiz` and `probe-final` green; mobile authoring
+  checked at 360/390/430px.
 - **Verification:** `node --check` clean; 422/422 byte-identical round-trip;
   audit 147 molecules / 0 issues (heavy 1.17 ± 3%, H 0.78 ± 3%, expanded =
   condensed atom/coordinate/bond-table prefix, chain arrays, charges,

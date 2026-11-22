@@ -6204,6 +6204,15 @@ function fMolDraftAutoLinearizeOn() {
   } catch (e) { return true; }
 }
 
+// Draft mode folds the menu on portrait phones to free vertical space.
+// The caller restores the author's previous state on teardown.
+function fMolDraftMobilePortrait() {
+  try {
+    return !!(window.matchMedia &&
+      window.matchMedia("(max-width: 768px) and (orientation: portrait)").matches);
+  } catch (e) { return false; }
+}
+
 function fMolDraftEnter(mode) {
   if (fMolDraftPresenting()) return;
   if (window.MulerDraft) return;
@@ -6362,6 +6371,15 @@ function fMolDraftEnter(mode) {
   // The edit applet is edit-mode by construction — no toggle, no enforcement.
   setTimeout(function () { try { if (typeof fResizeViewers === "function") fResizeViewers(); } catch (eR2) {} }, 0);
   try { fMolDraftWatchEdits(); } catch (eW) {}
+  // Portrait phones: fold the menu now that the draft chrome is up. Teardown
+  // restores this exact state.
+  try {
+    if (window.MulerDraft && fMolDraftMobilePortrait()) {
+      var _mcDraft = document.getElementById("menuCol");
+      window.MulerDraft.menuCollapsedBefore = !!(_mcDraft && _mcDraft.classList && _mcDraft.classList.contains("collapsed"));
+      if (typeof fMenuCollapseSet === "function") fMenuCollapseSet(true);
+    }
+  } catch (eMCM) {}
 }
 
 function fEditMolDraft() {
@@ -8330,12 +8348,13 @@ function fMolDraftShowFlat3D() {
 // restores display mode. Returns the snapshot callers need (3D visibility,
 // chain mode). Does NOT reselect — callers own that.
 function fMolDraftTeardownDisplay() {
-  var snap = { back3D: false, preview3D: false, savedMode: null };
+  var snap = { back3D: false, preview3D: false, savedMode: null, menuCollapsedBefore: null };
   try {
     if (window.MulerDraft) {
       snap.back3D = !!window.MulerDraft.had3D;
       snap.preview3D = !!window.MulerDraft.preview3D;
       try { snap.savedMode = window.MulerDraft.savedChainMode; } catch (eSm) {}
+      if (typeof window.MulerDraft.menuCollapsedBefore === "boolean") snap.menuCollapsedBefore = window.MulerDraft.menuCollapsedBefore;
     }
   } catch (eG) {}
   try { if (typeof fMolDraftMinStopEngine === "function") fMolDraftMinStopEngine(); } catch (eSe) {}
@@ -8370,6 +8389,12 @@ function fMolDraftTeardownDisplay() {
   // Chain mode back to the author's setting (submit forced algorithmic);
   // the caller's fSelectMol re-syncs the radio UI from it.
   fMolDraftRestoreChainMode(snap.savedMode);
+  try {
+    if (fMolDraftMobilePortrait() && typeof snap.menuCollapsedBefore === "boolean" &&
+        typeof fMenuCollapseSet === "function") {
+      fMenuCollapseSet(snap.menuCollapsedBefore);
+    }
+  } catch (eMCR) {}
   setTimeout(function () { try { if (typeof fResizeViewers === "function") fResizeViewers(); } catch (eR2) {} }, 0);
   return snap;
 }

@@ -294,6 +294,8 @@ var MULER_STRINGS = {
   showHide: { gr: "Εμφάνιση/Απόκρυψη", en: "Show/hide" },
   collapseMenu: { gr: "Σύμπτυξη μενού", en: "Collapse menu" },
   expandMenu: { gr: "Ανάπτυξη μενού", en: "Expand menu" },
+  collapsePanel: { gr: "Σύμπτυξη πίνακα", en: "Collapse panel" },
+  expandPanel: { gr: "Ανάπτυξη πίνακα", en: "Expand panel" },
   commonName: { gr: "Κοινή", en: "Common" },
   etherNamingLabel: { gr: "Αιθέρες:", en: "Ethers:" },
   substNamingLabel: { gr: "Υποκαταστάτες:", en: "Substituents:" },

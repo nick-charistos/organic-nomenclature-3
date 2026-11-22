@@ -5318,6 +5318,7 @@ function fScenarioSetAuthoring(on) {
 // ORDER MATTERS: measure first — toggling scPinned restyles the layout, and
 // any read after that locks post-dock (stretched) pixels.
 function fScenarioSetPinned(on) {
+  if (on && fScenarioMobilePortrait()) on = false;
   var bar = document.getElementById("scenarioAuthorBar");
   var pin = document.getElementById("scPin");
   var vc = document.getElementById("viewerCol");
@@ -5492,6 +5493,34 @@ function fScenarioInitAuthorBarFit() {
   fScenarioScheduleAuthorBarFit();
 }
 
+// Portrait phones use the bottom-sheet authoring layout, never the desktop
+// pin-dock. The sheet leaves the app/menu visible above it.
+function fScenarioMobilePortrait() {
+  try {
+    return !!(window.matchMedia && window.matchMedia("(max-width: 768px) and (orientation: portrait)").matches);
+  } catch (e) { return false; }
+}
+
+// Orientation change into portrait: drop a pin that was set in landscape so
+// the bottom-sheet CSS can take over. The hidden pin button reappears when
+// the device returns to landscape.
+(function () {
+  try {
+    if (!window.matchMedia) return;
+    var mq = window.matchMedia("(max-width: 768px) and (orientation: portrait)");
+    var onPortrait = function (e) {
+      if (e && e.matches) {
+        MuLERMoCScenario.pinPref = false;
+        if (MuLERMoCScenario.pinned) fScenarioSetPinned(false);
+      }
+      fScenarioApplyMobileAuthorLayout();
+      try { fScenarioSyncAuthorUi(); } catch (eS) {}
+    };
+    if (mq.addEventListener) mq.addEventListener("change", onPortrait);
+    else if (mq.addListener) mq.addListener(onPortrait);
+  } catch (e) { /* media queries unavailable */ }
+})();
+
 // Re-apply the author's remembered pin when the bar returns (authoring only;
 // never in presentation). Session-scoped preference (MuLERMoCScenario.pinPref),
 // set by the pin button; internal forced unpins (✕/ESC, Present entry) leave it
@@ -5500,6 +5529,7 @@ function fScenarioInitAuthorBarFit() {
 // remembered choice is off.
 function fScenarioApplyPinPref() {
   if (MuLERMoCScenario.present || !MuLERMoCScenario.authoring) return;
+  if (fScenarioMobilePortrait()) return;
   if (!MuLERMoCScenario.pinPref || MuLERMoCScenario.pinned) return;
   if (!document.getElementById("scenarioAuthorBar")) return;
   fScenarioSetPinned(true);
@@ -5594,8 +5624,74 @@ function fScenarioPositionDrawer(panel) {
 // css/mulermoc-nom-scenario-52.css hides them while the bar is away, so
 // Play -> Exit and close -> reopen return to the same open scenario.
 // Steps owns open/close.
+function fScenarioSyncAuthorCollapse() {
+  var btn = document.getElementById("scAuthorCollapse");
+  if (!btn) return;
+  var collapsed = !!(document.body && document.body.classList.contains("scAuthorCollapsed"));
+  var icon = (window.MuLERIcons && (collapsed ? window.MuLERIcons.maximize : window.MuLERIcons.minimize)) || null;
+  if (icon) btn.innerHTML = icon;
+  else btn.textContent = collapsed ? "▴" : "▾";
+  btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+  var msg = (typeof fMulerT === "function") ? fMulerT(collapsed ? "expandPanel" : "collapsePanel") : (collapsed ? "Ανάπτυξη πίνακα" : "Σύμπτυξη πίνακα");
+  btn.setAttribute("data-tooltip", msg);
+  btn.setAttribute("aria-label", msg);
+}
+
+// Portrait phones keep authoring in the page flow: bar below the app and
+// above the footer, tab outside the bar as a fixed launcher. Desktop keeps the
+// original body-level bar and the tab inside it.
+function fScenarioApplyMobileAuthorLayout() {
+  var mobile = fScenarioMobilePortrait();
+  var bar = document.getElementById("scenarioAuthorBar");
+  var tab = document.getElementById("scenarioAuthorTab");
+  var host = document.getElementById("pageContainer");
+  var footer = host ? host.querySelector("footer") : null;
+  // The tab is always hidden on portrait via CSS; keep it in the bar so
+  // desktop continues to own it.
+  if (tab) {
+    tab.classList.remove("scMobileTab");
+    if (bar && tab.parentNode !== bar) bar.insertBefore(tab, bar.firstChild);
+  }
+  if (mobile) {
+    if (bar && host) {
+      bar.classList.add("scInlineAuthor");
+      if (footer) {
+        if (bar.parentNode !== host || bar.nextElementSibling !== footer) host.insertBefore(bar, footer);
+      } else if (bar.parentNode !== host) {
+        host.appendChild(bar);
+      }
+    }
+  } else {
+    document.body.classList.remove("scAuthorCollapsed");
+    if (bar) {
+      bar.classList.remove("scInlineAuthor");
+      if (!MuLERMoCScenario.pinned && bar.parentNode !== document.body) document.body.appendChild(bar);
+    }
+  }
+}
+
+function fScenarioMobileAuthorExpand() {
+  if (!fScenarioMobilePortrait()) return;
+  if (!MuLERMoCScenario.authoring) fScenarioSetAuthoring(true);
+  document.body.classList.remove("scAuthorCollapsed");
+  fScenarioSyncAuthorCollapse();
+  try { if (typeof fScenarioScheduleAuthorBarFit === "function") fScenarioScheduleAuthorBarFit(); } catch (eFit) {}
+}
+
+function fScenarioMobileAuthorCollapse() {
+  if (!fScenarioMobilePortrait()) return;
+  document.body.classList.add("scAuthorCollapsed");
+  fScenarioSyncAuthorCollapse();
+  try { if (typeof fScenarioScheduleAuthorBarFit === "function") fScenarioScheduleAuthorBarFit(); } catch (eFit) {}
+}
+
 function fScenarioSyncAuthorUi() {
+  fScenarioApplyMobileAuthorLayout();
   var showBar = MuLERMoCScenario.authoring && !MuLERMoCScenario.present;
+  if (!showBar) {
+    if (fScenarioMobilePortrait()) document.body.classList.add("scAuthorCollapsed");
+    else document.body.classList.remove("scAuthorCollapsed");
+  }
   var tb = document.getElementById("scenarioAuthorBar");
   if (tb) {
     // Classes are the sole visibility authority (inline display would
@@ -5609,8 +5705,10 @@ function fScenarioSyncAuthorUi() {
   var tab = document.getElementById("scenarioAuthorTab");
   if (tab) {
     tab.classList.toggle("active", !!MuLERMoCScenario.authoring);
-    tab.classList.remove("is-hidden");
+    if (fScenarioMobilePortrait()) tab.classList.toggle("is-hidden", !!MuLERMoCScenario.present || showBar);
+    else tab.classList.remove("is-hidden");
   }
+  fScenarioSyncAuthorCollapse();
 }
 
 // ── file export / import (memory + file, decision A) ────────────────────
@@ -6175,7 +6273,7 @@ function fScenarioBuildUi() {
       "<div id='scenarioPlayBarTitle'><span class='scTitleBtns'><button id='scNew' data-tooltip='" + ((typeof fMulerT === "function") ? fMulerT("newScenario") : "Νέο κενό σενάριο") + "'>+ New</button>" +
       "<button id='scImport' data-tooltip='" + ((typeof fMulerT === "function") ? fMulerT("uploadScenario") : "Φόρτωση σεναρίου (JSON)") + "'>Import</button>" +
       "<input type='file' id='scFile' accept='.json,application/json' style='display:none'></span>" +
-      "<span class='scTitleText'>" + ((typeof fMulerT === "function") ? fMulerT("scenarios") : "Σενάρια Παρουσίασης") + "</span><button id='scPin' data-tooltip='" + ((typeof fMulerT === "function") ? fMulerT("pinAside") : "Καρφίτσωμα δίπλα στο περιεχόμενο") + "'>📌</button><button id='scCloseBar' data-tooltip='" + ((typeof fMulerT === "function") ? fMulerT("close") : "Κλείσιμο (ESC)") + "'>✕</button></div>" +
+      "<span class='scTitleText'>" + ((typeof fMulerT === "function") ? fMulerT("scenarios") : "Σενάρια Παρουσίασης") + "</span><button id='scAuthorCollapse' data-tooltip='" + ((typeof fMulerT === "function") ? fMulerT("collapsePanel") : "Σύμπτυξη πίνακα") + "' aria-label='" + ((typeof fMulerT === "function") ? fMulerT("collapsePanel") : "Σύμπτυξη πίνακα") + "' aria-expanded='false'></button><button id='scPin' data-tooltip='" + ((typeof fMulerT === "function") ? fMulerT("pinAside") : "Καρφίτσωμα δίπλα στο περιεχόμενο") + "'>📌</button><button id='scCloseBar' data-tooltip='" + ((typeof fMulerT === "function") ? fMulerT("close") : "Κλείσιμο (ESC)") + "'>✕</button></div>" +
       "<div id='scenarioPanels'></div>";
     document.body.appendChild(bar);
     fScenarioPaintIconTextBtn(document.getElementById("scNew"), "libraryNew", "+ New");
@@ -6189,6 +6287,7 @@ function fScenarioBuildUi() {
     var _closeBtn = document.getElementById("scCloseBar");
     if (_closeBtn && window.MuLERIcons && window.MuLERIcons.closePanel) _closeBtn.innerHTML = window.MuLERIcons.closePanel;
     document.getElementById("scNew").onclick = function () {
+      fScenarioMobileAuthorExpand();
       if (fScenarioEmptyCount() >= MuLERMoCScenario.maxEmptyScenarios) {
         fScenarioToast("Fill an empty scenario first (max " + MuLERMoCScenario.maxEmptyScenarios + " empty).");
         return;
@@ -6198,11 +6297,24 @@ function fScenarioBuildUi() {
     document.getElementById("scCloseBar").onclick = function () {
       fScenarioSetAuthoring(false);
     };
+    var _collapseBtn = document.getElementById("scAuthorCollapse");
+    if (_collapseBtn) _collapseBtn.onclick = function () {
+      if (!fScenarioMobilePortrait()) return;
+      if (document.body.classList.contains("scAuthorCollapsed")) fScenarioMobileAuthorExpand();
+      else fScenarioMobileAuthorCollapse();
+    };
     document.getElementById("scPin").onclick = function () {
       var next = !MuLERMoCScenario.pinned;
       MuLERMoCScenario.pinPref = next;
       fScenarioSetPinned(next);
     };
+    // The collapsed title row is the mobile launcher: tapping it expands.
+    // Buttons keep their own actions (New/Import also expand explicitly).
+    $(document).on("click", "#scenarioAuthorBar #scenarioPlayBarTitle", function (e) {
+      if (!fScenarioMobilePortrait()) return;
+      if (e && e.target && e.target.closest && e.target.closest("button,input,label,a")) return;
+      if (document.body.classList.contains("scAuthorCollapsed")) fScenarioMobileAuthorExpand();
+    });
     // Pinned scroll cues: registry chevrons replace the text fallbacks
     // (kept in markup for no-registry resilience); passive scroll listener
     // keeps the end-states truthful.
@@ -6229,6 +6341,7 @@ function fScenarioBuildUi() {
       } catch (eRO) { /* observer unavailable */ }
     })();
     document.getElementById("scImport").onclick = function () {
+      fScenarioMobileAuthorExpand();
       document.getElementById("scFile").click();
     };
     document.getElementById("scFile").onchange = function (e) {

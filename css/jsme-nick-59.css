@@ -3015,8 +3015,10 @@ color: var(--veryLightEarth);
 }
 
 /* ── Dev/WIP notice banner (top of #pageContainer, dismissible) ────────── */
+/* Hidden by default: the stored molecule set is checked. It appears only
+   while a New/Edit molecule draft is open (the author's own input). */
 #devNotice {
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   gap: 10px;
@@ -3028,6 +3030,10 @@ color: var(--veryLightEarth);
   font-weight: 600;
   text-align: center;
   padding: 4px 10px;
+}
+
+#pageContainer.drafting #devNotice {
+  display: flex;
 }
 
 #devNoticeText {
@@ -3681,6 +3687,10 @@ color: var(--veryLightEarth);
   .menuContainer {
     height: auto;
     max-height: 400px;
+  }
+
+  #nomeclature2Menu .menuNomeclature2Container {
+    max-height: 210px;
   }
 }
 

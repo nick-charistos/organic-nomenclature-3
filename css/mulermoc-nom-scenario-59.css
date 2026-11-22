@@ -163,6 +163,43 @@
    outline-offset: 1px;
 }
 
+/* Mobile-only panel collapse toggle (portrait title row). Desktop keeps the
+   title bar as-is; JS syncs the glyph/tooltip. */
+#scAuthorCollapse {
+   display: none;
+   appearance: none;
+   -webkit-appearance: none;
+   align-items: center;
+   justify-content: center;
+   min-width: 28px;
+   height: 24px;
+   padding: 3px 5px;
+   margin-right: 4px;
+   background: transparent;
+   border: 1px solid transparent;
+   border-radius: 4px;
+   color: #fff;
+   line-height: 1;
+   cursor: pointer;
+   flex: none;
+}
+
+#scAuthorCollapse svg {
+   width: 16px;
+   height: 16px;
+   flex: none;
+}
+
+#scAuthorCollapse:hover {
+   background: var(--darkEarth);
+   border-color: #fff;
+}
+
+#scAuthorCollapse:focus-visible {
+   outline: 2px solid #fff;
+   outline-offset: 1px;
+}
+
 #scenarioPlayBarButtonPanel,
 .scenarioButtonPanel {
    display: flex;
@@ -1517,14 +1554,16 @@ background: var(--orchidDark);
    bubbles would spill past the viewport — anchor them right (like scDelete).
    Vertical placement stays below (title-bar default). */
 #scenarioAuthorBar #scenarioPlayBarTitle button#scPin[data-tooltip]::after,
-#scenarioAuthorBar #scenarioPlayBarTitle button#scCloseBar[data-tooltip]::after {
+#scenarioAuthorBar #scenarioPlayBarTitle button#scCloseBar[data-tooltip]::after,
+#scenarioAuthorBar #scenarioPlayBarTitle button#scAuthorCollapse[data-tooltip]::after {
    left: auto;
    right: 0;
    transform: none;
 }
 
 #scenarioAuthorBar #scenarioPlayBarTitle button#scPin[data-tooltip]::before,
-#scenarioAuthorBar #scenarioPlayBarTitle button#scCloseBar[data-tooltip]::before {
+#scenarioAuthorBar #scenarioPlayBarTitle button#scCloseBar[data-tooltip]::before,
+#scenarioAuthorBar #scenarioPlayBarTitle button#scAuthorCollapse[data-tooltip]::before {
    left: auto;
    right: 12px;
    transform: none;
@@ -3514,4 +3553,55 @@ html.mulerTipLayer [data-tooltip]::after,
 html.mulerTipLayer [data-tooltip]::before {
    content: none !important;
    display: none !important;
+}
+
+/* Portrait phones: authoring lives in the page flow, below the app and above
+   the footer. The title row is the persistent launcher; the panel starts
+   collapsed and the tab/close controls are hidden. JS forces unpinned in this
+   media state. */
+@media (max-width: 768px) and (orientation: portrait) {
+   #scenarioAuthorBar.scInlineAuthor {
+      position: static;
+      width: 100%;
+      max-width: 100%;
+      max-height: none;
+      margin: 0;
+      border-left: 0;
+      border-right: 0;
+      border-radius: 0;
+      box-shadow: none;
+      transform: none;
+      visibility: visible;
+      pointer-events: auto;
+      display: flex;
+      overflow: visible;
+   }
+
+   #scenarioAuthorBar.scInlineAuthor.is-hidden {
+      display: none;
+   }
+
+   #scenarioAuthorBar.scInlineAuthor #scenarioAuthorTab,
+   #scenarioAuthorBar.scInlineAuthor #scCloseBar,
+   #scenarioAuthorBar.scInlineAuthor #scPin {
+      display: none;
+   }
+
+   #scenarioAuthorBar.scInlineAuthor #scenarioPanels {
+      max-height: 60vh;
+      overflow: auto;
+      padding: 0 5px 10px 5px;
+   }
+
+   body.scAuthorCollapsed #scenarioAuthorBar.scInlineAuthor #scenarioPanels {
+      display: none;
+   }
+
+   body.scAuthorCollapsed #scenarioAuthorBar.scInlineAuthor #scenarioPlayBarTitle {
+      cursor: pointer;
+   }
+
+   #scenarioAuthorBar.scInlineAuthor #scAuthorCollapse {
+      display: inline-flex;
+   }
 }
