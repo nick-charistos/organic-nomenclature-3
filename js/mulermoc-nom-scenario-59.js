@@ -706,21 +706,10 @@ function fScenarioCapture() {
         if (step.quiz.mol && mol && typeof nameExamples !== "undefined" && nameExamples[mol]) {
           var _modes = fScenarioQuizCapableModes();
           if (_modes.indexOf(String(step.quiz.mode)) < 0) _modes.unshift(String(step.quiz.mode));
-          // v58.32: components already solved in authoring are pre-solved
-          // (free tags), not required. Keep the primary only when everything
-          // was solved, so a quiz step always carries a task.
-          // v58.39: read the step-scoped map (with a molecule-only fallback
-          // for Go-less authoring), never another step's progress.
-          try {
-            var _capScope = (typeof window !== "undefined" && window.__mulerQuizAuthoringScope) ? String(window.__mulerQuizAuthoringScope) : "";
-            var _solvedLive = (typeof fScenarioQuizSolvedMapFor === "function") ? fScenarioQuizSolvedMapFor(String(mol), _capScope) : {};
-            var _reqOnly = [];
-            for (var _mi = 0; _mi < _modes.length; _mi++) {
-              if (!_solvedLive[_modes[_mi]]) _reqOnly.push(_modes[_mi]);
-            }
-            if (!_reqOnly.length && _modes.length) _reqOnly = [String(step.quiz.mode || _modes[0])];
-            _modes = _reqOnly;
-          } catch (eSm) {}
+          // v59.04: the step's required set comes from the authored settings.
+          // Capture starts from every capable component; the author frees
+          // components by untagging them in the drawer. The author's live solve
+          // state never subtracts requirements.
           // v58.33: chain required ⇒ its number locants required too.
           try {
             if (_modes.indexOf("compCarbonsCount") >= 0 && typeof fScenarioQuizCapableLocantModes === "function") {
@@ -738,36 +727,14 @@ function fScenarioCapture() {
       } catch (eQM) {}
       try { if (typeof fScenarioToast === "function") fScenarioToast(fMulerPre("Το κουίζ αποθηκεύτηκε στο βήμα.", "Quiz saved into the step.") + " (" + String(step.quiz.mode) + (step.quiz.mol ? "" : ", menu") + ")"); } catch (eQT0) {}
     }
-    // v58: quiz steps own their display (auto-arm / solved display) — never
-    // replay a stale component highlight, so capture a clean naming mode.
-    // The step also saves the authored solved state for the modes it
-    // requires (that mol, plus any picked menu molecules). Modes solved for
-    // other steps are not this step's baseline.
+    // v59.04: quiz steps own their display (auto-arm / solved display) — never
+    // replay a stale component highlight, so capture a clean naming mode. The
+    // author's live solve state is never stored on the step: the required set
+    // and the free complement are authored settings only.
     try {
       if (step.quiz) {
         step.nameAnalysisMode = "none";
-        var _pre = {};
-        var _putSolved = function (m) {
-          try {
-            var _preScope = (typeof window !== "undefined" && window.__mulerQuizAuthoringScope) ? String(window.__mulerQuizAuthoringScope) : "";
-            var e = (typeof fScenarioQuizSolvedMapFor === "function") ? fScenarioQuizSolvedMapFor(String(m), _preScope) : null;
-            if (!e) return;
-            var arr = [];
-            for (var k in e) {
-              if (!Object.prototype.hasOwnProperty.call(e, k)) continue;
-              if (!e[k] || typeof k !== "string" || !k || k === "none") continue;
-              if (arr.indexOf(k) < 0) arr.push(k);
-            }
-            if (arr.length) _pre[String(m)] = arr;
-          } catch (eP1) {}
-        };
-        if (mol && typeof nameExamples !== "undefined" && nameExamples[mol]) _putSolved(String(mol));
-        if (((typeof showMenu !== "undefined" && showMenu) || (typeof menuOnly !== "undefined" && menuOnly)) && Array.isArray(subset)) {
-          for (var _si = 0; _si < subset.length; _si++) { if (subset[_si] && subset[_si] !== mol) _putSolved(String(subset[_si])); }
-        }
-        var _anyPre = false;
-        for (var _pk0 in _pre) { if (Object.prototype.hasOwnProperty.call(_pre, _pk0)) { _anyPre = true; break; } }
-        if (_anyPre) step.quiz.preSolved = _pre;
+        try { delete step.quiz.preSolved; } catch (ePSd) {}
       }
     } catch (ePS) {}
   } catch (eQ) {}
@@ -2874,23 +2841,9 @@ function fScenarioApplyQuiz(step) {
       var s2 = (typeof fMulerSelectState === "function") ? fMulerSelectState() : null;
       if (s2) { s2.atoms2D = []; s2.bonds2D = []; s2.atoms3D = []; s2.bonds3D = []; s2.groups = []; }
     } catch (eC3) {}
-    // v58: the step's authored solved baseline seeds the run (union only —
-    // student progress is never erased). A fully solved molecule shows its
-    // display instead of re-arming (no re-quiz on revisit or re-pick).
-    try {
-      if (typeof window !== "undefined" && molNow && task && task.mode) {
-        var _qkPre = (typeof fMulerQuizSolvedKeyFor === "function") ? fMulerQuizSolvedKeyFor(molNow) : molNow;
-        var _ps0 = (task.preSolved && typeof task.preSolved === "object" && !Array.isArray(task.preSolved)) ? task.preSolved[molNow] : null;
-        if (_ps0 && _ps0.length) {
-          if (!window.__mulerQuizSolved) window.__mulerQuizSolved = {};
-          if (!window.__mulerQuizSolved[_qkPre]) window.__mulerQuizSolved[_qkPre] = {};
-          for (var _pi0 = 0; _pi0 < _ps0.length; _pi0++) {
-            var _pm0 = String(_ps0[_pi0] || "");
-            if (_pm0 && _pm0 !== "none") window.__mulerQuizSolved[_qkPre][_pm0] = true;
-          }
-        }
-      }
-    } catch (ePS0) {}
+    // v59.04: the run is seeded only from the step settings — the required set
+    // plus the free complement below. Legacy `preSolved` is ignored: the
+    // author's live solve state never seeds a presentation step.
     // v58.31 tag editor contract: unselected capable components are
     // pre-solved (free = capable − required). v58.37: deferred menu quizzes
     // are all-capable tasks per picked molecule — no free complement there
@@ -7434,25 +7387,21 @@ function fScenarioRenderOne(scen) {
           head.className = "scQuizReqHead";
           head.setAttribute("data-sc-role", "quiz-req-toggle");
           head.setAttribute("aria-expanded", open ? "true" : "false");
-          var _solvedOf = function (mode) {
-            try {
-              if (!_sameMolTag) return false;
-              return !!(typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved(String(mode), _rowScope));
-            } catch (eSv) { return false; }
-          };
+          // (v59.04 removed the live-solve reader; the editor is settings-only.)
+          // v59.04: the tag editor is settings-only. The author's live solved
+          // state is not consulted here (it never edits a step).
           var _selectedCount = function () {
             var n = 0;
-            var chainReq = (req.indexOf("compCarbonsCount") >= 0) && !_solvedOf("compCarbonsCount");
+            var chainReq = req.indexOf("compCarbonsCount") >= 0;
             for (var ci2 = 0; ci2 < comps.length; ci2++) {
               var cm = comps[ci2];
               if (!cm || !cm.capable) continue;
-              if (_solvedOf(cm.mode)) continue;
               if (req.indexOf(cm.mode) >= 0 || (cm.locant && chainReq)) n++;
             }
             return n;
           };
           var _chainRequired = function () {
-            return (req.indexOf("compCarbonsCount") >= 0) && !_solvedOf("compCarbonsCount");
+            return req.indexOf("compCarbonsCount") >= 0;
           };
           var _headTxt = function () {
             return ((typeof fMulerT === "function") ? fMulerT("quizComponents") : "Quiz components") + " " + _selectedCount() + "/" + comps.length + " " + (open ? "▾" : "▸");
@@ -7463,10 +7412,9 @@ function fScenarioRenderOne(scen) {
           list.style.display = open ? "" : "none";
           var _tagState = function (tag, comp) {
             try {
-              var solved = _solvedOf(comp.mode);
               var _locLocked = !!(comp.locant && _chainRequired());
               var _reqNow = (req.indexOf(comp.mode) >= 0) || _locLocked;
-              var sel = _reqNow && !solved;
+              var sel = _reqNow;
               // v58.39: an already-required hidden/atom-less comp stays
               // removable; only adding an incapable comp is blocked.
               var _removable = !comp.capable && _reqNow;
@@ -7484,11 +7432,9 @@ function fScenarioRenderOne(scen) {
                   ? ((typeof fMulerT === "function") ? fMulerT("quizTagIncapableTip") : "No atoms to quiz on this molecule")
                   : _locLocked
                     ? ((typeof fMulerT === "function") ? fMulerT("quizLocantNeedsChain") : "Needs the main chain in the quiz")
-                    : solved
-                      ? ((typeof fMulerT === "function") ? fMulerT("quizTagSolvedTip") : "Solved — will be shown solved")
-                      : sel
-                        ? ((typeof fMulerT === "function") ? fMulerT("quizTagRequiredTip") : "Will be asked in the quiz")
-                        : ((typeof fMulerT === "function") ? fMulerT("quizTagFreeTip") : "Will be shown solved");
+                    : sel
+                      ? ((typeof fMulerT === "function") ? fMulerT("quizTagRequiredTip") : "Will be asked in the quiz")
+                      : ((typeof fMulerT === "function") ? fMulerT("quizTagFreeTip") : "Will be shown solved");
               if (_removable) tip += ((typeof fMulerT === "function") ? " · " + fMulerT("quizTagRemoveTip") : " · click to remove");
               tag.setAttribute("data-tooltip", tip + " · " + comp.mode);
             } catch (eTs) {}
@@ -7515,14 +7461,8 @@ function fScenarioRenderOne(scen) {
                 if (typeof fScenarioToast === "function") fScenarioToast(((typeof fMulerT === "function") ? fMulerT("quizLocantNeedsChain") : "Needs the main chain in the quiz"));
                 return;
               }
-              // Solved comps are pre-solved by the tag contract: clicking one
-              // only explains the state (no re-quiz). A required hidden/atom-
-              // less comp is the exception: it stays removable (v58.39).
-              var _canRemoveStored = !!(_compDef && !_compDef.capable && req.indexOf(mode) >= 0);
-              if (_solvedOf(mode) && !_canRemoveStored) {
-                if (typeof fScenarioToast === "function") fScenarioToast(((typeof fMulerT === "function") ? fMulerT("quizTagSolvedTip") : "Solved — will be shown solved"));
-                return;
-              }
+              // v59.04: settings-only editor. Every capable tag toggles,
+              // regardless of what the author has solved in free mode.
               var cur = (Object.prototype.toString.call(stepObj.quiz.modes) === "[object Array]") ? stepObj.quiz.modes.slice() : req.slice();
               var at = cur.indexOf(mode);
               if (at >= 0) {
@@ -7534,7 +7474,7 @@ function fScenarioRenderOne(scen) {
               } else cur.push(mode);
               // Chain still required: persist its locants with it.
               try {
-                var _chainAfter = (cur.indexOf("compCarbonsCount") >= 0) && !_solvedOf("compCarbonsCount");
+                var _chainAfter = cur.indexOf("compCarbonsCount") >= 0;
                 if (_chainAfter) {
                   for (var lpi = 0; lpi < comps.length; lpi++) {
                     if (comps[lpi].locant && comps[lpi].capable && cur.indexOf(comps[lpi].mode) < 0) cur.push(comps[lpi].mode);
@@ -7592,7 +7532,6 @@ function fScenarioRenderOne(scen) {
                 var cm = comps[si];
                 if (!cm || !cm.capable) continue;
                 if (req.indexOf(cm.mode) < 0) continue;
-                if (_solvedOf(cm.mode)) continue;
                 var op = document.createElement("option");
                 op.value = cm.mode;
                 op.textContent = cm.label || cm.mode;
@@ -7763,21 +7702,6 @@ function fScenarioRenderOne(scen) {
             })(mTypes[mti]);
           }
           mWrap.appendChild(mList);
-          try {
-            var preS = (st.quiz && st.quiz.preSolved && typeof st.quiz.preSolved === "object" && !Array.isArray(st.quiz.preSolved)) ? st.quiz.preSolved : null;
-            var preParts = [];
-            for (var pk in preS) {
-              if (!Object.prototype.hasOwnProperty.call(preS, pk)) continue;
-              var pv = preS[pk];
-              if (pv && pv.length) preParts.push(String(pk) + ": " + pv.length);
-            }
-            if (preParts.length) {
-              var preEl = document.createElement("div");
-              preEl.className = "scQuizPreSolved";
-              preEl.textContent = ((typeof fMulerT === "function") ? fMulerT("quizPreSolved") : "Author pre-solved") + " — " + preParts.join(" · ");
-              mWrap.appendChild(preEl);
-            }
-          } catch (ePre) {}
           quizRow.appendChild(mWrap);
         } catch (eMq) {}
       }
@@ -8171,25 +8095,22 @@ function fScenarioUpdateStep(scenId, idx) {
       // capture (v58.32): the solved complement refreshes the set so solved
       // comps become free and the rest stay required.
       try {
-        var _quizSignal = false;
-        try { _quizSignal = (typeof window !== "undefined" && window.__mulerLastCaptureQuizSignal === true); } catch (eSig) {}
-        try { if (typeof window !== "undefined") window.__mulerLastCaptureQuizSignal = false; } catch (eSig2) {}
-        if (!_quizSignal && old.quiz && Object.prototype.toString.call(old.quiz.modes) === "[object Array]" && old.quiz.modes.length) {
+        // v59.04: the drawer tags are authoritative for an existing quiz step.
+        // A capture (solved or not) never rewrites the authored required set,
+        // and the author's live solve state is not part of the step.
+        if (old.quiz && Object.prototype.toString.call(old.quiz.modes) === "[object Array]" && old.quiz.modes.length) {
           fresh.quiz.modes = old.quiz.modes.slice();
           fresh.quiz.modeLabels = (Object.prototype.toString.call(old.quiz.modeLabels) === "[object Array]" && old.quiz.modeLabels.length === fresh.quiz.modes.length)
             ? old.quiz.modeLabels.slice()
             : fScenarioQuizModeLabelsFor(fresh.quiz.modes, fresh);
         }
         // Menu quizzes store types, not modes: preserve the authored type
-        // subset across Update even when the capture carries a quiz signal
-        // (capture defaults a fresh menu quiz to all types).
+        // subset across Update.
         if (old.quiz && Object.prototype.toString.call(old.quiz.types) === "[object Array]" && old.quiz.types.length) {
           fresh.quiz.types = old.quiz.types.slice();
         }
-        if (!_quizSignal && old.quiz && old.quiz.preSolved && typeof old.quiz.preSolved === "object" && !Array.isArray(old.quiz.preSolved)) {
-          var _oldPre = fScenarioCloneQuiz(old.quiz.preSolved);
-          if (_oldPre) fresh.quiz.preSolved = _oldPre;
-        }
+        // Legacy preSolved is ignored and never carried into an updated step.
+        try { delete fresh.quiz.preSolved; } catch (ePSd) {}
         // Primary mode must belong to the final required set (both paths).
         try {
           if (Object.prototype.toString.call(fresh.quiz.modes) === "[object Array]" && fresh.quiz.modes.length &&

@@ -1,10 +1,14 @@
 // probe-scenario-quiz: v58 scenario quizzes, headless Chrome (2D only).
-// Contract (v58.44, ?v=58.44):
-//  - a step stores {kind, mode, modes, modeLabels, mol, preSolved, startMode};
-//    `modes` is the required component set captured from the step's molecule
-//    (empty for deferred menu quizzes); `startMode` is optional and only set
-//    by the drawer's Start component select;
-//  - Update never destroys an authored task (removal is an explicit button);
+// Contract (v59.04, ?v=59.04):
+//  - a step stores {kind, mode, modes, modeLabels, mol, startMode}; `modes` is
+//    the required component set (empty for deferred menu quizzes);
+//    `startMode` is optional and only set by the drawer's Start component
+//    select. Legacy `preSolved` is ignored (the author's live solve state is
+//    never part of a step);
+//  - the drawer tags are settings-only: selected = required, unselected = free,
+//    and every capable tag toggles regardless of the author's solved state;
+//  - Update never destroys an authored task (removal is an explicit button) and
+//    a solved capture never rewrites the required set;
 //  - Present never auto-arms: it arms only the author-chosen startMode, else
 //    shows the .scQuizStartPrompt until the student picks a component. The gate
 //    holds until every required comp is solved; solved steps show their
@@ -478,7 +482,10 @@ const clickBtn = async (p, id) => {
     afterRemove.quizRow === true && afterRemove.namingHidden === false,
     "master checkbox off should clear the quiz and restore classic rows, got " + JSON.stringify(afterRemove));
 
-  // --- 4. just-solved capture stores the task + authored baseline ---
+  // --- 4. just-solved capture never edits the step (v59.04) ---
+  const capSet4 = await p.evaluate(() => {
+    try { return fScenarioQuizCapableModes() || []; } catch (e) { return "err"; }
+  });
   await p.evaluate(() => { try { document.getElementById("selectAtomsBtn").click(); } catch (e) {} });
   await p.waitForTimeout(400);
   check(await armBox(p, "comp5", "compCarbonsCount"), "setup arm failed");
@@ -488,11 +495,13 @@ const clickBtn = async (p, id) => {
   const cap4 = await p.evaluate((id) => {
     try { return fScenarioGet(id).steps[0].quiz || null; } catch (e) { return "err"; }
   }, scid);
-  check(cap4 && Array.isArray(cap4.modes) && cap4.modes.indexOf(cap4.mode) >= 0 && cap4.preSolved && cap4.preSolved.ethane &&
-    cap4.preSolved.ethane.indexOf("compCarbonsCount") >= 0,
-    "just-solved capture should store a required mode + solved baseline, got " + JSON.stringify(cap4));
-  check(cap4 && cap4.preSolved && cap4.preSolved.ethane.indexOf("compBondType") < 0,
-    "baseline should only carry modes solved for this step, got " + JSON.stringify(cap4 && cap4.preSolved));
+  check(cap4 && !cap4.preSolved,
+    "a solved capture must not store preSolved, got " + JSON.stringify(cap4 && cap4.preSolved));
+  const sortJoin = (arr) => JSON.stringify((Array.isArray(arr) ? arr.slice() : []).sort());
+  check(cap4 && sortJoin(cap4.modes) === sortJoin(capSet4),
+    "a solved capture must keep every capable comp required, got " + JSON.stringify({ capable: capSet4, modes: cap4 && cap4.modes }));
+  check(cap4 && Array.isArray(cap4.modes) && cap4.modes.indexOf(cap4.mode) >= 0,
+    "the primary mode must stay in the required set, got " + JSON.stringify(cap4 && { mode: cap4.mode, modes: cap4.modes }));
 
   // --- 5. select-ON Add with nothing armed stays classic (v58.44) ---
   await openMol(p, "ethane");
@@ -815,22 +824,43 @@ const clickBtn = async (p, id) => {
   st = await state(p);
   check(st.step === 1, "solving the stored set must open the gate (bond type not required), got index " + st.step);
 
-  // --- 10. authored pre-solved baseline restores as solved ---
+  // --- 10. author solves never seed a step; steps do not share progress ---
   await openMol(p, "ethane");
   await p.evaluate(() => { document.getElementById("selectAtomsBtn").click(); });
   await p.waitForTimeout(400);
-  const preId = await makeScenario(p, "probeq-presolved", [{ selectedMol: "ethane" }]);
-  check(await armBox(p, "comp5", "compCarbonsCount"), "preSolved setup arm failed");
-  check(await solveMode(p, "compCarbonsCount") === true, "preSolved chain solve failed");
-  check(await solveMode(p, "compBondType") === true, "preSolved bond-type solve failed");
-  check(await rowButton(p, preId, ".scUpdate") === true, "preSolved Update failed");
+  const preId = await makeScenario(p, "probeq-settings-only", [{ selectedMol: "ethane" }]);
+  check(await armBox(p, "comp5", "compCarbonsCount"), "settings-only setup arm failed");
+  check(await solveMode(p, "compCarbonsCount") === true, "settings-only chain solve failed");
+  check(await solveMode(p, "compBondType") === true, "settings-only bond-type solve failed");
+  check(await rowButton(p, preId, ".scUpdate") === true, "settings-only Update failed");
   const preCap = await p.evaluate((id) => {
-    try { const q = fScenarioGet(id).steps[0].quiz; return q ? { modes: q.modes, pre: q.preSolved } : null; } catch (e) { return "err"; }
+    try { const q = fScenarioGet(id).steps[0].quiz; return q ? { modes: q.modes, mode: q.mode, pre: q.preSolved } : null; } catch (e) { return "err"; }
   }, preId);
-  check(preCap && preCap.pre && preCap.pre.ethane && preCap.pre.ethane.indexOf("compCarbonsCount") >= 0 &&
-    preCap.pre.ethane.indexOf("compBondType") >= 0,
-    "capture should store the full authored baseline, got " + JSON.stringify(preCap));
-  // a trailing step so the gate has somewhere to advance to
+  check(preCap && !preCap.pre,
+    "capture must not store preSolved, got " + JSON.stringify(preCap && preCap.pre));
+  check(preCap && Array.isArray(preCap.modes) && preCap.modes.indexOf("compCarbonsCount") >= 0 &&
+    preCap.modes.indexOf("compBondType") >= 0,
+    "solved comps must stay required after capture, got " + JSON.stringify(preCap && preCap.modes));
+  // A comp solved in free mode is still toggleable in the drawer.
+  const togSolved = await p.evaluate((id) => {
+    try {
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      const hit = row ? row.querySelector('[data-sc-role="quiz-mode-compBondType"]') : null;
+      if (!hit) return "missing";
+      hit.click();
+      return (fScenarioGet(id).steps[0].quiz.modes || []).indexOf("compBondType") < 0 ? "removed" : "kept";
+    } catch (e) { return "err"; }
+  }, preId);
+  check(togSolved === "removed", "a solved comp must remain toggleable, got " + JSON.stringify(togSolved));
+  // Restore it, then add a trailing step so the gate has somewhere to go.
+  await p.evaluate((id) => {
+    try {
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + id + '"] .srow');
+      const hit = row ? row.querySelector('[data-sc-role="quiz-mode-compBondType"]') : null;
+      if (hit) hit.click();
+    } catch (e) {}
+  }, preId);
+  await p.waitForTimeout(600);
   await p.evaluate((id) => {
     try {
       const sc = fScenarioGet(id);
@@ -843,19 +873,21 @@ const clickBtn = async (p, id) => {
   await p.evaluate((id) => { try { fScenarioPresentBegin(id, 0); } catch (e) {} }, preId);
   await p.waitForTimeout(1400);
   st = await state(p);
-  check(st.step === 0 && !st.target && st.todo && st.todo.length === 0,
-    "authored-solved step should present as solved, got " + JSON.stringify({ t: st.target, todo: st.todo }));
-  check(!st.prompt, "authored-solved step must not show the start prompt, got " + JSON.stringify(st.prompt));
-  const preCls = await p.evaluate(() => {
+  check(st.step === 0 && st.todo && st.todo.length > 0,
+    "author-solved step must start unsolved, got " + JSON.stringify({ step: st.step, todo: st.todo }));
+  check(!!st.prompt, "an idle quiz step should show the start prompt, got " + JSON.stringify(st.prompt));
+  const scopeKeys = await p.evaluate(() => {
     try {
-      const b = document.getElementById("comp5");
-      return b ? String(b.className) : null;
+      const cur = fMulerQuizSolvedKeyFor("ethane");
+      const other = String(cur || "").replace("#0|", "#1|");
+      const map = window.__mulerQuizSolved || {};
+      return { cur: cur, other: other, otherMarks: map[other] || null };
     } catch (e) { return "err"; }
   });
-  check(preCls && /freeComp/.test(preCls), "authored-solved comp should carry .freeComp, got " + JSON.stringify(preCls));
-  await clickBtn(p, "scNext");
-  st = await state(p);
-  check(st.step === 1, "authored-solved step should advance freely, got index " + st.step);
+  check(scopeKeys && /#0\|/.test(scopeKeys.cur || "") && scopeKeys.cur !== scopeKeys.other,
+    "present progress must be keyed by step, got " + JSON.stringify(scopeKeys));
+  check(scopeKeys && !scopeKeys.otherMarks,
+    "another step's key must start empty, got " + JSON.stringify(scopeKeys && scopeKeys.otherMarks));
 
   // --- 11. forward jumps land on the next step (no gate skipping) ---
   await openMol(p, "ethane");

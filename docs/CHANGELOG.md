@@ -8,7 +8,7 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 Forked from v58.50, rebased on v58.51 (`mulermoc-nom-59.html` + `js/*-59.js` + `css/*-59.css` +
 `jsme-nick-nomeclature-moc2-data_59.js` + `spt/init-3-59.spt` +
-`zz-test-core59.html`, `?v=59.03`; `ui-icons.js`, `js/vendor/`, `jsme/` and
+`zz-test-core59.html`, `?v=59.04`; `ui-icons.js`, `js/vendor/`, `jsme/` and
 `mols/` stay shared). Chemistry/naming results and the scenario quiz contract
 are v58's — only data geometry and the MOL pipeline changed.
 
@@ -97,6 +97,15 @@ are v58's — only data geometry and the MOL pipeline changed.
   and in the credits footer now links to `index.html` (home). `homeLink` is a
   new GR/EN string (Αρχική σελίδα / Home); the anchor is un-underlined and
   inherits the lockup colour.
+- **Quiz steps are settings-only (v59.04).** The author's live solve state no
+  longer edits a step or seeds Present: capture starts from every capable
+  component (no `capable ? solvedLive` subtraction), every capable drawer tag
+  toggles even if solved in free mode, and the derived free complement
+  (`capable ? required`) is the only solved-at-entry state. `preSolved` is no
+  longer written on Add/Update and legacy `preSolved` is ignored at apply;
+  Start-component options are required + capable. Step-scoped progress keys
+  keep the same molecule independent across steps/representations. The probe
+  contract was rewritten for this.
 - **Verification:** `node --check` clean; 422/422 byte-identical round-trip;
   audit 147 molecules / 0 issues (heavy 1.17 ± 3%, H 0.78 ± 3%, expanded =
   condensed atom/coordinate/bond-table prefix, chain arrays, charges,

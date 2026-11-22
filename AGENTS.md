@@ -8,7 +8,7 @@ changelog.
 
 Greek-first static web app for teaching organic nomenclature (JSME + JSmol +
 vanilla JavaScript; no build step). The live entry point is `index.html` →
-`mulermoc-nom-59.html`. Current live version: **v59.03** (2026-11-22).
+`mulermoc-nom-59.html`. Current live version: **v59.04** (2026-11-22).
 Older versions v42–v58 remain runnable at the repo root but are **frozen**.
 
 ## Read first
@@ -150,18 +150,26 @@ Update docs in the same commit as the change:
   `nameGoneComps`, `styleName.gone`). Owner decision 2026-11-19: eyes remain
   usable on quiz steps as a teacher aid; hiding/removing a required comp
   removes it from the quiz todo set. Do not add a gate without asking.
-- Quiz component editor (v58.31, polished v58.32–34, v58.39): one master
-  checkbox (`data-sc-role="quiz-enabled"`) owns quiz existence (no
-  Enable/Remove buttons). Tags are binary — selected = required
-  (`quiz.modes`, unsolved), unselected/solved capable = pre-solved (derived
-  `capable − required` at apply, never stored). Solved comps render as free
-  tags; a required tag that becomes hidden/atom-less stays removable. The
-  list starts collapsed (`_scQuizReqOpen`), and tag clicks update in place
-  (never rebuild the step list). The gate label “Απαίτηση λύσης κουίζ για
-  συνέχεια” is separate from the component-set header (“Συνθετικά κουίζ”).
-  `Update` keeps the drawer-authored set/types and `preSolved`; a
-  just-solved capture refreshes the solved baseline, and the primary mode is
-  forced into the final pinned set.
+- Quiz component editor (v58.31, polished v58.32–34, v58.39; settings-only
+  v59.04): one master checkbox (`data-sc-role="quiz-enabled"`) owns quiz
+  existence (no Enable/Remove buttons). Tags are binary — selected = required
+  (`quiz.modes`), unselected capable = free (derived `capable − required` at
+  apply, never stored). **Every capable tag toggles**, regardless of what the
+  author has solved in free mode; the live solve state never affects the tag
+  display, the capture or Present. A required tag that becomes hidden/atom-less
+  stays removable. The list starts collapsed (`_scQuizReqOpen`), and tag clicks
+  update in place (never rebuild the step list). The gate label “Απαίτηση
+  λύσης κουίζ για συνέχεια” is separate from the component-set header
+  (“Συνθετικά κουίζ”). `Update` keeps the drawer-authored set/types; a solved
+  capture never rewrites the required set and never stores `preSolved` (legacy
+  `preSolved` is ignored), and the primary mode is forced into the final
+  pinned set.
+- Quiz steps are settings-only (v59.04): the author's live solve state never
+  edits a step or seeds Present. Capture starts from every capable component
+  (the author untags the free ones); the step-scoped progress keys
+  (`scenario:<id>#<step>|molecule`) keep the same molecule in different steps/
+  representations independent — a solution from one step never satisfies
+  another.
 - Quiz start (v58.44; prompt wrapper v58.51): Present never auto-arms.
   `quiz.startMode` is set only by the drawer Start component select (None
   default; options = required comps; the chosen tag gets `.is-start`). It is
