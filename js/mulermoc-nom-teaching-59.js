@@ -763,9 +763,11 @@ function fShowCreditLibs() {
     teamLabel = en ? "Team" : "Ομάδα";
     supervisorLabel = en ? "Project Leader" : "Project Leader";
   }
+  let homeLink = "Αρχική σελίδα";
+  try { if (typeof fMulerT === "function") homeLink = fMulerT("homeLink"); } catch (eH) {}
   let myCredits = `
   <div class='creditsContainer creditsAbout'>
-  <div class='molwaveLogo'> <span class='molwaveLogoMain'><span>Mol</span><span>Wave</span></span> <span class='molwaveLogoSub'>Organic Nomenclature</span></div>
+  <div class='molwaveLogo'><a href='index.html' title='${homeLink}' aria-label='${homeLink}'><span class='molwaveLogoMain'><span>Mol</span><span>Wave</span></span> <span class='molwaveLogoSub'>Organic Nomenclature</span></a></div>
     <div class=''>${aboutText}</div>
   </div>
   <div class='creditsContainer creditsLib'>

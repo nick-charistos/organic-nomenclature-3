@@ -231,6 +231,7 @@ var MULER_STRINGS = {
   moveDown: { gr: "Κάτω", en: "Move down" },
   pinAside: { gr: "Καρφίτσωμα δίπλα στο περιεχόμενο", en: "Pin next to content" },
   examples: { gr: "Μενού", en: "Menu" },
+  homeLink: { gr: "Αρχική σελίδα", en: "Home" },
   prevChain: { gr: "Προηγούμενη αλυσίδα", en: "Previous chain" },
   nextChain: { gr: "Επόμενη αλυσίδα", en: "Next chain" },
   mainChainShort: { gr: "Κύρια αλυσίδα:", en: "Main chain:" },

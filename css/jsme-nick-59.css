@@ -101,6 +101,11 @@ header {
   color: var(--darkBlue);
 }
 
+.molwaveLogo a{
+  text-decoration: none;
+  color: inherit;
+}
+
 .molwaveLogoMain {
    font-weight: bold;
   font-size: 1.1rem;

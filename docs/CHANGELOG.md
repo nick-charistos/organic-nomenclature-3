@@ -6,9 +6,9 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ## [v59] (2D data upgrade; LIVE, `index.html` → v59)
 
-Forked from v58.50 (`mulermoc-nom-59.html` + `js/*-59.js` + `css/*-59.css` +
+Forked from v58.50, rebased on v58.51 (`mulermoc-nom-59.html` + `js/*-59.js` + `css/*-59.css` +
 `jsme-nick-nomeclature-moc2-data_59.js` + `spt/init-3-59.spt` +
-`zz-test-core59.html`, `?v=59.02`; `ui-icons.js`, `js/vendor/`, `jsme/` and
+`zz-test-core59.html`, `?v=59.03`; `ui-icons.js`, `js/vendor/`, `jsme/` and
 `mols/` stay shared). Chemistry/naming results and the scenario quiz contract
 are v58's — only data geometry and the MOL pipeline changed.
 
@@ -87,12 +87,16 @@ are v58's — only data geometry and the MOL pipeline changed.
   prompt while picking (`pending3D` cancelled). The v58 CSS comes along:
   `--veryLightOrchid`, orchid `.quizTodo` / `.quizTodo.selected` /
   `.scQuizTag.selected` / `.is-start` and the shared `.scQuizPrompt` +
-  `.scQuizStartPrompt` skin. All v59 asset refs bumped to `?v=59.01`.
+  `.scQuizStartPrompt` skin. Asset refs moved to `?v=59.01` (now `?v=59.03`).
 - **Rule grouping bullet removed (v59.02).** The `.groupingMode` selector now
   offers Όλα τα μόρια / Χημικές Τάξεις / Ομόλογες Σειρές only. The `rule` mode
   itself is kept intact: `moleculeGroupingMode === "rule"`, the `ruleExamples`
   data, the rule-theory panel (`#ruleTheory`) and `?grouping=rule` still work
   (no UI control; URL/programmatic entry renders the rule groups).
+- **Header/footer logo links (v59.03).** The MolWave lockup in the app header
+  and in the credits footer now links to `index.html` (home). `homeLink` is a
+  new GR/EN string (Αρχική σελίδα / Home); the anchor is un-underlined and
+  inherits the lockup colour.
 - **Verification:** `node --check` clean; 422/422 byte-identical round-trip;
   audit 147 molecules / 0 issues (heavy 1.17 ± 3%, H 0.78 ± 3%, expanded =
   condensed atom/coordinate/bond-table prefix, chain arrays, charges,
