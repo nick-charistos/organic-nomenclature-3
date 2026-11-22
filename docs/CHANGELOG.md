@@ -8,7 +8,7 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 Forked from v58.50, rebased on v58.51 (`mulermoc-nom-59.html` + `js/*-59.js` + `css/*-59.css` +
 `jsme-nick-nomeclature-moc2-data_59.js` + `spt/init-3-59.spt` +
-`zz-test-core59.html`, `?v=59.04`; `ui-icons.js`, `js/vendor/`, `jsme/` and
+`zz-test-core59.html`, `?v=59.05`; `ui-icons.js`, `js/vendor/`, `jsme/` and
 `mols/` stay shared). Chemistry/naming results and the scenario quiz contract
 are v58's — only data geometry and the MOL pipeline changed.
 
@@ -106,6 +106,18 @@ are v58's — only data geometry and the MOL pipeline changed.
   Start-component options are required + capable. Step-scoped progress keys
   keep the same molecule independent across steps/representations. The probe
   contract was rewritten for this.
+- **Selection highlight follows the quiz accent (v59.05).** The 2D atom/bond
+  selection fill uses `--orchidLight` (`#ecace4`) so labels stay readable,
+  while the 3D atom tint/halos keep the stronger `--orchidDefault`
+  (`#dc6acf`). The hover ring/bond sweep and the pick-order numbers use
+  `--orchidDark` (`#b62ba6`); the 2D number outline is white for contrast.
+  The tones are resolved once from the stylesheet into `MULER_SELECT_FILL`,
+  `MULER_SELECT_3D_FILL` and `MULER_SELECT_HOVER` (`MULER_SELECT_CYAN` stays as
+  the legacy 2D alias); the JSME palette slot and the JSmol `X`+hex colour
+  derive from them, so the selection reads as the same family as the quiz
+  boxes/tags. Verified: `probe-final`, `probe-coverage56` and
+  `probe-compact-main` green; visual pass on the 2D picks/numbering (white
+  outline), the hover ring and the 3D tint (3D keeps `--orchidDefault`).
 - **Verification:** `node --check` clean; 422/422 byte-identical round-trip;
   audit 147 molecules / 0 issues (heavy 1.17 ± 3%, H 0.78 ± 3%, expanded =
   condensed atom/coordinate/bond-table prefix, chain arrays, charges,

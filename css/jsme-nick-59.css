@@ -3462,8 +3462,8 @@ color: var(--veryLightEarth);
 #mulerQuizVerdict.mulerQuiz-wrong { color: var(--redAlert); font-weight: normal; border-color: var(--redAlert);}
 #mulerQuizVerdict.mulerQuiz-disjoint { color: var(--redAlert); font-weight: normal;border-color: var(--redAlert); }
 
-/* Sequence badges: white text + dark outline painted as SVG text.
-   Fill comes from MULER_SELECT_CYAN via the `fill` attribute (JS-owned);
+/* Sequence badges: orchid text + white outline painted as SVG text.
+   Fill comes from MULER_SELECT_HOVER via the `fill` attribute (JS-owned);
    this class only marks the nodes for scraping skips + future skinning. */
 .mulerSelNum {
   font-weight: bold;

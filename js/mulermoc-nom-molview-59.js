@@ -395,8 +395,8 @@ function jsmeOnLoad() {
   jsmeNomeclatureApplet.setMolecularAreaLineWidth(0.6);
 
   let bgAtom = [
-    "#7ddfff",
-    "#7ddfff", // palette slot 2: v56 user-selection cyan (JSME slots are 1-based — slot N is bgAtom[N-1]; slot 9 green stays)
+    (typeof MULER_SELECT_FILL === "string" && MULER_SELECT_FILL) ? MULER_SELECT_FILL : fMulerSelectCssColor("--orchidLight", "#ecace4"),
+    (typeof MULER_SELECT_FILL === "string" && MULER_SELECT_FILL) ? MULER_SELECT_FILL : fMulerSelectCssColor("--orchidLight", "#ecace4"), // palette slot 2: v59.05 user-selection orchid (JSME slots are 1-based — slot N is bgAtom[N-1]; slot 9 green stays)
     "#00ffff",
     "#ffcc66",
     "#ffff00",
@@ -1263,15 +1263,39 @@ function fToggleAtomSelect() {
 // ── 2D atom/bond picking (v56 phase 1B: selection contents + paint) ─────
 // Displayed-SVG hit-testing + native JSME background-color paint. The JSME
 // background channel carries BOTH layers: component green (palette slot 9,
-// every existing paint site) and user-selection cyan (palette slot 2).
+// every existing paint site) and the user selection (palette slot 2).
 // A guarded boot-time wrapper merges the two per channel on every paint, so
-// selection looks exactly like the default highlight, in cyan, with zero
-// DOM cloning and zero per-mode geometry. Precedence is component-wins
-// (single merge-order switch — flip it if selection should win instead).
+// selection looks exactly like the default highlight, with zero DOM cloning
+// and zero per-mode geometry. Precedence is component-wins (single
+// merge-order switch — flip it if selection should win instead).
 // Stored indices are 1-based JSME numbers (= displayed
 // MOL order + 1, same convention as mainChainAtomsList); bond indices are
 // 1-based bondList positions (same as setBondBackgroundColors).
-var MULER_SELECT_CYAN = "#7ddfff";
+//
+// v59.05: the selection highlight uses the quiz accent (orchid), not cyan.
+// 2D fill/picks = --orchidLight (light enough to read labels on); 3D atoms/
+// halos keep the stronger --orchidDefault; the hover ring/bond sweep and the
+// pick-order numbers = --orchidDark. All resolved once from the stylesheet
+// (single source); the literals are only a no-CSS fallback.
+function fMulerSelectCssColor(varName, fallback) {
+  try {
+    if (typeof document === "undefined" || !document.documentElement) return fallback;
+    var v = "";
+    try { v = window.getComputedStyle(document.documentElement).getPropertyValue(varName) || ""; } catch (eA) { v = ""; }
+    v = String(v || "").trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(v)) return v.toLowerCase();
+    if (/^#[0-9a-fA-F]{3}$/.test(v)) {
+      return ("#" + v.charAt(1) + v.charAt(1) + v.charAt(2) + v.charAt(2) + v.charAt(3) + v.charAt(3)).toLowerCase();
+    }
+  } catch (e) {}
+  return fallback;
+}
+var MULER_SELECT_FILL = fMulerSelectCssColor("--orchidLight", "#ecace4");
+var MULER_SELECT_3D_FILL = fMulerSelectCssColor("--orchidDefault", "#dc6acf");
+var MULER_SELECT_HOVER = fMulerSelectCssColor("--orchidDark", "#b62ba6");
+// Legacy alias: existing call sites/probes read MULER_SELECT_CYAN; it now
+// carries the orchid fill so every consumer follows one constant.
+var MULER_SELECT_CYAN = MULER_SELECT_FILL;
 var MULER_SELECT_BG_SLOT = 2;   // 1-based JSME palette slot for the selection (component green = 9)
 var MULER_SELECT_VERT_EPS = 40;   // vertex clustering, SVG units
 var MULER_SELECT_JOINT_EPS = 150; // joint-adoption radius, SVG units (see fMulerSelectVertexAtoms)
@@ -1478,7 +1502,7 @@ function fMulerSelectClear() {
       s.atoms2D = []; s.bonds2D = []; s.atoms3D = []; s.bonds3D = []; s.groups = [];
     }
   } catch (e) {}
-  // v57 3D: erase the cyan paint while armed. v58.13: only when there was
+  // v57 3D: erase the selection paint while armed. v58.13: only when there was
   // 3D pick paint to erase (a bare clear on a solved display must not touch
   // the green), and re-assert the classic display afterwards — the wipe
   // shares the atom-color channel with the solved/classic green.
@@ -2169,8 +2193,9 @@ function fMulerSelectNormalizeMainChainCompacts() {
   } catch (e) {}
 }
 
-// Hover-ring skin (v56 selection follow-up): stroke-only cyan, no fill —
-// visually distinct from solid selection cyan and component green.
+// Hover-ring skin (v56 selection follow-up; orchid v59.05): stroke-only, no
+// fill — visually distinct from the solid orchid fill and component green.
+// The hover reads a step darker (--orchidDark) than a pick (--orchidDefault).
 var MULER_HOVER_PAD = 45;   // ring margin around label boxes, SVG units
 var MULER_HOVER_SW = 30;    // ring stroke width, SVG units
 var MULER_HOVER_DOT_R = 210;  // implicit-carbon ring radius, SVG units
@@ -2293,7 +2318,7 @@ function fMulerHoverPaint(pick, geom) {
           r.setAttribute("height", Math.round(box.h + 2 * MULER_HOVER_PAD));
           r.setAttribute("rx", "90");
           r.setAttribute("fill", "none");
-          r.setAttribute("stroke", MULER_SELECT_CYAN);
+          r.setAttribute("stroke", MULER_SELECT_HOVER);
           r.setAttribute("stroke-width", MULER_HOVER_SW);
           r.setAttribute("stroke-opacity", MULER_HOVER_OPACITY);
           r.setAttribute("pointer-events", "none");
@@ -2310,7 +2335,7 @@ function fMulerHoverPaint(pick, geom) {
           cc.setAttribute("cx", Math.round(vv.x)); cc.setAttribute("cy", Math.round(vv.y));
           cc.setAttribute("r", MULER_HOVER_DOT_R);
           cc.setAttribute("fill", "none");
-          cc.setAttribute("stroke", MULER_SELECT_CYAN);
+          cc.setAttribute("stroke", MULER_SELECT_HOVER);
           cc.setAttribute("stroke-width", MULER_HOVER_SW);
           cc.setAttribute("stroke-opacity", MULER_HOVER_OPACITY);
           cc.setAttribute("pointer-events", "none");
@@ -2328,7 +2353,7 @@ function fMulerHoverPaint(pick, geom) {
             var ln = document.createElementNS(NS, "line");
             ln.setAttribute("x1", Math.round(L.x1)); ln.setAttribute("y1", Math.round(L.y1));
             ln.setAttribute("x2", Math.round(L.x2)); ln.setAttribute("y2", Math.round(L.y2));
-            ln.setAttribute("stroke", MULER_SELECT_CYAN);
+            ln.setAttribute("stroke", MULER_SELECT_HOVER);
             ln.setAttribute("stroke-width", MULER_HOVER_BOND_W);
             ln.setAttribute("stroke-linecap", "round");
             ln.setAttribute("stroke-opacity", "0.5");
@@ -3221,7 +3246,7 @@ window.__mulerPickCb = function () {
       try { qtB = (typeof window !== "undefined") ? window.MulerQuizTarget : null; } catch (eQ2) { qtB = null; }
       if (qtB && purposeB !== "bond") return; // atoms-only quiz: ignore, never clear
       // Fail-closed: a 3D bond with no 2D counterpart (condensed/skeletal
-      // C-H, stale map) is a no-op, never 3D-only cyan the quiz cannot judge.
+      // C-H, stale map) is a no-op, never a 3D-only selection tone the quiz cannot judge.
       if (!(b2 > 0)) return;
       try { if (typeof window !== "undefined") { window.__muler3DPickSeen = true; window.__muler3DSilentT = 0; } } catch (ePSB) {}
       if (sel.atoms2D.length || sel.atoms3D.length) {
@@ -3269,7 +3294,7 @@ window.__mulerPickCb = function () {
             try { if (_mp > 0 && typeof fMulerPickTargetHOnParent === "function") _hT = fMulerPickTargetHOnParent(_mp); } catch (eHT) { _hT = -1; }
             if (_hT > 0) { m2a = _hT; }
             // Fail-closed: an unmappable parent is a no-op, never 3D-only
-            // cyan (quiz compare is 2D-state-only).
+            // selection tone (quiz compare is 2D-state-only).
             else if (p3 > 0 && _mp > 0) { a3 = p3; m2a = _mp; }
             else return;
           } else {
@@ -3345,11 +3370,11 @@ window.__mulerPickCb = function () {
   try { if (typeof fMulerSelectRepaint === "function") fMulerSelectRepaint(); } catch (eR) {}
   // 2D re-render: bg props alone don't redraw the labels (confirmed live —
   // mirrored picks stayed invisible until fUpdateSVG). Mirrors the 2D paths;
-  // 3D cyan from the repaint above stands (fUpdateSVG only re-pushes 2D).
+  // 3D selection paint from the repaint above stands (fUpdateSVG only re-pushes 2D).
   try { if (typeof fUpdateSVG === "function") fUpdateSVG(); } catch (eU) {}
 };
 
-// 3D selection paint (cyan, strict): full rebuild from state — JSmol `select`
+// 3D selection paint (orchid, strict): full rebuild from state — JSmol `select`
 // replaces (never accumulates), so native accumulation cannot skew paint.
 // Strict 2D parity: atom picks paint atoms only (plus condensed/skeletal
 // group/H completion from fMulerSelectPaintSets3D), bond picks paint exactly
@@ -3370,9 +3395,9 @@ function fMulerSelectPush3D() {
     var pa = Array.isArray(paint.atoms) ? paint.atoms.slice() : [];
     var pb = Array.isArray(paint.bonds) ? paint.bonds.slice() : [];
     if (!pa.length && !pb.length) return;
-    var cyan = "X7DDFFF";
+    var selTone = "XDC6ACF";
     try {
-      if (typeof MULER_SELECT_CYAN === "string" && /^#[0-9a-fA-F]{6}$/.test(MULER_SELECT_CYAN)) cyan = "X" + MULER_SELECT_CYAN.slice(1).toUpperCase();
+      if (typeof MULER_SELECT_3D_FILL === "string" && /^#[0-9a-fA-F]{6}$/.test(MULER_SELECT_3D_FILL)) selTone = "X" + MULER_SELECT_3D_FILL.slice(1).toUpperCase();
     } catch (eC) {}
     var script = "select all; selectionHalos off; color bonds none; color atoms none;";
     try {
@@ -3380,7 +3405,7 @@ function fMulerSelectPush3D() {
         for (var j = 0; j < pb.length; j++) {
           var bl = bondList3D[pb[j] - 1];
           if (!bl || !(bl[0] > 0) || !(bl[1] > 0)) continue;
-          script += "select atomno=" + bl[0] + ", atomno=" + bl[1] + "; color bond [" + cyan + "];";
+          script += "select atomno=" + bl[0] + ", atomno=" + bl[1] + "; color bond [" + selTone + "];";
         }
       }
     } catch (eB) {}
@@ -3390,7 +3415,7 @@ function fMulerSelectPush3D() {
       arg = "select ";
       for (var k = 0; k < pa.length; k++) arg += (k ? "," : "") + "atomno=" + pa[k];
       script += arg + ";";
-      script += "color selectionHalos [" + cyan + "]; selectionHalos on; color atoms [" + cyan + "];";
+      script += "color selectionHalos [" + selTone + "]; selectionHalos on; color atoms [" + selTone + "];";
       script += arg + ";";
     } else {
       script += "select none;";
@@ -3413,7 +3438,7 @@ function fMulerSelectClear3DPaint() {
 }
 
 // v58.13: re-assert the classic component display after a user pick-clear.
-// 3D green and selection cyan share one atom-color channel, so erasing cyan
+// 3D green and the selection tone share one atom-color channel, so erasing it
 // also erases a live solved/classic highlight (the 2D viewer keeps it via the
 // component channel — that mismatch is what showed up as "empty click kills
 // the 3D green"). Guarded: never during an armed quiz and only when a
@@ -5277,10 +5302,10 @@ function fMulerQuizRefresh() {
         }
       } catch (eS) {}
       // Green wins outright: drop the selection itself (not just its paint)
-      // so no later clear can resurrect cyan from stale state.
+      // so no later clear can resurrect the selection tone from stale state.
       try { if (sel) { sel.atoms2D = []; sel.bonds2D = []; sel.atoms3D = []; sel.bonds3D = []; sel.groups = []; } } catch (eS2) {}
       try { if (typeof removeEcho3D === "function") removeEcho3D(); } catch (eEq) {}
-      // Pre-exact cyan must not survive the reward: Push3D no-ops on empty,
+      // Pre-exact selection paint must not survive the reward: Push3D no-ops on empty,
       // so erase explicitly before the green paints (reward repaints only 2D
       // plus its own 3D highlight calls).
       try { if (typeof fMulerSelectClear3DPaint === "function") fMulerSelectClear3DPaint(); } catch (eC3) {}
@@ -5418,7 +5443,7 @@ function fMulerSelectMergeBgArg(compArg, kind) {
           typeof fGetCompactedAtomSkipSet === "function") skipSet = fGetCompactedAtomSkipSet(false);
     } catch (eSk) { skipSet = null; }
     // Quiz compare (not paint) tells right from wrong: the verdict line
-    // shows a numberless hint, all picks stay cyan. Present pushes component-only.
+    // shows a numberless hint, all picks stay orchid. Present pushes component-only.
     for (var j = 0; j < selIdx.length; j++) {
       if (compSet[selIdx[j]]) continue;
       try { if (skipSet && skipSet.has(selIdx[j] - 1)) continue; } catch (eSk2) {}
@@ -5428,7 +5453,7 @@ function fMulerSelectMergeBgArg(compArg, kind) {
   } catch (e) { try { return String(compArg == null ? "" : compArg); } catch (e2) { return ""; } }
 }
 // Push the merged colors through the ORIGINALS (never the wrapped methods —
-// recording merged output as component input would leak cyan into the
+// recording merged output as component input would leak the selection tone into the
 // component set, and clearing the selection could never clear it).
 function fMulerSelectPush() {
   try {
@@ -5568,7 +5593,7 @@ function fMulerSelectPushState() {
       try {
         // Wrapped resets when installed (clear recorded comp set, re-push
         // the now-empty selection); original resets otherwise — either way
-        // the applet cannot keep stale cyan across the switch.
+        // the applet cannot keep a stale selection tone across the switch.
         if (typeof jsmeNomeclatureApplet !== "undefined" && jsmeNomeclatureApplet &&
             typeof jsmeNomeclatureApplet.resetAtomColors === "function") {
           try { jsmeNomeclatureApplet.resetAtomColors(0); } catch (eRA) {}
@@ -5589,7 +5614,7 @@ function fMulerSelectPushState() {
     try { presenting = (typeof fMulerSelectPresentBlocked === "function") ? !!fMulerSelectPresentBlocked() : !!fMulerSelectPresenting(); } catch (ePr) { presenting = false; }
     if (presenting) {
       // Hidden in Present: merge() already degrades to component-only when
-      // presenting, so a plain push hides the selection (state kept). 3D cyan
+      // presenting, so a plain push hides the selection (state kept). 3D selection paint
       // is erased outright (repaint restores it on exit); Esc stays guarded
       // out in Present (see the document keydown handler).
       try { if (typeof fMulerSelectClear3DPaint === "function") fMulerSelectClear3DPaint(); } catch (ePC) {}
@@ -5604,9 +5629,13 @@ function fMulerSelectIsSelectionFill(fill) {
   // JSME writes background fills either as the palette hex or as rgb(r,g,b),
   // so derive both forms from the configured selection color. Legacy cyan
   // #22d3ee is retained for one-generation overlap (older renders / cached
-  // DOM after the v56 palette move to #7ddfff). Remove the legacy branch once
+  // DOM after the v56 palette move). v59.05: the hover tone is accepted too
+  // (marks/annotations may carry either orchid). Remove the legacy branch once
   // no cached v56-early DOM can survive (post-v56 live flip + cache-bust).
-  return fMulerFillMatches(MULER_SELECT_CYAN, fill) || fMulerFillMatches("#22d3ee", fill);
+  return fMulerFillMatches(MULER_SELECT_FILL, fill) ||
+    fMulerFillMatches(MULER_SELECT_3D_FILL, fill) ||
+    fMulerFillMatches(MULER_SELECT_HOVER, fill) ||
+    fMulerFillMatches("#22d3ee", fill);
 }
 
 // True when a fill attribute expresses `color` in either notation (hex
@@ -5693,7 +5722,7 @@ var MULER_COMPACT_WHITENED_ATTR = "data-muler-compact-white";
 function fMulerSelectCompactPaintPass() {
   try {
     // Present keeps the selection state but never shows it (pushState degrades
-    // to component-only); the rectless branch below must not leak a cyan path.
+    // to component-only); the rectless branch below must not leak a selection path.
     // Student mode re-enables paint via the normal merge above.
     if (typeof fMulerSelectPresentBlocked === "function" && fMulerSelectPresentBlocked()) return;
     var sel = fMulerSelectState();
@@ -5717,7 +5746,7 @@ function fMulerSelectCompactPaintPass() {
           var selfWhitened = cm.rectEl.getAttribute(MULER_COMPACT_WHITENED_ATTR) === "1";
           // Component-wins: a green backplate means the selection is not the
           // visible layer on this label, so it is never overpainted. Only a
-          // cyan (selection) backplate or our own earlier white-out proceeds.
+          // orchid (selection) backplate or our own earlier white-out proceeds.
           if (!selfWhitened) {
             if (!fMulerSelectIsSelectionFill(cm.rectEl.getAttribute("fill"))) continue;
             cm.rectEl.setAttribute("fill", "white");
@@ -5787,19 +5816,19 @@ function fMulerSelectRepaint() {
     try { if (typeof fMulerSelectPushState === "function") fMulerSelectPushState(); } catch (eP2) {}
     // v57 3D: repaint selection paint from state (no-op when off/empty/hidden).
     try { if (typeof fMulerSelectPush3D === "function") fMulerSelectPush3D(); } catch (eP3) {}
-    // v57 3D pick-sequence numbers (cyan), mirroring the 2D mulerSelNum badges.
+    // v57 3D pick-sequence numbers (orchid), mirroring the 2D mulerSelNum badges.
     try { if (typeof fMulerSelectSeq3D === "function") fMulerSelectSeq3D(); } catch (eS3) {}
     try { fMulerSelectCompactPaintPass(); } catch (eCP) {}
   } catch (e) {}
 }
 
-// Selection-sequence numbers in 3D (v57): pick-order cyan echoes on the
+// Selection-sequence numbers in 3D (v57): pick-order orchid echoes on the
 // picked atoms, mirroring the 2D mulerSelNum badges exactly (same gating:
 // armed main-chain purpose only; same order: position in atoms3D, which
 // tracks atoms2D pick order). Rebuilt from state on every repaint, so
 // toggle/re-pick/exact-clear renumber automatically — like the badges.
 // Single script: `set echo off` first clears stale tails (safe: no chain
-// echoes can be live while armed), then one cyan + one black shadow echo
+// echoes can be live while armed), then one orchid + one black shadow echo
 // per picked atom. Present/unpaired/disabled states paint nothing.
 function fMulerSelectSeq3D() {
   try {
@@ -5818,15 +5847,15 @@ function fMulerSelectSeq3D() {
     // pick must erase its echo instead of leaving a stale number behind.
     // Safe: no chain echoes can be live while armed (classic path blocked,
     // settings toggles guarded, no arm-time numbering).
-    var cyan = "X7DDFFF";
+    var selTone = "XB62BA6";
     try {
-      if (typeof MULER_SELECT_CYAN === "string" && /^#[0-9a-fA-F]{6}$/.test(MULER_SELECT_CYAN)) cyan = "X" + MULER_SELECT_CYAN.slice(1).toUpperCase();
+      if (typeof MULER_SELECT_HOVER === "string" && /^#[0-9a-fA-F]{6}$/.test(MULER_SELECT_HOVER)) selTone = "X" + MULER_SELECT_HOVER.slice(1).toUpperCase();
     } catch (eC) {}
     var d = 0.01, script = "set echo off;";
     for (var i = 0; i < atoms.length; i++) {
       var a = atoms[i], n = i + 1, id = "mulerSelSeq3D" + n;
       if (!(a > 0)) continue;
-      script += " set echo " + id + " {atomno = " + a + "}; set echo offset {-1.1 1.1 3}; font echo 42 sansSerif bold; color echo [" + cyan + "]; echo " + n + ";";
+      script += " set echo " + id + " {atomno = " + a + "}; set echo offset {-1.1 1.1 3}; font echo 42 sansSerif bold; color echo [" + selTone + "]; echo " + n + ";";
       script += " set echo " + id + "s1 {atomno = " + a + "}; set echo offset {" + (-1.1 + d) + " " + (1.1 - d) + " 3}; font echo 42 sansSerif bold; color echo black; echo " + n + ";";
     }
     if (typeof fJSmolScript === "function") fJSmolScript(jmolAppletNomeclature, script);
@@ -10952,7 +10981,7 @@ function fCollectHighlightRectsNearText(textEls) {
 // Circle twin of the rect collector above: highlight circles (JSME renders
 // atom highlights as circles where no label rect owns them) near removed
 // texts are dropped by the compaction too. Fill-restricted to highlight
-// colors (component green + selection cyan) so structural circles are never
+// colors (component green + selection orchid) so structural circles are never
 // touched.
 function fCollectHighlightCirclesNearText(textEls) {
   const collectedCircles = [];
@@ -10991,7 +11020,9 @@ function fCollectHighlightCirclesNearText(textEls) {
       const fillValue = String(circleEl.node.getAttribute("fill") || "").replace(/\s+/g, "").toLowerCase();
       const isHiglightFill =
         fMulerFillMatches("#79dc6d", fillValue) ||
-        fMulerFillMatches((typeof MULER_SELECT_CYAN !== "undefined" ? MULER_SELECT_CYAN : "#22d3ee"), fillValue) ||
+        fMulerFillMatches((typeof MULER_SELECT_FILL !== "undefined" ? MULER_SELECT_FILL : "#ecace4"), fillValue) ||
+        fMulerFillMatches((typeof MULER_SELECT_3D_FILL !== "undefined" ? MULER_SELECT_3D_FILL : "#dc6acf"), fillValue) ||
+        fMulerFillMatches((typeof MULER_SELECT_HOVER !== "undefined" ? MULER_SELECT_HOVER : "#b62ba6"), fillValue) ||
         fMulerFillMatches("#22d3ee", fillValue);
       if (!isHiglightFill) {
         continue;
@@ -11257,7 +11288,7 @@ function fIsHighlightFillColor(fillValue) {
   if (normalized.indexOf("121,220,109") !== -1) {
     return true;
   }
-  // Selection cyan gets the same black-label contrast as component green.
+  // Selection orchid gets the same black-label contrast as component green.
   try {
     if (typeof fMulerSelectIsSelectionFill === "function" && fMulerSelectIsSelectionFill(fillValue)) {
       return true;
@@ -11265,12 +11296,19 @@ function fIsHighlightFillColor(fillValue) {
   } catch (eSel) {}
   try {
     if (typeof fMulerFillMatches === "function") {
-      var _cyan = "#7ddfff";
-      try { if (typeof MULER_SELECT_CYAN !== "undefined" && MULER_SELECT_CYAN) _cyan = MULER_SELECT_CYAN; } catch (eC) {}
-      if (fMulerFillMatches(_cyan, fillValue)) {
+      var _selFill = "#ecace4";
+      try { if (typeof MULER_SELECT_FILL !== "undefined" && MULER_SELECT_FILL) _selFill = MULER_SELECT_FILL; } catch (eC) {}
+      if (fMulerFillMatches(_selFill, fillValue)) {
         return true;
       }
-      if (fMulerFillMatches("#7ddfff", fillValue)) {
+      var _sel3D = "#dc6acf";
+      try { if (typeof MULER_SELECT_3D_FILL !== "undefined" && MULER_SELECT_3D_FILL) _sel3D = MULER_SELECT_3D_FILL; } catch (eD) {}
+      if (fMulerFillMatches(_sel3D, fillValue)) {
+        return true;
+      }
+      var _selHover = "#b62ba6";
+      try { if (typeof MULER_SELECT_HOVER !== "undefined" && MULER_SELECT_HOVER) _selHover = MULER_SELECT_HOVER; } catch (eH) {}
+      if (fMulerFillMatches(_selHover, fillValue)) {
         return true;
       }
       if (fMulerFillMatches("#22d3ee", fillValue)) {
@@ -12130,7 +12168,7 @@ var MULER_SELECT_SEQ_DY = 300;  // selection badge baseline below label bottom, 
 
 // Selection-sequence badges (v56 1C order dimension): one per picked atom,
 // numbered by selection order, below the label (locants live above). White
-// text + cyan halo, tagged mulerSelNum* and skipped by highlight scraping
+// text + orchid halo, tagged mulerSelNum* and skipped by highlight scraping
 // like the numbering badges. Painted per render from live state — toggle,
 // re-pick, exact-clear and mode switches renumber automatically.
 // Main-chain only: FG and free selections paint the highlight with no numbers.
@@ -12200,8 +12238,8 @@ function fMulerSelectSeqBadges() {
         }
       } catch (eB) { continue; }
       try {
-        var _cyan = (typeof MULER_SELECT_CYAN !== "undefined" && MULER_SELECT_CYAN) ? MULER_SELECT_CYAN : "#7ddfff";
-        var s = "<text id='mulerSelNum" + i + "' x='" + Math.round(bx) + "' y='" + Math.round(by) + "' font-size='" + Math.round(numFS) + "px' font-weight='bold' font-family='Arial, sans-serif' text-anchor='middle' fill='" + _cyan + "' stroke='#000000' stroke-width='" + Math.round(numSW) + "px' paint-order='stroke' class='mulerSelNum'>" + (i + 1) + "</text>";
+        var _selNum = (typeof MULER_SELECT_HOVER === "string" && MULER_SELECT_HOVER) ? MULER_SELECT_HOVER : "#b62ba6";
+        var s = "<text id='mulerSelNum" + i + "' x='" + Math.round(bx) + "' y='" + Math.round(by) + "' font-size='" + Math.round(numFS) + "px' font-weight='bold' font-family='Arial, sans-serif' text-anchor='middle' fill='" + _selNum + "' stroke='#ffffff' stroke-width='" + Math.round(numSW) + "px' stroke-linejoin='round' paint-order='stroke' class='mulerSelNum'>" + (i + 1) + "</text>";
         var nel = null;
         try { nel = (typeof MuSVG !== "undefined" && MuSVG.parse) ? MuSVG.parse(s) : null; } catch (eP) { nel = null; }
         if (nel) gWrap.append(nel);
