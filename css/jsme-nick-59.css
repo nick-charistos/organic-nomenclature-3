@@ -672,6 +672,7 @@ footer span.molwaveLogoSub {
   max-height: min(70svh, 400px);
   padding: 6px 8px;
   overflow-y: auto;
+  z-index: 120;
 }
 
 /* Single-viewer max-height control (v48; v58.43 flat skin): the native range
