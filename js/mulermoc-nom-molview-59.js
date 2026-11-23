@@ -19064,7 +19064,7 @@ function fMolVis3DScript(theVisModel) {
       break;
     case "sticks":
       mySpt =
-        " select all and not _Xx;  color atoms translucent 1.0; spacefill off; color bonds translucent 0.0; spacefill 40%;  wireframe 90%;   " +
+        " select all and not _Xx;  color atoms translucent 1.0; spacefill off; color bonds translucent 0.0; spacefill 70%;  wireframe 90%;   " +
         JmolSelection;
       break;
   }

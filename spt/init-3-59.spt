@@ -15,7 +15,7 @@
  set antialiasImages ON;
 
  set labelOffset 0 0; 
- font labels 18; 
+ font labels 24; 
  set fontscaling TRUE;
  color labels black;
 
