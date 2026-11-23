@@ -1,7 +1,7 @@
 # Session notes — 2026-11-23 (resume point for next session, other machine)
 
 > **Resume pointer (cross-machine):** 2026-11-23 — **v59 is LIVE**
-> (`index.html` → `mulermoc-nom-59.html`, `?v=59.12`): 2D data upgrade.
+> (`index.html` → `mulermoc-nom-59.html`, `?v=59.13`): 2D data upgrade.
 > **147 molecules** (141 + 6 branched alkanes); every stored form uses one
 > frame (heavy 1.17, H 0.78). **Design rule: expanded = condensed + H** — the
 > expanded form is derived from the condensed molfile and keeps its heavy atom
@@ -25,7 +25,7 @@
 > `probe-compact-main`, `probe-explain-all`, `probe-scenario-quiz` green;
 > visual pass on the owner-reported flipped molecules, the 5 relayouts, the
 > 22 +H and 6 new molecules. Fork rebased on **v58.51** (`.scQuizPrompt`
-> wrapper) and the orchid quiz CSS; v59 asset refs bumped to `?v=59.10`.
+> wrapper) and the orchid quiz CSS; v59 asset refs bumped to `?v=59.13`.
 > v59.02 removes the «Κανόνες Ονοματολογίας» bullet from the grouping selector
 > (rule mode/data/`?grouping=rule` kept). v59.03 links the header and footer
 > MolWave lockup to `index.html` (`homeLink`: Αρχική σελίδα / Home) and syncs
@@ -87,6 +87,9 @@
 > color reset (clear highlights, pick paint/clear, branch/chain/FG/multi-bond/
 > single-bond highlights). Verified by `node --check` and an owner visual pass
 > in sticks mode (molecule switch, picking on/off, highlights); no probes run.
+> v59.13 makes the 2D/3D divider draggable: session-only ratio, 0.5 default,
+> ghost drag, keyboard reset/adjust, hidden in Present and for a lone viewer;
+> verified at 1280px.
 > **Icon/UI backlog:** stage 2 is mostly done — the 3D style + 2D
 > representation dropdowns and the hydrogens/atom/CHₙ toggles ship in v59.11.
 > Remaining: viewer tool-button icons (2D/3D visibility, rotate/zoom/save) and
@@ -102,7 +105,7 @@
 > No code change (v59.11 bumps the asset refs).
 > Docs: current index `docs/README.md`; historical material in `docs/archive/`
 > (pre-v54 notes split to `docs/archive/SESSION-NOTES-pre-v54.md`).
-> Committed: v59.01 (ff2058c) + v59.02 (7e18c65) + v59.03 + v59.04 + v59.05 + v59.06 + v59.07 + v59.08 + v59.09 + v59.10 + v59.11 + v59.12. v58.51 stays runnable and frozen.
+> Committed: v59.01 (ff2058c) + v59.02 (7e18c65) + v59.03 + v59.04 + v59.05 + v59.06 + v59.07 + v59.08 + v59.09 + v59.10 + v59.11 + v59.12 + v59.13. v58.51 stays runnable and frozen.
 >
 > **Previous pointer (v58.50):** 2026-11-21 — **v58 is LIVE**
 > (`index.html` → `mulermoc-nom-58.html`, `?v=58.50`, review follow-ups +

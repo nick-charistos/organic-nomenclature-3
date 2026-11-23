@@ -41,6 +41,12 @@ let viewerMaxH = "full";
 // Set by the Ρυθμίσεις control and per scenario step (show.viewerBothHeight);
 // scenario owns persistence, this is the live value.
 let viewerBothH = "full";
+// Live split ratio for the two visible viewers (v59.13): 0.5 = equal.
+// Session-only, never stored in a scenario step; default behavior is exactly
+// the old 50/50 split until the author drags the separator.
+let viewerSplitRatio = 0.5;
+const VIEWER_SPLIT_MIN = 0.2;
+const VIEWER_SPLIT_MAX = 0.8;
 // Manual double-viewer slider bounds (v48): the combined 2D+3D height is a
 // fixed 300–1000px range regardless of the live single-viewer ceiling.
 const VIEWER_BOTH_MIN = 300;
@@ -373,6 +379,7 @@ function fNameCompBox(boxId, boxClass, displayComp, tipHtml) {
 fInitViewerSettingsBtn();
 fInitViewerMaxHeight();
 fInitViewerBothHeight();
+fInitViewerSplitDrag();
 
 // ── jsmeOnLoad ────────────────────────────────────────────────────────────
 // Main applet stays in depict mode: 2D highlights are read back from
@@ -720,7 +727,104 @@ function fSyncViewerSplit() {
     var j3 = document.getElementById("nomeclature3D");
     show3D = !!(j3 && j3.offsetParent !== null);
   } catch (e) { /* visibility best-effort */ }
-  split.classList.toggle("hide", !(show2D && show3D));
+  var present = false;
+  try { present = !!(typeof MuLERMoCScenario !== "undefined" && MuLERMoCScenario && MuLERMoCScenario.present); } catch (eP) {}
+  split.classList.toggle("hide", !(show2D && show3D) || present);
+  try { split.setAttribute("aria-valuenow", String(Math.round(viewerSplitRatio * 100))); } catch (eV) {}
+}
+
+// Separate viewers by dragging the divider (v59.13). Live-session only: the
+// ratio redistributes the existing combined height and is never stored in a
+// step. Default 0.5 keeps the old equal split until the author drags.
+function fViewerSplitRatioClamp(r) {
+  if (!(typeof r === "number") || !isFinite(r)) return 0.5;
+  return Math.min(VIEWER_SPLIT_MAX, Math.max(VIEWER_SPLIT_MIN, r));
+}
+
+function fInitViewerSplitDrag() {
+  var split = document.getElementById("viewerSplit");
+  if (!split || split.__mulerSplitDrag) return;
+  split.__mulerSplitDrag = true;
+  var rect2 = null, rect3 = null, ghost = null, dragging = false, lastY = 0;
+
+  function ratioFromY(y) {
+    if (!rect2 || !rect3) return viewerSplitRatio;
+    var total = rect2.height + rect3.height + 1;
+    if (!(total > 0)) return viewerSplitRatio;
+    return fViewerSplitRatioClamp((y - rect2.top) / total);
+  }
+  function moveGhost(y) {
+    if (!ghost) return;
+    ghost.style.top = Math.round(y) + "px";
+  }
+  function cleanup() {
+    dragging = false;
+    try { document.body.classList.remove("viewerSplitDrag"); } catch (eB) {}
+    try { if (ghost && ghost.parentNode) ghost.parentNode.removeChild(ghost); } catch (eG) {}
+    ghost = null;
+    rect2 = rect3 = null;
+  }
+  function applyRatio(r) {
+    viewerSplitRatio = fViewerSplitRatioClamp(r);
+    try { split.setAttribute("aria-valuenow", String(Math.round(viewerSplitRatio * 100))); } catch (eV) {}
+    try { fResizeViewers(); } catch (eR) { /* resize best-effort */ }
+  }
+
+  split.addEventListener("pointerdown", function (ev) {
+    if (dragging || split.classList.contains("hide")) return;
+    try { if (MuLERMoCScenario && MuLERMoCScenario.present) return; } catch (eP) {}
+    var h2 = document.getElementById("jsmeNomeclatureDIV");
+    var h3 = document.getElementById("view3DHost");
+    if (!h2 || !h3) return;
+    rect2 = h2.getBoundingClientRect();
+    rect3 = h3.getBoundingClientRect();
+    if (!(rect2.height > 0) || !(rect3.height > 0)) return;
+    dragging = true;
+    lastY = ev.clientY;
+    ghost = document.createElement("div");
+    ghost.id = "viewerSplitGhost";
+    ghost.style.left = Math.round(rect2.left) + "px";
+    ghost.style.width = Math.round(rect2.width) + "px";
+    moveGhost(lastY);
+    try { document.body.appendChild(ghost); } catch (eA) { ghost = null; }
+    try { document.body.classList.add("viewerSplitDrag"); } catch (eB) {}
+    try { split.setPointerCapture(ev.pointerId); } catch (eC) {}
+    if (ev.preventDefault) ev.preventDefault();
+  });
+  document.addEventListener("pointermove", function (ev) {
+    if (!dragging) return;
+    lastY = ev.clientY;
+    moveGhost(lastY);
+    if (ev.preventDefault) ev.preventDefault();
+  }, { passive: false });
+  document.addEventListener("pointerup", function (ev) {
+    if (!dragging) return;
+    var y = (typeof ev.clientY === "number") ? ev.clientY : lastY;
+    var r = ratioFromY(y);
+    cleanup();
+    applyRatio(r);
+  });
+  document.addEventListener("pointercancel", function () {
+    if (!dragging) return;
+    cleanup();
+  });
+  split.addEventListener("dblclick", function (ev) {
+    if (ev && ev.preventDefault) ev.preventDefault();
+    applyRatio(0.5);
+  });
+  split.addEventListener("keydown", function (ev) {
+    if (!ev) return;
+    if (ev.key === "ArrowUp") {
+      ev.preventDefault();
+      applyRatio(viewerSplitRatio - 0.02);
+    } else if (ev.key === "ArrowDown") {
+      ev.preventDefault();
+      applyRatio(viewerSplitRatio + 0.02);
+    } else if (ev.key === "Home") {
+      ev.preventDefault();
+      applyRatio(0.5);
+    }
+  });
 }
 
 // Shared resync for the two viewer-height rows (panel may be open while a
@@ -19102,16 +19206,32 @@ function fViewerHeights2D3D(raw) {
     // is "full"; Auto (viewerBothH == null) keeps the split. The phone cap
     // still trims.
     var each2 = each, each3 = each;
-    if (!raw && n === 2 && viewerBothH != null) {
-      // "full" fills the live viewport instead of a stored px total.
-      var bothTotal = viewerBothH === "full"
-        ? Math.round(total - chrome)
-        : Math.round(viewerBothH);
-      if (viewerBothH !== "full") {
-        if (bothTotal < VIEWER_BOTH_MIN) bothTotal = VIEWER_BOTH_MIN;
-        if (bothTotal > VIEWER_BOTH_MAX) bothTotal = VIEWER_BOTH_MAX;
+    if (!raw && n === 2) {
+      var splitTotal = 0;
+      if (viewerBothH != null) {
+        // "full" fills the live viewport instead of a stored px total.
+        splitTotal = viewerBothH === "full"
+          ? Math.round(total - chrome)
+          : Math.round(viewerBothH);
+        if (viewerBothH !== "full") {
+          if (splitTotal < VIEWER_BOTH_MIN) splitTotal = VIEWER_BOTH_MIN;
+          if (splitTotal > VIEWER_BOTH_MAX) splitTotal = VIEWER_BOTH_MAX;
+        }
+      } else {
+        // Legacy Auto: keep the old equal share as the total.
+        splitTotal = each * 2;
       }
-      each2 = each3 = Math.round(bothTotal / 2);
+      if (splitTotal > 0) {
+        if (Math.abs(viewerSplitRatio - 0.5) < 0.0001) {
+          // Preserve the historic equal-split pixel rounding exactly.
+          each2 = each3 = Math.round(splitTotal / 2);
+        } else {
+          var minRatio = splitTotal > 2 * VIEWER_MIN_H ? VIEWER_MIN_H / splitTotal : 0.5;
+          var splitRatio = Math.min(Math.max(viewerSplitRatio, minRatio), 1 - minRatio);
+          each2 = Math.round(splitTotal * splitRatio);
+          each3 = splitTotal - each2;
+        }
+      }
     } else if (n === 1 && !raw) {
       var autoCap = shareFor(2);
       if (show2D) {

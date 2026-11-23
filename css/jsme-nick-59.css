@@ -846,9 +846,48 @@ footer span.molwaveLogoSub {
 /* Both viewers visible: one hairline between the two hosts. Hidden otherwise
    (`.hide` is display:none), so a single viewer keeps its rounded card. */
 .viewerSplit {
+  position: relative;
   height: 1px;
   flex: 0 0 1px;
   background: var(--veryLightBlue);
+  z-index: 70;
+}
+
+/* Larger invisible grab lane over the 1px line. */
+.viewerSplit::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -7px;
+  bottom: -7px;
+  cursor: row-resize;
+  touch-action: none;
+}
+
+.viewerSplit:hover,
+.viewerSplit:focus-visible {
+  background: var(--darkBlue);
+}
+
+.viewerSplit:focus-visible {
+  outline: 2px solid var(--darkBlue);
+  outline-offset: 2px;
+}
+
+body.viewerSplitDrag,
+body.viewerSplitDrag * {
+  cursor: row-resize !important;
+  user-select: none !important;
+}
+
+#viewerSplitGhost {
+  position: fixed;
+  height: 1px;
+  background: var(--darkBlue);
+  z-index: 4000;
+  pointer-events: none;
+  box-shadow: 0 0 0 1px rgba(27, 39, 93, 0.25);
 }
 
 #viewerCol:has(#viewerSplit:not(.hide)) #jsmeNomeclatureDIV {

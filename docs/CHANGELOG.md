@@ -8,9 +8,9 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 Forked from v58.50, rebased on v58.51 (`mulermoc-nom-59.html` + `js/*-59.js` + `css/*-59.css` +
 `jsme-nick-nomeclature-moc2-data_59.js` + `spt/init-3-59.spt` +
-`zz-test-core59.html`, `?v=59.12`; `ui-icons.js`, `js/vendor/`, `jsme/` and
+`zz-test-core59.html`, `?v=59.13`; `ui-icons.js`, `js/vendor/`, `jsme/` and
 `mols/` stay shared). Chemistry/naming results are v58's and the scenario data
-shape is inherited from v58, but v59.02–v59.12 add UI and quiz-step-authoring
+shape is inherited from v58, but v59.02–v59.13 add UI and quiz-step-authoring
 changes (see below); the v59.00 work is data geometry and the MOL pipeline.
 
 - **147 molecules.** The six branched alkanes the sibling project ships as
@@ -212,6 +212,16 @@ changes (see below); the v59.00 work is data geometry and the MOL pipeline.
   the 26 % / 0.15 base and opaque atoms. Verified: `node --check`; owner visual
   pass in sticks mode (molecule switch, picking on/off, name and bond
   highlights). No probes run for this UI-layer batch.
+- **Draggable viewer split (v59.13).** The 2D/3D divider can be dragged to
+  redistribute the existing combined viewer height; the total stays governed
+  by the viewer-height settings. `viewerSplitRatio` is session-only (default
+  0.5, clamped 0.2–0.8, never stored in a step), and the 50/50 default keeps
+  the historic pixel rounding. The 1px line gains a 14px grab lane, ghost-line
+  drag (applets resize on release), double-click/Home reset and Up/Down
+  keyboard adjustment; it is hidden in Present and when only one viewer is
+  visible. Verified at 1280px: drag 400/400 → 330/470, reset 400/400, keyboard
+  416/384, split hidden in single-viewer mode; no page errors. No probes run
+  for this layout batch.
 - **Docs resync (2026-11-23, docs-only).** Current-tree references were synced
   to v59.10 across `README`, `AGENTS`, `PROJECT-PLAN`/`PROJECT-PLAN-GR`,
   `LAYERS-PLAN`, `didactic-scenario-plan` and the harness README; the EN
