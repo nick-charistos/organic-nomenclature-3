@@ -250,8 +250,8 @@ Update docs in the same commit as the change:
   all-capable; non-empty = filtered capable set; empty/no-capable = empty task
   (gate passes, never all-capable). Zero-type drawer cascades are blocked;
   validation warns on invalid/empty types. Unselected types are
-  pre-solved/free per molecule, and the authored `preSolved` set exempts
-  specific comps. No name tags in the drawer — switchable quiz-type chips
+  pre-solved/free per molecule; legacy `preSolved` is ignored. No name tags in
+  the drawer — switchable quiz-type chips
   instead. Do not apply the pinned free-complement contract to legacy
   all-capable menu quizzes.
 - Preserve Present/authoring state restoration (step stash/restore, Go
@@ -262,7 +262,7 @@ Update docs in the same commit as the change:
   is white space. Presentation keeps the header (navigation + Exit) but hides
   the footer; Exit restores it.
 - Tooltips (v58.41): every `[data-tooltip]` is rendered by the fixed
-  `#mulerTipLayer` in `js/mulermoc-nom-tooltip-58.js`, not by pseudo-elements.
+  `#mulerTipLayer` in `js/mulermoc-nom-tooltip-59.js`, not by pseudo-elements.
   It flips/clamps inside the viewport and hides on scroll/resize/leave.
   Pseudo bubbles are suppressed only while the layer is active and remain the
   no-JS fallback; add new tooltips via `data-tooltip`, not new bubble CSS.

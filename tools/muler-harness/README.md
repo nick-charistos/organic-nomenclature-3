@@ -1,7 +1,7 @@
 # muler-harness (headless verification)
 
 Playwright + installed Chrome probes for the MuLERMoC live working tree
-(currently v59 — the suite targets `mulermoc-nom-59.html`; v57 and older
+(currently v59.10 — the suite targets `mulermoc-nom-59.html`; v58 and older
 pages stay in the repo but are frozen, so the probes follow the live build).
 Run from the repo root. Requires node + Playwright (`npm i playwright-core`
 once, anywhere on NODE_PATH or in this dir) and a Chrome binary.
@@ -65,13 +65,13 @@ rerun only the probe for that layer. See `AGENTS.md` → Verification.
   `allowSelect` gating (hide entry when off, uncheck-while-active exits),
   Present block (toggle no-op + CSS hides the entry). Hard-fail.
 - `probe-compact-main.js` — main-chain versus free compacted-label semantics: COOH/HCOOH/CN resolve to the anchor carbon under a main-chain target, NO2 stays a fragment, free selection stays a fragment; checks C-only paint, hover box, badge, exact reward, the free-mode backplate edge, clear/marker restore and methanal (no highlight geometry).
-- `probe-scenario-quiz.js` — v58 scenario quiz contract (`?v=58.49`): capture
-  stores the task + its required component set + labels, `Update` keeps an
-  authored task and `startMode`, the drawer's explicit Remove clears it, the
-  drawer Start select + `.is-start` marker work, Present stays idle with
+- `probe-scenario-quiz.js` — v59.04 scenario quiz contract (live `?v=59.10`):
+  capture stores the task + its required component set + labels, `Update` keeps
+  an authored task and `startMode`, switching the drawer master checkbox off
+  clears it; the drawer Start select + `.is-start` marker work, Present stays idle with
   `.scQuizStartPrompt` (no auto-arm; only the authored `startMode` arms),
   the gate holds until every required comp is solved, the solved display
-  restores (authored `preSolved` too), `requireSolution:false` never gates,
+  restores, `requireSolution:false` never gates,
   a stored set narrows the requirement (legacy steps stay all-capable),
   forward jumps clamp to the next step, menu steps gate until a molecule is
   picked and stay idle after the pick, reselect resets progress and the solved

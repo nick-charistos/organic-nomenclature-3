@@ -4,13 +4,14 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 ---
 
-## [v59] (2D data upgrade; LIVE, `index.html` → v59)
+## [v59] (2D data upgrade + UI polish; LIVE, `index.html` → v59)
 
 Forked from v58.50, rebased on v58.51 (`mulermoc-nom-59.html` + `js/*-59.js` + `css/*-59.css` +
 `jsme-nick-nomeclature-moc2-data_59.js` + `spt/init-3-59.spt` +
 `zz-test-core59.html`, `?v=59.10`; `ui-icons.js`, `js/vendor/`, `jsme/` and
-`mols/` stay shared). Chemistry/naming results and the scenario quiz contract
-are v58's — only data geometry and the MOL pipeline changed.
+`mols/` stay shared). Chemistry/naming results are v58's and the scenario data
+shape is inherited from v58, but v59.02–v59.10 add UI and quiz-step-authoring
+changes (see below); the v59.00 work is data geometry and the MOL pipeline.
 
 - **147 molecules.** The six branched alkanes the sibling project ships as
   `nameExamplesCustom` are now native entries: `methyl_2_butane`,
@@ -87,7 +88,7 @@ are v58's — only data geometry and the MOL pipeline changed.
   prompt while picking (`pending3D` cancelled). The v58 CSS comes along:
   `--veryLightOrchid`, orchid `.quizTodo` / `.quizTodo.selected` /
   `.scQuizTag.selected` / `.is-start` and the shared `.scQuizPrompt` +
-  `.scQuizStartPrompt` skin. Asset refs moved to `?v=59.01` (now `?v=59.03`).
+  `.scQuizStartPrompt` skin. Asset refs moved to `?v=59.01` (now `?v=59.10`).
 - **Rule grouping bullet removed (v59.02).** The `.groupingMode` selector now
   offers Όλα τα μόρια / Χημικές Τάξεις / Ομόλογες Σειρές only. The `rule` mode
   itself is kept intact: `moleculeGroupingMode === "rule"`, the `ruleExamples`
@@ -165,6 +166,11 @@ are v58's — only data geometry and the MOL pipeline changed.
   style select replaces the custom dropdown; EN labels and scenario control
   sync were updated. Verified: `probe-final`, `probe-mode-quiz` and
   `probe-scenario-quiz` green; headless mode/zigzag/3D flag checks pass.
+- **Docs resync (2026-11-23, docs-only).** Current-tree references now point at
+  v59.10 across `README`, `AGENTS`, `PROJECT-PLAN`/`PROJECT-PLAN-GR`,
+  `LAYERS-PLAN`, `didactic-scenario-plan` and the harness README; the EN
+  teacher-guide encoding is repaired; the harness README records the v59.04
+  settings-only quiz contract. No code change.
 - **Verification:** `node --check` clean; 422/422 byte-identical round-trip;
   audit 147 molecules / 0 issues (heavy 1.17 ± 3%, H 0.78 ± 3%, expanded =
   condensed atom/coordinate/bond-table prefix, chain arrays, charges,
