@@ -40,7 +40,7 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
     await p.goto(BASE + "/mulermoc-nom-59.html?lang=en&mol=" + mol, { waitUntil: "load", timeout: 60000 });
     await p.waitForTimeout(9000);
     await p.evaluate(() => {
-      const opts = Array.from(document.querySelectorAll("#radio2DMode .mode2DOption"));
+      const opts = Array.from(document.querySelectorAll("#view2DTools .mode2DOption"));
       const o = opts.find((x) => /σκελετ|skeletal/i.test(x.textContent || "")) || opts[2];
       if (o) o.click();
     });

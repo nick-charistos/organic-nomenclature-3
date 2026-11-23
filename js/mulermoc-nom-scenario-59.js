@@ -1578,10 +1578,15 @@ function fScenarioSyncControlUi() {
   try {
     var m2d = typeof mode2D !== "undefined" ? mode2D : "condensed";
     var idx = m2d === "expanded" ? 1 : (m2d === "skeletal" || m2d === "condensedZigZag") ? 2 : 0;
-    var btns = document.querySelectorAll("#radio2DMode input[name='mode2D']");
+    var btns = document.querySelectorAll("#view2DTools input[name='mode2D']");
     for (var k = 0; k < btns.length; k++) btns[k].checked = (k === idx);
   } catch (e) {
     /* controls unavailable */
+  }
+  try {
+    if (typeof fSyncMode2DUI === "function") fSyncMode2DUI();
+  } catch (eM2) {
+    /* dropdown unavailable */
   }
   try {
     if (typeof atomSymbols3DFlag !== "undefined") fScenarioSetCheck("atomSymbolsCheck", !!atomSymbols3DFlag, "selectedCheck", "unselectedCheck");
@@ -1592,8 +1597,9 @@ function fScenarioSyncControlUi() {
   }
   // (2D color panel rows sync via the registry loop above.)
   try {
-    var _sel3d = document.getElementById("style3D");
-    if (_sel3d && typeof vis3D !== "undefined") _sel3d.value = vis3D;
+    if (typeof fSyncStyle3DUI === "function" && typeof vis3D !== "undefined") {
+      fSyncStyle3DUI(vis3D);
+    }
   } catch (e) {
     /* controls unavailable */
   }
@@ -3250,18 +3256,18 @@ function fScenarioSyncPresentClass() {
 
 // Full-chrome restore for Exit: clears BOTH the inline display set by
 // fScenarioHide and the `hide` class set by the app's own viewer toggles
-// (fToggleViewer2D/3D add it to the control bars; `.hide` is
-// `display:none !important`, so inline restore alone cannot bring those bars
-// back). Settings chrome (save buttons, menu, viewer buttons, viewer
+// (fToggleViewer2D/3D add it to the overlay tool clusters; `.hide` is
+// `display:none !important`, so inline restore alone cannot bring those
+// clusters back). Settings chrome (save buttons, menu, viewer buttons, viewer
 // settings, naming container) always comes back so all settings buttons are
-// available in authoring. Viewer panes + their bars + view buttons instead
-// follow the optional `viewers` arg (exit step's show.viewers; null/missing
-// defaults both-visible), mirroring fToggleViewer2D/3D scope — so exiting a
-// no-3D step leaves 3D hidden with view3DBtn inactive. Capture reads the
-// buttons truthfully via fScenarioViewerOn.
+// available in authoring. Viewer panes + their overlay tools + view buttons
+// instead follow the optional `viewers` arg (exit step's show.viewers;
+// null/missing defaults both-visible), mirroring fToggleViewer2D/3D scope — so
+// exiting a no-3D step leaves 3D hidden with view3DBtn inactive. Capture reads
+// the buttons truthfully via fScenarioViewerOn.
 function fScenarioRestoreChrome(viewers) {
   var ids = [
-    "save2DBtn", "save3DBtn",
+    "save2DBtn", "save3DBtn", "view2DTools", "view3DTools",
     "jsmeNomeclatureDIV",
     "menuCol", "viewerCol", "viewerVisBtns", "viewerSettingsBtnDiv", "viewerSettingsPanel",
     "nameAnalysisContainer", "analysisCol", "nameSettingsPanel",
@@ -3286,13 +3292,13 @@ function fScenarioRestoreChrome(viewers) {
   } catch (ePc) { /* no DOM */ }
   var show2D = !viewers || viewers["2D"] !== false;
   var show3D = !viewers || viewers["3D"] !== false;
-  // 2D pane + bar (mirrors fToggleViewer2D: SVG + radio bar; DIV wrapper stays).
+  // 2D pane + overlay tools (mirrors fToggleViewer2D: SVG + view2DTools).
   try {
     var b2 = document.getElementById("view2DBtn");
     if (b2 && b2.classList) b2.classList.toggle("active", !!show2D);
     var svg = document.getElementById("jsmeNomeclatureSVG");
     if (svg) svg.style.display = show2D ? "" : "none";
-    var r2 = document.getElementById("radio2DMode");
+    var r2 = document.getElementById("view2DTools");
     if (r2) {
       r2.style.display = "";
       if (r2.classList) r2.classList.toggle("hide", !show2D);
@@ -3300,13 +3306,13 @@ function fScenarioRestoreChrome(viewers) {
   } catch (e) {
     /* no 2D DOM */
   }
-  // 3D pane + bar (mirrors fToggleViewer3D: applet + controls3D).
+  // 3D pane + overlay tools (mirrors fToggleViewer3D: applet + view3DTools).
   try {
     var b3 = document.getElementById("view3DBtn");
     if (b3 && b3.classList) b3.classList.toggle("active", !!show3D);
     var ap = document.getElementById("nomeclature3D");
     if (ap) ap.style.display = show3D ? "" : "none";
-    var c3 = document.getElementById("controls3D");
+    var c3 = document.getElementById("view3DTools");
     if (c3) {
       c3.style.display = "";
       if (c3.classList) c3.classList.toggle("hide", !show3D);
@@ -3328,6 +3334,11 @@ function fScenarioRestoreChrome(viewers) {
     }
   } catch (e4) {
     /* no 3D DOM */
+  }
+  try {
+    if (typeof fSyncViewerSplit === "function") fSyncViewerSplit();
+  } catch (eSplit) {
+    /* separator best-effort */
   }
 }
 
@@ -5179,13 +5190,18 @@ function fScenarioChrome(show) {
       /* 3D unavailable */
     }
   }
-  // control bars + save buttons (bars go through the class-aware helper:
-  // a stale `hide` class from a no-viewer exit would otherwise survive the
-  // inline-display restore and keep a checked bar invisible in presentation)
+  try {
+    if (typeof fSyncViewerSplit === "function") fSyncViewerSplit();
+  } catch (eSplit) {
+    /* separator best-effort */
+  }
+  // overlay tools + save buttons (the clusters go through the class-aware
+  // helper: a stale `hide` class from a no-viewer exit would otherwise
+  // survive the inline-display restore and keep a checked cluster invisible)
   var c2 = show.controls && show.controls["2D"] === true && show2D;
   var c3 = show.controls && show.controls["3D"] === true && show3D;
-  fScenarioShowBar("radio2DMode", !(present && !c2));
-  fScenarioShowBar("controls3D", !(present && !c3));
+  fScenarioShowBar("view2DTools", show2D && !(present && !c2));
+  fScenarioShowBar("view3DTools", show3D && !(present && !c3));
   // Save-image buttons ride their control bar: the per-step "2D/3D ρυθμίσεις"
   // checkbox (`show.controls`) is the only authoring UI, so a checked bar must
   // also surface its save button. Legacy `show.save` stays an independent OR

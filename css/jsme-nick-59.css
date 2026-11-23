@@ -823,23 +823,42 @@ footer span.molwaveLogoSub {
   fill: #000 !important;
 }
 
-#radio2DMode,
-#controls3D {
+/* Viewer hosts anchor the overlay tool clusters after the v59.11 bar removal.
+   The 2D host clips to the column's rounded corners; the 3D wrapper stays
+   overflow-visible so the style menu is never cut by .JmolContainer. */
+#jsmeNomeclatureDIV,
+.viewerHost {
   position: relative;
-  background: #f3f3f3;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  border: 1px solid #ddd;
-  border-left: 0;
-  border-right: 0;
+  border-radius: inherit;
 }
 
-/* Native 2D/3D controls (v59.10): real radios/checkboxes/select, compact. */
-#radio2DMode .nativeOptions,
-#controls3D .nativeOptions {
-  gap: 10px;
-  min-width: 0;
+#jsmeNomeclatureDIV {
+  overflow: hidden;
+}
+
+/* JSmol's canvas carries z-index 9002; make its container a stacking context
+   so the overlay tools (z-index 60) stay above it. */
+#view3DHost #nomeclature3D {
+  position: relative;
+  z-index: 0;
+}
+
+/* Both viewers visible: one hairline between the two hosts. Hidden otherwise
+   (`.hide` is display:none), so a single viewer keeps its rounded card. */
+.viewerSplit {
+  height: 1px;
+  flex: 0 0 1px;
+  background: var(--veryLightBlue);
+}
+
+#viewerCol:has(#viewerSplit:not(.hide)) #jsmeNomeclatureDIV {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+#viewerCol:has(#viewerSplit:not(.hide)) #view3DHost {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 }
 
 .nativeOption {
@@ -869,36 +888,6 @@ footer span.molwaveLogoSub {
   opacity: 0.35;
   pointer-events: none;
   cursor: default;
-}
-
-#style3D {
-  height: 22px;
-  max-width: 140px;
-  padding: 0 4px;
-  font-family: "Roboto Condensed", sans-serif;
-  font-size: 0.75rem;
-  color: #333;
-  border: 1px solid #bbb;
-  border-radius: 3px;
-  background: #fff;
-}
-
-#controls3D {
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 6px;
-  border-bottom: 0;
-  /* Last child whenever 3D is visible: rounds the column's bottom corners
-     without clipping (4px = #viewerCol's 5px radius minus its 1px border). */
-  border-bottom-left-radius: 4px;
-  border-bottom-right-radius: 4px;
-}
-
-/* When 3D is hidden the 2D bar is the column's last visible child, so it
-   carries the rounded bottom corners. */
-#viewerCol:has(#controls3D.hide) #radio2DMode {
-  border-bottom-left-radius: 4px;
-  border-bottom-right-radius: 4px;
 }
 
 .radioGroupContainer {
@@ -1964,98 +1953,6 @@ footer span.molwaveLogoSub {
 }
 
 /* /////////////////////  SWITCH BUTTON ////////////////// */
-
-/* ///////////////////   DROP MENU ////////////////////////////////// */
-#dropMenu {
-  position: relative;
-  width: 150px;
-  margin-left: 5px;
-}
-
-#dropLiContainer.closed {
-  display: none;
-}
-
-#dropLiContainer {
-  background-color: #fff;
-  border: 1px solid var(--lightBlue);
-  position: absolute;
-  box-shadow: 1px 1px 6px -2px rgba(0, 0, 0, 0.3);
-  border-radius: 4px;
-  left: 40%;
-  top: -85px;
-  width: 100%;
-  z-index: 100;
-  overflow: hidden;
-}
-
-#dropLabel {
-  position: relative;
-  padding: 10px;
-  padding-left: 30px;
-  padding-right: 5px;
-  cursor: pointer;
-  font-family: "Roboto Condensed", sans-serif;
-  font-size: 0.85rem;
-  color: #333;
-  font-weight: normal;
-  margin-left: 5px;
-}
-
-#dropLabel.open::after,
-#dropLabel.closed:hover::after {
-  background-color: var(--darkBlue);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ffffff' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
-}
-
-#dropLabel::after {
-  content: "";
-  position: absolute;
-  left: 3px;
-  bottom: 7px;
-  display: block;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  border: 1px solid var(--darkBlue);
-  box-sizing: border-box;
-  background-color: var(--veryLightEarth);
-  background-repeat: no-repeat;
-  background-size: 25px 30px;
-  background-position: center;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%231b275d' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
-  transition: all 0.3s;
-}
-
-.dropLi {
-  background-color: #fff;
-  border-bottom: 1px solid var(--lightBlue);
-  border-left: 0;
-  border-right: 0;
-  padding: 10px;
-  min-height: 36px;
-  display: flex;
-  align-items: center;
-  font-size: 0.85rem;
-}
-
-.dropLi:hover {
-  background-color: var(--veryLightEarth);
-  /* border-color: var(--darkBlue); */
-  cursor: pointer;
-}
-
-.dropLi:first-of-type {
-  /* border-top-left-radius: 4px;
-  border-top-right-radius: 4px; */
-
-}
-
-.dropLi:last-of-type {
-  /* border-bottom-left-radius: 4px;
-  border-bottom-right-radius: 4px; */
-  border-bottom: 0;
-}
 
 .info {
   font-family: "Roboto", sans-serif;
@@ -3165,7 +3062,8 @@ color: var(--veryLightEarth);
 #view2DTools {
   position: absolute;
   right: 5px;
-  bottom: 33px;
+  bottom: 5px;
+  z-index: 60;
   display: flex;
   gap: 4px;
 }
@@ -3201,8 +3099,33 @@ color: var(--veryLightEarth);
    so "spin on" stays visible after the pointer leaves the button. */
 .viewerToolBtn.active {
   background-color: var(--lightBlue);
-  border-color: var(--darkBlue);
+  /* border-color: var(--darkBlue); */
   color: #fff;
+}
+
+/* Rotate toggle (v59.11): colour-only state like .toolToggle — no background
+   unless hovered; light-blue icon when off, dark-blue when latched. */
+#rotate3DBtn {
+  color: var(--lightBlue);
+  background-color: transparent;
+  border-color: transparent;
+}
+
+#rotate3DBtn.active {
+  color: var(--darkBlue);
+  background-color: transparent;
+  border-color: transparent;
+}
+
+#rotate3DBtn:hover {
+  color: var(--lightBlue);
+  background-color: var(--veryLightBlue);
+  border-color: transparent;
+}
+
+#rotate3DBtn.active:hover {
+  color: var(--darkBlue);
+  background-color: var(--veryLightBlue);
 }
 
 .viewerToolBtn:focus-visible {
@@ -3215,9 +3138,140 @@ color: var(--veryLightEarth);
 #view3DTools {
   position: absolute;
   right: 5px;
-  bottom: 33px;
+  bottom: 5px;
+  z-index: 60;
   display: flex;
   gap: 4px;
+}
+
+/* Icon tool toggles (v59.11): native checkboxes styled like the rotate tool.
+   The input keeps checkbox semantics/keyboard focus; the icon is the state. */
+.toolToggle {
+  position: relative;
+  color: var(--lightBlue);
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.toolToggle input[type="checkbox"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.toolToggle:has(input:checked) {
+  color: var(--darkBlue);
+}
+
+.toolToggle:hover {
+  color: var(--lightBlue);
+  background-color: var(--veryLightBlue);
+  border-color: transparent;
+}
+
+.toolToggle:has(input:checked):hover {
+  color: var(--darkBlue);
+  background-color: var(--veryLightBlue);
+}
+
+.toolToggle:has(input:focus-visible) {
+  outline: 2px solid var(--darkBlue);
+  outline-offset: 1px;
+}
+
+/* 3D style icon dropdown (v59.11): trigger in the tool cluster, menu opens
+   above it so it never covers the rotate/zoom/save buttons. */
+.iconSelectControl {
+  position: static;
+  display: flex;
+  align-items: center;
+}
+
+.iconSelectButton {
+  gap: 2px;
+  height: 28px;
+  padding: 0 2px;
+}
+
+.iconSelectButton svg {
+  width: 22px;
+  height: 22px;
+}
+
+.iconSelectButton[aria-expanded="true"] {
+  color: #fff;
+  background-color: var(--lightBlue);
+  border-color: var(--lightBlue);
+}
+
+.iconSelectCaret {
+  width: 0;
+  height: 0;
+  border-left: 3.5px solid transparent;
+  border-right: 3.5px solid transparent;
+  border-top: 4px solid currentColor;
+}
+
+.iconSelectMenu {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 4px);
+  z-index: 120;
+  min-width: 205px;
+  padding: 4px;
+  background: #fff;
+  border: 1px solid var(--lightBlue);
+  border-radius: 4px;
+  box-shadow: 1px 1px 6px -2px rgba(0, 0, 0, 0.3);
+}
+
+.iconSelectOption {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  padding: 5px 6px;
+  border-radius: 3px;
+  font-family: "Roboto Condensed", sans-serif;
+  font-size: 0.8rem;
+  color: #333;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.iconSelectOption:hover {
+  background: var(--veryLightBlue);
+}
+
+.iconSelectOption:has(input:checked) {
+  background: var(--veryLightBlue);
+  color: var(--darkBlue);
+  font-weight: bold;
+}
+
+.iconSelectOption input[type="radio"] {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: var(--darkBlue);
+  cursor: pointer;
+}
+
+.iconSelectOptionIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+}
+
+.iconSelectOptionIcon svg {
+  width: 20px;
+  height: 20px;
 }
 
 /* ── Responsive layout ─────────────────────────────────────────────────── */
@@ -3406,8 +3460,8 @@ color: var(--veryLightEarth);
   border-radius: 5px;
   /* No overflow clip: it would chop the settings dropdown (#viewerSettingsPanel
      is absolutely positioned below .panelTitle) whenever the column is short
-     (no viewer visible). Corner rounding is enforced on the bottom bar(s)
-     instead — see #controls3D / #radio2DMode below. */
+     (no viewer visible). Corner rounding is enforced on the viewer hosts
+     instead — see #jsmeNomeclatureDIV / #view3DHost below. */
   overflow: visible;
   /* Query container for the narrow-viewer fluid UI text below (the panel's
      own containing block stays .panelTitle, which is nearer/positioned). */
@@ -3428,11 +3482,6 @@ color: var(--veryLightEarth);
 
 #viewerCol .radioCheckContainer,
 #viewerCol .checkBoxContainer {
-  font-size: clamp(0.75rem, 2.2cqi, 0.85rem);
-}
-
-#viewerCol #dropLabel,
-#viewerCol .dropLi {
   font-size: clamp(0.75rem, 2.2cqi, 0.85rem);
 }
 

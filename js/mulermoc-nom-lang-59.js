@@ -376,8 +376,12 @@ var MULER_STRINGS = {
   rowMenu: { gr: "Μενού", en: "Menu" },
   rowQuiz: { gr: "Κουίζ", en: "Quiz" },
   chSymbols: { gr: "Σύμβολα CH", en: "CH symbols" },
+  chSymbolsN: { gr: "Σύμβολα CHn", en: "CHn symbols" },
   hydrogens: { gr: "Υδρογόνα", en: "Hydrogens" },
+  hydrogens3D: { gr: "Υδρογόνα C-H", en: "Hydrogens C-H" },
   rotation: { gr: "Περιστροφή", en: "Rotation" },
+  rep2D: { gr: "Αναπαράσταση 2D", en: "2D representation" },
+  style3D: { gr: "Στυλ 3D", en: "3D style" },
   visBall: { gr: "Σφαίρες και Ράβδοι", en: "Ball and stick" },
   visSpace: { gr: "Χωροπληρωτικό", en: "Space filling" },
   visSticks: { gr: "Ράβδοι", en: "Sticks" },
@@ -506,7 +510,7 @@ function fMulerPaintStaticChrome() {
   // would delete the widget; NOT firstChild, which hits indentation
   // whitespace on multi-line labels).
   try {
-    var dls = document.querySelectorAll("#viewerSettingsPanel [data-lang], #controls3D [data-lang]");
+    var dls = document.querySelectorAll("#viewerSettingsPanel [data-lang], #view3DTools [data-lang]");
     for (var dli = 0; dli < dls.length; dli++) {
       var dlk = null;
       try { dlk = dls[dli].getAttribute("data-lang"); } catch (eG) { dlk = null; }
@@ -537,24 +541,19 @@ function fMulerPaintStaticChrome() {
     if (radios[1] && radios[1].firstChild) radios[1].firstChild.textContent = fMulerT("algorithmic") + " ";
   } catch (e) {}
   try {
-    var modes = document.querySelectorAll("#radio2DMode .mode2DOption");
+    var modes = document.querySelectorAll("#view2DTools .mode2DOption");
     if (modes[0]) {
-      var m0 = modes[0].querySelector("span");
+      var m0 = modes[0].querySelector(".iconSelectOptionLabel");
       if (m0) m0.textContent = fMulerT("condensed");
     }
     if (modes[1]) {
-      var m1 = modes[1].querySelector("span");
+      var m1 = modes[1].querySelector(".iconSelectOptionLabel");
       if (m1) m1.textContent = fMulerT("expanded");
     }
     if (modes[2]) {
-      var m2 = modes[2].querySelector("span");
+      var m2 = modes[2].querySelector(".iconSelectOptionLabel");
       if (m2) m2.textContent = fMulerT("skeletal");
     }
-  } catch (e) {}
-  try {
-    var zz = document.getElementById("zigzagCheck");
-    var zspan = zz ? zz.querySelector("span") : null;
-    if (zspan) zspan.innerHTML = (lang === "en" ? "CH<sub>n</sub> symbols" : "Σύμβολα CH<sub>n</sub>");
   } catch (e) {}
   try {
     var cands = document.querySelectorAll("#atomColorMode .atomColorModeRadio");
@@ -750,8 +749,7 @@ function fMulerTranslateTips(root) {
       ".groupingMode .nativeOption",
       "#scenarioToast", ".nameStyleExpand",
       ".sshow", ".scTabText", ".scStepTitleLabel", ".scMolBadge",
-      ".scNoteFontSize option", "#dropLabel", ".dropLi",
-      "#hydrogensCheck",
+      ".scNoteFontSize option",
       "#nameAnalysisExplain .explainText", ".scNoteEditorTitle"];
     for (var s = 0; s < sels.length; s++) {
       var nodes;

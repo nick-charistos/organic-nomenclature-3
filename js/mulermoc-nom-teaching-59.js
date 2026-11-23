@@ -716,17 +716,304 @@ function showRadio(myLi) {
   $(".radioGroupContainer").slideDown(300);
 }
 
-// ── fCreateDropMenu ───────────────────────────────────────────────────────
+// ── 3D style icon dropdown (v59.11) ──────────────────────────────────────
+// The trigger sits in #view3DTools; the menu is a native radio group so arrow
+// keys and assistive tech work without a custom listbox. `vis3D` stays the
+// source of truth; scenario apply calls fSyncStyle3DUI().
 
-function fCreateDropMenu(myItems) {
-  let selectedLabel = myItems[0];
-  let myHTML = `<div id='dropLabel' class=' closed' >${selectedLabel}</div>
-  <div id='dropLiContainer' class='molvis closed' >`;
-  for (let i = 0; i < myItems.length; i++) {
-    myHTML += `<div id='dropLi${i}' class='dropLi'>${myItems[i]}</div>`;
+var STYLE3D_VALUES = ["ballnstick", "spacefill", "sticks"];
+
+function fStyle3DIsValid(val) {
+  return STYLE3D_VALUES.indexOf(val) >= 0;
+}
+
+function fStyle3DLabel(val) {
+  var labels = null;
+  try {
+    if (typeof fVisStyleLabels === "function") labels = fVisStyleLabels();
+  } catch (e) { labels = null; }
+  if (!labels) {
+    labels = {
+      ballnstick: "Σφαίρες και Ράβδοι",
+      spacefill: "Χωροπληρωτικό",
+      sticks: "Ράβδοι",
+    };
   }
-  myHTML += `</div>`;
-  $("#dropMenu").html(myHTML);
+  return labels[val] || labels.ballnstick;
+}
+
+function fStyle3DTxt() {
+  try {
+    if (typeof fMulerT === "function") return fMulerT("style3D");
+  } catch (e) { /* lang best-effort */ }
+  return "Στυλ 3D";
+}
+
+function fStyle3DIconHTML(val) {
+  var icons = window.MuLERIcons || {};
+  var ic = val === "spacefill"
+    ? icons.visSpace
+    : val === "sticks"
+      ? icons.visSticks
+      : icons.visBall;
+  return ic || "";
+}
+
+function fStyle3DSetUI(val) {
+  if (!fStyle3DIsValid(val)) val = "ballnstick";
+  var menu = document.getElementById("style3DMenu");
+  var button = document.getElementById("style3DButton");
+  var icon = document.getElementById("style3DIcon");
+  if (menu) {
+    var radios = menu.querySelectorAll("input[name='style3D']");
+    for (var i = 0; i < radios.length; i++) {
+      radios[i].checked = (radios[i].value === val);
+    }
+  }
+  if (icon) icon.innerHTML = fStyle3DIconHTML(val);
+  if (button) {
+    var label = fStyle3DTxt() + ": " + fStyle3DLabel(val);
+    button.setAttribute("aria-label", label);
+    button.setAttribute("data-tooltip", label);
+  }
+}
+
+// Scenario apply + language-safe sync: never writes `vis3D` itself.
+function fSyncStyle3DUI(val) {
+  var live = typeof val === "undefined"
+    ? (typeof vis3D !== "undefined" ? vis3D : "ballnstick")
+    : val;
+  fStyle3DSetUI(live);
+}
+
+function fStyle3DClose(restoreFocus) {
+  var menu = document.getElementById("style3DMenu");
+  var button = document.getElementById("style3DButton");
+  if (!menu || !button) return;
+  menu.classList.add("hide");
+  button.setAttribute("aria-expanded", "false");
+  if (restoreFocus) {
+    try { button.focus(); } catch (e) { /* focus best-effort */ }
+  }
+}
+
+function fStyle3DOpen() {
+  var menu = document.getElementById("style3DMenu");
+  var button = document.getElementById("style3DButton");
+  if (!menu || !button) return;
+  menu.classList.remove("hide");
+  button.setAttribute("aria-expanded", "true");
+  var checked = menu.querySelector("input[name='style3D']:checked")
+    || menu.querySelector("input[name='style3D']");
+  if (checked) {
+    try { checked.focus(); } catch (e) { /* focus best-effort */ }
+  }
+}
+
+function fStyle3DSelect(val) {
+  if (!fStyle3DIsValid(val)) return;
+  vis3D = val;
+  fStyle3DSetUI(val);
+  try {
+    if (typeof fSetMolVis3D === "function") fSetMolVis3D(val);
+  } catch (e) { /* viewer unavailable */ }
+  fStyle3DClose(true);
+}
+
+function fStyle3DInit() {
+  var menu = document.getElementById("style3DMenu");
+  var button = document.getElementById("style3DButton");
+  if (!menu || !button || menu.getAttribute("data-style-ready") === "1") return;
+  var html = "";
+  for (var i = 0; i < STYLE3D_VALUES.length; i++) {
+    var val = STYLE3D_VALUES[i];
+    html += "<label class='iconSelectOption' data-style='" + val + "'>"
+      + "<input type='radio' name='style3D' value='" + val + "' />"
+      + "<span class='iconSelectOptionIcon' aria-hidden='true'>" + fStyle3DIconHTML(val) + "</span>"
+      + "<span class='iconSelectOptionLabel'></span>"
+      + "</label>";
+  }
+  menu.innerHTML = html;
+  var labels = menu.querySelectorAll(".iconSelectOptionLabel");
+  for (var j = 0; j < labels.length; j++) {
+    labels[j].textContent = fStyle3DLabel(STYLE3D_VALUES[j]);
+  }
+  menu.setAttribute("aria-label", fStyle3DTxt());
+  menu.setAttribute("data-style-ready", "1");
+  fSyncStyle3DUI();
+  $(button).on("click", function (e) {
+    e.preventDefault();
+    if (menu.classList.contains("hide")) fStyle3DOpen();
+    else fStyle3DClose(false);
+  });
+  $(button).on("keydown", function (e) {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      fStyle3DOpen();
+    }
+  });
+  $(menu).on("change", "input[name='style3D']", function () {
+    if (this.checked) fStyle3DSelect(this.value);
+  });
+  $(document).on("keydown", function (e) {
+    if (e.key === "Escape" && !menu.classList.contains("hide")) {
+      e.preventDefault();
+      fStyle3DClose(true);
+    }
+  });
+  $(document).on("pointerdown", function (e) {
+    var control = document.getElementById("style3DControl");
+    if (control && !control.contains(e.target)) fStyle3DClose(false);
+  });
+}
+
+// Tool toggles (v59.11): the hidden native checkboxes can be restored by the
+// browser's form-state cache after a reload, which would override the HTML
+// `checked` default. Re-assert the live flags once on boot; scenario apply
+// runs later and still wins.
+function fSyncToolToggleUI() {
+  var pairs = [
+    ["hydrogensCheck", typeof hydrogens3DFlag !== "undefined" ? hydrogens3DFlag : true],
+    ["atomSymbolsCheck", typeof atomSymbols3DFlag !== "undefined" ? atomSymbols3DFlag : true],
+  ];
+  for (var i = 0; i < pairs.length; i++) {
+    var el = document.getElementById(pairs[i][0]);
+    var on = !!pairs[i][1];
+    if (!el) continue;
+    var input = el.querySelector("input[type='checkbox']");
+    if (input) input.checked = on;
+    el.classList.toggle("selectedCheck", on);
+    el.classList.toggle("unselectedCheck", !on);
+  }
+}
+
+// ── 2D representation icon dropdown (v59.11) ─────────────────────────────
+// The menu rows are the existing `#view2DTools .mode2DOption` labels/radios,
+// so fUpdateDiagr2DButton(), scenario sync and the probes keep their hooks.
+// Selecting still runs the native radio change path (ready handler below);
+// this block only owns the trigger, icon rows and popup mechanics.
+var MODE2D_VALUES = ["condensed", "expanded", "skeletal"];
+
+function fMode2DIsValid(val) {
+  return MODE2D_VALUES.indexOf(val) >= 0;
+}
+
+function fMode2DValue() {
+  var val = (typeof mode2D !== "undefined") ? mode2D : "condensed";
+  if (val === "condensedZigZag") return "skeletal";
+  return fMode2DIsValid(val) ? val : "condensed";
+}
+
+function fMode2DLabel(val) {
+  var key = val === "expanded" ? "expanded" : val === "skeletal" ? "skeletal" : "condensed";
+  try {
+    if (typeof fMulerT === "function") return fMulerT(key);
+  } catch (e) { /* lang best-effort */ }
+  return val === "expanded"
+    ? "Ανεπτυγμένος"
+    : val === "skeletal"
+      ? "Σκελετικός"
+      : "Συνεπτυγμένος";
+}
+
+function fMode2DTxt() {
+  try {
+    if (typeof fMulerT === "function") return fMulerT("rep2D");
+  } catch (e) { /* lang best-effort */ }
+  return "Αναπαράσταση 2D";
+}
+
+function fMode2DIconHTML(val) {
+  var icons = window.MuLERIcons || {};
+  var ic = val === "expanded"
+    ? icons.viewExpanded
+    : val === "skeletal"
+      ? icons.viewSkeletal
+      : icons.viewCondensed;
+  return ic || "";
+}
+
+function fSyncMode2DUI() {
+  var val = fMode2DValue();
+  var menu = document.getElementById("mode2DMenu");
+  var button = document.getElementById("mode2DButton");
+  var icon = document.getElementById("mode2DIcon");
+  if (menu) {
+    var radios = menu.querySelectorAll("input[name='mode2D']");
+    for (var i = 0; i < radios.length; i++) {
+      radios[i].checked = (radios[i].value === val);
+    }
+  }
+  if (icon) icon.innerHTML = fMode2DIconHTML(val);
+  if (button) {
+    var label = fMode2DTxt() + ": " + fMode2DLabel(val);
+    button.setAttribute("aria-label", label);
+    button.setAttribute("data-tooltip", label);
+  }
+}
+
+function fMode2DClose(restoreFocus) {
+  var menu = document.getElementById("mode2DMenu");
+  var button = document.getElementById("mode2DButton");
+  if (!menu || !button) return;
+  menu.classList.add("hide");
+  button.setAttribute("aria-expanded", "false");
+  if (restoreFocus) {
+    try { button.focus(); } catch (e) { /* focus best-effort */ }
+  }
+}
+
+function fMode2DOpen() {
+  var menu = document.getElementById("mode2DMenu");
+  var button = document.getElementById("mode2DButton");
+  if (!menu || !button) return;
+  menu.classList.remove("hide");
+  button.setAttribute("aria-expanded", "true");
+  var checked = menu.querySelector("input[name='mode2D']:checked")
+    || menu.querySelector("input[name='mode2D']");
+  if (checked) {
+    try { checked.focus(); } catch (e) { /* focus best-effort */ }
+  }
+}
+
+function fMode2DInit() {
+  var menu = document.getElementById("mode2DMenu");
+  var button = document.getElementById("mode2DButton");
+  if (!menu || !button || menu.getAttribute("data-mode-ready") === "1") return;
+  var inputs = menu.querySelectorAll("input[name='mode2D']");
+  var icons = menu.querySelectorAll(".iconSelectOptionIcon");
+  for (var i = 0; i < inputs.length; i++) {
+    if (icons[i] && !icons[i].innerHTML) {
+      icons[i].innerHTML = fMode2DIconHTML(inputs[i].value);
+    }
+  }
+  menu.setAttribute("aria-label", fMode2DTxt());
+  menu.setAttribute("data-mode-ready", "1");
+  fSyncMode2DUI();
+  $(button).on("click", function (e) {
+    e.preventDefault();
+    if (menu.classList.contains("hide")) fMode2DOpen();
+    else fMode2DClose(false);
+  });
+  $(button).on("keydown", function (e) {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+      fMode2DOpen();
+    }
+  });
+  $(menu).on("change", "input[name='mode2D']", function () {
+    if (this.checked) fMode2DClose(true);
+  });
+  $(document).on("keydown", function (e) {
+    if (e.key === "Escape" && !menu.classList.contains("hide")) {
+      e.preventDefault();
+      fMode2DClose(true);
+    }
+  });
+  $(document).on("pointerdown", function (e) {
+    var control = document.getElementById("mode2DControl");
+    if (control && !control.contains(e.target)) fMode2DClose(false);
+  });
 }
 
 // ── fShowCreditLibs ───────────────────────────────────────────────────────
@@ -1120,35 +1407,20 @@ $(document).ready(function () {
     if (typeof fShowNameAnalysis === "function") fShowNameAnalysis();
   });
 
-  // ---- Native 3D style select (v59.10) ----
-  (function () {
-    var sel = document.getElementById("style3D");
-    if (!sel) return;
-    try {
-      if (typeof fVisStyleLabels === "function") {
-        var vl = fVisStyleLabels();
-        if (vl) {
-          if (sel.options[0]) sel.options[0].textContent = vl.ballnstick;
-          if (sel.options[1]) sel.options[1].textContent = vl.spacefill;
-          if (sel.options[2]) sel.options[2].textContent = vl.sticks;
-        }
-      }
-    } catch (e) { /* labels best-effort */ }
-    sel.value = (typeof vis3D !== "undefined") ? vis3D : "ballnstick";
-  })();
-  $(document).on("change", "#style3D", function () {
-    var val = this.value;
-    if (val !== "ballnstick" && val !== "spacefill" && val !== "sticks") return;
-    vis3D = val;
-    fSetMolVis3D(vis3D);
-  });
-  // ---- End drop menu early init ----
+  // ---- Viewer icon dropdowns (v59.11) ----
+  fSyncToolToggleUI();
+  fStyle3DInit();
+  fMode2DInit();
+  try {
+    if (typeof fSyncViewerSplit === "function") fSyncViewerSplit();
+  } catch (eSplit) { /* separator best-effort */ }
+  // ---- End viewer icon dropdowns ----
 
   // Add data (2D structure files ) to nameExamples object
 
   $("#zigzagCheck input[type='checkbox']").prop("disabled", true).prop("checked", false);
 
-  $("#radio2DMode").on("change", "input[name='mode2D']", function () {
+  $("#view2DTools").on("change", "input[name='mode2D']", function () {
     if (this.disabled) return;
     // Draft session (v54 Stage 2): radios are hidden while editing; guard in
     // case the bar is reached anyway — finish the draft first.
@@ -1298,11 +1570,11 @@ $(document).ready(function () {
     if (enableFinalJSME) {
       $("#jsmeNomeclatureSVG").slideToggle(200);
       // $("#jsmeNomeclatureSVG").addClass("hide");
-      $("#radio2DMode").addClass("hide");
+      $("#view2DTools").addClass("hide");
     } else {
       $("#jsmeNomeclatureSVG").slideToggle(200);
       // $("#jsmeNomeclatureSVG").removeClass("hide");
-      $("#radio2DMode").removeClass("hide");
+      $("#view2DTools").removeClass("hide");
     }
   });
 
@@ -1311,14 +1583,14 @@ $(document).ready(function () {
     if (enableJSmol) {
       $("#nomeclature3D").slideToggle(200);
       // $("#nomeclature3D").addClass("hide");
-      $("#controls3D").addClass("hide");
+      $("#view3DTools").addClass("hide");
     } else {
       $("#nomeclature3D").slideToggle(200, function () {
         // if (window.jmolAppletNomeclature)
         fJSmolScript(jmolAppletNomeclature, "refresh");
       });
       // $("#nomeclature3D").removeClass("hide");
-      $("#controls3D").removeClass("hide");
+      $("#view3DTools").removeClass("hide");
       // fJSmolScript(jmolAppletNomeclature, "refresh");
     }
   });

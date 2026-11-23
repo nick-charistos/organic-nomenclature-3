@@ -23,7 +23,7 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
   } catch (e) { failures.push("ready timeout for " + MOL); }
   await p.waitForTimeout(800);
   if (MODE !== "condensed") {
-    await p.evaluate((m) => { try { const o = Array.from(document.querySelectorAll("#radio2DMode .mode2DOption")).find((x) => (m === "expanded" ? /ανεπτυγ/i : /σκελετ/i).test(x.textContent || "")); if (o) o.click(); } catch (e) {} }, MODE);
+    await p.evaluate((m) => { try { const o = Array.from(document.querySelectorAll("#view2DTools .mode2DOption")).find((x) => (m === "expanded" ? /ανεπτυγ/i : /σκελετ/i).test(x.textContent || "")); if (o) o.click(); } catch (e) {} }, MODE);
     await p.waitForTimeout(2500);
   }
   await p.evaluate(() => { try { document.getElementById("selectAtomsBtn").click(); } catch (e) {} });

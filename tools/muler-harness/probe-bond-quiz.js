@@ -39,7 +39,7 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
   }
   async function toExpanded() {
     await p.evaluate(() => {
-      const option = Array.from(document.querySelectorAll("#radio2DMode .mode2DOption"))
+      const option = Array.from(document.querySelectorAll("#view2DTools .mode2DOption"))
         .find((el) => /^expanded$/i.test(el.textContent.trim()));
       if (!option) throw new Error("Missing expanded mode option");
       option.click();

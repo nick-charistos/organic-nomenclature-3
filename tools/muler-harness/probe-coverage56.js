@@ -27,7 +27,7 @@ async function waitReady(p) {
   await waitReady(p);
   await p.evaluate(() => {
     try {
-      const o = Array.from(document.querySelectorAll("#radio2DMode .mode2DOption")).find((x) => /ανεπτυγ/i.test(x.textContent || ""));
+      const o = Array.from(document.querySelectorAll("#view2DTools .mode2DOption")).find((x) => /ανεπτυγ/i.test(x.textContent || ""));
       if (o) o.click();
     } catch (e) {}
   });

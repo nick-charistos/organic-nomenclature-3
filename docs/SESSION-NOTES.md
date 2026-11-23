@@ -1,7 +1,7 @@
 # Session notes — 2026-11-23 (resume point for next session, other machine)
 
 > **Resume pointer (cross-machine):** 2026-11-23 — **v59 is LIVE**
-> (`index.html` → `mulermoc-nom-59.html`, `?v=59.10`): 2D data upgrade.
+> (`index.html` → `mulermoc-nom-59.html`, `?v=59.11`): 2D data upgrade.
 > **147 molecules** (141 + 6 branched alkanes); every stored form uses one
 > frame (heavy 1.17, H 0.78). **Design rule: expanded = condensed + H** — the
 > expanded form is derived from the condensed molfile and keeps its heavy atom
@@ -55,21 +55,47 @@
 > mobile checks at 360/390/430px. v59.10 converts the 2D/3D control rows to
 > native radios/checkboxes plus a native 3D style select (28px rows) and the
 > menu grouping to a native radio group; IDs/classes remain for probe and
-> scenario compatibility.
-> **Icon/UI backlog:** stage 2 (viewer-overlay controls + 2D/3D icon dropdown)
-> is not started. Icon drafts in `imgs/{view-*,style-*}-Industrial-Sharp.svg`
-> are owner hand-design seeds only (gitignored; not imported into
-> `ui-icons.js`). Decisions: equilateral trigonal 3D geometry, spacefill edges
-> overlap the centre, one filled path per icon with no strokes, 2D
-> methane/ethane/zigzag concepts. Settings-panel native conversion remains
-> deferred.
-> **Docs resync (2026-11-23, docs-only):** current-tree references point at
-> v59.10 across README/AGENTS/plans; the EN teacher-guide encoding is repaired;
-> the harness README records the v59.04 settings-only quiz contract. No code
-> change.
+> scenario compatibility. v59.11 turns both viewer pickers into icon
+> dropdowns: 3D style in the 3D tool cluster (`visBall`/`visSpace`/`visSticks`)
+> and 2D representation in the 2D tool cluster (`viewCondensed`/`viewExpanded`/
+> `viewSkeletal`), with icon+label radio menus opening above the tools,
+> EN/GR labels and keyboard/Escape/click-outside. The 3D menu drives `vis3D`
+> (`fSyncStyle3DUI()`); the 2D menu keeps the existing `.mode2DOption`
+> radios (probe/scenario hooks) and `fSyncMode2DUI()` mirrors the trigger.
+> `condensedZigZag` shows the skeletal icon. The CHₙ toggle is now an icon tool
+> in the 2D cluster, left of the representation picker, hidden unless skeletal
+> is active and using the condensed icon. The 3D hydrogens and atom-symbols
+> checkboxes are now icon-only toggles in the 3D tool cluster, styled
+> like the rotate button (`hydrogens3D` / `atomSymbols`, native checkbox
+> semantics/aria kept); state is colour-only (unchecked light blue, checked
+> dark blue, no background; hover-only very-light-blue fill); the rotate
+> toggle uses the same colour-only model;
+> `fSyncToolToggleUI()` re-asserts
+> both on boot so form restoration cannot leave atom symbols unchecked.
+> The empty `#radio2DMode`/`#controls3D` bars are gone: the tool clusters are
+> overlays inside `#jsmeNomeclatureDIV` and the new `#view3DHost` wrapper;
+> `#viewerSplit` adds a 1px light-blue rule only when both viewers are visible
+> (inner host corners square while shown). Jmol's canvas is confined to its
+> own stacking context so it cannot intercept overlay clicks; probe selectors moved to
+> `#view2DTools .mode2DOption`. Verified: `probe-final`, `probe-mode-quiz`,
+> `probe-quiz` + `probe-scenario-quiz` green; headless 1280/768/360 plus
+> host/menu geometry and hydrogens/atom/CHₙ toggle/focus/visibility checks.
+> **Icon/UI backlog:** stage 2 is mostly done — the 3D style + 2D
+> representation dropdowns and the hydrogens/atom/CHₙ toggles ship in v59.11.
+> Remaining: viewer tool-button icons (2D/3D visibility, rotate/zoom/save) and
+> settings-panel native conversion.
+> The viewer icons are imported into `ui-icons.js`; other
+> `imgs/{view-*,style-*}-*-Sharp.svg` drafts remain owner seeds (gitignored).
+> Decisions: equilateral trigonal 3D geometry, spacefill edges overlap the
+> centre, one filled path per icon with no strokes, 2D methane/ethane/zigzag
+> concepts.
+> **Docs resync (2026-11-23, docs-only):** current-tree references were synced
+> to v59.10 across README/AGENTS/plans; the EN teacher-guide encoding is
+> repaired; the harness README records the v59.04 settings-only quiz contract.
+> No code change (v59.11 bumps the asset refs).
 > Docs: current index `docs/README.md`; historical material in `docs/archive/`
 > (pre-v54 notes split to `docs/archive/SESSION-NOTES-pre-v54.md`).
-> Committed: v59.01 (ff2058c) + v59.02 (7e18c65) + v59.03 + v59.04 + v59.05 + v59.06 + v59.07 + v59.08 + v59.09 + v59.10. v58.51 stays runnable and frozen.
+> Committed: v59.01 (ff2058c) + v59.02 (7e18c65) + v59.03 + v59.04 + v59.05 + v59.06 + v59.07 + v59.08 + v59.09 + v59.10 + v59.11. v58.51 stays runnable and frozen.
 >
 > **Previous pointer (v58.50):** 2026-11-21 — **v58 is LIVE**
 > (`index.html` → `mulermoc-nom-58.html`, `?v=58.50`, review follow-ups +

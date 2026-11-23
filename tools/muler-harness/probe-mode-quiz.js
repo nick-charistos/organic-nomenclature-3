@@ -59,7 +59,7 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
   }
   const setMode = async (idx) => {
     await p.evaluate((i) => {
-      const opts = Array.from(document.querySelectorAll("#radio2DMode .mode2DOption"));
+      const opts = Array.from(document.querySelectorAll("#view2DTools .mode2DOption"));
       if (opts[i]) opts[i].click();
     }, idx);
     await p.waitForTimeout(2600);

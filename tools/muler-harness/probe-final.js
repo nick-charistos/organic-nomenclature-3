@@ -92,7 +92,7 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
   const s2 = await p.evaluate(() => { try { const s = window.MulerUserSelection || {}; return { a: s.atoms2D || [], wrapped: !!window.__mulerBgWrapped }; } catch (e) { return {}; } });
   check((s2.a || []).length === 0, "empty-canvas click should clear, got " + JSON.stringify(s2));
   // switch mode -> should invalidate
-  await p.evaluate(() => { try { const o = Array.from(document.querySelectorAll("#radio2DMode .mode2DOption")).find((x) => /ανεπτυγ/i.test(x.textContent || "")); if (o) o.click(); } catch (e) {} });
+  await p.evaluate(() => { try { const o = Array.from(document.querySelectorAll("#view2DTools .mode2DOption")).find((x) => /ανεπτυγ/i.test(x.textContent || "")); if (o) o.click(); } catch (e) {} });
   await p.waitForTimeout(2500);
   const s3 = await p.evaluate(() => { try { const s = window.MulerUserSelection || {}; return { a: s.atoms2D || [], mode: (typeof mode2D !== "undefined" ? mode2D : "?"), compAtom: window.__mulerCompAtomArg, compBond: window.__mulerCompBondArg }; } catch (e) { return {}; } });
   check((s3.a || []).length === 0, "mode switch should drop contents, got " + JSON.stringify(s3));

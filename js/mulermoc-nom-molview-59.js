@@ -620,15 +620,18 @@ function fToggleViewer2D() {
   if (show) {
     if (btn) btn.classList.remove("active");
     $("#jsmeNomeclatureSVG").slideUp(200);
-    $("#radio2DMode").addClass("hide");
+    $("#view2DTools").addClass("hide");
   } else {
     if (btn) btn.classList.add("active");
     $("#jsmeNomeclatureSVG").slideDown(200);
-    $("#radio2DMode").removeClass("hide");
+    $("#view2DTools").removeClass("hide");
   }
   // Auto readouts depend on which viewers are visible; resync once the
   // 200 ms show/hide animation has settled (the panel may be open).
-  setTimeout(fViewerHeightControlsSync, 220);
+  setTimeout(function () {
+    fSyncViewerSplit();
+    fViewerHeightControlsSync();
+  }, 220);
 }
 
 // Title-bar 3D visibility toggle. Scope mirrors the (commented-out) viewJSmol
@@ -639,7 +642,7 @@ function fToggleViewer3D() {
   if (show) {
     if (btn) btn.classList.remove("active");
     $("#nomeclature3D").slideUp(200);
-    $("#controls3D").addClass("hide");
+    $("#view3DTools").addClass("hide");
   } else {
     if (btn) btn.classList.add("active");
     $("#nomeclature3D").slideDown(200, function () {
@@ -693,9 +696,31 @@ function fToggleViewer3D() {
       }
       fJSmolScript(jmolAppletNomeclature, "refresh");
     });
-    $("#controls3D").removeClass("hide");
+    $("#view3DTools").removeClass("hide");
   }
-  setTimeout(fViewerHeightControlsSync, 220);
+  setTimeout(function () {
+    fSyncViewerSplit();
+    fViewerHeightControlsSync();
+  }, 220);
+}
+
+// One-pixel separator between the two viewers (v59.11): visible only when both
+// panes are actually shown; hidden for a lone viewer so its card stays rounded.
+function fSyncViewerSplit() {
+  var split = document.getElementById("viewerSplit");
+  if (!split) return;
+  var show2D = false, show3D = false;
+  try {
+    var svg = document.getElementById("jsmeNomeclatureSVG");
+    var app = document.getElementById("jsmeNomeclature");
+    var ed = document.getElementById("jsmeEditDraft");
+    show2D = !!((svg && svg.offsetParent !== null) ||
+      (app && app.offsetParent !== null) ||
+      (ed && ed.offsetParent !== null));
+    var j3 = document.getElementById("nomeclature3D");
+    show3D = !!(j3 && j3.offsetParent !== null);
+  } catch (e) { /* visibility best-effort */ }
+  split.classList.toggle("hide", !(show2D && show3D));
 }
 
 // Shared resync for the two viewer-height rows (panel may be open while a
@@ -835,7 +860,7 @@ function fMolDraftBarEl() {
   try { bar = document.getElementById("molDraftBar"); } catch (eG) { bar = null; }
   if (bar) return bar;
   var host = null;
-  try { host = document.getElementById("radio2DMode"); } catch (eH) { host = null; }
+  try { host = document.getElementById("jsmeNomeclatureDIV"); } catch (eH) { host = null; }
   if (!host || !host.parentNode) return null;
   bar = document.createElement("div");
   bar.id = "molDraftBar";
@@ -950,7 +975,7 @@ function fMolDraftSyncBar() {
 function fMolDraftShowEditor() {
   try { $("#jsmeEditDraft").removeClass("hide"); } catch (eA) {}
   try { $("#jsmeNomeclatureSVG").addClass("hide"); } catch (eS) {}
-  try { $("#radio2DMode").addClass("hide"); } catch (eR) {}
+  try { $("#view2DTools").addClass("hide"); } catch (eR) {}
   try {
     if (typeof jsmeEditDraftApplet !== "undefined" && jsmeEditDraftApplet &&
         typeof jsmeEditDraftApplet.deferredRepaint === "function") jsmeEditDraftApplet.deferredRepaint();
@@ -8375,7 +8400,7 @@ function fMolDraftTeardownDisplay() {
   try { $("#jsmeNomeclature").addClass("hide"); } catch (eA) {}
   try { $("#jsmeEditDraft").addClass("hide"); } catch (eED) {}
   try { $("#jsmeNomeclatureSVG").removeClass("hide"); } catch (eS) {}
-  try { $("#radio2DMode").removeClass("hide"); } catch (eR) {}
+  try { $("#view2DTools").removeClass("hide"); } catch (eR) {}
   try {
     if (snap.back3D && typeof fToggleViewer3D === "function") {
       var b3 = document.getElementById("view3DBtn");
@@ -9875,7 +9900,7 @@ function fUpdateChainModeButton() {
 // back to the first available representation (condensed > expanded > skeletal).
 
 function fUpdateDiagr2DButton() {
-  const $modeInputs = $("#radio2DMode input[name='mode2D']");
+  const $modeInputs = $("#view2DTools input[name='mode2D']");
   const ex = selectedMol ? nameExamples[selectedMol] : null;
   const hasCondensed2D = !selectedMol || !!ex?.structure2D_Condensed;
   const hasExpanded2D = !selectedMol || !!ex?.structure2D_Expanded;
@@ -9909,6 +9934,10 @@ function fUpdateDiagr2DButton() {
   const zigOn = hasSkeletal2D && (mode2D === "skeletal" || mode2D === "condensedZigZag");
   $zigInput.prop("disabled", !zigOn);
   $zigInput.prop("checked", mode2D === "condensedZigZag");
+  $("#zigzagCheck").toggleClass("hide", !zigOn);
+  try {
+    if (typeof fSyncMode2DUI === "function") fSyncMode2DUI();
+  } catch (eM2) { /* dropdown unavailable */ }
 }
 
 // ── fSyncAtomColorModeDisabled ────────────────────────────────────────────
@@ -10115,15 +10144,6 @@ function fLoadMol2D() {
       mode2D = "skeletal";
       modeSuffix = "_2D_Skeletal";
     }
-    const fallbackIdx =
-      mode2D === "expanded" ? 1 : mode2D === "condensed" ? 0 : 2;
-    $("#radio2DMode .radioCheckContainer")
-      .removeClass("selectedRadio")
-      .addClass("unselectedRadio");
-    $("#radio2DMode .radioCheckContainer")
-      .eq(fallbackIdx)
-      .removeClass("unselectedRadio")
-      .addClass("selectedRadio");
   }
 
   let rawMol2D;
@@ -18971,11 +18991,15 @@ function fViewerHeights2D3D(raw) {
         if ((_svg2D && _svg2D.offsetParent !== null) || (_app2D && _app2D.offsetParent !== null) ||
             (_ed2D && _ed2D.offsetParent !== null)) show2D = true;
       } catch (eV2) { /* overlay lookup unavailable */ }
+      try { fSyncViewerSplit(); } catch (eSplit) { /* separator best-effort */ }
       var kids = vc.children;
       for (var i = 0; i < kids.length; i++) {
         var k = kids[i];
-        if (k.id === "jsmeNomeclatureDIV" || k.id === "nomeclature3D") {
-          if (k.id === "nomeclature3D" && k.offsetParent !== null) show3D = true;
+        if (k.id === "jsmeNomeclatureDIV" || k.id === "view3DHost") {
+          if (k.id === "view3DHost") {
+            var _ap3v = document.getElementById("nomeclature3D");
+            if (_ap3v && _ap3v.offsetParent !== null) show3D = true;
+          }
           continue;
         }
         if (k.offsetParent !== null && k.offsetHeight > 0) chrome += k.offsetHeight;

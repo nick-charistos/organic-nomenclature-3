@@ -83,7 +83,7 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
     await open("ethane");
     if (mode !== "condensed") {
       await p.evaluate((name) => {
-        const option = Array.from(document.querySelectorAll("#radio2DMode .mode2DOption"))
+        const option = Array.from(document.querySelectorAll("#view2DTools .mode2DOption"))
           .find((el) => el.textContent.trim().toLowerCase() === name);
         if (!option) throw new Error("Missing mode option " + name);
         option.click();
@@ -184,7 +184,7 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
   // 1b. ethane expanded: alkyl-H click resolves to the parent carbon.
   await open("ethane");
   await p.evaluate((name) => {
-    const option = Array.from(document.querySelectorAll("#radio2DMode .mode2DOption"))
+    const option = Array.from(document.querySelectorAll("#view2DTools .mode2DOption"))
       .find((el) => el.textContent.trim().toLowerCase() === name);
     if (!option) throw new Error("Missing mode option " + name);
     option.click();
@@ -254,7 +254,7 @@ const check = (ok, msg) => { if (!ok) failures.push(msg); };
   // 3. hetero pick (oxygen in butanoic acid): live hetero line, numberless.
   await open("butanoic_acid");
   await p.evaluate(() => {
-    const option = Array.from(document.querySelectorAll("#radio2DMode .mode2DOption"))
+    const option = Array.from(document.querySelectorAll("#view2DTools .mode2DOption"))
       .find((el) => /^expanded$/i.test(el.textContent.trim()));
     if (!option) throw new Error("Missing expanded mode option");
     option.click();

@@ -8,9 +8,9 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 Forked from v58.50, rebased on v58.51 (`mulermoc-nom-59.html` + `js/*-59.js` + `css/*-59.css` +
 `jsme-nick-nomeclature-moc2-data_59.js` + `spt/init-3-59.spt` +
-`zz-test-core59.html`, `?v=59.10`; `ui-icons.js`, `js/vendor/`, `jsme/` and
+`zz-test-core59.html`, `?v=59.11`; `ui-icons.js`, `js/vendor/`, `jsme/` and
 `mols/` stay shared). Chemistry/naming results are v58's and the scenario data
-shape is inherited from v58, but v59.02–v59.10 add UI and quiz-step-authoring
+shape is inherited from v58, but v59.02–v59.11 add UI and quiz-step-authoring
 changes (see below); the v59.00 work is data geometry and the MOL pipeline.
 
 - **147 molecules.** The six branched alkanes the sibling project ships as
@@ -88,7 +88,7 @@ changes (see below); the v59.00 work is data geometry and the MOL pipeline.
   prompt while picking (`pending3D` cancelled). The v58 CSS comes along:
   `--veryLightOrchid`, orchid `.quizTodo` / `.quizTodo.selected` /
   `.scQuizTag.selected` / `.is-start` and the shared `.scQuizPrompt` +
-  `.scQuizStartPrompt` skin. Asset refs moved to `?v=59.01` (now `?v=59.10`).
+  `.scQuizStartPrompt` skin. Asset refs moved to `?v=59.01` (now `?v=59.11`).
 - **Rule grouping bullet removed (v59.02).** The `.groupingMode` selector now
   offers Όλα τα μόρια / Χημικές Τάξεις / Ομόλογες Σειρές only. The `rule` mode
   itself is kept intact: `moleculeGroupingMode === "rule"`, the `ruleExamples`
@@ -166,8 +166,42 @@ changes (see below); the v59.00 work is data geometry and the MOL pipeline.
   style select replaces the custom dropdown; EN labels and scenario control
   sync were updated. Verified: `probe-final`, `probe-mode-quiz` and
   `probe-scenario-quiz` green; headless mode/zigzag/3D flag checks pass.
-- **Docs resync (2026-11-23, docs-only).** Current-tree references now point at
-  v59.10 across `README`, `AGENTS`, `PROJECT-PLAN`/`PROJECT-PLAN-GR`,
+- **Viewer icon controls (v59.11).** The 3D style select is replaced by an
+  icon dropdown in the 3D tool cluster: owner-drawn ball-and-stick, space-fill
+  and sticks icons (`ui-icons.js` `visBall`/`visSpace`/`visSticks`), a
+  current-style trigger, and an icon+label radio menu that opens above the
+  tools. `vis3D` remains the source of truth; scenario apply syncs the trigger
+  via `fSyncStyle3DUI()`. The 2D representation radios get the same treatment
+  in `#view2DTools` with owner-drawn condensed/expanded/skeletal icons
+  (`viewCondensed`/`viewExpanded`/`viewSkeletal`); the `.mode2DOption` labels
+  and radios stay as the menu rows, so `fUpdateDiagr2DButton()`, scenario sync
+  and the probes keep their hooks (`condensedZigZag` shows the skeletal icon).
+  The CHₙ toggle is now an icon tool in the 2D cluster, left of the
+  representation picker, hidden unless skeletal is active and reusing the
+  condensed icon (`viewCondensed`). The 3D hydrogens
+  and atom-symbols checkboxes are now icon-only toggles in the 3D tool cluster,
+  styled like the rotate button (`hydrogens3D` / `atomSymbols` owner icons) and
+  keeping the native checkboxes, keyboard focus and aria labels. Icon state is
+  colour-only — unchecked `--lightBlue`, checked `--darkBlue`, no background —
+  with a `--veryLightBlue` background only on hover. The rotate toggle follows
+  the same colour-only model (off light blue, latched dark blue, hover
+  background only). Boot re-asserts both states
+  (`fSyncToolToggleUI`) so browser form restoration cannot leave atom symbols
+  unchecked. Removes the wide native select/radio rows and the now-empty
+  `#radio2DMode`/`#controls3D` bars; the tool clusters are overlays inside
+  `#jsmeNomeclatureDIV` and `#view3DHost` (no overflow at a 288px viewer).
+  A 1px `--lightBlue` divider (`#viewerSplit`) appears only when both viewers
+  are visible; the inner host corners square while it is shown. The 3D host
+  makes `.JmolContainer` a stacking context so its canvas cannot intercept
+  clicks on the overlay. Probe selectors now use
+  `#view2DTools .mode2DOption`. Verified: `probe-final`, `probe-mode-quiz`,
+  `probe-quiz` and `probe-scenario-quiz` green; headless 1280/768/360 checks
+  for selection, icons, EN/GR labels, keyboard/escape/click-outside,
+  hidden-label probe clicks, menu geometry inside the hosts, divider
+  both/single-viewer states, the hydrogens/atom toggles/focus and CHₙ
+  visibility/selection.
+- **Docs resync (2026-11-23, docs-only).** Current-tree references were synced
+  to v59.10 across `README`, `AGENTS`, `PROJECT-PLAN`/`PROJECT-PLAN-GR`,
   `LAYERS-PLAN`, `didactic-scenario-plan` and the harness README; the EN
   teacher-guide encoding is repaired; the harness README records the v59.04
   settings-only quiz contract. No code change.

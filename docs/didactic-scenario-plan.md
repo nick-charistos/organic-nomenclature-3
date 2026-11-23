@@ -223,21 +223,21 @@ Visibility rules:
   (unless a side rail is applied), and — while presenting — the fixed
   `#scenarioPlayBar`, so `Full` clears the title, the presentation navigation,
   and the footer on any playback screen.
-* `show.controls.2D` toggles `#radio2DMode`
-  (`Συνεπτυγμένος/Ανεπτυγμένος/Σκελετικός`, `Σύμβολα CHn`).
+* `show.controls.2D` toggles `#view2DTools` (the overlay cluster inside
+  `#jsmeNomeclatureDIV`: representation dropdown, `Σύμβολα CHn`, zoom/save).
   Per-step drawer checkbox `2D controls` (default unchecked; disabled
-  unless the step's 2D viewer is visible). On apply the bar visuals
-  (mode radios, CHn box) mirror the step's stored values via
-  `fScenarioSyncControlUi()`, not the live states. `Έγχρωμα Σύμβολα`
-  (`#svgAtomColorCheck`) moved out of this bar into the Ρυθμίσεις panel
-  (v48), merged with the `Χρωματισμός ατόμων 2D` atom/group radios.
-* `show.controls.3D` toggles `#controls3D`:
-  `Υδρογόνα C-H` + `#dropMenu` style. Irrelevant when that
-  viewer is hidden. Per-step drawer checkbox `3D controls` (default
-  unchecked; disabled unless the step's 3D viewer is visible). On apply
-  the bar visuals (3D checkboxes, style dropdown label) mirror the step's
-  stored values. `Σύμβολα ατόμων` (`#atomSymbolsCheck`) moved out of this
-  bar into the Ρυθμίσεις panel as its own `Σύμβολα ατόμων 3D` row (v48).
+  unless the step's 2D viewer is visible). On apply the trigger/menu visuals
+  mirror the step's stored values via `fScenarioSyncControlUi()`, not the
+  live states. `Έγχρωμα Σύμβολα` (`#svgAtomColorCheck`) lives in the
+  Ρυθμίσεις panel (v48), merged with the `Χρωματισμός ατόμων 2D` atom/group
+  radios.
+* `show.controls.3D` toggles `#view3DTools` (the overlay cluster inside
+  `#view3DHost`: style dropdown, hydrogens/atom-symbol toggles, rotate,
+  zoom/save). Irrelevant when that viewer is hidden. Per-step drawer checkbox
+  `3D controls` (default unchecked; disabled unless the step's 3D viewer is
+  visible). On apply the trigger/toggle visuals mirror the step's stored
+  values. `Σύμβολα ατόμων` (`#atomSymbolsCheck`) remains an icon toggle in
+  this cluster; its old Ρυθμίσεις row was retired in v59.11.
   3D spin (`view3D.spin`) is not part of this bar since v58.50: it is the
   `#rotate3DBtn` toggle in `#view3DTools`, shown with the other 3D tools
   (same bar gate as zoom/save), and each step still applies its stored spin
@@ -648,7 +648,7 @@ Done in v43 (`mulermoc-nom-43.html`, last suffixed copy; carried through v44 int
    assertions (manual click-through pending).
 6. ✅ CHANGELOG v43 entry (`index.html` → 43 in repo3 only).
 
-Status: v59 is live (`index.html` → v59 — scenario quiz steps with student mode, stored required component set, deferred menu quizzes with switchable types, the master-checkbox/component-tag editor, and v58.44 idle start with an author-chosen start component + `.scQuizStartPrompt` (v59.04 makes quiz steps settings-only); v59.02–v59.10 add the rule-grouping removal, orchid selection accent, step-open preview, mobile authoring and native viewer controls; 3D atom/bond picking via JSmol `pickCallback`; 2D atom/bond quizzes; step drawer rebuilt in v58.14–v58.16; unified inline/modal rich note editor with WYSIWYG + HTML source, lazy legacy-text upgrade, staged Apply/Cancel and dirty-close confirm; safe rich HTML notes, rule-table components, compact icon toolbar, 147 molecules, and a Snap-free native `MuSVG` 2D overlay; default preload `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json`; see `CHANGELOG.md [v59]`). It retains the v51 rich notes, the v50 per-step presentation text position (top/left/right fourth-column sticky rail) + persistent naming shell, and the v49 MSc-student import (see `CHANGELOG.md [v57]`/`[v56]`/`[v51]`/`[v50]`/`[v49]`); `*58*`–`*44*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced. Then quizzes/games on the
+Status: v59 is live (`index.html` → v59 — scenario quiz steps with student mode, stored required component set, deferred menu quizzes with switchable types, the master-checkbox/component-tag editor, and v58.44 idle start with an author-chosen start component + `.scQuizStartPrompt` (v59.04 makes quiz steps settings-only); v59.02–v59.11 add the rule-grouping removal, orchid selection accent, step-open preview, mobile authoring, native viewer controls and the 2D/3D representation icon dropdowns; 3D atom/bond picking via JSmol `pickCallback`; 2D atom/bond quizzes; step drawer rebuilt in v58.14–v58.16; unified inline/modal rich note editor with WYSIWYG + HTML source, lazy legacy-text upgrade, staged Apply/Cancel and dirty-close confirm; safe rich HTML notes, rule-table components, compact icon toolbar, 147 molecules, and a Snap-free native `MuSVG` 2D overlay; default preload `scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json`; see `CHANGELOG.md [v59]`). It retains the v51 rich notes, the v50 per-step presentation text position (top/left/right fourth-column sticky rail) + persistent naming shell, and the v49 MSc-student import (see `CHANGELOG.md [v57]`/`[v56]`/`[v51]`/`[v50]`/`[v49]`); `*58*`–`*44*` runnable at root; scenario exports still write `"app": "mulermoc-nom-44"` (informational) and import accepts legacy files incl. `diagramatic` mode2D, coerced. Then quizzes/games on the
 same reuse contract. The stepper's main-chain pool index is captured per step (`chainIdx`, v47 additive) and re-asserted on apply; only the transient EXPLORE walk UI position is not step state.
 
 ## 8. Open questions for development (moveto timing closed 2026-10-04)

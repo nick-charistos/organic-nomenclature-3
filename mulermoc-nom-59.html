@@ -18,8 +18,8 @@
 
 <title>MolWave: Ονοματολογία Οργανικών Ενώσεων</title>
 
-  <link rel="stylesheet" href="css/jsme-nick-59.css?v=59.10" />
-  <link rel="stylesheet" href="css/mulermoc-nom-scenario-59.css?v=59.10" />
+  <link rel="stylesheet" href="css/jsme-nick-59.css?v=59.11" />
+  <link rel="stylesheet" href="css/mulermoc-nom-scenario-59.css?v=59.11" />
 
   <script src="jsme/jsme.nocache.js"></script>
   <script src="js/vendor/jquery/jquery-4.0.0.min.js"></script>
@@ -203,67 +203,75 @@
               <div id="jsmeNomeclature" class="hide"></div>
               <div id="jsmeEditDraft" class="hide"></div>
               <div id="jsmeNomeclatureSVG"></div>
-            </div>
-            <div id="radio2DMode">
-              <div class="radioGroupContainer HFlex">
-                <div class="HFlex nativeOptions" style="align-items: center">
-                  <label class="mode2DOption nativeOption">
-                    <input type="radio" name="mode2D" value="condensed" checked />
-                    <span>Συνεπτυγμένος</span>
-                  </label>
-                  <label class="mode2DOption nativeOption">
-                    <input type="radio" name="mode2D" value="expanded" />
-                    <span>Ανεπτυγμένος</span>
-                  </label>
-                  <label class="mode2DOption nativeOption">
-                    <input type="radio" name="mode2D" value="skeletal" />
-                    <span>Σκελετικός</span>
-                  </label>
-                  <label id="zigzagCheck" class="nativeOption">
-                    <input type="checkbox" />
-                    <span>Σύμβολα CH<sub>n</sub></span>
-                  </label>
-                </div>
-                <div id="view2DTools" class="HFlex">
-                  <button id="zoomOutBtn" class="viewerToolBtn" onclick="fZoom2D(-1)" data-tooltip="Σμίκρυνση 2D">
-                    <span class="zoomIcon" data-icon="zoomOut"></span>
+              <div id="view2DTools" class="HFlex">
+                <label id="zigzagCheck" class="viewerToolBtn toolToggle hide" data-tooltip="Σύμβολα CHn" aria-label="Σύμβολα CHn">
+                  <input type="checkbox" autocomplete="off" aria-label="Σύμβολα CHn" />
+                  <span data-icon="viewCondensed" aria-hidden="true"></span>
+                </label>
+                <div id="mode2DControl" class="iconSelectControl">
+                  <button type="button" id="mode2DButton" class="viewerToolBtn iconSelectButton" data-tooltip="Αναπαράσταση 2D" aria-label="Αναπαράσταση 2D" aria-expanded="false" aria-controls="mode2DMenu">
+                    <span id="mode2DIcon" class="mode2DIcon" aria-hidden="true"></span>
+                    <span class="iconSelectCaret" aria-hidden="true"></span>
                   </button>
-                  <button id="zoomInBtn" class="viewerToolBtn" onclick="fZoom2D(1)" data-tooltip="Μεγέθυνση 2D">
-                    <span class="zoomIcon" data-icon="zoomIn"></span>
-                  </button>
-                  <div id="save2DBtn" class="viewerToolBtn" onclick="fSave2DPng()" data-tooltip="Αποθήκευση εικόνας 2D">
-                    <span class="saveImgIcon" data-icon="saveImage"></span>
+                  <div id="mode2DMenu" class="iconSelectMenu hide" role="group" aria-label="Αναπαράσταση 2D">
+                    <label class="mode2DOption iconSelectOption">
+                      <input type="radio" name="mode2D" value="condensed" checked />
+                      <span class="iconSelectOptionIcon" aria-hidden="true"></span>
+                      <span class="iconSelectOptionLabel">Συνεπτυγμένος</span>
+                    </label>
+                    <label class="mode2DOption iconSelectOption">
+                      <input type="radio" name="mode2D" value="expanded" />
+                      <span class="iconSelectOptionIcon" aria-hidden="true"></span>
+                      <span class="iconSelectOptionLabel">Ανεπτυγμένος</span>
+                    </label>
+                    <label class="mode2DOption iconSelectOption">
+                      <input type="radio" name="mode2D" value="skeletal" />
+                      <span class="iconSelectOptionIcon" aria-hidden="true"></span>
+                      <span class="iconSelectOptionLabel">Σκελετικός</span>
+                    </label>
                   </div>
                 </div>
+                <button id="zoomOutBtn" class="viewerToolBtn" onclick="fZoom2D(-1)" data-tooltip="Σμίκρυνση 2D">
+                  <span class="zoomIcon" data-icon="zoomOut"></span>
+                </button>
+                <button id="zoomInBtn" class="viewerToolBtn" onclick="fZoom2D(1)" data-tooltip="Μεγέθυνση 2D">
+                  <span class="zoomIcon" data-icon="zoomIn"></span>
+                </button>
+                <div id="save2DBtn" class="viewerToolBtn" onclick="fSave2DPng()" data-tooltip="Αποθήκευση εικόνας 2D">
+                  <span class="saveImgIcon" data-icon="saveImage"></span>
+                </div>
               </div>
             </div>
+            <div id="viewerSplit" class="viewerSplit hide" aria-hidden="true"></div>
 
-            <div id="nomeclature3D" class="JmolContainer">
-              <script>
-                jmolAppletNomeclature = Jmol.getApplet(
-                  "jmolAppletNomeclature",
-                  JSmol_Applet,
-                );
-                Jmol.script(jmolAppletNomeclature, "frank off");
-              </script>
-            </div>
-            <div id="controls3D" class="HFlex">
-              <div class="HFlex nativeOptions" style="align-items: center">
-                <label id="hydrogensCheck" class="nativeOption">
-                  <input type="checkbox" checked />
-                  <span>Υδρογόνα <span style="color: #666">C</span>-H</span>
-                </label>
-                <label id="atomSymbolsCheck" class="nativeOption">
-                  <input type="checkbox" checked />
-                  <span data-lang="atomSymbolsBar">Σύμβολα ατόμων</span>
-                </label>
-                <select id="style3D" aria-label="Στυλ 3D">
-                  <option value="ballnstick">Σφαίρες και Ράβδοι</option>
-                  <option value="spacefill">Χωροπληρωτικό</option>
-                  <option value="sticks">Ράβδοι</option>
-                </select>
+            <div id="view3DHost" class="viewerHost">
+              <div id="nomeclature3D" class="JmolContainer">
+                <script>
+                  jmolAppletNomeclature = Jmol.getApplet(
+                    "jmolAppletNomeclature",
+                    JSmol_Applet,
+                  );
+                  Jmol.script(jmolAppletNomeclature, "frank off");
+                </script>
               </div>
               <div id="view3DTools" class="HFlex">
+                <div id="style3DControl" class="iconSelectControl">
+                  <button type="button" id="style3DButton" class="viewerToolBtn iconSelectButton" data-tooltip="Στυλ 3D" aria-label="Στυλ 3D" aria-expanded="false" aria-controls="style3DMenu">
+                    <span id="style3DIcon" class="style3DIcon" aria-hidden="true"></span>
+                    <span class="iconSelectCaret" aria-hidden="true"></span>
+                  </button>
+                  <div id="style3DMenu" class="iconSelectMenu hide" role="group" aria-label="Στυλ 3D">
+                    <!-- three radio rows (icon + label) injected by fStyle3DInit -->
+                  </div>
+                </div>
+                <label id="hydrogensCheck" class="viewerToolBtn toolToggle" data-tooltip="Υδρογόνα C-H" aria-label="Υδρογόνα C-H">
+                  <input type="checkbox" checked autocomplete="off" aria-label="Υδρογόνα C-H" />
+                  <span data-icon="hydrogens3D" aria-hidden="true"></span>
+                </label>
+                <label id="atomSymbolsCheck" class="viewerToolBtn toolToggle" data-tooltip="Σύμβολα ατόμων" aria-label="Σύμβολα ατόμων">
+                  <input type="checkbox" checked autocomplete="off" aria-label="Σύμβολα ατόμων" />
+                  <span data-icon="atomSymbols" aria-hidden="true"></span>
+                </label>
                 <button id="rotate3DBtn" class="viewerToolBtn" onclick="fToggleRotate3D()" data-tooltip="Περιστροφή 3D" aria-label="Περιστροφή 3D" aria-pressed="false">
                   <span class="rotateIcon" data-icon="rotate3D"></span>
                 </button>
@@ -305,21 +313,21 @@
     </footer>
   </div>
 
-  <script src="js/jsme-nick-nomeclature-moc2-data_59.js?v=59.10"></script>
+  <script src="js/jsme-nick-nomeclature-moc2-data_59.js?v=59.11"></script>
   <!-- Accepted custom molecules (v54 Stage 2): save one MULERMOC_<name>_data.js
        per molecule from Ρυθμίσεις → Προσαρμοσμένα μόρια. Drop collected
        files next to the data file and register each one, e.g.:
-       <script src="js/MULERMOC_dimethyl_ether_data.js?v=59.10"></script> -->
-  <script src="js/ui-icons.js?v=59.10"></script>
-  <script src="js/mulermoc-nom-tooltip-59.js?v=59.10"></script>
-  <script src="js/mulermoc-nom-core-59.js?v=59.10"></script>
-  <script src="js/mulermoc-nom-molview-59.js?v=59.10"></script>
-  <script src="js/mulermoc-nom-teaching-59.js?v=59.10"></script>
-  <script src="js/mulermoc-nom-note-59.js?v=59.10"></script>
-  <script src="js/mulermoc-nom-scenario-59.js?v=59.10"></script>
-  <script src="js/mulermoc-nom-iupac-59.js?v=59.10"></script>
-  <script src="js/mulermoc-nom-lang-59.js?v=59.10"></script>
-  <script src="js/mulermoc-nom-name-en-59.js?v=59.10"></script>
+       <script src="js/MULERMOC_dimethyl_ether_data.js?v=59.11"></script> -->
+  <script src="js/ui-icons.js?v=59.11"></script>
+  <script src="js/mulermoc-nom-tooltip-59.js?v=59.11"></script>
+  <script src="js/mulermoc-nom-core-59.js?v=59.11"></script>
+  <script src="js/mulermoc-nom-molview-59.js?v=59.11"></script>
+  <script src="js/mulermoc-nom-teaching-59.js?v=59.11"></script>
+  <script src="js/mulermoc-nom-note-59.js?v=59.11"></script>
+  <script src="js/mulermoc-nom-scenario-59.js?v=59.11"></script>
+  <script src="js/mulermoc-nom-iupac-59.js?v=59.11"></script>
+  <script src="js/mulermoc-nom-lang-59.js?v=59.11"></script>
+  <script src="js/mulermoc-nom-name-en-59.js?v=59.11"></script>
   <script>
     window.JSApplet = window.JSApplet || {};
   </script>
