@@ -8,9 +8,9 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 Forked from v58.50, rebased on v58.51 (`mulermoc-nom-59.html` + `js/*-59.js` + `css/*-59.css` +
 `jsme-nick-nomeclature-moc2-data_59.js` + `spt/init-3-59.spt` +
-`zz-test-core59.html`, `?v=59.11`; `ui-icons.js`, `js/vendor/`, `jsme/` and
+`zz-test-core59.html`, `?v=59.12`; `ui-icons.js`, `js/vendor/`, `jsme/` and
 `mols/` stay shared). Chemistry/naming results are v58's and the scenario data
-shape is inherited from v58, but v59.02–v59.11 add UI and quiz-step-authoring
+shape is inherited from v58, but v59.02–v59.12 add UI and quiz-step-authoring
 changes (see below); the v59.00 work is data geometry and the MOL pipeline.
 
 - **147 molecules.** The six branched alkanes the sibling project ships as
@@ -200,6 +200,18 @@ changes (see below); the v59.00 work is data geometry and the MOL pipeline.
   hidden-label probe clicks, menu geometry inside the hosts, divider
   both/single-viewer states, the hydrogens/atom toggles/focus and CHₙ
   visibility/selection.
+- **3D sticks labels (v59.12).** Sticks mode keeps the element labels visible:
+  the 40 % atom spheres stay `translucent 1.0` (invisible) so JSmol places each
+  label plane on the sphere surface instead of inside the wireframe tube, while
+  bonds stay `translucent 0.0` so the tubes render. The style is applied inside
+  the 3D load script after `script spt/init-3-59.spt` (so the init style can
+  never repaint over it), and the veil is re-asserted after every atom/bond
+  color reset — `fClearHighlights`, `fMulerSelectClear3DPaint`,
+  `fMulerSelectPush3D`, and the branch/chain/FG/multi-bond/single-bond 3D
+  highlight painters. `spt/init-3-59.spt` also sets `zshade ON` / `zShadePower 1`,
+  the 26 % / 0.15 base and opaque atoms. Verified: `node --check`; owner visual
+  pass in sticks mode (molecule switch, picking on/off, name and bond
+  highlights). No probes run for this UI-layer batch.
 - **Docs resync (2026-11-23, docs-only).** Current-tree references were synced
   to v59.10 across `README`, `AGENTS`, `PROJECT-PLAN`/`PROJECT-PLAN-GR`,
   `LAYERS-PLAN`, `didactic-scenario-plan` and the harness README; the EN

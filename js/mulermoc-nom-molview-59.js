@@ -3520,6 +3520,9 @@ function fMulerSelectPush3D() {
     } else {
       script += "select none;";
     }
+    // Keep sticks intact after the paint: selected atoms keep their orchid
+    // color but their 40% spheres stay invisible; every tube stays opaque.
+    try { script += (typeof fSticksVeil3DScript === "function") ? fSticksVeil3DScript() : ""; } catch (eV3) {}
     if (typeof fJSmolScript === "function") fJSmolScript(jmolAppletNomeclature, script);
     try { JmolSelection = arg; } catch (eJ) {}
   } catch (e) {}
@@ -3532,7 +3535,9 @@ function fMulerSelectClear3DPaint() {
   try {
     if (typeof fJSmolLive === "function" && !fJSmolLive()) return;
     if (typeof jmolAppletNomeclature === "undefined" || !jmolAppletNomeclature) return;
-    if (typeof fJSmolScript === "function") fJSmolScript(jmolAppletNomeclature, "select all; selectionHalos off; color bonds none; color atoms none;");
+    if (typeof fJSmolScript === "function") fJSmolScript(jmolAppletNomeclature,
+      "select all; selectionHalos off; color bonds none; color atoms none;" +
+      ((typeof fSticksVeil3DScript === "function") ? fSticksVeil3DScript() : ""));
     try { JmolSelection = "select none"; } catch (eJ) {}
   } catch (e) {}
 }
@@ -12656,7 +12661,8 @@ function fLoadMol3D() {
         var _pickTail = "";
         try { _pickTail = (typeof fMulerSelectPickingScript === "function") ? fMulerSelectPickingScript() : ""; } catch (ePT) { _pickTail = ""; }
         var _inlineOk = fJSmolLoadInlineSDF(jmolAppletNomeclature, selectedExample.sdf3D,
-          "script spt/init-3-59.spt;" + zoomInline + movetoInline + _pickTail);
+          "script spt/init-3-59.spt;" + zoomInline + movetoInline + _pickTail +
+          (typeof fMolVis3DScript === "function" ? " " + fMolVis3DScript() + ";" : ""));
         // v58.12: the applet now sits on this tail — record it so the picking
         // sync does not skip a needed update (and does not resend it).
         try { if (typeof window !== "undefined") window.__mulerPickScriptSync = _inlineOk ? _pickTail : null; } catch (ePMI) {}
@@ -12686,17 +12692,22 @@ function fLoadMol3D() {
     : "";
   var _pickCmd = "";
   try { _pickCmd = (typeof fMulerSelectPickingScript === "function") ? fMulerSelectPickingScript() : ""; } catch (ePC) { _pickCmd = ""; }
-  var _loadRes = fJSmolScript(
-    jmolAppletNomeclature,
+  // Apply the current 3D style INSIDE the load script, after init-3: init sets
+  // opaque spacefill/translucency, so a separate fSetMolVis3D() could run
+  // before it and leave a frame of balls on the fresh model.
+  var _loadCmd =
     "frank off;load " +
-      myMol3D +
-      "; select all; center selected;" +
-      "script spt/init-3-59.spt;" + zoomCmd + movetoCmd + _pickCmd,
-  );
+    myMol3D +
+    "; select all; center selected;" +
+    "script spt/init-3-59.spt;" + zoomCmd + movetoCmd + _pickCmd;
+  try {
+    var _visTail = fMolVis3DScript();
+    if (_visTail) _loadCmd += " " + _visTail + ";";
+  } catch (eVS) { /* style tail best-effort */ }
+  var _loadRes = fJSmolScript(jmolAppletNomeclature, _loadCmd);
   // v58.12: the queued script ends on this tail — record it so the picking
   // sync knows the applet's state (null when the applet refused the load).
   try { if (typeof window !== "undefined") window.__mulerPickScriptSync = (_loadRes !== null) ? _pickCmd : null; } catch (ePMF) {}
-  fSetMolVis3D();
   // A fresh load satisfies any pending one-shot exit reload (e.g. molecule
   // picked while 3D hidden after a no-3D exit: already loaded, reopen is instant).
   try {
@@ -14438,10 +14449,14 @@ function fClearHighlights() {
   // molecule's highlight on the fresh one (ghost preselect). Exact-reward
   // order is safe: it paints after its last clear.
   try { if (typeof window !== "undefined") { window.__mulerCompAtomArg = ""; window.__mulerCompBondArg = ""; } } catch (eCA) {}
-  fJSmolScript(
-    jmolAppletNomeclature,
-    "select all;  selectionHalos off; color bonds none; color atoms none;",
-  );
+  // Sticks veil: `color atoms none` rebuilds an opaque colix, which would
+  // unveil the transparent spacefill spheres on the outgoing model for a
+  // frame during a molecule switch. Re-veil in the SAME script so no repaint
+  // can land between the two commands.
+  var _clr =
+    "select all;  selectionHalos off; color bonds none; color atoms none;" +
+    ((typeof fSticksVeil3DScript === "function") ? fSticksVeil3DScript() : "");
+  fJSmolScript(jmolAppletNomeclature, _clr);
   showAtomSymbols3D(!fSequentialKetoneNumberingTarget());
   removeEcho3D();
   $("#ruleTheoryContainer").hide();
@@ -16726,7 +16741,8 @@ function fPaintBranchHighlightAtoms(slot, mode) {
         try { _jm = (typeof jmolAppletNomeclature !== "undefined") ? jmolAppletNomeclature : null; } catch (eJM) { _jm = null; }
         fJSmolScript(_jm,
           "select all; selectionHalos off; color atoms none; color bonds none;" +
-          arg3d + ";color selectionHalos[X79dc6d]; selectionHalos on; color atoms [X79dc6d];");
+          arg3d + ";color selectionHalos[X79dc6d]; selectionHalos on; color atoms [X79dc6d];" +
+          fSticksVeil3DScript());
         try { JmolSelection = arg3d; } catch (eJS) {}
       }
     } catch (e3) {}
@@ -17424,7 +17440,8 @@ function fHighlightAtomChain3D(chainAtoms3D, skipH, skipBonds, skipAtoms) {
     jmolAppletNomeclature,
     "select all; selectionHalos off; color atoms none; color bonds none;" + arg +
       _atomClause +
-      (skipBonds ? ";color bonds [X909090];" : ";color bonds [X79dc6d];"),
+      (skipBonds ? ";color bonds [X909090];" : ";color bonds [X79dc6d];") +
+      fSticksVeil3DScript(),
   );
   JmolSelection = arg;
 }
@@ -17920,7 +17937,8 @@ function fHighlightFG3D(FGno) {
       // pure hydrocarbon or no branch match — clear any existing highlight
       fJSmolScript(
         jmolAppletNomeclature,
-        "select all; selectionHalos off; color atoms none; color bonds none;",
+        "select all; selectionHalos off; color atoms none; color bonds none;" +
+        fSticksVeil3DScript(),
       );
       return;
     }
@@ -17937,7 +17955,8 @@ function fHighlightFG3D(FGno) {
       jmolAppletNomeclature,
       "select all; selectionHalos off; color atoms none; color bonds none;" +
         highAtoms3DArg +
-        ";color selectionHalos[X79dc6d]; selectionHalos on; color atoms [X79dc6d];",
+        ";color selectionHalos[X79dc6d]; selectionHalos on; color atoms [X79dc6d];" +
+        fSticksVeil3DScript(),
     );
     JmolSelection = highAtoms3DArg;
   } else {
@@ -18002,7 +18021,8 @@ function fHighlightFG3D(FGno) {
         jmolAppletNomeclature,
         "select all; selectionHalos off; color atoms none; color bonds none;" +
           highAtoms3DArg +
-          ";color selectionHalos[X79dc6d]; selectionHalos on; color atoms [X79dc6d];",
+          ";color selectionHalos[X79dc6d]; selectionHalos on; color atoms [X79dc6d];" +
+          fSticksVeil3DScript(),
       );
       JmolSelection = highAtoms3DArg;
       return;
@@ -18224,7 +18244,8 @@ function fHighlightFG3D(FGno) {
     if (highAtoms3D.length === 0) {
       fJSmolScript(
         jmolAppletNomeclature,
-        "select all; selectionHalos off; color atoms none; color bonds none;",
+        "select all; selectionHalos off; color atoms none; color bonds none;" +
+        fSticksVeil3DScript(),
       );
       return;
     }
@@ -18242,7 +18263,8 @@ function fHighlightFG3D(FGno) {
       jmolAppletNomeclature,
       "select all; selectionHalos off; color atoms none; color bonds none;" +
         highAtoms3DArg +
-        ";color selectionHalos[X79dc6d]; selectionHalos on; color atoms [X79dc6d];",
+        ";color selectionHalos[X79dc6d]; selectionHalos on; color atoms [X79dc6d];" +
+        fSticksVeil3DScript(),
     );
     JmolSelection = highAtoms3DArg;
     // IUPAC alkoxy prefix: the halo script colors atoms only — color the
@@ -18723,13 +18745,15 @@ function fHighlightMultiBonds3D(bondCompPos) {
   fJSmolScript(
     jmolAppletNomeclature,
     highAtoms3DArg +
-      "; color selectionHalos[X79dc6d]; selectionHalos on; color atoms [X79dc6d];",
+      "; color selectionHalos[X79dc6d]; selectionHalos on; color atoms [X79dc6d];" +
+      fSticksVeil3DScript(),
   );
   if (!fShowBondAtoms()) {
     // Bonds-only mode: undo the atom halo — keep just the green bonds above.
     fJSmolScript(
       jmolAppletNomeclature,
-      "select all; selectionHalos off; color atoms none;",
+      "select all; selectionHalos off; color atoms none;" +
+      fSticksVeil3DScript(),
     );
   } else {
     // Single bonds bridging two highlighted atoms inherit green from atom colors.
@@ -18857,13 +18881,15 @@ function fHighlightSingleBondsCC3D(atomSetOrNull) {
   fJSmolScript(
     jmolAppletNomeclature,
     highAtoms3DArg +
-      "; color selectionHalos[X79dc6d]; selectionHalos on; color atoms [X79dc6d];",
+      "; color selectionHalos[X79dc6d]; selectionHalos on; color atoms [X79dc6d];" +
+      fSticksVeil3DScript(),
   );
   if (!fShowBondAtoms()) {
     // Bonds-only mode: undo the atom halo — keep just the green bonds above.
     fJSmolScript(
       jmolAppletNomeclature,
-      "select all; selectionHalos off; color atoms none;",
+      "select all; selectionHalos off; color atoms none;" +
+      fSticksVeil3DScript(),
     );
   }
 
@@ -18872,8 +18898,17 @@ function fHighlightSingleBondsCC3D(atomSetOrNull) {
 
 // ── fSetMolVis3D ──────────────────────────────────────────────────────────
 
-function fSetMolVis3D(theVisModel) {
-  let mySpt;
+// Sticks veil: the 40% atom spheres stay invisible while bonds stay opaque.
+// Any script that resets atom/bond colors MUST end with this: `color bonds
+// none` inherits the atom alpha, and `color atoms none` makes the spheres
+// opaque — either one breaks sticks mode. No-op in the other styles.
+function fSticksVeil3DScript() {
+  if (typeof vis3D === "undefined" || vis3D !== "sticks") return "";
+  return " select all and not _Xx; color atoms translucent 1.0; color bonds translucent 0.0;";
+}
+
+function fMolVis3DScript(theVisModel) {
+  let mySpt = "";
   if (theVisModel === undefined) {
     theVisModel = vis3D;
   }
@@ -18881,21 +18916,26 @@ function fSetMolVis3D(theVisModel) {
   switch (theVisModel) {
     case "ballnstick":
       mySpt =
-        " select all and not _Xx;  spacefill 24%; wireframe 0.13;set labelFront off;" +
+        " select all and not _Xx;color atoms translucent 0.0;  spacefill 26%; wireframe 0.15; " +
         JmolSelection;
       break;
     case "spacefill":
       mySpt =
-        " select all and not _Xx;  spacefill 70%; wireframe off;set labelFront off;" +
+        " select all and not _Xx;color atoms translucent 0.0;  spacefill 80%; wireframe off;" +
         JmolSelection;
       break;
     case "sticks":
       mySpt =
-        " select all and not _Xx;  spacefill off; wireframe 90%;  set labelFront on;" +
+        " select all and not _Xx;  color atoms translucent 1.0; spacefill off; color bonds translucent 0.0; spacefill 40%;  wireframe 90%;   " +
         JmolSelection;
       break;
   }
-  fJSmolScript(jmolAppletNomeclature, mySpt);
+  return mySpt;
+}
+
+function fSetMolVis3D(theVisModel) {
+  const mySpt = fMolVis3DScript(theVisModel);
+  if (mySpt) fJSmolScript(jmolAppletNomeclature, mySpt);
 }
 
 // ── fViewerHeights2D3D ────────────────────────────────────────────────────

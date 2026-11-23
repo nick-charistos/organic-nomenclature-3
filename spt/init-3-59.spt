@@ -1,6 +1,9 @@
 
  set minimizationCriterion 0.005;
 
+ set zshade ON;
+ set zShadePower 1;
+
   set picking OFF;
   color selectionHalos [x7ddfff]
 
@@ -21,8 +24,9 @@
 //   color selectionHalos [X66ff66] ;
 
  select all and not _Xx; 
- spacefill 24%; 
- wireframe 0.13;
+spacefill 26%;
+wireframe 0.15;
+color atoms translucent 0.0;
 
  hover off;
  
