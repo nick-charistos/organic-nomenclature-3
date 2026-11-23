@@ -683,7 +683,7 @@ function fToggleViewer3D() {
           if (typeof selectedMol !== "undefined" && selectedMol &&
               typeof nameExamples !== "undefined" && nameExamples[selectedMol]) {
             fLoadMol3D();
-            if (typeof showAtomSymbols3D === "function") showAtomSymbols3D();
+            if (typeof showAtomSymbols3D === "function") showAtomSymbols3D(undefined, fMol3DRestoreCmd());
             if (typeof showHydrogens3D === "function") showHydrogens3D();
             if (typeof rotate3D === "function") rotate3D();
           }
@@ -8090,7 +8090,7 @@ function fMolDraftShow3D(sdf) {
   try { if (typeof fParseSDF3D === "function") fParseSDF3D(sdf); } catch (eP1) {}
   try { if (typeof fDetectMolType3D === "function") fDetectMolType3D(); } catch (eP2) {}
   try { if (typeof fCalcMainChain3D === "function") fCalcMainChain3D(); } catch (eP3) {}
-  try { if (typeof showAtomSymbols3D === "function") showAtomSymbols3D(); } catch (eA2) {}
+  try { if (typeof showAtomSymbols3D === "function") showAtomSymbols3D(undefined, fMol3DRestoreCmd()); } catch (eA2) {}
   try { if (typeof showHydrogens3D === "function") showHydrogens3D(); } catch (eH2) {}
   try { if (typeof rotate3D === "function") rotate3D(); } catch (eR2) {}
   try { if (typeof fResizeViewers === "function") fResizeViewers(); } catch (eR3) {}
@@ -10081,7 +10081,7 @@ function fSelectMol() {
   fLoadMol3D();
   fFetchAndParse3D();
 
-  showAtomSymbols3D();
+  showAtomSymbols3D(undefined, fMol3DRestoreCmd());
   showHydrogens3D();
   rotate3D();
 
@@ -12870,16 +12870,50 @@ function fFetchAndParse3D() {
 
 // ── showAtomSymbols3D ─────────────────────────────────────────────────────
 
-function showAtomSymbols3D(restoreNumbering) {
+// Initial camera restore for the molecule being loaded. Used after the label
+// zoom dance so a new molecule never inherits the previous molecule's zoom.
+function fMol3DRestoreCmd() {
+  try {
+    var ex = (typeof selectedMol !== "undefined" && selectedMol && typeof nameExamples !== "undefined")
+      ? nameExamples[selectedMol] : null;
+    if (!ex) return "zoomto 0.0 out;";
+    if (ex.moveto) {
+      var mv = String(ex.moveto).trim();
+      if (mv) return mv.replace(/;?\s*$/, "; ");
+    }
+    var z = ex.initialZoom3D;
+    if (Number.isFinite(z) && z > 0) return "zoom " + z + ";";
+    return "zoomto 0.0 out;";
+  } catch (e) {
+    return "zoomto 0.0 out;";
+  }
+}
+
+function showAtomSymbols3D(restoreNumbering, restoreCmd) {
   if (atomSymbols3DFlag) {
-    fJSmolScript(
-      jmolAppletNomeclature,
-      "select all; labels %e;" + JmolSelection + ";",
-    );
+    // JSmol sizes labels at the current zoom. Build them at 100%, then restore
+    // the author's zoom in the same script so labels keep their proper scale
+    // without a zoom flash. A load caller passes the new molecule's own
+    // initial framing (restoreCmd); otherwise read the live zoom.
+    var _restore = (typeof restoreCmd === "string" && restoreCmd) ? restoreCmd : "";
+    if (!_restore) {
+      var _zoom = null;
+      try {
+        var _zout = fJSmolScriptEcho(jmolAppletNomeclature, "show zoom");
+        var _zm = /(-?\d+(?:\.\d+)?)/.exec(String(_zout || ""));
+        if (_zm) _zoom = parseFloat(_zm[1]);
+      } catch (eZ) { _zoom = null; }
+      if (_zoom !== null && isFinite(_zoom) && _zoom > 0) _restore = "zoom " + _zoom + ";";
+    }
+    var _labelsCmd = "select all; labels %e;" + JmolSelection + "; set fontscaling TRUE;";
+    var _cmd = _restore
+      ? "zoom 100; " + _labelsCmd + " " + _restore
+      : _labelsCmd;
+    fJSmolScript(jmolAppletNomeclature, _cmd);
   } else {
     fJSmolScript(
       jmolAppletNomeclature,
-      "select all; labels off;" + JmolSelection + ";",
+      "select all;  labels off;" + JmolSelection + "; set fontscaling TRUE;",
     );
   }
 
@@ -19477,7 +19511,7 @@ var _resizeSentOn3DReady = false;
             try { fSelectMol(); } catch (eFs) { try { /* console.error("[COLD-BOOT] resend reselect failed for " + _sel, eFs); */ } catch (eL) {} }
           } else {
             try { if (typeof fLoadMol3D === "function") fLoadMol3D(); } catch (eL) { /* best-effort */ }
-            try { if (typeof showAtomSymbols3D === "function") showAtomSymbols3D(); } catch (eA) { /* best-effort */ }
+            try { if (typeof showAtomSymbols3D === "function") showAtomSymbols3D(undefined, fMol3DRestoreCmd()); } catch (eA) { /* best-effort */ }
             try { if (typeof showHydrogens3D === "function") showHydrogens3D(); } catch (eH) { /* best-effort */ }
             try { if (typeof rotate3D === "function") rotate3D(); } catch (eR) { /* best-effort */ }
           }

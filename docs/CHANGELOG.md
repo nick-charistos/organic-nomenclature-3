@@ -8,9 +8,9 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 Forked from v58.50, rebased on v58.51 (`mulermoc-nom-59.html` + `js/*-59.js` + `css/*-59.css` +
 `jsme-nick-nomeclature-moc2-data_59.js` + `spt/init-3-59.spt` +
-`zz-test-core59.html`, `?v=59.13`; `ui-icons.js`, `js/vendor/`, `jsme/` and
+`zz-test-core59.html`, `?v=59.14`; `ui-icons.js`, `js/vendor/`, `jsme/` and
 `mols/` stay shared). Chemistry/naming results are v58's and the scenario data
-shape is inherited from v58, but v59.02–v59.13 add UI and quiz-step-authoring
+shape is inherited from v58, but v59.02–v59.14 add UI and quiz-step-authoring
 changes (see below); the v59.00 work is data geometry and the MOL pipeline.
 
 - **147 molecules.** The six branched alkanes the sibling project ships as
@@ -222,6 +222,15 @@ changes (see below); the v59.00 work is data geometry and the MOL pipeline.
   visible. Verified at 1280px: drag 400/400 → 330/470, reset 400/400, keyboard
   416/384, split hidden in single-viewer mode; no page errors. No probes run
   for this layout batch.
+- **3D label scaling + per-molecule zoom (v59.14).** Atom-symbol labels are
+  built at `zoom 100` and the camera is restored in the same script, so label
+  sizing is correct at any author zoom. Molecule-load calls pass the new
+  molecule's own restore command (`moveto`, `initialZoom3D`, or the init
+  `zoomto 0.0 out`) instead of reading the previous zoom; a load can no longer
+  inherit the previous molecule's scale. Same-molecule toggles still preserve
+  the live zoom. `spt/init-3-59.spt` sets `fontscaling TRUE`. Verified live:
+  ethane at 150 → butane opens at its init 50; atom labels off/on at 150 keeps
+  150; no page errors.
 - **Docs resync (2026-11-23, docs-only).** Current-tree references were synced
   to v59.10 across `README`, `AGENTS`, `PROJECT-PLAN`/`PROJECT-PLAN-GR`,
   `LAYERS-PLAN`, `didactic-scenario-plan` and the harness README; the EN

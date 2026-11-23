@@ -16,6 +16,7 @@
 
  set labelOffset 0 0; 
  font labels 18; 
+ set fontscaling TRUE;
  color labels black;
 
   font echo 28; 
