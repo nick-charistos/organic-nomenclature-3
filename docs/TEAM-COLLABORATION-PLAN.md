@@ -174,7 +174,10 @@ These came from the molecule-data planning discussion:
 4. **Closed-release data loading:** generated synchronous bundle, not folder
    scanning or 1000 requests.
 5. **Menu index:** precompute formula, GR/EN name, classification, carbon
-   count, skeletal SVG/thumbnail and aliases.
+   count, skeletal SVG/thumbnail and aliases. Decided 2026-11-24: the
+   thumbnail is an SVG generated at build time from the stored skeletal MOL by
+   the app's own `MuSVG` renderer — no runtime rendering and no extra
+   dependency (see `MOLECULE-DATA-ROADMAP.md` §Menu index).
 6. **Derived vs stored fields:** decide whether `classification`, `smiles` and
    names are canonical source data or build-time derived/cached data.
 7. **JSON export first:** replace the executable custom-molecule `.js` export

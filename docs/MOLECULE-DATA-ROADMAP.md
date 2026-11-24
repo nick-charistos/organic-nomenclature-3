@@ -28,6 +28,15 @@ Build a stable closed release that:
 - Final closed release must not expose new-molecule/draft/import controls.
 - Core naming results are authoritative; student/proposed/oracle names are
   validation inputs, not displayed truth.
+- **Drupal embedding contract (closed tree).** Drupal serves the closed build as
+  plain static files: the generated data ships as synchronous `<script>` tags,
+  with no `fetch()`, no directory scan, no dev-server endpoint, and no build
+  step on the Drupal side. The app must stay CSP-friendly (the `?libs=local`
+  JSmol/JSME path keeps working when the CDN is blocked) and must not leak
+  global CSS into the host page. Keep the URL contract (`?scenario=`, `?lang=`,
+  `?mol=`, `#step=N`, URL-encoded Greek scenario names). No PII in the static
+  app: Drupal owns auth, sessions, logging storage and CSV export; the app only
+  queues `researchMode` events.
 
 ## Two data modes, one contract
 
@@ -45,6 +54,8 @@ Build a stable closed release that:
 - Loads generated, checked-in data synchronously:
   - `js/molecules-60.js` — all records;
   - `js/menu-index-60.js` — precomputed menu metadata.
+- Nothing is generated in the browser: names, classification, carbon counts and
+  menu skeletal thumbnails are all baked into the generated index.
 - No fetch of molecule files, no directory scan, no boot classification loop.
 - Build stamp includes core version/hash and data version.
 - No new-molecule/draft/import UI.
@@ -117,6 +128,18 @@ Decisions still required:
 - Keep current flat field names during migration, or introduce the nested
   shape with a compatibility normalizer?
 
+Decided (owner, 2026-11-24):
+
+- **Closed release is fully precomputed.** No menu or naming work happens at
+  page load in the closed educational build.
+- **Menu thumbnails are precomputed skeletal SVGs** generated from the stored
+  skeletal MOLs with the app's own `MuSVG` renderer (the same code the viewer
+  draws with). No JSME pass at boot and no new renderer dependency
+  (`SmilesDrawer` etc.). Falling back to a second renderer in the menu is
+  rejected: curated v59 geometry must match the viewer exactly.
+- **Drupal is the deployment target** for the closed tree (see the Drupal
+  embedding contract under Constraints).
+
 ## Menu index (release)
 
 One compact entry per molecule:
@@ -137,10 +160,15 @@ One compact entry per molecule:
 Menu requirements:
 
 - display mode: formula / name / skeletal structure;
-- search across formula, names, aliases and class;
-- existing grouping by chemical class / homologous series;
+- search across formula, names, aliases and class (normalize Greek accents and
+  euphony variants once against the index, not against live engine output);
+- existing grouping by chemical class / homologous series (series-first);
 - collapsed groups and/or virtualized rows for ~1000 items;
-- thumbnails lazy-rendered even though records are loaded;
+- thumbnails are precomputed strings, injected lazily on group expand /
+  `IntersectionObserver` — loaded with the index, never rendered on demand;
+- molecules without a stored skeletal MOL (e.g. `methane`, whose
+  `MOL2D.skeletal` is `null`) fall back to formula text, not to another
+  renderer;
 - no boot-time JSME pass over the corpus.
 
 ## Milestones
@@ -212,13 +240,18 @@ Acceptance: 147/147 keys match; menu and probes unchanged.
 
 - [ ] Read `molecules/builtin/`, validate, generate:
       `js/molecules-60.js`, `js/menu-index-60.js`, `molecules/index.json`.
-- [ ] Precompute names, classification, carbon count, skeletal SVG/thumbnail,
-      aliases.
+- [ ] Precompute names, classification, carbon count, aliases.
+- [ ] Render `skeletalSvg` from each record's stored skeletal MOL with the
+      shared `MuSVG` renderer (one renderer: menu matches viewer); emit a
+      formula-only entry when the skeletal form is absent.
 - [ ] Add build stamp: core hash/version + data version.
 - [ ] Fail the build if a release bundle predates the core naming version.
+- [ ] Report bundle size and gzip size; keep the output minified and
+      gzip-friendly for Drupal/school networks.
 
-Acceptance: closed page loads synchronously from generated files and skips the
-boot classification loop.
+Acceptance: closed page loads synchronously from generated files, skips the
+boot classification loop, and renders no chemistry in the browser; cold load
+stays within the school-hardware budget.
 
 ### M8 — Corpus and naming-core loop
 

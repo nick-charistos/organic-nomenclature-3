@@ -105,6 +105,15 @@
 > draft 3D previews use the draft SDF's init fit instead of `selectedMol`'s
 > framing; stale title/boot comments corrected. Verified: `probe-final` and
 > `probe-scenario-quiz` green; EN/GR divider label and z-order checked.
+> **Docs (2026-11-24, docs-only, no code):** closed-release menu thumbnails are
+> precomputed skeletal SVGs rendered at build time from the stored skeletal
+> MOLs by the app's own `MuSVG` renderer (no JSME at boot, no SmilesDrawer or
+> other renderer dependency; `methane` falls back to formula text). The closed
+> educational build is fully precomputed and must stay Drupal-embeddable
+> (synchronous scripts, no fetch/scan, `?libs=local`, no PII, URL contract).
+> Recorded in `MOLECULE-DATA-ROADMAP.md` (Constraints + Menu index + M7) and
+> `TEAM-COLLABORATION-PLAN.md` §6; `LAYERS-PLAN` entry URLs and the
+> `PROJECT-PLAN` module header refreshed to v59.
 > **Icon/UI backlog:** stage 2 is mostly done — the 3D style + 2D
 > representation dropdowns and the hydrogens/atom/CHₙ toggles ship in v59.11.
 > Remaining: viewer tool-button icons (2D/3D visibility, rotate/zoom/save) and
@@ -966,3 +975,10 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * Default-mode parity (same request): outside scenario mode (no authoring/Present) `fToggleAtomSelect()` shows the same `.scQuizPrompt.scQuizStartPrompt` directly on pick-mode entry when a molecule is loaded — that picking path is the practice/quiz path, so the start prompt now always appears before the first component is picked. Classic authoring steps keep no prompt (no quiz to start).
 * No scenario/quiz logic, schema or i18n change. Bumped all 14 v58 asset refs to `?v=58.51`; CHANGELOG `[v58]` bullet + fork line synced (v59 sections, AGENTS, README and `index.html` untouched).
 * Verified `node --check js/mulermoc-nom-molview-58.js` + `js/mulermoc-nom-scenario-58.js`, `git diff --check`, and targeted headless checks on `mulermoc-nom-58.html`: pick prompt → exactly one `div.scQuizPrompt` with the expected GR/EN text and no `.scQuizStartPrompt`; idle prompt → `div.scQuizPrompt.scQuizStartPrompt` with `quizSelectStart`; repeated calls leave one wrapper; authoring + pick on a loaded quiz step → start prompt on pick entry and after `fScenarioGo`, prompt dropped when picking is switched off, classic step shows none; no page errors. Probe suite not run (v59-targeted in this tree).
+
+## 2026-11-24 — data/collab decisions: precomputed menu, Drupal closed build (docs-only)
+* Owner direction settled for the v60 data work: the closed educational release is **fully precomputed** — `js/molecules-60.js` + `js/menu-index-60.js` load synchronously and the browser renders no chemistry at boot.
+* Menu display modes (formula / name / skeletal) use **precomputed skeletal SVGs**, generated at build time from each record's stored skeletal MOL with the app's own `MuSVG` renderer. One renderer means menu thumbnails always match the viewer; the curated v59 geometry is preserved. Rejected: runtime JSME depicts (1000-applet boot cost) and SmilesDrawer (needs verified SMILES, auto-layout discards curated coordinates, extra dependency). `methane` (no stored skeletal form) falls back to formula text.
+* Drupal embedding restated as a hard constraint on the closed tree: plain static files, synchronous `<script>` tags, no `fetch()`/directory scan/dev endpoint, no build step on the Drupal side, `?libs=local` CSP fallback, no global CSS leakage, frozen URL contract (`?scenario=`, `?lang=`, `?mol=`, `#step=N`), no PII (Drupal owns auth/session/logging/CSV; app only queues `researchMode` events).
+* Docs updated: `MOLECULE-DATA-ROADMAP.md` (Drupal embedding contract, closed-mode precompute wording, "Decided (2026-11-24)" block, menu requirements incl. search normalization and thumbnail fallback, M7 generator scope + size/cold-load acceptance), `TEAM-COLLABORATION-PLAN.md` §6 item 5, `LAYERS-PLAN.md` LEARN/EXPLORE entry URLs (v55 → v59), `PROJECT-PLAN.md` module header (v55 → v59.16), this entry + resume pointer line.
+* No code change; no `?v=` bump. Verification: `git diff --check` only.
