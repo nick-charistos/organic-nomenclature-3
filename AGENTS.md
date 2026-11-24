@@ -140,6 +140,9 @@ Get-ChildItem js\*-59.js | ForEach-Object { node --check $_.FullName }
 
 Chrome defaults to the path at the top of each probe; override with
 `MULER_CHROME` if needed. Probes are read-only; screenshots are gitignored.
+Interactive checks: the owner runs OpenCode Browse through **Brave**; use the
+browser tools for manual/visual checks. The Playwright probes still default to
+Chrome unless `MULER_CHROME` points elsewhere.
 Do not weaken or delete a probe just to get a green run — fix the app or
 update the probe deliberately, with the user’s agreement.
 
