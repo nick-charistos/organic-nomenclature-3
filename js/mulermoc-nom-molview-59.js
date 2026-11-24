@@ -12874,6 +12874,9 @@ function fFetchAndParse3D() {
 // zoom dance so a new molecule never inherits the previous molecule's zoom.
 function fMol3DRestoreCmd() {
   try {
+    // Draft 3D previews are not nameExamples entries; never borrow the
+    // selected molecule's framing. Use the init fit for the draft SDF.
+    if (window.MulerDraft) return "zoomto 0.0 out;";
     var ex = (typeof selectedMol !== "undefined" && selectedMol && typeof nameExamples !== "undefined")
       ? nameExamples[selectedMol] : null;
     if (!ex) return "zoomto 0.0 out;";

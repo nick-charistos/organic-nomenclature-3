@@ -381,6 +381,7 @@ var MULER_STRINGS = {
   hydrogens3D: { gr: "Υδρογόνα C-H", en: "Hydrogens C-H" },
   rotation: { gr: "Περιστροφή", en: "Rotation" },
   rep2D: { gr: "Αναπαράσταση 2D", en: "2D representation" },
+  viewerSplit: { gr: "Αλλαγή ύψους viewers", en: "Resize viewers" },
   style3D: { gr: "Στυλ 3D", en: "3D style" },
   visBall: { gr: "Σφαίρες και Ράβδοι", en: "Ball and stick" },
   visSpace: { gr: "Χωροπληρωτικό", en: "Space filling" },

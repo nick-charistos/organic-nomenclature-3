@@ -8,9 +8,9 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 Forked from v58.50, rebased on v58.51 (`mulermoc-nom-59.html` + `js/*-59.js` + `css/*-59.css` +
 `jsme-nick-nomeclature-moc2-data_59.js` + `spt/init-3-59.spt` +
-`zz-test-core59.html`, `?v=59.15`; `ui-icons.js`, `js/vendor/`, `jsme/` and
+`zz-test-core59.html`, `?v=59.16`; `ui-icons.js`, `js/vendor/`, `jsme/` and
 `mols/` stay shared). Chemistry/naming results are v58's and the scenario data
-shape is inherited from v58, but v59.02–v59.15 add UI and quiz-step-authoring
+shape is inherited from v58, but v59.02–v59.16 add UI and quiz-step-authoring
 changes (see below); the v59.00 work is data geometry and the MOL pipeline.
 
 - **147 molecules.** The six branched alkanes the sibling project ships as
@@ -88,7 +88,7 @@ changes (see below); the v59.00 work is data geometry and the MOL pipeline.
   prompt while picking (`pending3D` cancelled). The v58 CSS comes along:
   `--veryLightOrchid`, orchid `.quizTodo` / `.quizTodo.selected` /
   `.scQuizTag.selected` / `.is-start` and the shared `.scQuizPrompt` +
-  `.scQuizStartPrompt` skin. Asset refs moved to `?v=59.01` (now `?v=59.11`).
+  `.scQuizStartPrompt` skin. Asset refs moved to `?v=59.01` (now `?v=59.15`).
 - **Rule grouping bullet removed (v59.02).** The `.groupingMode` selector now
   offers Όλα τα μόρια / Χημικές Τάξεις / Ομόλογες Σειρές only. The `rule` mode
   itself is kept intact: `moleculeGroupingMode === "rule"`, the `ruleExamples`
@@ -201,7 +201,7 @@ changes (see below); the v59.00 work is data geometry and the MOL pipeline.
   both/single-viewer states, the hydrogens/atom toggles/focus and CHₙ
   visibility/selection.
 - **3D sticks labels (v59.12).** Sticks mode keeps the element labels visible:
-  the 40 % atom spheres stay `translucent 1.0` (invisible) so JSmol places each
+  the atom spheres stay `translucent 1.0` (invisible) so JSmol places each
   label plane on the sphere surface instead of inside the wireframe tube, while
   bonds stay `translucent 0.0` so the tubes render. The style is applied inside
   the 3D load script after `script spt/init-3-59.spt` (so the init style can
@@ -211,7 +211,8 @@ changes (see below); the v59.00 work is data geometry and the MOL pipeline.
   highlight painters. `spt/init-3-59.spt` also sets `zshade ON` / `zShadePower 1`,
   the 26 % / 0.15 base and opaque atoms. Verified: `node --check`; owner visual
   pass in sticks mode (molecule switch, picking on/off, name and bond
-  highlights). No probes run for this UI-layer batch.
+  highlights). No probes run for this UI-layer batch. The sphere surface was
+  later raised from 40 % to 70 % (see the post-v59.14 tweaks below).
 - **Draggable viewer split (v59.13).** The 2D/3D divider can be dragged to
   redistribute the existing combined viewer height; the total stays governed
   by the viewer-height settings. `viewerSplitRatio` is session-only (default
@@ -231,6 +232,10 @@ changes (see below); the v59.00 work is data geometry and the MOL pipeline.
   the live zoom. `spt/init-3-59.spt` sets `fontscaling TRUE`. Verified live:
   ethane at 150 → butane opens at its init 50; atom labels off/on at 150 keeps
   150; no page errors.
+- **Post-v59.14 visual tweaks (unversioned commits).** Sticks sphere surface
+  raised 40 % → 70 % (`fMolVis3DScript`), 3D label font 18 → 24
+  (`spt/init-3-59.spt`), and the open `#viewerSettingsPanel` gets
+  `z-index:120` so it stays above the viewer overlays. No asset-ref bump.
 - **Empty authoring page title (v59.15).** Exiting Present clears `#pageTitle`
   instead of restoring the stashed app title: the non-present branch of
   `fScenarioFillStepPanel()` always writes an empty node, so every authoring
@@ -238,6 +243,14 @@ changes (see below); the v59.00 work is data geometry and the MOL pipeline.
   `#pageTitle:empty` rule hides the node again. Present still writes each
   step's title. Verified headless: empty title on load, step title in Present,
   empty after Exit; no page errors. No probes run for this UI-chrome fix.
+- **Split/draft 3D fixes (v59.16).** The draggable divider's grab lane no
+  longer sits above the 2D tool cluster (`z-index:50` vs the tools' 60), and
+  its aria label is localized (`viewerSplit`: “Αλλαγή ύψους viewers” /
+  “Resize viewers”). Draft 3D previews now use the draft SDF's init fit
+  (`zoomto 0.0 out`) instead of borrowing `selectedMol`'s framing. Stale
+  comments around the v59.15 title and the boot title stash were corrected.
+  Verified: `node --check`; `probe-final` and `probe-scenario-quiz` green; EN
+  aria label, split lane z-order and draft restore checks; no page errors.
 - **Docs resync (2026-11-23, docs-only).** Current-tree references were synced
   to v59.10 across `README`, `AGENTS`, `PROJECT-PLAN`/`PROJECT-PLAN-GR`,
   `LAYERS-PLAN`, `didactic-scenario-plan` and the harness README; the EN

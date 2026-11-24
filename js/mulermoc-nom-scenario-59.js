@@ -8377,7 +8377,8 @@ function fScenarioParseUrl() {
 function fScenarioBoot() {
   fScenarioBuildUi();
   try { if (typeof fScenarioInitAuthorBarFit === "function") fScenarioInitAuthorBarFit(); } catch (eFit) {}
-  // stash the app title; present mode replaces #pageTitle per step, exit restores it
+  // Stash the app title for title-less Present steps; authoring keeps
+  // #pageTitle empty (v59.15) and Present writes each step title.
   try {
     var _h = document.getElementById("pageTitle");
     if (_h) MuLERMoCScenario.appTitle = _h.textContent;

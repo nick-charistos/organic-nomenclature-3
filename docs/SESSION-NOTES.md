@@ -1,7 +1,7 @@
 # Session notes — 2026-11-24 (resume point for next session, other machine)
 
 > **Resume pointer (cross-machine):** 2026-11-24 — **v59 is LIVE**
-> (`index.html` → `mulermoc-nom-59.html`, `?v=59.15`): 2D data upgrade.
+> (`index.html` → `mulermoc-nom-59.html`, `?v=59.16`): 2D data upgrade.
 > **147 molecules** (141 + 6 branched alkanes); every stored form uses one
 > frame (heavy 1.17, H 0.78). **Design rule: expanded = condensed + H** — the
 > expanded form is derived from the condensed molfile and keeps its heavy atom
@@ -80,13 +80,15 @@
 > `#view2DTools .mode2DOption`. Verified: `probe-final`, `probe-mode-quiz`,
 > `probe-quiz` + `probe-scenario-quiz` green; headless 1280/768/360 plus
 > host/menu geometry and hydrogens/atom/CHₙ toggle/focus/visibility checks.
-> v59.12 keeps the 3D sticks labels visible: the 40 % atom spheres stay
+> v59.12 keeps the 3D sticks labels visible: the atom spheres stay
 > translucent (labels sit on the sphere surface, not inside the wireframe
 > tube) and bonds stay opaque; the style is applied inside the load script
 > after `spt/init-3-59.spt`, and the veil is re-asserted after every atom/bond
 > color reset (clear highlights, pick paint/clear, branch/chain/FG/multi-bond/
 > single-bond highlights). Verified by `node --check` and an owner visual pass
 > in sticks mode (molecule switch, picking on/off, highlights); no probes run.
+> Post-v59.14 tweaks raise the sticks sphere surface to 70 %, the 3D label font
+> to 24, and give the open settings panel `z-index:120` (unversioned commits).
 > v59.13 makes the 2D/3D divider draggable: session-only ratio, 0.5 default,
 > ghost drag, keyboard reset/adjust, hidden in Present and for a lone viewer;
 > verified at 1280px.
@@ -98,6 +100,11 @@
 > so the MolWave header stays the only heading and `#pageTitle:empty` hides the
 > node again; Present step titles are unchanged. Verified headless
 > (empty → Present title → empty, no page errors).
+> v59.16 localizes the draggable divider's aria label (EN “Resize viewers”),
+> lowers the split grab lane below the 2D tools (`z-index:50`), and makes
+> draft 3D previews use the draft SDF's init fit instead of `selectedMol`'s
+> framing; stale title/boot comments corrected. Verified: `probe-final` and
+> `probe-scenario-quiz` green; EN/GR divider label and z-order checked.
 > **Icon/UI backlog:** stage 2 is mostly done — the 3D style + 2D
 > representation dropdowns and the hydrogens/atom/CHₙ toggles ship in v59.11.
 > Remaining: viewer tool-button icons (2D/3D visibility, rotate/zoom/save) and
@@ -113,7 +120,7 @@
 > No code change (v59.11 bumps the asset refs).
 > Docs: current index `docs/README.md`; historical material in `docs/archive/`
 > (pre-v54 notes split to `docs/archive/SESSION-NOTES-pre-v54.md`).
-> Committed: v59.01 (ff2058c) + v59.02 (7e18c65) + v59.03 + v59.04 + v59.05 + v59.06 + v59.07 + v59.08 + v59.09 + v59.10 + v59.11 + v59.12 + v59.13 + v59.14 + v59.15. v58.51 stays runnable and frozen.
+> Committed: v59.01 (ff2058c) + v59.02 (7e18c65) + v59.03 + v59.04 + v59.05 + v59.06 + v59.07 + v59.08 + v59.09 + v59.10 + v59.11 + v59.12 + v59.13 + v59.14 + v59.15 + v59.16. v58.51 stays runnable and frozen.
 >
 > **Previous pointer (v58.50):** 2026-11-21 — **v58 is LIVE**
 > (`index.html` → `mulermoc-nom-58.html`, `?v=58.50`, review follow-ups +

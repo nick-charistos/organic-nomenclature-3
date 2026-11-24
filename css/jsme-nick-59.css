@@ -851,7 +851,9 @@ footer span.molwaveLogoSub {
   height: 1px;
   flex: 0 0 1px;
   background: var(--veryLightBlue);
-  z-index: 70;
+  /* Below the overlay tool clusters (z-index 60): the 7px grab lane extends
+     into the bottom 2px of the 2D tools, which must keep receiving clicks. */
+  z-index: 50;
 }
 
 /* Larger invisible grab lane over the 1px line. */
