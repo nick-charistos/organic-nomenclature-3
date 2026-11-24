@@ -14,6 +14,9 @@ current guidance from historical records.
   contract and activity families.
 - [LAYERS-PLAN.md](LAYERS-PLAN.md) — LEARN → EXPLORE-lite → PRACTICE → PLAY
   contracts and research logging.
+- [MOLECULE-DATA-ROADMAP.md](MOLECULE-DATA-ROADMAP.md) — dual-mode molecule
+  data plan: per-file JSON in development, generated bundle + menu index for
+  the closed ~1000-molecule release.
 - [REVIEW-V58.md](REVIEW-V58.md), [REVIEW-SCENARIO-QUIZ-58.md](REVIEW-SCENARIO-QUIZ-58.md)
   — accepted quiz/scenario decisions.
 - [PROJECT-PLAN.md](PROJECT-PLAN.md) — product/research plan (English canonical).
