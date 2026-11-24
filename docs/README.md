@@ -17,6 +17,9 @@ current guidance from historical records.
 - [MOLECULE-DATA-ROADMAP.md](MOLECULE-DATA-ROADMAP.md) — dual-mode molecule
   data plan: per-file JSON in development, generated bundle + menu index for
   the closed ~1000-molecule release.
+- [TEAM-COLLABORATION-PLAN.md](TEAM-COLLABORATION-PLAN.md) — roadmap,
+  proposals, structured opinions, decision register and GitHub workflow for
+  the supervisor/student/colleague team.
 - [REVIEW-V58.md](REVIEW-V58.md), [REVIEW-SCENARIO-QUIZ-58.md](REVIEW-SCENARIO-QUIZ-58.md)
   — accepted quiz/scenario decisions.
 - [PROJECT-PLAN.md](PROJECT-PLAN.md) — product/research plan (English canonical).
