@@ -8,9 +8,9 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 Forked from v58.50, rebased on v58.51 (`mulermoc-nom-59.html` + `js/*-59.js` + `css/*-59.css` +
 `jsme-nick-nomeclature-moc2-data_59.js` + `spt/init-3-59.spt` +
-`zz-test-core59.html`, `?v=59.14`; `ui-icons.js`, `js/vendor/`, `jsme/` and
+`zz-test-core59.html`, `?v=59.15`; `ui-icons.js`, `js/vendor/`, `jsme/` and
 `mols/` stay shared). Chemistry/naming results are v58's and the scenario data
-shape is inherited from v58, but v59.02–v59.14 add UI and quiz-step-authoring
+shape is inherited from v58, but v59.02–v59.15 add UI and quiz-step-authoring
 changes (see below); the v59.00 work is data geometry and the MOL pipeline.
 
 - **147 molecules.** The six branched alkanes the sibling project ships as
@@ -231,6 +231,13 @@ changes (see below); the v59.00 work is data geometry and the MOL pipeline.
   the live zoom. `spt/init-3-59.spt` sets `fontscaling TRUE`. Verified live:
   ethane at 150 → butane opens at its init 50; atom labels off/on at 150 keeps
   150; no page errors.
+- **Empty authoring page title (v59.15).** Exiting Present clears `#pageTitle`
+  instead of restoring the stashed app title: the non-present branch of
+  `fScenarioFillStepPanel()` always writes an empty node, so every authoring
+  path (Exit, Go, step re-apply) leaves no page heading and the CSS
+  `#pageTitle:empty` rule hides the node again. Present still writes each
+  step's title. Verified headless: empty title on load, step title in Present,
+  empty after Exit; no page errors. No probes run for this UI-chrome fix.
 - **Docs resync (2026-11-23, docs-only).** Current-tree references were synced
   to v59.10 across `README`, `AGENTS`, `PROJECT-PLAN`/`PROJECT-PLAN-GR`,
   `LAYERS-PLAN`, `didactic-scenario-plan` and the harness README; the EN

@@ -5050,7 +5050,9 @@ function fScenarioFillStepPanel(step) {
     }
     fScenarioApplyStepFontSize(step);
   } else {
-    h1.textContent = appTitle;
+    // Authoring/main app has no page title: the MolWave header is the h1.
+    // #pageTitle exists only as the Present step-title target.
+    h1.textContent = "";
     p.textContent = "";
     try { p.classList.remove("note-html"); p.classList.remove("mu-note"); } catch (eCls) { /* no classList */ }
     fScenarioApplyStepFontSize(null);
