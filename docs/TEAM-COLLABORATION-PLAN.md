@@ -183,7 +183,7 @@ These came from the molecule-data planning discussion:
 7. **JSON export first:** replace the executable custom-molecule `.js` export
    with one JSON object; keep legacy export temporarily.
 8. **Sandbox import and validator:** dev-only JSON import plus shared schema
-   validation before migrating the 147 built-ins.
+   validation before migrating the 154 built-ins.
 9. **Migration order:** keep v59 bundled data live until the dev file loader
    matches it; migrate in batches.
 10. **Closed release scope:** no new-molecule/draft/import UI in the closed
