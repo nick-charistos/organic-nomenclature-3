@@ -8,16 +8,20 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 Forked from v58.50, rebased on v58.51 (`mulermoc-nom-59.html` + `js/*-59.js` + `css/*-59.css` +
 `jsme-nick-nomeclature-moc2-data_59.js` + `spt/init-3-59.spt` +
-`zz-test-core59.html`, `?v=59.16`; `ui-icons.js`, `js/vendor/`, `jsme/` and
+`zz-test-core59.html`, `?v=59.19`; `ui-icons.js`, `js/vendor/`, `jsme/` and
 `mols/` stay shared). Chemistry/naming results are v58's and the scenario data
-shape is inherited from v58, but v59.02–v59.16 add UI and quiz-step-authoring
+shape is inherited from v58, but v59.02–v59.19 add UI, data and quiz-step-authoring
 changes (see below); the v59.00 work is data geometry and the MOL pipeline.
 
-- **147 molecules.** The six branched alkanes the sibling project ships as
+- **154 molecules.** The six branched alkanes the sibling project ships as
   `nameExamplesCustom` are now native entries: `methyl_2_butane`,
   `methyl_3_pentane`, `ethyl_3_pentane`, `dimethyl_2_2_propane`,
   `dimethyl_2_2_butane`, `ethyl_3_methyl_2_pentane` (formula + main chains from
-  the generated pack, 3D SDFs copied to `mols/nomeclature-moc2/`).
+  the generated pack, 3D SDFs copied to `mols/nomeclature-moc2/`), plus the
+  seven Anastasia student molecules accepted in v59.17 below
+  (`methyl_3_hexane`, `ethyl_4_heptane`, `methyl_2_propane`,
+  `isopropyl_5_trimethyl_2_3_7_octane`, `ethyl_2_butene_1`,
+  `methyl_2_butene_1`, `propyl_3_hexen_1_yn_4`).
 - **One 2D frame.** Every stored form uses heavy bonds = **1.17** and H bonds =
   **0.78**; the old mix (0.825 / 1.17 / 1.40 / 1.87 medians, expanded C–H at
   0.825 / 0.619 / 0.78, up to 3.5× stretched bonds) is gone. The condensed form
@@ -251,17 +255,64 @@ changes (see below); the v59.00 work is data geometry and the MOL pipeline.
   comments around the v59.15 title and the boot title stash were corrected.
   Verified: `node --check`; `probe-final` and `probe-scenario-quiz` green; EN
   aria label, split lane z-order and draft restore checks; no page errors.
+- **7 Anastasia molecules (v59.17).** Student draft bundle
+(`mols/new-mols-molwave/MULERMOC_custom_20251125_7mols_data.js`, author Α.Θ.)
+converted to built-in shape: `methyl_3_hexane`, `ethyl_4_heptane`,
+`methyl_2_propane` (fills the C4 branched gap — isobutane), the advanced
+C14 `isopropyl_5_trimethyl_2_3_7_octane`, `ethyl_2_butene_1` (positional
+isomer of stored `methyl_3_butene_1`, not a duplicate), `methyl_2_butene_1`,
+and the school-rule enyne `propyl_3_hexen_1_yn_4` (hex-with-both-bonds
+parent; the OpenClatura hept-yne PIN reading stays an alias, never displayed
+truth — Greek has no PIN). Each record: school-rule main chains in numbering
+order, condensed linearized to the 1.17 frame, expanded derived (heavy
+order/coords preserved, H valence-complete at 0.78), skeletal from
+`fZigzagMol`, SDFs filed under `mols/nomeclature-moc2/`, 3D chains mapped by
+heavy-graph isomorphism. No formula/name dupes against the 147 by
+normalized-SMILES + CID check. Menu picks them up automatically
+(carbon-count order, last in band); flat-list positions 69/98/116/127/139/
+140/154. Verified: generation-time audit 7/7 clean (bonds ±3%, H counts,
+order identity, SDF match), `node --check`, VM load 154/154 registries with
+0 orphans; `?v=59.17`. Owner verifies live.
+- **Skeletal zigzag branches (v59.18).** `fZigzagMol` laid branch
+continuations straight, so multi-bond branches (ethyl/propyl/isopropyl legs)
+rendered as single lines in skeletal — with implicit carbons the intermediate
+vertices are invisible and uncountable. Branches now zigzag (±60° turns,
+120° bond angles, triple bonds kept collinear, occupancy-checked with
+mirror-side fallback); the first extra branch keeps its historical +90° so
+the isopropyl fork opens to ~150°. Regenerated the 6 affected skeletals only
+(4 new + 2 pack ethyls); the 7 methyl-only skeletals regenerate
+byte-identical, confirming the change is limited to multi-bond branches.
+Condensed/expanded/chains/formulas/3D untouched; `mainChain_Skeletal` order
+preserved. Also fixes all future student-draft skeletals (the draft ladder
+calls the same function live). Verified: `node --check`, regenerated-audit
+clean (bonds ±3%, closest non-bonded approach 0.86 Å), `?v=59.18`. Owner
+eyeballs #139/#140/#154.
+- **Sticky 3D highlight freshness (v59.19).** With a selected component,
+switching molecules painted the *previous* molecule's atom indices onto the
+new 3D model: the sticky repaint runs synchronously while the 3D analysis
+refreshes async (fetch → parse → calc), and nothing repainted once fresh
+(the 2D path was immune — synchronous analysis — and had already gotten the
+analogous ghost-preselected fix). New `__muler3DAnalysisMol` key (reset in
+`fInitProps`, set after every successful parse): the seven classic 3D
+painters bail while stale, and a fetch-completion flush
+(`fMulerSticky3DFlush`) repaints from fresh globals — skipped in Present
+(the scenario layer owns the paint via `fScenarioOn3DParsed`) and when
+nothing is selected. Verified: `node --check`, `git diff --check`;
+`?v=59.19`. Owner verifies live (sticky chain A→B, rapid A→B→A).
 - **Docs resync (2026-11-23, docs-only).** Current-tree references were synced
   to v59.10 across `README`, `AGENTS`, `PROJECT-PLAN`/`PROJECT-PLAN-GR`,
   `LAYERS-PLAN`, `didactic-scenario-plan` and the harness README; the EN
   teacher-guide encoding is repaired; the harness README records the v59.04
   settings-only quiz contract. No code change.
-- **Verification:** `node --check` clean; 422/422 byte-identical round-trip;
-  audit 147 molecules / 0 issues (heavy 1.17 ± 3%, H 0.78 ± 3%, expanded =
+- **Verification:** `node --check` clean; 422/422 byte-identical round-trip
+  (v59.00 corpus); audit 147 molecules / 0 issues (heavy 1.17 ± 3%, H 0.78 ±
+  3%, expanded =
   condensed atom/coordinate/bond-table prefix, chain arrays, charges,
   S-groups, no overlaps, expanded valence-complete);
   `probe-final`, `probe-coverage56`, `probe-fg-quiz`, `probe-compact-main`,
-  `probe-explain-all`, `probe-scenario-quiz` green on v59; visual pass on the
+  `probe-explain-all`, `probe-scenario-quiz` green on v59 (run at v59.16);
+  the 7 v59.17 molecules passed the same generation-time audit (bonds ±3%,
+  H counts, order identity, SDF graph match); visual pass on the
   two owner-reported flipped molecules, the 5 relayouts, the 22 +H molecules
   and the 6 new alkanes.
 

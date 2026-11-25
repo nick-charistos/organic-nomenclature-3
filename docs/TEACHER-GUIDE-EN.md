@@ -1,7 +1,7 @@
 # Teacher guide — English version (v59)
 
 Preview: `mulermoc-nom-59.html?lang=en`. Greek is the default; English is a
-display layer over the same app and the same 147 molecules. Nothing is forked:
+display layer over the same app and the same 154 molecules. Nothing is forked:
 one codebase, `?lang=` switch.
 
 ## Switching language
@@ -61,6 +61,6 @@ record). Do not "correct" engine names inside notes — flag them instead.
 
 Historical v53 validation: 119/141 in-browser against the PubChem/CIR oracle
 (103 systematic + 14 retained-name + 2 PubChem-Title); the human queue is in
-`docs/archive/reviews/REVIEW-EN-53.md`. The current tree has 147 molecules; the
+`docs/archive/reviews/REVIEW-EN-53.md`. The current tree has 154 molecules; the
 v53 harness pages (`zz-harness-53.html`, `zz-test-en53.html`) remain at the
 root but have not been re-run against v59.

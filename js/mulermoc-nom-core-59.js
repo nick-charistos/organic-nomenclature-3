@@ -3534,8 +3534,10 @@ function fLinearizeMol(text, chain) {
 
 // Scientific zigzag layout (university skeletal form): chain walk with
 // alternating ±30° segments at uniform bond lengths, triple bonds kept
-// collinear like the stored files, branches bisecting the external angle.
-// Heavy atoms only; chain entries are 1-based numbers into the source MOL.
+// collinear like the stored files, branches bisecting the external angle at
+// the root and zigzagging (±60° turns, v59.18) below it so every branch
+// carbon stays a visible kink. Heavy atoms only; chain entries are 1-based
+// numbers into the source MOL.
 // Deterministic fallback when JSME cannot lay out SMILES in this build.
 function fZigzagMol(text, chain) {
   try {
@@ -3590,6 +3592,27 @@ function fZigzagMol(text, chain) {
       segDir[k] = { x: pdx, y: pdy };
     }
     // Branch directions from chain atoms (external-angle bisector).
+    // Zigzag helpers (v59.18): branch bonds meet at 120° like the main-chain
+    // walk, so every branch carbon stays a visible kink in skeletal (implicit
+    // carbons are unreadable on straight multi-bond runs).
+    var _zigTurn = function (dx, dy, s) {
+      var c = 0.5, v = (s < 0 ? -0.8660254 : 0.8660254);
+      return { x: dx * c - dy * v, y: dx * v + dy * c };
+    };
+    var _zigBlocked = function (placed, selfNode, fromPt, nd) {
+      try {
+        var ex = fromPt.x + nd.x * L, ey = fromPt.y + nd.y * L;
+        for (var _k in placed) {
+          if (!Object.prototype.hasOwnProperty.call(placed, _k)) continue;
+          var _ni = parseInt(_k, 10);
+          if (_ni === selfNode) continue;
+          var _p = placed[_k];
+          var _ddx = _p.x - ex, _ddy = _p.y - ey;
+          if ((_ddx * _ddx + _ddy * _ddy) < 0.585 * 0.585) return true;
+        }
+      } catch (eH) {}
+      return false;
+    };
     var queue = [];
     for (var ci = 0; ci < ch.length; ci++) {
       var c0 = ch[ci], usedC = 0;
@@ -3612,7 +3635,7 @@ function fZigzagMol(text, chain) {
           bd = norm2(-bd.y * r2, bd.x * r2) || bd;
         }
         usedC++;
-        queue.push({ node: br, fx: c0, dx: bd.x, dy: bd.y, rot: 0 });
+        queue.push({ node: br, fx: c0, dx: bd.x, dy: bd.y, rot: 0, tz: 1 });
       }
     }
     while (queue.length) {
@@ -3625,14 +3648,31 @@ function fZigzagMol(text, chain) {
       for (var w = 0; w < adj[it.node].length; w++) {
         var cand = adj[it.node][w];
         if (visited[cand]) continue;
-        var nd;
-        if (kids === 0) { nd = { x: it.dx, y: it.dy }; }
+        var nd, ntz = it.tz;
+        if (kids === 0 && bo(it.node, cand) === 3) { nd = { x: it.dx, y: it.dy }; }
+        else if (kids === 0) {
+          // Zigzag continuation (v59.18): turn ±60° off the incoming direction
+          // instead of going straight. The first extra branch historically
+          // takes +90°, so the zigzag starts right (-60°) to open the fork
+          // wide. Side flipped once on collision; overlap beats dropping.
+          var _hasExtra = false;
+          try {
+            for (var _ew = 0; _ew < adj[it.node].length; _ew++) {
+              var _ec = adj[it.node][_ew];
+              if (_ec !== cand && !visited[_ec]) { _hasExtra = true; break; }
+            }
+          } catch (eX) { _hasExtra = false; }
+          var _s0 = _hasExtra ? -1 : ((typeof it.tz === "number" && it.tz < 0) ? -1 : 1);
+          nd = _zigTurn(it.dx, it.dy, _s0);
+          if (_zigBlocked(pos, it.node, Pp, nd)) { _s0 = -_s0; nd = _zigTurn(it.dx, it.dy, _s0); }
+          ntz = -_s0;
+        }
         else {
           var rr = (kids % 2 === 1) ? 1 : -1;
           nd = norm2(-it.dy * rr, it.dx * rr) || { x: -it.dx, y: -it.dy };
         }
         kids++;
-        queue.push({ node: cand, fx: it.node, dx: nd.x, dy: nd.y });
+        queue.push({ node: cand, fx: it.node, dx: nd.x, dy: nd.y, tz: ntz });
       }
     }
     var atoms = [], newIdx = {}, bondMap = {};

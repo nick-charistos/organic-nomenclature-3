@@ -8,7 +8,7 @@ changelog.
 
 Greek-first static web app for teaching organic nomenclature (JSME + JSmol +
 vanilla JavaScript; no build step). The live entry point is `index.html` →
-`mulermoc-nom-59.html`. Current live version: **v59.16** (2026-11-24).
+`mulermoc-nom-59.html`. Current live version: **v59.19** (2026-11-25).
 Older versions v42–v58 remain runnable at the repo root but are **frozen**.
 
 ## Working mode (owner preference, 2026-11-22)
@@ -43,7 +43,7 @@ reports.
 - Page: `mulermoc-nom-59.html`
 - Scripts: `js/mulermoc-nom-{tooltip,core,molview,teaching,note,scenario,iupac,lang,name-en}-59.js`
 - Styles: `css/jsme-nick-59.css` (app/naming), `css/mulermoc-nom-scenario-59.css` (scenario UI)
-- Data: `js/jsme-nick-nomeclature-moc2-data_59.js` (147 molecules)
+- Data: `js/jsme-nick-nomeclature-moc2-data_59.js` (154 molecules)
 - Init: `spt/init-3-59.spt`; harness page: `zz-test-core59.html`
 - Shared (not forked): `js/ui-icons.js`, `js/vendor/`, `jsme/`; JSmol is CDN-loaded
 - Verification: `tools/muler-harness/`
@@ -234,7 +234,11 @@ Update docs in the same commit as the change:
   (branch root directly above/below its chain atom; the branch's deepest path
   continues straight; side children horizontal). Expanded C–H and O–H bonds are
   orthogonal (0/90/180/270); terminal sp groups (C≡N, terminal C≡C) continue
-  the chain linearly; formate H–C=O is linear (H opposite the C=O). Regenerate
+  the chain linearly; formate H–C=O is linear (H opposite the C=O). Skeletal
+  branches zigzag (v59.18, `fZigzagMol` ±60° continuation): every branch
+  carbon is a visible kink — straight multi-bond runs are unreadable with
+  implicit carbons. Atom order is preserved, so `mainChain_Skeletal` stays
+  valid. Regenerate
   with `tools/muler-harness/normalize-2d.js` and re-run its audit.
 - Quiz progress is step-scoped (v58.39): `scenario:<id>#<step>|molecule`.
   A comp solved/freed in one step must never satisfy another step; revisiting

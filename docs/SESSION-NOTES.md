@@ -1,8 +1,8 @@
-# Session notes — 2026-11-24 (resume point for next session, other machine)
+# Session notes — 2026-11-25 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** 2026-11-24 — **v59 is LIVE**
-> (`index.html` → `mulermoc-nom-59.html`, `?v=59.16`): 2D data upgrade.
-> **147 molecules** (141 + 6 branched alkanes); every stored form uses one
+> **Resume pointer (cross-machine):** 2026-11-25 — **v59 is LIVE**
+> (`index.html` → `mulermoc-nom-59.html`, `?v=59.19`): 2D data upgrade.
+> **154 molecules** (141 + 6 branched alkanes + 7 Anastasia student molecules, v59.17); every stored form uses one
 > frame (heavy 1.17, H 0.78). **Design rule: expanded = condensed + H** — the
 > expanded form is derived from the condensed molfile and keeps its heavy atom
 > order, coordinates and orientation; it only adds explicit H (O–H/N–H, NH₂
@@ -129,7 +129,7 @@
 > No code change (v59.11 bumps the asset refs).
 > Docs: current index `docs/README.md`; historical material in `docs/archive/`
 > (pre-v54 notes split to `docs/archive/SESSION-NOTES-pre-v54.md`).
-> Committed: v59.01 (ff2058c) + v59.02 (7e18c65) + v59.03 + v59.04 + v59.05 + v59.06 + v59.07 + v59.08 + v59.09 + v59.10 + v59.11 + v59.12 + v59.13 + v59.14 + v59.15 + v59.16. v58.51 stays runnable and frozen.
+> Committed: v59.01 (ff2058c) + v59.02 (7e18c65) + v59.03 + v59.04 + v59.05 + v59.06 + v59.07 + v59.08 + v59.09 + v59.10 + v59.11 + v59.12 + v59.13 + v59.14 + v59.15 + v59.16 + v59.17 + v59.18 + v59.19. v58.51 stays runnable and frozen.
 >
 > **Previous pointer (v58.50):** 2026-11-21 — **v58 is LIVE**
 > (`index.html` → `mulermoc-nom-58.html`, `?v=58.50`, review follow-ups +
@@ -982,3 +982,16 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * Drupal embedding restated as a hard constraint on the closed tree: plain static files, synchronous `<script>` tags, no `fetch()`/directory scan/dev endpoint, no build step on the Drupal side, `?libs=local` CSP fallback, no global CSS leakage, frozen URL contract (`?scenario=`, `?lang=`, `?mol=`, `#step=N`), no PII (Drupal owns auth/session/logging/CSV; app only queues `researchMode` events).
 * Docs updated: `MOLECULE-DATA-ROADMAP.md` (Drupal embedding contract, closed-mode precompute wording, "Decided (2026-11-24)" block, menu requirements incl. search normalization and thumbnail fallback, M7 generator scope + size/cold-load acceptance), `TEAM-COLLABORATION-PLAN.md` §6 item 5, `LAYERS-PLAN.md` LEARN/EXPLORE entry URLs (v55 → v59), `PROJECT-PLAN.md` module header (v55 → v59.16), this entry + resume pointer line.
 * No code change; no `?v=` bump. Verification: `git diff --check` only.
+
+## 2026-11-25 - 7 Anastasia molecules live as built-ins (?v=59.17)
+* Converted the student draft bundle (`mols/new-mols-molwave/MULERMOC_custom_20251125_7mols_data.js`, author A.TH.) to `data_59.js` shape with a throwaway Node batch reusing the sanctioned pipeline (`fLinearizeMol` / `fGenExpandedMol` / `fZigzagMol` in a VM, same as `normalize-2d.js`): `methyl_3_hexane`, `ethyl_4_heptane`, `methyl_2_propane` (isobutane, fills the C4 branched gap), `isopropyl_5_trimethyl_2_3_7_octane` (C14 stress case), `ethyl_2_butene_1` (positional isomer of stored `methyl_3_butene_1`, verified distinct), `methyl_2_butene_1`, `propyl_3_hexen_1_yn_4` (school-rule hex-en-yne parent; the OpenClatura hept-yne PIN reading stays an alias per the no-Greek-PIN policy).
+* Per record: school-rule main chains in numbering order (hand-verified, incl. the C14 tie case), condensed linearized to 1.17, expanded derived (heavy order/coords preserved, H valence-complete at 0.78), skeletal from `fZigzagMol`, SDFs filed under `mols/nomeclature-moc2/`, mainChain3D mapped by heavy-graph isomorphism. No dupes by normalized-SMILES + CID. Menu positions (flat `Ola ta moria` list): 69/98/116/127/139/140/154.
+* Verified: generation-time audit 7/7 clean, `node --check`, VM load 154/154 with 0 orphans. No probes per working mode; owner verifies live. Draft file stays quarantined (unregistered).
+
+## 2026-11-25 - skeletal zigzag branches (?v=59.18, owner report)
+* Owner: straight multi-bond branches in skeletal are unreadable (implicit carbons need a kink at every atom). Fixed `fZigzagMol` branch continuation: first child turns +-60 degrees off the incoming direction (120-degree bond angles), deeper children alternate, triple bonds stay collinear, occupancy-checked with mirror-side fallback; first extra branch keeps historical +90 so the isopropyl fork opens to ~150 degrees.
+* Regenerated 6 affected skeletals only (4 new multi-branch + 2 pack ethyls); 7 methyl-only skeletals regenerate byte-identical. Condensed/expanded/chains/formulas/3D untouched. Also fixes future draft skeletals (same live function). Verified: `node --check`, audit clean (closest non-bonded approach 0.86 A). Owner eyeballs #139/#140/#154.
+
+## 2026-11-25 - sticky 3D highlight freshness guard (?v=59.19, owner report)
+* With a selected component, switching molecules painted the previous molecule's atom indices onto the new 3D model: the sticky repaint runs synchronously while 3D analysis refreshes async (fetch, parse, calc), and nothing repainted once fresh. New `__muler3DAnalysisMol` key (reset in `fInitProps`, set after every successful parse): the seven classic 3D painters bail while stale, and a fetch-completion flush (`fMulerSticky3DFlush`) repaints from fresh globals - skipped in Present (scenario owns the paint via `fScenarioOn3DParsed`) and when nothing is selected. 2D path untouched (synchronous, already correct).
+* Verified: `node --check`, `git diff --check`. No probes per working mode. Owner verifies live (sticky chain A-B, rapid A-B-A). AGENTS records the skeletal-branch rule as a data invariant.

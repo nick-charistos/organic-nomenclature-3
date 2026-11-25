@@ -3671,6 +3671,37 @@ function fMulerRestoreClassic3D() {
   } catch (e) {}
 }
 
+// ── Stale-3D guard (v59.19) ───────────────────────────────────────────────
+// The 3D analysis globals (functionalGroupObj3D, mainChainAtoms3D, …) refresh
+// asynchronously (fetch → parse → calc) while the sticky select repaints
+// synchronously — without a guard the previous molecule's indices get
+// painted onto the new model on every switch with a selected component.
+// (2D is immune: its analysis refreshes synchronously from the inline MOL.)
+function fMuler3DAnalysisFresh() {
+  try {
+    if (typeof window === "undefined") return false;
+    if (typeof selectedMol === "undefined" || !selectedMol) return false;
+    return window.__muler3DAnalysisMol === selectedMol;
+  } catch (e) { return false; }
+}
+
+// Fetch-completion flush for the sticky select: repaint the selected
+// component from fresh globals. Skipped in Present (the scenario layer owns
+// the paint there via fScenarioOn3DParsed) and whenever nothing is selected.
+function fMulerSticky3DFlush() {
+  try {
+    if (typeof window === "undefined") return;
+    if (window.MulerQuizTarget) return;
+    if (typeof fMulerSelectPresentBlocked === "function" && fMulerSelectPresentBlocked()) return;
+    var _m = "none", _hasBox = false;
+    try { _m = (typeof nameAnalysisMode !== "undefined") ? String(nameAnalysisMode || "none") : "none"; } catch (eM) {}
+    try { _hasBox = !!document.querySelector("#nameAnalysis .nameCompBox.selected"); } catch (eB) {}
+    if ((!_m || _m === "none") && !_hasBox) return;
+    if (!fMuler3DAnalysisFresh()) return;
+    if (typeof fExplainNameComp === "function") fExplainNameComp();
+  } catch (e) {}
+}
+
 // Toggle-to-empty 3D erase. Push3D no-ops on empty state (reward-green
 // protection), so a toggle that empties the pick must erase explicitly.
 // Called before quiz refresh (the green is painted after, so always safe).
@@ -10208,6 +10239,10 @@ function fInitProps() {
     if (typeof mainChainPool3D !== "undefined") { mainChainPool3D = []; mainChainPool3DKey = null; }
     if (typeof molAtomMap2D3D !== "undefined") { molAtomMap2D3D = null; molAtomMapKey = null; }
   } catch (ePool) { /* core unavailable */ }
+  // Stale-3D guard (v59.19): the new molecule's analysis arrives async —
+  // painters bail until __muler3DAnalysisMol matches again (set at the end
+  // of fFetchAndParse3D, both branches).
+  try { if (typeof window !== "undefined") window.__muler3DAnalysisMol = null; } catch (eA3) { /* best-effort */ }
 }
 
 // ── fShowMolName ──────────────────────────────────────────────────────────
@@ -12835,6 +12870,9 @@ function fFetchAndParse3D() {
       fParseSDF3D(nameExamples[selectedMol].sdf3D);
       fDetectMolType3D();
       fCalcMainChain3D();
+      // Inline path parses synchronously, so the analysis below is already
+      // fresh when fShowNameAnalysis repaints later in this select.
+      try { window.__muler3DAnalysisMol = mol; } catch (eK) {}
     } catch (eInline) { /* 3D parse best-effort */ }
     try {
       if (typeof window.fScenarioOn3DParsed === "function") window.fScenarioOn3DParsed(mol);
@@ -12854,6 +12892,11 @@ function fFetchAndParse3D() {
       fParseSDF3D(text);
       fDetectMolType3D();
       fCalcMainChain3D();
+      // Fresh now: mark the analysis before repainting. The sticky-select
+      // flush below paints from these globals; the scenario hook after it
+      // owns Present steps (the flush skips Present itself).
+      try { window.__muler3DAnalysisMol = mol; } catch (eK) {}
+      try { if (typeof fMulerSticky3DFlush === "function") fMulerSticky3DFlush(); } catch (eF) { /* best-effort */ }
       // S2 scenario gate (additive, guarded): notify the scenario layer so a
       // per-step name highlight applies after 3D analysis exists. No-op when
       // the scenario module is absent or no step is pending.
@@ -16874,7 +16917,7 @@ function fPaintBranchHighlightAtoms(slot, mode) {
     try {
       var g3 = (typeof fGetHydrocarbonBranchHighlight3D === "function") ? fGetHydrocarbonBranchHighlight3D(slot) : null;
       var a3 = (g3 && g3.atoms) || [];
-      if (a3.length && typeof fJSmolScript === "function") {
+      if (a3.length && fMuler3DAnalysisFresh() && typeof fJSmolScript === "function") {
         var arg3d = "select";
         for (var i = 0; i < a3.length; i++) arg3d += (i ? "," : "") + " atomno=" + a3[i];
         arg3d += "; select connected(selected) and _H or selected;";
@@ -17558,6 +17601,9 @@ function fHighlightAtomChain(chainAtoms, includeH, skipBonds, skipAtoms) {
 function fHighlightAtomChain3D(chainAtoms3D, skipH, skipBonds, skipAtoms) {
   // Overview-table builds (v55.x) scrape explanations with paints off.
   if (typeof window !== "undefined" && window.__mulerExplainQuiet) return;
+  // Stale-3D guard (v59.19): never paint previous-molecule indices — the
+  // fetch-completion flush repaints once the analysis is fresh.
+  if (!fMuler3DAnalysisFresh()) return;
   if (!Array.isArray(chainAtoms3D) || chainAtoms3D.length === 0) return;
   let arg = "select";
   for (let i = 0; i < chainAtoms3D.length; i++) {
@@ -17597,6 +17643,9 @@ function fHighlightAtomChain3D(chainAtoms3D, skipH, skipBonds, skipAtoms) {
 function fColorFragmentBonds3D(fragAtoms, includeH) {
   // Overview-table builds (v55.x) scrape explanations with paints off.
   if (typeof window !== "undefined" && window.__mulerExplainQuiet) return;
+  // Stale-3D guard (v59.19): never paint previous-molecule indices — the
+  // fetch-completion flush repaints once the analysis is fresh.
+  if (!fMuler3DAnalysisFresh()) return;
   if (!Array.isArray(fragAtoms) || fragAtoms.length === 0) return;
   if (typeof bondList3D === "undefined" || typeof Jmol === "undefined") return;
   const wantH = !!includeH && typeof allAtomsTypeList3D !== "undefined";
@@ -18055,6 +18104,9 @@ function fHighlightFG(FGno) {
 function fHighlightFG3D(FGno) {
   // Overview-table builds (v55.x) scrape explanations with paints off.
   if (typeof window !== "undefined" && window.__mulerExplainQuiet) return;
+  // Stale-3D guard (v59.19): never paint previous-molecule indices — the
+  // fetch-completion flush repaints once the analysis is fresh.
+  if (!fMuler3DAnalysisFresh()) return;
   // Build atom list from computed functionalGroupObj3D (SDF 1-based indices).
   // FGno undefined  → all FG atoms (for suffix / single-FG display)
   // FGno 1 or 2     → atoms for the Nth functional group (for prefix position display)
@@ -18689,6 +18741,9 @@ function removeEcho3D() {
 // ── fShowNumber3D ─────────────────────────────────────────────────────────
 
 function fShowNumber3D(n, chain) {
+  // Stale-3D guard (v59.19): never attach numbers to previous-molecule
+  // indices — the fetch-completion flush repaints once the analysis is fresh.
+  if (!fMuler3DAnalysisFresh()) return;
   const _chain = Array.isArray(chain) ? chain : mainChainAtoms3D;
   let myAtom =
     Array.isArray(numberingAtomOverride3D)
@@ -18837,6 +18892,9 @@ function fHighlightMultiBonds(bondCompPos) {
 function fHighlightMultiBonds3D(bondCompPos) {
   // Overview-table builds (v55.x) scrape explanations with paints off.
   if (typeof window !== "undefined" && window.__mulerExplainQuiet) return;
+  // Stale-3D guard (v59.19): never paint previous-molecule indices — the
+  // fetch-completion flush repaints once the analysis is fresh.
+  if (!fMuler3DAnalysisFresh()) return;
   // Uses SDF-derived *3D globals directly — no 2D-position-3D mapping needed.
 
   if (multiBondListCC3D.length === 0) {
@@ -18972,6 +19030,9 @@ function fHighlightSingleBondsCC(atomSetOrNull) {
 function fHighlightSingleBondsCC3D(atomSetOrNull) {
   // Overview-table builds (v55.x) scrape explanations with paints off.
   if (typeof window !== "undefined" && window.__mulerExplainQuiet) return;
+  // Stale-3D guard (v59.19): never paint previous-molecule indices — the
+  // fetch-completion flush repaints once the analysis is fresh.
+  if (!fMuler3DAnalysisFresh()) return;
   if (!bondList3D || bondList3D.length === 0) {
     return;
   }

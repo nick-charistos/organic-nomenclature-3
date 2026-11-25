@@ -1,6 +1,6 @@
 # MolWave molecule-data roadmap
 
-Status: planning — development mode is v59.16  
+Status: planning — development mode is v59.19
 Target: closed, stable corpus release (~1000 molecules, v60)  
 Scope: stored molecules + menu/index pipeline. No new-molecule UI in the closed release.
 
@@ -226,7 +226,7 @@ Acceptance: one command validates a folder and produces a clear pass/fail report
 Acceptance: the dev app runs from the per-file corpus with the same behaviour as
 the bundled data.
 
-### M6 — Migrate the 147 built-ins
+### M6 — Migrate the 154 built-ins
 
 - [ ] Convert current `nameExamples` entries to `molecules/builtin/*.json`
       in family batches.
@@ -234,7 +234,7 @@ the bundled data.
       against v59.
 - [ ] Keep v59 live until v60 parity is proven.
 
-Acceptance: 147/147 keys match; menu and probes unchanged.
+Acceptance: 154/154 keys match; menu and probes unchanged.
 
 ### M7 — Release generator
 
@@ -312,4 +312,4 @@ Drupal build; no runtime corpus network dependency.
 2. Add JSON export to the dev draft flow.
 3. Add sandbox import + display of derived/oracle names.
 4. Build the shared validator.
-5. Only then start the dev per-file loader and the 147-molecule migration.
+5. Only then start the dev per-file loader and the 154-molecule migration.
