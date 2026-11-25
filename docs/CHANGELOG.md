@@ -299,6 +299,15 @@ painters bail while stale, and a fetch-completion flush
 (the scenario layer owns the paint via `fScenarioOn3DParsed`) and when
 nothing is selected. Verified: `node --check`, `git diff --check`;
 `?v=59.19`. Owner verifies live (sticky chain A→B, rapid A→B→A).
+- **Echo fontscaling dance (v59.20).** 3D numbering echoes (and pick-sequence
+echoes) baked the live zoom into their base size — tiny numbers after a
+large-zoom definition — while atom labels were fixed in v59.14 by building
+them at zoom 100. Per the JSmol doc, echo scripts now wrap the definition:
+`set fontscaling OFF` first (absolute size), `ON` after (scale from that
+base), so numbers track zoom like the labels. Labels keep their zoom-100
+patch (OFF/ON moves nothing on that path: labels set no size on toggle).
+Verified: `node --check`, `git diff --check`; `?v=59.20`. Owner verifies
+live (numbering size across zooms, moveto steps, PNG caption unchanged).
 - **Docs resync (2026-11-23, docs-only).** Current-tree references were synced
   to v59.10 across `README`, `AGENTS`, `PROJECT-PLAN`/`PROJECT-PLAN-GR`,
   `LAYERS-PLAN`, `didactic-scenario-plan` and the harness README; the EN

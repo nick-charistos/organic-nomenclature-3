@@ -1,7 +1,7 @@
 # Session notes — 2026-11-25 (resume point for next session, other machine)
 
 > **Resume pointer (cross-machine):** 2026-11-25 — **v59 is LIVE**
-> (`index.html` → `mulermoc-nom-59.html`, `?v=59.19`): 2D data upgrade.
+> (`index.html` → `mulermoc-nom-59.html`, `?v=59.20`): 2D data upgrade.
 > **154 molecules** (141 + 6 branched alkanes + 7 Anastasia student molecules, v59.17); every stored form uses one
 > frame (heavy 1.17, H 0.78). **Design rule: expanded = condensed + H** — the
 > expanded form is derived from the condensed molfile and keeps its heavy atom
@@ -129,7 +129,7 @@
 > No code change (v59.11 bumps the asset refs).
 > Docs: current index `docs/README.md`; historical material in `docs/archive/`
 > (pre-v54 notes split to `docs/archive/SESSION-NOTES-pre-v54.md`).
-> Committed: v59.01 (ff2058c) + v59.02 (7e18c65) + v59.03 + v59.04 + v59.05 + v59.06 + v59.07 + v59.08 + v59.09 + v59.10 + v59.11 + v59.12 + v59.13 + v59.14 + v59.15 + v59.16 + v59.17 + v59.18 + v59.19. v58.51 stays runnable and frozen.
+> Committed: v59.01 (ff2058c) + v59.02 (7e18c65) + v59.03 + v59.04 + v59.05 + v59.06 + v59.07 + v59.08 + v59.09 + v59.10 + v59.11 + v59.12 + v59.13 + v59.14 + v59.15 + v59.16 + v59.17 + v59.18 + v59.19 + v59.20. v58.51 stays runnable and frozen.
 >
 > **Previous pointer (v58.50):** 2026-11-21 — **v58 is LIVE**
 > (`index.html` → `mulermoc-nom-58.html`, `?v=58.50`, review follow-ups +
@@ -995,3 +995,7 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 ## 2026-11-25 - sticky 3D highlight freshness guard (?v=59.19, owner report)
 * With a selected component, switching molecules painted the previous molecule's atom indices onto the new 3D model: the sticky repaint runs synchronously while 3D analysis refreshes async (fetch, parse, calc), and nothing repainted once fresh. New `__muler3DAnalysisMol` key (reset in `fInitProps`, set after every successful parse): the seven classic 3D painters bail while stale, and a fetch-completion flush (`fMulerSticky3DFlush`) repaints from fresh globals - skipped in Present (scenario owns the paint via `fScenarioOn3DParsed`) and when nothing is selected. 2D path untouched (synchronous, already correct).
 * Verified: `node --check`, `git diff --check`. No probes per working mode. Owner verifies live (sticky chain A-B, rapid A-B-A). AGENTS records the skeletal-branch rule as a data invariant.
+
+## 2026-11-25 - echo fontscaling dance (?v=59.20, owner report)
+* 3D numbering echoes (and pick-sequence echoes) baked the live zoom into their base size - tiny numbers after a large-zoom definition - while atom labels were fixed in v59.14 by building at zoom 100. Per the JSmol doc, echo scripts now wrap the definition (`set fontscaling OFF` first for an absolute size, `ON` after so it tracks zoom): `fShowNumber3D` (numbering, animated + sync paths) and the pick-sequence echo builder. Labels keep their zoom-100 patch (owner-tested: OFF/ON moves nothing there since labels set no size on toggle); PNG-export caption untouched (separate export-sizing decision).
+* Verified: `node --check`, `git diff --check`. No probes per working mode. Owner verifies live (numbering size across zooms, pick echoes, moveto steps, PNG caption).

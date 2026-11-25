@@ -1,6 +1,6 @@
 # MolWave molecule-data roadmap
 
-Status: planning — development mode is v59.19
+Status: planning — development mode is v59.20
 Target: closed, stable corpus release (~1000 molecules, v60)  
 Scope: stored molecules + menu/index pipeline. No new-molecule UI in the closed release.
 

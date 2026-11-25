@@ -6091,13 +6091,16 @@ function fMulerSelectSeq3D() {
     try {
       if (typeof MULER_SELECT_HOVER === "string" && /^#[0-9a-fA-F]{6}$/.test(MULER_SELECT_HOVER)) selTone = "X" + MULER_SELECT_HOVER.slice(1).toUpperCase();
     } catch (eC) {}
-    var d = 0.01, script = "set echo off;";
+    var d = 0.01, script = "set fontscaling OFF; set echo off;";
     for (var i = 0; i < atoms.length; i++) {
       var a = atoms[i], n = i + 1, id = "mulerSelSeq3D" + n;
       if (!(a > 0)) continue;
       script += " set echo " + id + " {atomno = " + a + "}; set echo offset {-1.1 1.1 3}; font echo 42 sansSerif bold; color echo [" + selTone + "]; echo " + n + ";";
       script += " set echo " + id + "s1 {atomno = " + a + "}; set echo offset {" + (-1.1 + d) + " " + (1.1 - d) + " 3}; font echo 42 sansSerif bold; color echo black; echo " + n + ";";
     }
+    // Fontscaling dance (v59.20): echo fonts bake the live zoom — define
+    // absolute, then re-enable scaling so pick numbers track zoom like labels.
+    script += " set fontscaling TRUE;";
     if (typeof fJSmolScript === "function") fJSmolScript(jmolAppletNomeclature, script);
   } catch (e) {}
 }
@@ -12951,7 +12954,7 @@ function showAtomSymbols3D(restoreNumbering, restoreCmd) {
       } catch (eZ) { _zoom = null; }
       if (_zoom !== null && isFinite(_zoom) && _zoom > 0) _restore = "zoom " + _zoom + ";";
     }
-    var _labelsCmd = "select all; labels %e;" + JmolSelection + "; set fontscaling TRUE;";
+    var _labelsCmd = "select all;  labels %e;" + JmolSelection + "; set fontscaling TRUE;";
     var _cmd = _restore
       ? "zoom 100; " + _labelsCmd + " " + _restore
       : _labelsCmd;
@@ -18768,8 +18771,13 @@ function fShowNumber3D(n, chain) {
   try { _dim = Array.isArray(numberingEmphasis) && numberingEmphasis.indexOf(n) < 0; } catch (eD) { _dim = false; }
   let _echoCol = _dim ? "x9ac1ed" : "x193f8f";
 
-  // Shadow echoes in 4 directions (black stroke)
-  let s = "";
+  // Shadow echoes in 4 directions (black stroke). Fontscaling dance
+  // (v59.20): echo fonts bake the live zoom into their base size, so define
+  // them with scaling OFF (absolute size) and re-enable after — the numbers
+  // then track zoom like the atom labels instead of staying tiny after a
+  // large-zoom definition. Labels keep their zoom-100 patch (OFF/ON does not
+  // move them: they set no size on toggle).
+  let s = "set fontscaling OFF;";
   s +=
     " set echo " +
     id +
@@ -18790,7 +18798,7 @@ function fShowNumber3D(n, chain) {
     (1.1 - d) +
     " 3}; font echo 42 sansSerif bold; color echo black; echo " +
     num +
-    ";";
+    "; set fontscaling TRUE;";
 
   fJSmolScript(jmolAppletNomeclature, s);
 }
