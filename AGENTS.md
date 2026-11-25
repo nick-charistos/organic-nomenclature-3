@@ -8,7 +8,7 @@ changelog.
 
 Greek-first static web app for teaching organic nomenclature (JSME + JSmol +
 vanilla JavaScript; no build step). The live entry point is `index.html` →
-`mulermoc-nom-59.html`. Current live version: **v59.20** (2026-11-25).
+`mulermoc-nom-59.html`. Current live version: **v59.21** (2026-11-25).
 Older versions v42–v58 remain runnable at the repo root but are **frozen**.
 
 ## Working mode (owner preference, 2026-11-22)
@@ -276,6 +276,14 @@ Update docs in the same commit as the change:
 - Add step (v58.42): the new last row is expanded and revealed in the
   `.scenarioDrawer` scrollport only when needed; tall rows align their head,
   mostly-visible rows do not jump. Keep this behaviour when touching `.scSave`.
+- 3D text scaling (v59.21): `spt/init-3-59.spt` sets `fontscaling TRUE`, and
+  JSmol bakes the **live zoom** into a font's base size at definition —
+  `font labels`/`font echo` sizes are not neutral unless defined at `zoom
+  100`. Labels rebuild inside `showAtomSymbols3D` at zoom 100; echoes go
+  through `fMulerEchoZoomWrap()` (reads live zoom, defines at 100, restores
+  in the same script). Never define echoes with `fontscaling OFF`: they then
+  stay a fixed pixel size forever and stop tracking zoom (the v59.20
+  regression). `set fontscaling ON` after the fact does not re-scale them.
 - Viewer-height rows (v58.43): two states only — the `Full` button (built in
   JS, in the old checkbox slot before the slider) or a specific px height
   (slider). The slider is disabled while Full is active and enabled for a

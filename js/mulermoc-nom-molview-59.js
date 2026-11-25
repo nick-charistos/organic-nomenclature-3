@@ -6091,17 +6091,16 @@ function fMulerSelectSeq3D() {
     try {
       if (typeof MULER_SELECT_HOVER === "string" && /^#[0-9a-fA-F]{6}$/.test(MULER_SELECT_HOVER)) selTone = "X" + MULER_SELECT_HOVER.slice(1).toUpperCase();
     } catch (eC) {}
-    var d = 0.01, script = "set fontscaling OFF; set echo off;";
+    var d = 0.01, script = "set echo off;";
     for (var i = 0; i < atoms.length; i++) {
       var a = atoms[i], n = i + 1, id = "mulerSelSeq3D" + n;
       if (!(a > 0)) continue;
-      script += " set echo " + id + " {atomno = " + a + "}; set echo offset {-1.1 1.1 3}; font echo 42 sansSerif bold; color echo [" + selTone + "]; echo " + n + ";";
-      script += " set echo " + id + "s1 {atomno = " + a + "}; set echo offset {" + (-1.1 + d) + " " + (1.1 - d) + " 3}; font echo 42 sansSerif bold; color echo black; echo " + n + ";";
+      script += " set echo " + id + " {atomno = " + a + "}; set echo offset {-1.1 1.1 3}; font echo 66 sansSerif bold; color echo [" + selTone + "]; echo " + n + ";";
+      script += " set echo " + id + "s1 {atomno = " + a + "}; set echo offset {" + (-1.1 + d) + " " + (1.1 - d) + " 3}; font echo 66 sansSerif bold; color echo black; echo " + n + ";";
     }
-    // Fontscaling dance (v59.20): echo fonts bake the live zoom — define
-    // absolute, then re-enable scaling so pick numbers track zoom like labels.
-    script += " set fontscaling TRUE;";
-    if (typeof fJSmolScript === "function") fJSmolScript(jmolAppletNomeclature, script);
+    // Echo fonts bake the live zoom (v59.21): define at zoom 100 and restore,
+    // so pick numbers scale with zoom like labels (see fMulerEchoZoomWrap).
+    if (typeof fJSmolScript === "function") fJSmolScript(jmolAppletNomeclature, fMulerEchoZoomWrap(script));
   } catch (e) {}
 }
 
@@ -18771,19 +18770,17 @@ function fShowNumber3D(n, chain) {
   try { _dim = Array.isArray(numberingEmphasis) && numberingEmphasis.indexOf(n) < 0; } catch (eD) { _dim = false; }
   let _echoCol = _dim ? "x9ac1ed" : "x193f8f";
 
-  // Shadow echoes in 4 directions (black stroke). Fontscaling dance
-  // (v59.20): echo fonts bake the live zoom into their base size, so define
-  // them with scaling OFF (absolute size) and re-enable after — the numbers
-  // then track zoom like the atom labels instead of staying tiny after a
-  // large-zoom definition. Labels keep their zoom-100 patch (OFF/ON does not
-  // move them: they set no size on toggle).
-  let s = "set fontscaling OFF;";
+  // Shadow echoes in 4 directions (black stroke). Defined through
+  // fMulerEchoZoomWrap (v59.21): echo fonts bake the live zoom into their
+  // base size, so define at zoom 100 and restore the camera in the same
+  // script — the numbers then scale with zoom like the atom labels.
+  let s = "";
   s +=
     " set echo " +
     id +
     " " +
     atom +
-    "; set echo offset {-1.1 1.1 3}; font echo 42 sansSerif bold; color echo[" + _echoCol + "]; echo " +
+    "; set echo offset {-1.1 1.1 3}; font echo 66 sansSerif bold; color echo[" + _echoCol + "]; echo " +
     num +
     ";";
 
@@ -18796,11 +18793,31 @@ function fShowNumber3D(n, chain) {
     (-1.1 + d) +
     " " +
     (1.1 - d) +
-    " 3}; font echo 42 sansSerif bold; color echo black; echo " +
+    " 3}; font echo 66 sansSerif bold; color echo black; echo " +
     num +
-    "; set fontscaling TRUE;";
+    ";";
 
-  fJSmolScript(jmolAppletNomeclature, s);
+  fJSmolScript(jmolAppletNomeclature, fMulerEchoZoomWrap(s));
+}
+
+// Echo font scaling reference (v59.21) ─────────────────────────────────────
+// Echo fonts bake the live zoom into their base size at definition, and an
+// echo defined while fontscaling is OFF never rescales again (v59.20 froze
+// the numbering that way). Atom labels already solve this by defining at
+// zoom 100; echoes need the same treatment. The zoom jump and restore live in
+// one script, so JSmol repaints once — no flash — and scenario camera
+// commands keep their framing.
+function fMulerEchoZoomWrap(cmds) {
+  var z = null;
+  try {
+    var out = fJSmolScriptEcho(jmolAppletNomeclature, "show zoom");
+    var m = /(-?\d+(?:\.\d+)?)/.exec(String(out || ""));
+    if (m) z = parseFloat(m[1]);
+  } catch (e) {
+    z = null;
+  }
+  if (!(z > 0) || Math.abs(z - 100) < 0.5) return "set fontscaling TRUE; " + cmds;
+  return "zoom 100; set fontscaling TRUE; " + cmds + " zoom " + z + ";";
 }
 
 // ── fHighlightMultiBonds ──────────────────────────────────────────────────

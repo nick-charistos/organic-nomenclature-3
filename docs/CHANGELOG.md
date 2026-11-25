@@ -308,6 +308,20 @@ base), so numbers track zoom like the labels. Labels keep their zoom-100
 patch (OFF/ON moves nothing on that path: labels set no size on toggle).
 Verified: `node --check`, `git diff --check`; `?v=59.20`. Owner verifies
 live (numbering size across zooms, moveto steps, PNG caption unchanged).
+*Superseded by v59.21 — an echo defined while scaling is OFF never rescales
+again, so the numbers froze at a fixed size.*
+- **Echo zoom bake (v59.21).** Echoes now get the labels' treatment instead
+of the OFF/ON dance: `fMulerEchoZoomWrap()` reads the live zoom, defines the
+echoes at `zoom 100` with scaling on, and restores the camera in the same
+script (one repaint, no flash, present framing intact). Applied to
+`fShowNumber3D` (numbering, animated + sync paths) and `fMulerSelectSeq3D`
+(pick-sequence numbers). Measured in the live applet before/after: an echo
+defined at zoom 100 keeps scaling with the view (box 28 px → 61 px between
+zoom 100 and 150), one defined with scaling off stays 28 px at every zoom;
+after the change the numbering echoes carry the neutral zoom-100 bake factor
+while the applet remains at the author's zoom. Verified: `node --check`,
+`git diff --check`; `?v=59.21`; live screenshots at zoom 30/50/150 show the
+numbers tracking the labels. Owner confirms correct.
 - **Docs resync (2026-11-23, docs-only).** Current-tree references were synced
   to v59.10 across `README`, `AGENTS`, `PROJECT-PLAN`/`PROJECT-PLAN-GR`,
   `LAYERS-PLAN`, `didactic-scenario-plan` and the harness README; the EN

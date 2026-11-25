@@ -61,7 +61,7 @@ Each step removes one scaffolding layer. Familiar representations constrain inte
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│  MODULE 1: Organic Nomenclature          [ACTIVE v59.20]        │
+│  MODULE 1: Organic Nomenclature          [ACTIVE v59.21]        │
 ├─────────────────────────────────────────────────────────────────┤
 │  MODULE 2: Isomerism                     [PLANNED — Phase 3]    │
 ├─────────────────────────────────────────────────────────────────┤
