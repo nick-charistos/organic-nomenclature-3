@@ -1,12 +1,15 @@
-# Session notes — 2026-11-25 (resume point for next session, other machine)
+# Session notes — 2026-11-26 (resume point for next session, other machine)
 
 > **Resume pointer (cross-machine):** 2026-11-26 — **v59 is LIVE**
-> (`index.html` → `mulermoc-nom-59.html`, `?v=59.25`): 2D data upgrade,
+> (`index.html` → `mulermoc-nom-59.html`, `?v=59.29`): 2D data upgrade,
 > branch-triple linearity (v59.22, committed `9ecd22c`), engine test molecules
 > with decline diagnostics (v59.23, committed `460a5a2`), common-ether
-> systematic group labels (v59.24, committed `4443e2f`) and the English
-> di-/bis- prefix rule (v59.25, uncommitted). Next: **v59.26 schema v3 freeze**,
-> then the quiz multi-chain verification; see the 2026-11-26 entries below.
+> systematic group labels (v59.24, committed `4443e2f`), the English
+> di-/bis- prefix rule (v59.25, committed `013726c`), the decline-audit
+> semantics + frozen v3 decisions (v59.26), the English C9 stem + mixed-script
+> guard (v59.27), the Greek C9 elision (v59.28) and the ε+ι diaeresis (v59.29)
+> — v59.26–29 uncommitted. Next: schema files, v3 export, normalizer and structural validator; then the
+> quiz multi-chain verification; see the 2026-11-26 entries below.
 > **Schema freeze plan (resume from home):** `docs/SCHEMA-V3-PLAN.md` — record
 > shape, schema.json/samples, v3 export, v2 → v3 normalizer, validator checks,
 > open questions.
@@ -137,11 +140,14 @@
 > No code change (v59.11 bumps the asset refs).
 > Docs: current index `docs/README.md`; historical material in `docs/archive/`
 > (pre-v54 notes split to `docs/archive/SESSION-NOTES-pre-v54.md`).
-> Committed: v59.01 (ff2058c) + v59.02 (7e18c65) + v59.03 + v59.04 + v59.05 + v59.06 + v59.07 + v59.08 + v59.09 + v59.10 + v59.11 + v59.12 + v59.13 + v59.14 + v59.15 + v59.16 + v59.17 + v59.18 + v59.19 + v59.20 + v59.21 + v59.22 (9ecd22c) + v59.23 (460a5a2) + v59.24 (4443e2f).
-> **Working tree (uncommitted, 2026-11-26):** v59.25 (English di-/bis-
-> multiplying prefixes per P-29.1; Greek kept on δι/τρι/τετρα by owner
-> decision). Asset refs are `?v=59.25`. Owner verifies; commit pending. Next
-> batch: schema v3 freeze (v59.26).
+> Committed: v59.01 (ff2058c) + v59.02 (7e18c65) + v59.03 + v59.04 + v59.05 + v59.06 + v59.07 + v59.08 + v59.09 + v59.10 + v59.11 + v59.12 + v59.13 + v59.14 + v59.15 + v59.16 + v59.17 + v59.18 + v59.19 + v59.20 + v59.21 + v59.22 (9ecd22c) + v59.23 (460a5a2) + v59.24 (4443e2f) + v59.25 (013726c).
+> **Working tree (uncommitted, 2026-11-26):** v59.26 (decline-audit semantics:
+> host-carbon `group-off-chain`, P-41 `group-principal`; `naming.rule` +
+> `naming.engine` with `MULER_CORE_VERSION`; frozen v3 decisions in
+> `docs/SCHEMA-V3-PLAN.md` / `MOLECULE-DATA-ROADMAP.md`) + v59.27 (English C9
+> stem `εννεα`, mixed-script guard) + v59.28 (Greek C9 elision `εννεάνιο`) +
+> v59.29 (ε+ι diaeresis `εννεϊνόλη`). Asset refs are `?v=59.29`. Next: schema
+> files + v3 export + structural validator.
 >
 > **Previous pointer (v58.50):** 2026-11-21 — **v58 is LIVE**
 > (`index.html` → `mulermoc-nom-58.html`, `?v=58.50`, review follow-ups +
@@ -1026,7 +1032,7 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 ## 2026-11-26 - engine test molecules + decline diagnostics (?v=59.23, owner request)
 * Owner: the 18 fail-closed naming guards block the very molecules needed to extend the engine, so accept them as test cases and store where/why the code failed in the custom record. `fDeclineNaming()` now attaches `mulerDecline` (reason, call site parsed from the stack and normalized to `file:line`, full frame, timestamp, feature audit covering all 18 decline classes, compact state snapshot); `fMolDraftSandboxAnalyse` maps it to `{ ok: true, unsupported: true, decline }` (rings, unparseable drawings and unexpected throws still block); Submit/Accept run the test-molecule path: warning toast + status line, preview block with reason/guard/offending atoms or groups instead of name rows, no GR->EN transliteration, no oracle auto-verdicts, `grName: ""`, and an additive `naming` block in the record (`status/reason/callSite/frame/at/features[{code:element|group|group-off-chain|group-principal|group-substituent|multi-fg|halogen-type|nitro-multibond|bond-off-chain,...}]/snapshot{mainChain,branchCarbons,multiBondsCC,...}`). Test molecules bypass the 3D gate; normal molecules keep it. Name panel shows a note with a `<details>` diagnostics view for such entries; generated `MULERMOC_*_data.js` headers mark `Naming: UNSUPPORTED`. JSON export is available alongside the legacy JS save (`format: "mulermoc-molecule"`, `schemaVersion: 2`); new GR/EN keys cover the diagnostics and JSON export; CSS for the two blocks.
 * Plan/feedback loop documented in `docs/new-molecules-upgrade-naming-algorithm.md` (schema reference, corpus workflow, suggested guard order: principal groups -> off-chain groups -> off-chain C=C/C#C -> multi-FG layout -> elements; open: menu test-molecule badge, corpus location).
-* Verified: `node --check` all `js/*-59.js`, `git diff --check`, headless decline-trace check (reason/callSite/features/snapshot), JSON export shape, 3D-gate bypass, `fDetectMolType` no-throw on S/P/amine graphs; `probe-final` and `probe-scenario-quiz` green. Owner verifies the live Submit/Accept/export/select flow. Uncommitted.
+* Verified: `node --check` all `js/*-59.js`, `git diff --check`, headless decline-trace check (reason/callSite/features/snapshot), JSON export shape, 3D-gate bypass, `fDetectMolType` no-throw on S/P/amine graphs; `probe-final` and `probe-scenario-quiz` green. Owner verifies the live Submit/Accept/export/select flow. Committed `460a5a2`.
 
 ## 2026-11-26 - molecule record v3 decisions (docs-only, no version bump)
 * Owner review of the exported JSON: main chains and names are computed at runtime, so storing them risks a second source of truth. Agreed principle: **store what cannot be recomputed; recompute what the current engine defines.** Geometry (4 mol blocks), provenance, oracle inputs, human verdicts and decline diagnostics are data; chains, names, components, classification and SMILES are engine output.
@@ -1037,7 +1043,7 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * **Shape is rule-agnostic:** rule eras are string ids (`school-pre2013`, `iupac-2013`), never booleans, so post-2013 adds a `chainSets` key and `variants` entries instead of a schema change. Post-2013 therefore does **not** block the freeze; prove the shape with one synthetic record whose 2013 chain differs from school.
 * **Ethers decompose differently per style:** common = two alkyl arms each with its own parent chain; substitutive = parent chain + alkoxy substituent. The record stores them per style. `quiz.parentRule` is a forward provision on scenario steps (default `school-pre2013`, no quiz logic yet).
 * **Measured sizes** (154 molecules): 3 x 2D molfiles 0.42 MB, 3D SDF on disk 0.36 MB (155 files) -> 0.78 MB with all four forms inline, ~5.1 MB raw / ~1.3 MB gzip at 1000. Built-in `nameExamples` store no structures (`MOL2D` text + `file3D` path), which is why the current built-in JSON export is nearly empty.
-* **Batch order (owner):** v59.24 ether naming -> v59.25 schema freeze (schema.json, v3 export, v2->v3 normalizer, validator skeleton) -> quiz multi-chain -> post-2013 -> corpus + release generator. Ether work is the only remaining shape-changing change, which is why it precedes the freeze.
+* **Batch order (owner):** v59.24 ether naming -> v59.25 di/bis prefixes -> v59.26 audit + v3 decisions -> schema files/export/validator -> quiz multi-chain -> post-2013 -> corpus + release generator. Ether work was the last shape-changing naming change.
 * Docs updated: `docs/MOLECULE-DATA-ROADMAP.md` (v3 record section, M0 ether batch, M1/M2 rewritten, M2b quiz multi-chain, sizes, risks, next actions), `docs/README.md`, `AGENTS.md`, `docs/new-molecules-upgrade-naming-algorithm.md` (v2 export marked provisional). No code changed; no probes run.
 
 ## 2026-11-26 - common ether systematic group labels (?v=59.24, owner request)
@@ -1052,3 +1058,24 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * New `fIsCompoundSubstEN()` (name-en) is the single classifier: leading locant, hetero-decorated stem, or a basic multiplier inside an amino/imino group. Applied in `fSystematicSubstSlot` (whole-word, parenthesized `di(...)`, and a new whole-string branch for hyphenated `di-tert-butyl`/`tri-sec-butyl`, which previously produced `di-2-methylpropan-2-yl` with no parens), the common-ether symmetric multiplier (`fGetEtherCommonParts` sets `labelSysEN` = `bis`/`di`), and `fENSubstSortKey` (P-14.5.1/2: simple groups ignore the multiplier, so `di(propan-2-yl)` sorts under p; compound groups keep `bis` and sort under b).
 * Greek deliberately unchanged: `fGRSystOneStem`/`fSystematicGRSubstSlot` still render `δι/τρι/τετρα` + parens for both classes (owner decision, 2026-11-26). Greek boxes and joined names are byte-identical to v59.24; only `engineEN_sys` changes.
 * Verified: `node --check` name-en/molview; classifier/`fSystematicSubstSlot`/`fENSubstSortKey` checks (diisopropyl, di-sec-butyl, di-tert-butyl, diisobutyl, `di(propan-2-yl)`, `di(2-methylpropyl)`, `di(2-methylpropan-2-yl)`, dichloromethyl, dimethyl, diethyl); end-to-end `fPopulateEngineENFromGreek` on the same slots; `probe-branch-quiz` and `probe-final` green. No stored-data migration (`engineEN_sys` is rebuilt at load). `?v=59.25`.
+
+## 2026-11-26 - decline-audit semantics + frozen v3 decisions (?v=59.26, review follow-up)
+* `fNamingFeatureAudit` `group-off-chain` was semantically wrong: it tested the group's heteroatom against `mainChainAtomsList` (carbons only), so every halogen/OH/nitro was reported "off the main chain" even when correctly attached. It now checks each group atom's **host carbon** (nested arrays from ester/nitro are flattened), reports `atoms` = host carbons and `heteroAtoms` = the group atoms, and emits nothing for on-chain groups. `group-principal` now sorts by the engine's P-41 `gFunctionalGroupsOrder` instead of object insertion order.
+* New `MULER_CORE_VERSION` (`core-59`) + `fMulerCoreVersion()`; the stored decline block now writes `rule: "school-pre2013"` and `engine`, so a test molecule records which rules produced its trace.
+* v3 decisions frozen (docs `SCHEMA-V3-PLAN.md` / `MOLECULE-DATA-ROADMAP.md`): human verdicts in `provenance.verdicts`; `formula` = menu structural label, Hill in `derived.molecularFormula`; `oracle` = PubChem/OpenClatura/identity inputs; `ethers` structural only (labels derived); `reference.chains` hand-verified baseline vs `derived.chains` engine snapshot (same-engine diff fails, version diff reports + bless); 1-based carbons-only for chains/ethers, any element for diagnostic arrays; Node structural validator + Playwright naming audit; menu-only precompute (names, classification, search string, MuSVG thumbnails), naming still runs on selection. No runtime naming result changes.
+* Verified: `node --check` all `js/*-59.js`, `git diff --check`; headless audit cases — on-chain Cl emits no `group-off-chain`, branch Cl/ketone-O/nitro report host carbon 6 (with hetero atom 7), nitro+C=C emits `nitro-multibond`, `group-principal` returns amine with groups ordered as `halogen, amine`. No probes per working mode. Uncommitted.
+
+## 2026-11-26 - English C9 stem + mixed-script guard (?v=59.27, owner report)
+* Owner's new molecule produced `4-butyl-2-methylnonνεα-7-yn-2-ol`. The Greek C9 stem is `εννεα` (`nameMainCompList1[8]`), but `EN_STEM_GR` mapped it with the two-letter key `εν`, so `fMapFrag` (global split/join) replaced only the first two letters and left `νεα`. The key is now the full `εννεα`; the map is slot-positional, so the `εν → en` infix map was never in the way.
+* Hardened the joined EN builder: after the oracle-delegation attempt, if Greek remains it returns `null` instead of storing a mixed-script name. Drafts use the `__draft__` key with no oracle entry, which is why the leak was visible there; stored molecules keep the `systematicEN` delegation.
+* Verified headlessly: `fGreekFragToEN("εννεα",5)` → `non`, C8/C10 unchanged, the reported slots assemble to `4-butyl-2-methylnon-7-yn-2-ol`, an untransliterable stem with no oracle → `null`, oracle delegation still returns the stored systematic name, decane unchanged. No stored molecule has a chain ≥ C9 (checked all 154), so the corpus is unaffected. `node --check` all `js/*-59.js`, `git diff --check`. No probes per working mode. Uncommitted.
+
+## 2026-11-26 - Greek C9 elision (?v=59.28, owner report)
+* Owner: the engine produced `εννεαάνιο`; the correct Greek is `εννεάνιο`. `_joinEuphony()` (core) only inserted a connector between two consonants, so the vowel+vowel junction `εννεα + άν` concatenated verbatim. It now drops the stem-final alpha before a vowel-initial part, scoped to `εννεα` so other stems are untouched (`δεκατριάνιο`, `εννεαδιένιο` before a consonant).
+* Output: `εννεάνιο`, `1-εννεένιο`, `1-εννείνιο`; `δεκάνιο`, `δεκατριάνιο`, `1,3-εννεαδιένιο` unchanged; the substituted C9 alkyne elides too. Greek only (English `nonane` was already correct); no stored molecule has a C9 chain, so the 154 are unaffected.
+* Verified with a headless engine run (stubbed JSME applet, real `fAnalyseStructure → fDetectMolType → fCalcMainChain → fGuessName`) for nonane, decane, tridecane, non-1-ene, non-1-yne, nona-1,3-diene and the substituted C9 alkyne. `node --check` all `js/*-59.js`, `git diff --check`. No probes per working mode. Uncommitted. Note: the joined alkyne form is `εννείνιο` (tonos on the iota); the missing diaeresis was fixed in v59.29.
+
+## 2026-11-26 - Greek ε+ι diaeresis (?v=59.29, owner report)
+* Owner rule: **ε+ι = εϊ**. The v59.28 elision left the yne iota bare (`εννειν`), which reads as the `ει` diphthong. The elision branch now adds the diaeresis when the join lands on the iota: `ϊ` unaccented, `ΐ` when the infix carries the tonos.
+* Output: `εννεϊνόλη`, `1-εννεΐνιο`, and the substituted C9 alkyne `4-βουτυλο-2-μεθυλο-7-εννεϊν-2-όλη`; `εννεάνιο`, `1-εννεένιο`, `1,3-εννεαδιένιο`, `δεκάνιο`, `δεκατριάνιο` unchanged. Greek only; no stored C9 chain, so the corpus is unaffected.
+* Verified with the same headless engine run (nonane, nonene, nonyne, nonadiene, decane, tridecane, substituted C9 alkyne): `εννεάνιο`, `1-εννεένιο`, `1-εννεΐνιο`, `1,3-εννεαδιένιο`, `4-βουτυλο-2-μεθυλο-7-εννεϊν-2-όλη`. `node --check` all `js/*-59.js`, `git diff --check`. No probes per working mode. Uncommitted.

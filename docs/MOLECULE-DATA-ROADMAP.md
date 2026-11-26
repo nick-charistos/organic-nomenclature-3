@@ -1,18 +1,24 @@
 # MolWave molecule-data roadmap
 
-Status: planning — development mode is v59.25
+Status: planning — development mode is v59.29
 
 Progress: v59.23 exports engine-test molecules as JSON (`schemaVersion: 2`,
 flat legacy record + stamp — a **stopgap**) and stores the `unsupported` naming
 diagnostic record. v59.24 ships the common-ether systematic labels and per-arm
 parent chains (the last record-shape change); v59.25 applies the English P-29.1
-di-/bis- prefix rule. The record **shape** is frozen at v3 (2026-11-26, below);
-schema files, the v3 export, the normalizer, the per-file dev loader and the
-generated release bundle are not built yet.
+di-/bis- prefix rule; v59.26 fixes the decline-audit semantics, stamps
+`naming.rule`/`naming.engine` and locks the v3 decisions recorded in
+`docs/SCHEMA-V3-PLAN.md`; v59.27 fixes the English C9 stem and makes the EN
+builder fail closed on any untransliterable fragment; v59.28 elides the Greek
+C9 stem's final alpha before a vowel (`εννεάνιο`); v59.29 adds the ε+ι
+diaeresis (`εννεϊνόλη`, `εννεΐνιο`). The record **shape** is
+frozen at v3 (2026-11-26, below); schema files, the v3 export, the normalizer,
+the per-file dev loader and the generated release bundle are not built yet.
 
 Batch order (owner, 2026-11-26): **v59.24 ether naming (done) → v59.25 di/bis
-prefixes (done) → v59.26 schema freeze → quiz multi-chain verification →
-post-2013 algorithm → corpus/release generator.**
+prefixes (done) → v59.26 audit + v3 decisions (done) → schema files + export +
+validator → quiz multi-chain verification → post-2013 algorithm →
+corpus/release generator.**
 
 Target: closed, stable corpus release (~1000 molecules, v60)
 
@@ -66,13 +72,17 @@ Build a stable closed release that:
 ### Closed release mode
 
 - Loads generated, checked-in data synchronously:
-  - `js/molecules-60.js` — all records (the `derived` audit block is omitted
-    and 3D may be split into a lazy chunk);
-  - `js/menu-index-60.js` — precomputed menu metadata.
-- Nothing is generated in the browser: names, classification, carbon counts and
-  menu skeletal thumbnails are all baked into the generated index.
+  - `js/molecules-60.js` — all records (the audit-only `derived` block is
+    omitted, `reference.chains` stays, 3D may be split into a lazy chunk);
+  - `js/menu-index-60.js` — precomputed menu metadata;
+  - `js/menu-thumbs-60.js` — precomputed `MuSVG` skeletal thumbnails (lazy).
+- **No boot-time menu/classification work:** names, classification, carbon
+  counts and skeletal thumbnails are baked into the index. The naming engine
+  still runs **on selection** for the name panel, explain, stepper and quiz
+  targets (menu-only precompute, owner decision 2026-11-26).
 - No fetch of molecule files, no directory scan, no boot classification loop.
-- Build stamp includes core version/hash and data version.
+- Build stamp includes core version/hash and data version in the records, the
+  menu index and the thumbnails chunk.
 - No new-molecule/draft/import UI.
 
 ### Shared runtime contract
@@ -106,31 +116,47 @@ stopgap, not the corpus schema. The canonical record is **v3**; the nested
 proposal previously sketched here as "v2" is superseded.
 
 **Principle: store what cannot be recomputed; recompute what the current engine
-defines.** Geometry, provenance and human verdicts are data. Chains, names,
+defines.** Geometry, provenance, human verdicts and the hand-verified
+`reference.chains` baseline are data. Chains (the ranked pool), names,
 components, classification and SMILES are engine output.
 
 | Field class | Stored? | Why |
 |---|---|---|
-| 4 mol blocks (condensed / expanded / skeletal / 3D) | yes, authoritative | hand-curated school geometry cannot be regenerated |
-| `key`, `formula`, `inchiKey`, aliases | yes | identity and menu key |
-| `provenance` (author, proposedName, note, history) | yes | human record |
-| `oracle` (GR/EN/SMILES validation inputs) | yes | external reference, not engine output |
+| 4 mol blocks (condensed / expanded / skeletal / 3D) + `source` | yes, authoritative | hand-curated school geometry cannot be regenerated; the source records provenance |
+| `key`, `formula` (menu structural label), aliases, optional `inchiKey` | yes | identity, menu key and search |
+| `provenance` (author, proposedName, note, `status`, **verdicts**, history) | yes | human record; verdicts are labeled eval data |
+| `oracle` (`pubchem`, `openclatura`, `identity` inputs) | yes | external reference, not engine output |
 | `naming` decline diagnostics | yes | an observation about a specific engine version; unrecoverable once the engine learns the case |
-| chains, names, components, slots, classification, SMILES | no — `derived` block | pure function of (molfile, rules); otherwise a second truth |
+| `reference.chains` (hand-verified primary per representation) | yes | the verification baseline for engine updates |
+| `ethers` structural decomposition (no label text) | yes | the naming decision (arms/locants) cannot be re-derived reliably |
+| chains (ranked pool), names, components, slots, classification, SMILES, molecular formula | no — `derived` block | pure function of (molfile, rules); otherwise a second truth |
+| ether arm label text | no — `derived.names` / `derived.ethers` | engine output (v59.24/25 changed it) |
 
 ```json
 {
   "format": "mulermoc-molecule",
   "schemaVersion": 3,
   "key": "ethyl_isopropyl_ether",
-  "formula": "C5H12O",
-  "inchiKey": "…",
+  "formula": "CH3CH2OCH(CH3)2",
+  "inchiKey": null,
+  "aliases": [],
 
   "representations": {
-    "condensed": { "format": "mol", "mdl": "V2000", "mol": "…" },
-    "expanded":  { "format": "mol", "mdl": "V2000", "mol": "…" },
-    "skeletal":  { "format": "mol", "mdl": "V2000", "mol": "…" },
-    "threeD":    { "format": "sdf", "mdl": "V2000", "mol": "…" }
+    "condensed": { "format": "mol", "mdl": "V2000", "mol": "…", "source": "namelecule" },
+    "expanded":  { "format": "mol", "mdl": "V2000", "mol": "…", "source": "derived" },
+    "skeletal":  { "format": "mol", "mdl": "V2000", "mol": "…", "source": "jsme" },
+    "threeD":    { "format": "sdf", "mdl": "V2000", "mol": "…", "source": "pubchem-jsmol",
+                   "file": "mols/nomeclature-moc2/ethyl_isopropyl_ether_3D.sdf" }
+  },
+
+  "reference": {
+    "source": "v59 data (hand-verified)",
+    "verifiedAt": "2026-11-25",
+    "chains": {
+      "school-pre2013": {
+        "condensed": [4,2,5], "expanded": [4,2,5], "skeletal": [4,2,5], "threeD": [2,1,3]
+      }
+    }
   },
 
   "ethers": {
@@ -139,26 +165,41 @@ components, classification and SMILES are engine output.
       "groups": [
         { "role": "parent",
           "atoms":        { "condensed": [], "expanded": [], "skeletal": [], "threeD": [] },
-          "parentChain":  { "condensed": [], "expanded": [], "skeletal": [], "threeD": [] },
+          "parentChain":  { "condensed": [4,2,5], "expanded": [4,2,5], "skeletal": [4,2,5], "threeD": [2,1,3] },
           "attachLocant": { "condensed": 2, "expanded": 2, "skeletal": 2, "threeD": 2 },
-          "substituents": [],
-          "labels": { "gr": { "common": "ισοπροπυλο", "systematic": "προπαν-2-υλο" },
-                      "en": { "common": "isopropyl",   "systematic": "propan-2-yl" } } }
+          "substituents": [] }
       ]
     },
     "substitutive": { "parent": { "rule": "school-pre2013", "chain": 0 },
                       "alkoxy": { "parentChain": {}, "attachLocant": {} } }
   },
 
-  "provenance": { "author": "", "proposedName": "", "note": "", "history": [] },
-  "oracle":     { "grName": "", "enName": "", "smiles": "" },
-  "naming":     { "status": "unsupported", "rule": "school-pre2013", "reason": "…" },
+  "provenance": {
+    "author": "", "proposedName": "", "note": "",
+    "status": "draft",
+    "verdicts": { "gr": "unconfirmed", "en": "unconfirmed",
+                  "enAutoValidated": false, "enAutoSource": null },
+    "history": []
+  },
+
+  "oracle": {
+    "pubchem":     { "cid": null, "iupac": null, "title": null, "systematic": null },
+    "openclatura": { "name": null, "opsin": null, "done": false },
+    "identity":    { "smiles": "CCOC(C)C", "canonicalSmiles": "CCOC(C)C" }
+  },
+
+  "naming": {
+    "status": "unsupported", "rule": "school-pre2013", "engine": "v59.29",
+    "reason": "…", "callSite": "…", "frame": "…", "at": "…",
+    "features": [ … ], "snapshot": { … }
+  },
 
   "derived": {
-    "engine": "v59.25",
+    "engine": "v59.29",
+    "molecularFormula": "C5H12O",
     "chains": {
       "school-pre2013": {
-        "condensed": [ { "atoms": [1,2,3], "len": 3, "fg": null, "fgCover": 0,
+        "condensed": [ { "atoms": [4,2,5], "len": 3, "fg": null, "fgCover": 0,
                          "anchors": 0, "multi": 0, "dbl": 0 } ],
         "expanded":  [ "…same pool shape…" ],
         "skeletal":  [ "…same pool shape…" ],
@@ -166,7 +207,11 @@ components, classification and SMILES are engine output.
       }
     },
     "names": [ { "lang": "gr", "rule": "school-pre2013", "substStyle": "school",
-                 "etherStyle": "common", "chain": 0, "text": "…" } ],
+                 "etherStyle": "common", "representation": "condensed",
+                 "chain": 0, "text": "…" } ],
+    "ethers": { "common": { "groups": [ { "role": "parent",
+                 "labels": { "gr": { "common": "ισοπροπυλο", "systematic": "προπαν-2-υλο" },
+                             "en": { "common": "isopropyl",  "systematic": "propan-2-yl" } } } ] } },
     "classification": {},
     "smiles": "…"
   }
@@ -175,27 +220,38 @@ components, classification and SMILES are engine output.
 
 Record rules:
 
-- **Optional blocks appear only where applicable**: `ethers` only for ethers,
-  `naming` only for engine declines, `derived.names` only for the supported
-  variants. The `ethers` keys follow the v59.24 implementation (frame → arm
-  descriptor → per-representation atoms/chains/locants + both label styles).
+- **Two chain layers.** `reference.chains` is the hand-verified expectation from
+  the pre-algorithm data; `derived.chains` is the engine's ranked pool, index 0 =
+  displayed. The validator compares index 0 to `reference`; a diff is reported
+  (not a failure) when `derived.engine` changed, and `--bless` re-stamps
+  `reference`. `reference` is optional (absent on app-accepted/test molecules).
 
-- **Atom indices are 1-based molfile atom numbers, carbons only.** The runtime
+- **Optional blocks appear only where applicable**: `reference`, `ethers` for
+  ethers, `naming` for engine declines, `representations.threeD` when a 3D model
+  exists, `derived.ethers` only when per-arm audit labels are wanted. The
+  `ethers` keys follow the v59.24 implementation (frame → arm descriptor →
+  per-representation atoms/chains/locants), **without** label text.
+
+- **Atom indices are 1-based molfile atom numbers, carbons only** for chains and
+  ether descriptors. `naming.features[].atoms` and `snapshot.branchCarbons` are
+  also 1-based but may include heteroatoms. The runtime
   mixes 0-based fragments with 1-based main chains; the JSON fixes one
   convention and the loader converts.
 - **Rule eras are string ids** (`school-pre2013`, `iupac-2013`), never booleans,
   so a new rule is a new key, not a schema change. Post-2013 can select a
   different parent for the same molecule; the shape already allows it.
 - **Ethers decompose differently per style**: common = two alkyl arms, each with
-  its own parent chain, attach locant, substituents and both label styles
-  (`labels.gr.common/systematic`, `labels.en.common/systematic`, emitted by
-  `fGetEtherCommonParts()` in v59.24); substitutive = parent chain + alkoxy
-  substituent. Store per style; one shared group array is wrong.
+  its own parent chain, attach locant and substituents; substitutive = parent
+  chain + alkoxy substituent. Store the structure per style (one shared group
+  array is wrong); the arm label text is engine output in `derived.names` /
+  `derived.ethers` (v59.24/25 changed it).
 - **`derived` is machine-written, engine-stamped and never read at runtime.**
-  The validator regenerates it and requires a zero diff; the build fails if the
-  data's `derived.engine` predates the core naming version. Option A (block in
-  the molecule file) was chosen over a separate golden file so a molecule can be
-  audited alone.
+  The release generator ships the current engine's output. The validator
+  compares `derived.chains[0]` to `reference.chains`: a same-engine diff is a
+  failure (hand edit/corruption), an engine-version diff is a **report** for
+  review, and `--bless` re-stamps `reference` with a history entry. Option A
+  (block in the molecule file) was chosen over a separate golden file so a
+  molecule can be audited alone.
 - **`derived.chains` mirrors the engine's ranked chain pool**, not a bare path
   list: `{ atoms, len, fg, fgCover, anchors, multi, dbl }` (the fields
   `fRankChainPool` already scores with), index 0 = displayed candidate. The
@@ -203,11 +259,11 @@ Record rules:
   `mainChainPoolIdx`; scenario steps store the chosen pool index as `chainIdx`
   (v47, additive). Storing the scoring metadata is what makes the order
   auditable.
-- **No stored chain preference.** Display order is already deterministic in the
-  engine: `fRankChainPool` ranks the candidates and
-  `fHorizontalEquivalentIndex` prefers the horizontal orientation. A new rule
-  era may rank differently, which is exactly why the pool lives under the rule
-  id.
+- **No stored display preference.** Display order is deterministic in the engine:
+  `fRankChainPool` ranks the candidates and `fHorizontalEquivalentIndex` prefers
+  the horizontal orientation. `reference.chains` is a **verification
+  expectation**, not a per-molecule display override; a new rule era may rank
+  differently, which is why the pool lives under the rule id.
 - **`naming` stays per-molecule** for now, with `naming.rule` defaulting to
   `school-pre2013`. It becomes per-variant only when a second rule era exists.
 - **`quiz.parentRule` is a forward provision** on scenario steps (default
@@ -233,8 +289,12 @@ demand. That is why the current JSON export of a built-in is nearly empty.
 
 Decided (owner, 2026-11-24):
 
-- **Closed release is fully precomputed.** No menu or naming work happens at
-  page load in the closed educational build.
+- **Menu-only precompute (owner, 2026-11-26).** The closed educational build
+  precomputes the **menu** (names, classification, carbon count, formula, search
+  string, skeletal SVG thumbnails) and the chains; the naming engine still runs
+  on selection for the panel, explain, stepper and quiz targets. It is not a
+  full naming cache (`derived.slots`/`explain`/`quizTargets` are not shipped).
+  What disappears is the boot classification loop, not runtime naming.
 - **Menu thumbnails are precomputed skeletal SVGs** generated from the stored
   skeletal MOLs with the app's own `MuSVG` renderer (the same code the viewer
   draws with). No JSME pass at boot and no new renderer dependency
@@ -258,40 +318,82 @@ Decided (owner, 2026-11-26):
   A new era adds a `chainSets` key and `variants` entries. Prove the shape with
   one synthetic record whose `iupac-2013` chain differs from school, before the
   algorithm exists.
-- **Batch order:** v59.24 ether naming → v59.25 di/bis prefixes → v59.26 schema
-  freeze → quiz multi-chain → post-2013 → corpus + release generator. Ether work
-  is the only remaining shape-changing change.
+- **Batch order:** v59.24 ether naming → v59.25 di/bis prefixes → v59.26 audit
+  + v3 decisions → schema files/export/validator → quiz multi-chain → post-2013
+  → corpus + release generator. Ether work was the last shape-changing naming
+  change.
+
+Decided (owner, 2026-11-26, v59.26 review):
+
+- **Human verdicts are stored** in `provenance.verdicts`, never in `derived`
+  (they are labeled eval data and cannot be regenerated).
+- **`formula` is the menu structural label** (`CH3CH2CH3`). Hill notation is
+  `derived.molecularFormula` and is what the validator checks.
+- **`oracle` holds external inputs only** (`pubchem`, `openclatura`,
+  `identity`); engine names live in `derived.names`.
+- **`ethers` stores the structure only**; arm label text is engine output in
+  `derived.names` / `derived.ethers` (v59.24/25 could change it).
+- **`reference.chains` is stored** as the hand-verified verification baseline;
+  `derived.chains` is the engine snapshot. Same-version diff = failure;
+  engine-version change = reported diff + `--bless` updates `reference`.
+- **Atom indices:** chains/ethers 1-based carbons only; diagnostic atom arrays
+  1-based any element.
+- **Validation split:** pure-Node structural validator + Playwright naming audit
+  (`derived` regeneration needs the JSME applet).
+- **`provenance.status`** is `draft | candidate | verified`; `inchiKey` optional;
+  `aliases` stored when authored.
 
 ## Menu index (release)
 
-One compact entry per molecule:
+One compact entry per molecule, generated at build time by a naming-capable
+runner (the engine needs the JSME applet, so the generator is a headless-browser
+step, not a plain Node script). The index is a **projection**, not part of the
+molecule record.
 
 ```json
 {
-  "key": "ethane",
-  "formula": "CH3CH3",
-  "nameGR": "αιθάνιο",
-  "nameEN": "ethane",
-  "classification": {},
-  "carbonCount": 2,
-  "skeletalSvg": "<svg…>",
-  "aliases": []
+  "key": "ethyl_isopropyl_ether",
+  "engine": "v59.29",
+  "formula": "CH3CH2OCH(CH3)2",
+  "molecularFormula": "C5H12O",
+  "carbonCount": 5,
+  "names": {
+    "gr": { "school": "αιθυλο ισοπροπυλαιθέρας",
+            "systematic": "αιθυλο προπαν-2-υλο αιθέρας" },
+    "en": { "school": "ethyl isopropyl ether",
+            "systematic": "ethyl propan-2-yl ether",
+            "pin": "2-ethoxypropane" }
+  },
+  "classification": { "seriesKey": "…", "chemicalClass": "…", "taxonomy": "…" },
+  "aliases": [],
+  "search": "αιθυλο ισοπροπυλαιθερας … c5h12o … cco …",
+  "thumbRef": "ethyl_isopropyl_ether"
 }
 ```
 
 Menu requirements:
 
 - display mode: formula / name / skeletal structure;
-- search across formula, names, aliases and class (normalize Greek accents and
-  euphony variants once against the index, not against live engine output);
+- **search** across names (GR school/systematic, EN school/systematic/PIN), the
+  Greek→Latin transliteration, formula (structural + Hill), SMILES (canonical +
+  drawn), classification, carbon count, aliases and CID. The generator writes
+  one normalized `search` string per molecule (lowercase, accent-folded,
+  final-sigma folded, locants/hyphens flattened, Latin transliteration
+  appended); the runtime filter is a linear substring scan over ~1000 entries.
+  Exact-key → exact-name → prefix → substring ranking; empty query returns the
+  grouped tree;
 - existing grouping by chemical class / homologous series (series-first);
 - collapsed groups and/or virtualized rows for ~1000 items;
-- thumbnails are precomputed strings, injected lazily on group expand /
-  `IntersectionObserver` — loaded with the index, never rendered on demand;
+- thumbnails are precomputed `MuSVG` strings rendered from each record's stored
+  skeletal MOL, shipped in a separate lazy chunk (`menu-thumbs-60.js`) and
+  injected on group expand / `IntersectionObserver` — never rendered on demand
+  at runtime and never a second renderer;
 - molecules without a stored skeletal MOL (e.g. `methane`, whose
-  `MOL2D.skeletal` is `null`) fall back to formula text, not to another
-  renderer;
-- no boot-time JSME pass over the corpus.
+  `MOL2D.skeletal` is `null`) fall back to formula text;
+- no boot-time JSME pass over the corpus; the naming panel still runs on
+  selection;
+- `engine` is the build stamp: if it differs from the core version the index is
+  stale and the build must regenerate it (a menu/panel name mismatch is a bug).
 
 ## Milestones
 
@@ -338,10 +440,12 @@ byte-identical to v59.24.
 Plan: `docs/SCHEMA-V3-PLAN.md` (files, normalizer mapping, validator checks,
 open questions).
 
-- [x] Decide authoritative vs derived fields (table above, 2026-11-26).
+- [x] Decide authoritative vs derived fields (table above, 2026-11-26; full
+      decision list in `docs/SCHEMA-V3-PLAN.md` §3).
 - [ ] Write `molecules/schema.json` + human-readable schema notes for v3.
 - [ ] Define the loader/runtime contract (`nameExamples`, `menuIndex`,
-      `MulerDataReady`).
+      `MulerDataReady`), including which saved chain fields the loader hydrates
+      (`mainChain_*` / `mainChain3D` from `reference`/`derived`).
 - [ ] Add one hand-written v3 sample plus one synthetic record whose
       `iupac-2013` chain differs from school, and a validation checklist.
 
@@ -351,16 +455,19 @@ the synthetic record validates without the post-2013 algorithm existing.
 ### M2 — JSON export (v3)
 
 - [x] Add “Export molecule JSON” (one object, no JS wrapper) — v59.23, flat v2.
-- [ ] Replace the v2 payload with the v3 shape (`representations`, `provenance`,
-      `oracle`, `naming.rule`, `derived`).
-- [ ] Write the v2 → v3 normalizer (flat `structure2D_*`/`sdf3D`/`mainChain_*`
-      into `representations`; wrap chains as one-element candidate arrays).
+- [ ] Replace the v2 payload with the v3 shape (`representations`, `reference`,
+      `provenance.verdicts`, `oracle`, `naming.rule`/`engine`, `derived`).
+- [ ] Write the v2 → v3 normalizer with the explicit field map in
+      `docs/SCHEMA-V3-PLAN.md` §6 (no silent drops).
+- [ ] Stamp `derived.engine` from `MULER_CORE_VERSION` and bundle metadata
+      (`engine`, `generatedAt`, `count`).
 - [ ] Keep legacy `.js` export temporarily for compatibility.
 - [ ] Add “Export all” JSON bundle for corpus work.
 - [ ] Use `<key>.json` filenames.
 
-Acceptance: downloaded JSON reparses losslessly and validates against M1;
-`derived` regenerates to a zero diff.
+Acceptance: downloaded JSON reparses losslessly and validates against M1; the
+structural validator passes and `derived.chains[0]` equals `reference` at the
+same engine version (full regeneration is the Playwright audit).
 
 ### M2b — Quiz multi-chain (verify; mostly already shipped)
 
@@ -395,13 +502,18 @@ Acceptance: student JSON can be loaded without a reload and debugged immediately
 
 ### M4 — Shared validator
 
-- [ ] Node/harness validator for one file or a folder.
-- [ ] Check schema, duplicate keys, molfile parse, atom/bond/valence, chains,
-      2D/3D consistency.
+- [ ] Node/harness structural validator for one file or a folder (schema,
+      duplicate keys, molfile parse, atom/bond/valence, chains, formula,
+      ethers, `reference` vs `derived.chains[0]` at the same engine stamp).
+- [ ] Playwright naming audit that regenerates `derived` and reports diffs;
+      `--bless` updates `reference` with a history entry. This is separate
+      because naming needs the JSME applet.
 - [ ] Run naming and compare with oracle/proposed names; write a report.
-- [ ] Use the same validation code in the dev loader and release generator.
+- [ ] Use the structural half in the dev loader and release generator.
 
-Acceptance: one command validates a folder and produces a clear pass/fail report.
+Acceptance: one command validates a folder and produces a clear pass/fail report;
+a diff after an engine change is reported (not failed) and can be blessed; a
+same-version diff is a failure.
 
 ### M5 — Development per-file loader
 
@@ -428,21 +540,29 @@ Acceptance: 154/154 keys match; menu and probes unchanged.
 ### M7 — Release generator
 
 - [ ] Read `molecules/builtin/`, validate, generate:
-      `js/molecules-60.js`, `js/menu-index-60.js`, `molecules/index.json`.
-- [ ] Precompute names, classification, carbon count, aliases.
-- [ ] Omit `derived` from the release payload (it is audit data) and may move
+      `js/molecules-60.js`, `js/menu-index-60.js`, `js/menu-thumbs-60.js`,
+      `molecules/index.json`.
+- [ ] Precompute the menu entry: names (GR school/systematic, EN school/
+      systematic/PIN), classification, carbon count, formula, aliases,
+      normalized `search` string.
+- [ ] Ship `reference.chains` (primary per representation) in the record
+      payload; omit the audit-only `derived` block. Move
       `representations.threeD.mol` to a lazy chunk; the boot payload carries 2D
-      and the index only.
-- [ ] Render `skeletalSvg` from each record's stored skeletal MOL with the
-      shared `MuSVG` renderer (one renderer: menu matches viewer); emit a
-      formula-only entry when the skeletal form is absent.
-- [ ] Add build stamp: core hash/version + data version.
-- [ ] Fail the build if a release bundle predates the core naming version.
-- [ ] Report bundle size and gzip size; keep the output minified and
-      gzip-friendly for Drupal/school networks.
+      + reference chains + the index.
+- [ ] Render `thumbRef` SVGs from each record's stored skeletal MOL with the
+      shared `MuSVG` renderer into `menu-thumbs-60.js` (one renderer: menu
+      matches viewer); emit a formula-only entry when the skeletal form is
+      absent.
+- [ ] Add build stamp: core version/hash + data version to the records, the
+      menu index and the thumbs chunk.
+- [ ] Fail the build if a release bundle or menu index predates the core naming
+      version.
+- [ ] Report bundle, index and thumbs sizes (raw + gzip) for Drupal/school
+      networks.
 
 Acceptance: closed page loads synchronously from generated files, skips the
-boot classification loop, and renders no chemistry in the browser; cold load
+boot classification loop, keeps runtime naming for the panel, and search works
+across names/formula/SMILES/classification with no network fetch; cold load
 stays within the school-hardware budget.
 
 ### M8 — Corpus and naming-core loop
@@ -485,15 +605,17 @@ Drupal build; no runtime corpus network dependency.
 
 ## Risks and mitigations
 
-- **Stale precomputed names** — `derived.engine` stamp + naming regression after
-  every core change; the build fails on a stale stamp.
-- **Dev/release drift** — shared validator and runtime contract; build verifies
-  cached names equal live naming and regenerates `derived` to a zero diff.
+- **Stale precomputed names** — `menuIndex.engine` + `derived.engine` stamps +
+  naming regression after every core change; the build fails on a stale stamp
+  (a menu/panel name mismatch is the visible symptom).
+- **Dev/release drift** — shared validator and runtime contract; the menu index
+  is generated from the same engine, and the derived audit reports (not hides)
+  diffs after a rule change.
 - **Size** — measured 0.78 MB per 154 molecules with all four forms
   (~5.1 MB raw / ~1.3 MB gzip at 1000). Minify/gzip; test Drupal/school
-  networks. The release boot payload carries 2D + index only; 3D may move to a
-  lazy chunk. Split menu metadata from full records only if necessary; keep the
-  corpus local, not directory-fetched.
+  networks. The release boot payload carries 2D + reference chains + index
+  (3D and thumbnails move to lazy chunks). Split menu metadata from full records
+  only if necessary; keep the corpus local, not directory-fetched.
 - **Atom-index drift** — JSON fixes 1-based molfile numbering, carbons only; the
   loader converts. The validator checks every chain index against the molfile.
 - **Student code execution** — JSON only; never eval imported JS.
@@ -504,13 +626,14 @@ Drupal build; no runtime corpus network dependency.
 
 ## Immediate next actions
 
-1. v59.24 ether naming (M0) — **done**; the record's ether block now mirrors the
-   implemented per-arm descriptor.
+1. v59.24 ether naming (M0) — **done**; the record's ether block mirrors the
+   implemented per-arm descriptor, labels are derived.
 2. v59.25 English di/bis prefixes (M0b) — **done**; Greek stays on
    δι/τρι/τετρα pending a source check.
-3. v59.26 schema freeze (M1/M2) — `molecules/schema.json`, v3 export, the
-   v2 → v3 normalizer, validator skeleton, synthetic rule-era record.
-4. Quiz multi-chain (M2b) — verification only (pool matching already shipped),
+3. v59.26 audit + v3 decisions — **done**: the decline audit checks host
+   carbons and P-41 seniority, `naming.rule`/`naming.engine` are written, and
+   the decisions above are recorded in `docs/SCHEMA-V3-PLAN.md`.
+4. Next: schema files + v3 export + normalizer + structural validator (M1/M2/M4).
+5. Quiz multi-chain (M2b) — verification only (pool matching already shipped),
    then the post-2013 algorithm as population.
-5. Build the shared validator and the dev per-file loader.
 6. Only then start the 154-molecule migration and the release generator.

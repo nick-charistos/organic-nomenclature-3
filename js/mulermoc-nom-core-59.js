@@ -92,6 +92,12 @@ const gNamablePrincipalGroups = ["carboxylicAcid", "cyanide", "aldehyde", "keton
 const gNamablePrefixGroups = ["carboxylicAcid", "cyanide", "aldehyde", "ketone", "alcohol", "amine", "nitro", "halogen"]
 let molTaxonomy = ""
 
+// Engine version stamp (v59.29). Written into decline diagnostics and the v3
+// record's `derived`/`naming` stamps so an audit knows which naming rules
+// produced the data. Keep in sync with the `?v=` refs in mulermoc-nom-59.html.
+var MULER_CORE_VERSION = "v59.29"
+function fMulerCoreVersion() { return MULER_CORE_VERSION }
+
 function fGetMoleculeClassification() {
     const carbonCarbonDoubleBonds = multiBondsObj.CCd.length
     const carbonCarbonTripleBonds = multiBondsObj.CCt.length
@@ -2395,25 +2401,56 @@ function fNamingFeatureAudit(reason) {
         scan((multiBondsObj && multiBondsObj.CCd) || [], 2)
         scan((multiBondsObj && multiBondsObj.CCt) || [], 3)
     } catch (e3) {}
-    // Hetero groups with at least one atom off the main chain. This covers the
-    // halogen/nitro/alcohol-O/ketone-O and multi-FG locant declines where the
-    // group itself is namable but the branch position is not.
+    // Namable hetero groups whose attaching carbon is off the main chain.
+    // The group's own atoms (O, X, N, …) are never chain atoms by construction,
+    // so the check must be on each group atom's HOST carbon — otherwise every
+    // molecule with a hetero group would be flagged. Nested arrays (ester:
+    // [ketoneO, etherO], nitro) are flattened. `atoms` reports the host
+    // carbons (the actionable locants), `heteroAtoms` the group atoms.
     try {
         var _chain = Array.isArray(mainChainAtomsList) ? mainChainAtomsList : []
         var _fg = functionalGroupObj || {}
+        var _hostsOf = function (atom0) {
+            var nbs = (atomConnectivityList && atomConnectivityList[atom0]) || []
+            var out = []
+            for (var q = 0; q < nbs.length; q++) {
+                if (allAtomsTypeList[nbs[q]] === "C") out.push(nbs[q])
+            }
+            return out
+        }
         for (var _g in _fg) {
             if (!Object.prototype.hasOwnProperty.call(_fg, _g) || _g === "hydrocarbon") continue
             var _byEl = _fg[_g] || {}
             for (var _el in _byEl) {
                 if (!Object.prototype.hasOwnProperty.call(_byEl, _el)) continue
                 var _arr = Array.isArray(_byEl[_el]) ? _byEl[_el] : []
-                var _off = []
+                var _flat = []
                 for (var _ai = 0; _ai < _arr.length; _ai++) {
-                    var _atom = _arr[_ai]
-                    if (_chain.indexOf(_atom + 1) < 0) _off.push(_atom + 1)
+                    if (Array.isArray(_arr[_ai])) {
+                        for (var _aj = 0; _aj < _arr[_ai].length; _aj++) _flat.push(_arr[_ai][_aj])
+                    } else {
+                        _flat.push(_arr[_ai])
+                    }
+                }
+                var _off = [], _hetero = [], _seenHost = {}
+                for (var _hi = 0; _hi < _flat.length; _hi++) {
+                    var _atom = _flat[_hi]
+                    if (typeof _atom !== "number") continue
+                    var _hosts = _hostsOf(_atom)
+                    if (!_hosts.length) continue
+                    var _onChain = false
+                    for (var _ci = 0; _ci < _hosts.length; _ci++) {
+                        if (_chain.indexOf(_hosts[_ci] + 1) >= 0) { _onChain = true; break }
+                    }
+                    if (_onChain) continue
+                    _hetero.push(_atom + 1)
+                    for (var _hj = 0; _hj < _hosts.length; _hj++) {
+                        var _h1 = _hosts[_hj] + 1
+                        if (!_seenHost[_h1]) { _seenHost[_h1] = true; _off.push(_h1) }
+                    }
                 }
                 if (_off.length) {
-                    add({ code: "group-off-chain", group: _g, element: _el, atoms: _off })
+                    add({ code: "group-off-chain", group: _g, element: _el, atoms: _off, heteroAtoms: _hetero })
                 }
             }
         }
@@ -2423,7 +2460,15 @@ function fNamingFeatureAudit(reason) {
         var _gs2 = (Array.isArray(functionalGroupsList) ? functionalGroupsList : []).filter(function (g) { return g !== "hydrocarbon" })
         if (_gs2.length > 1) add({ code: "multi-fg", groups: _gs2.slice() })
         if (_reason.indexOf("unsupported principal group") === 0 && _gs2.length) {
-            add({ code: "group-principal", group: _gs2[0] })
+            // Same seniority order the guard used (P-41), not insertion order.
+            var _rankOf = function (g) {
+                try {
+                    var i = (typeof gFunctionalGroupsOrder !== "undefined") ? gFunctionalGroupsOrder.indexOf(g) : -1
+                    return i < 0 ? 99 : i
+                } catch (eR) { return 99 }
+            }
+            var _byRank = _gs2.slice().sort(function (a, b) { return _rankOf(a) - _rankOf(b) })
+            add({ code: "group-principal", group: _byRank[0] })
         }
         if (_reason.indexOf("unsupported substituent group") === 0) {
             for (var _sg = 0; _sg < _gs2.length; _sg++) {
@@ -3957,6 +4002,15 @@ function fGuessName(skipChainRecalc) {
         if (acc === '') return part;
         const lastCh = acc[acc.length - 1];
         const firstCh = part[0];
+        // Greek elision (v59.28): the C9 stem εννεα drops its final alpha before
+        // a vowel-initial part (εννεάνιο, εννεένιο). When the join lands on the
+        // yne iota, Greek takes a diaeresis (v59.29): εννεϊνόλη, εννεΐνιο.
+        if (/εννε[αά]$/.test(acc) && _gkVowels.has(firstCh)) {
+            var _tail = /^[ιί]/.test(part)
+                ? part.replace(/^ι/, "\u03ca").replace(/^ί/, "\u0390")
+                : part;
+            return acc.slice(0, -1) + _tail;
+        }
         if (_isGkConsonant(lastCh) && _isGkConsonant(firstCh)) {
             const connector = ((lastCh === 'π' || lastCh === 'τ' || lastCh === 'ξ') && firstCh === 'δ') ? 'α' : 'ο';
             return acc + connector + part;

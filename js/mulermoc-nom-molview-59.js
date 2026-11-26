@@ -8348,6 +8348,8 @@ async function fMolDraftSubmit() {
   var _decline = _sb.decline || null;
   window.MulerDraft.namingSupport = _unsupported ? {
     status: "unsupported",
+    rule: "school-pre2013",
+    engine: (typeof fMulerCoreVersion === "function") ? fMulerCoreVersion() : null,
     reason: (_decline && _decline.reason) || null,
     callSite: (_decline && _decline.callSite) || null,
     frame: (_decline && _decline.frame) || null,

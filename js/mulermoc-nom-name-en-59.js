@@ -133,10 +133,11 @@ function fAssembleBranchedEN(nCarbons, fg, kind, locants, subs) {
 // -> English. Covers all 141 molecules because Greek analysis already did
 // chain selection, locants and grouping; here only language mapping remains.
 // Slots: [comp0, comp0Text, comp0b, comp0bText, comp1No, comp1, comp2, comp3, comp2b, comp4, compAlcoholEster, compEsterNoun]
-// Maps are slot-positional: C9 stem εν->non must not shadow infix εν->en.
+// Maps are slot-positional: the C9 stem is the full `εννεα` (never the bare
+// infix `εν`), so the infix map cannot shadow it and no letters are left over.
 var EN_STEM_GR = [
   ["μεθ", "meth"], ["αιθ", "eth"], ["προπ", "prop"], ["βουτ", "but"], ["πεντ", "pent"],
-  ["εξ", "hex"], ["επτ", "hept"], ["οκτ", "oct"], ["εν", "non"], ["δεκ", "dec"],
+  ["εξ", "hex"], ["επτ", "hept"], ["οκτ", "oct"], ["εννεα", "non"], ["δεκ", "dec"],
   ["ενδεκ", "undec"], ["δωδεκ", "dodec"], ["δεκατρι", "tridec"], ["δεκατεσσερ", "tetradec"], ["δεκαπεντ", "pentadec"],
   ["δεκαεξ", "hexadec"], ["δεκαεπτ", "heptadec"], ["δεκαοκτ", "octadec"], ["δεκαεννι", "nonadec"], ["εικοσ", "icos"]
 ];
@@ -380,6 +381,11 @@ function fPopulateEngineENFromGreek(key, variant) {
         }
       } catch (e) {}
     }
+    // Fail closed: a mixed-script name is worse than no prediction. Stored
+    // molecules delegate to the oracle above; drafts (`__draft__` is not in
+    // nameExamples) and any future untransliterable gap return null instead of
+    // storing Greek text inside an English name.
+    if (/[\u0370-\u03ff\u1f00-\u1fff]/.test(out)) return null;
     try {
       if (typeof nameExamples !== "undefined" && nameExamples[k]) {
         if (sys) nameExamples[k].engineEN_sys = out;

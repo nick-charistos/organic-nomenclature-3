@@ -8,9 +8,9 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 Forked from v58.50, rebased on v58.51 (`mulermoc-nom-59.html` + `js/*-59.js` + `css/*-59.css` +
 `jsme-nick-nomeclature-moc2-data_59.js` + `spt/init-3-59.spt` +
-`zz-test-core59.html`, `?v=59.25`; `ui-icons.js`, `js/vendor/`, `jsme/` and
+`zz-test-core59.html`, `?v=59.29`; `ui-icons.js`, `js/vendor/`, `jsme/` and
 `mols/` stay shared). Chemistry/naming results are v58's and the scenario data
-shape is inherited from v58, but v59.02–v59.25 add UI, data, quiz-step-authoring
+shape is inherited from v58, but v59.02–v59.29 add UI, data, quiz-step-authoring
 and authoring/engine-scope changes (see below); the v59.00 work is data geometry
 and the MOL pipeline.
 
@@ -93,7 +93,7 @@ and the MOL pipeline.
   prompt while picking (`pending3D` cancelled). The v58 CSS comes along:
   `--veryLightOrchid`, orchid `.quizTodo` / `.quizTodo.selected` /
   `.scQuizTag.selected` / `.is-start` and the shared `.scQuizPrompt` +
-  `.scQuizStartPrompt` skin. Asset refs moved to `?v=59.01` (now `?v=59.25`).
+  `.scQuizStartPrompt` skin. Asset refs moved to `?v=59.01` (now `?v=59.29`).
 - **Rule grouping bullet removed (v59.02).** The `.groupingMode` selector now
   offers Όλα τα μόρια / Χημικές Τάξεις / Ομόλογες Σειρές only. The `rule` mode
   itself is kept intact: `moleculeGroupingMode === "rule"`, the `ruleExamples`
@@ -404,10 +404,73 @@ eyeballs #139/#140/#154.
   di-tert-butyl, diisobutyl, both parenthesized forms, dichloromethyl,
   dimethyl, diethyl), end-to-end `fPopulateEngineENFromGreek`,
   `probe-branch-quiz` and `probe-final` green; `?v=59.25`.
-  Schema-freeze batch planned in `docs/SCHEMA-V3-PLAN.md` (v59.26: schema.json +
+  Schema-freeze work continues in `docs/SCHEMA-V3-PLAN.md` (schema.json +
   samples, v3 export, v2 → v3 normalizer, validator skeleton; no runtime naming
   change).
-
+- **Decline-audit semantics + frozen v3 decisions (v59.26).**
+  `fNamingFeatureAudit` no longer flags every hetero group as “off chain”: the
+  group check now tests each group atom's **host carbon** against the main chain
+  (a heteroatom is never a chain atom), flattens nested arrays (ester, nitro),
+  and reports `atoms` = host carbons + `heteroAtoms` = group atoms.
+  `group-principal` follows the engine's P-41 seniority instead of object
+  insertion order. The stored decline block now carries
+  `rule: "school-pre2013"` and `engine` from the new `MULER_CORE_VERSION`
+  (`core-59`), so a test molecule records which rules produced the trace.
+  The v3 decisions were frozen in `docs/SCHEMA-V3-PLAN.md` /
+  `docs/MOLECULE-DATA-ROADMAP.md`: human verdicts stored in
+  `provenance.verdicts` (never `derived`); `formula` is the menu structural
+  label with Hill notation in `derived.molecularFormula`; `oracle` holds
+  PubChem/OpenClatura/identity inputs only; `ethers` stores the structure
+  without label text; `reference.chains` is the hand-verified baseline while
+  `derived.chains` is the engine snapshot (same-engine diff = failure,
+  engine-version diff = report + `--bless`); chains/ethers are 1-based carbons
+  only; validation is split into a Node structural validator and a Playwright
+  naming audit; the menu is the only precomputed runtime projection (names,
+  classification, search string, `MuSVG` thumbnails), while naming still runs on
+  selection. No runtime naming result changes. Verified: `node --check` all
+  `js/*-59.js`, `git diff --check`, and headless `fNamingFeatureAudit` cases
+  (on-chain halogen emits no `group-off-chain`; branch halogen/ketone-O/nitro
+  report the host carbon; nitro+multi-bond reports `nitro-multibond`;
+  `group-principal` follows seniority). `?v=59.26`; no probes per working mode.
+- **English C9 stem + mixed-script guard (v59.27, owner report).** A new
+  9-carbon molecule produced `4-butyl-2-methylnonνεα-7-yn-2-ol`: `EN_STEM_GR`
+  mapped the C9 stem with the two-letter key `εν`, so the slot transliterator
+  replaced only the first two letters of the full Greek stem `εννεα` and left
+  `νεα` behind. The key is now the full `εννεα` (the map is slot-positional, so
+  it never needed to be shortened to avoid the `εν → en` infix). The joined
+  English path also gained a fail-closed check: if Greek remains after the
+  oracle-delegation attempt, it returns `null` instead of keeping a mixed-script
+  name — drafts use the `__draft__` key, which has no oracle entry, so they were
+  the visible leak. No stored molecule has a chain ≥ C9 (verified), so the 154
+  are byte-identical; only 9-carbon molecules change. Verified headlessly: C9
+  slot → `non`, C8/C10 unchanged, the reported molecule → the correct English
+  name, an untransliterable stem with no oracle → `null`, and oracle delegation
+  still returns the stored systematic name. `?v=59.27`; no probes per working
+  mode.
+- **Greek C9 elision (v59.28, owner report).** The engine joined the C9 stem
+  `εννεα` with the vowel-initial infix verbatim, producing `εννεαάνιο`; the
+  correct Greek is `εννεάνιο`. `_joinEuphony()` (core) now drops the stem-final
+  alpha before a vowel-initial part, scoped to `εννεα` so `δεκατριάνιο` (iota +
+  vowel) and `εννεαδιένιο` (alpha before a consonant) are unchanged. Output:
+  `εννεάνιο`, `1-εννεένιο`, while `δεκάνιο`, `δεκατριάνιο` and
+  `1,3-εννεαδιένιο` stay as before; the substituted C9 alkyne now elides too.
+  Greek only; English (`nonane`) was already correct. No stored molecule has a
+  C9 chain, so the corpus is unaffected. Verified with a headless engine run
+  (stubbed JSME applet) across nonane, decane, tridecane, non-1-ene,
+  non-1-yne, nona-1,3-diene and the substituted C9 alkyne. `?v=59.28`; no
+  probes per working mode.
+- **Greek ε+ι diaeresis (v59.29, owner report).** The v59.28 elision left the
+  yne iota bare (`εννειν`), which reads as the `ει` diphthong. Per the owner's
+  rule **ε+ι = εϊ**, the elided stem now takes a diaeresis when the join lands
+  on the iota: `εννεϊνόλη`, `1-εννεΐνιο` (tonos kept when the infix carries the
+  accent), and the substituted C9 alkyne reads
+  `4-βουτυλο-2-μεθυλο-7-εννεϊν-2-όλη`. The alkane (`εννεάνιο`), alkene
+  (`1-εννεένιο`), diene (`1,3-εννεαδιένιο`), decane and tridecane are
+  unchanged. Greek only; no stored molecule has a C9 chain. Verified with the
+  same headless engine run (nonane, nonene, nonyne, nonadiene, decane,
+  tridecane and the substituted C9 alkyne). `?v=59.29`; no probes per working
+  mode.
+- **Docs resync (2026-11-23, docs-only).** Current-tree references were synced
   to v59.10 across `README`, `AGENTS`, `PROJECT-PLAN`/`PROJECT-PLAN-GR`,
   `LAYERS-PLAN`, `didactic-scenario-plan` and the harness README; the EN
   teacher-guide encoding is repaired; the harness README records the v59.04

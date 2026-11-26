@@ -1,6 +1,6 @@
 # Docs index
 
-Current tree is **v59** (`mulermoc-nom-59.html`, `?v=59.25`). This page separates
+Current tree is **v59** (`mulermoc-nom-59.html`, `?v=59.29`). This page separates
 current guidance from historical records.
 
 ## Current / source of truth
@@ -19,9 +19,9 @@ current guidance from historical records.
   the closed ~1000-molecule release. Frozen record shape is **v3** (all four mol
   blocks, `provenance`, `oracle`, `naming.rule`, engine-stamped `derived`
   block); the v59.23 `schemaVersion: 2` export is a provisional stopgap.
-- [SCHEMA-V3-PLAN.md](SCHEMA-V3-PLAN.md) — actionable v59.26 batch: schema
-  files, v3 export, v2 → v3 normalizer, validator skeleton, samples, open
-  questions (resume point for the schema freeze).
+- [SCHEMA-V3-PLAN.md](SCHEMA-V3-PLAN.md) — the v3 record contract (decisions
+  locked in v59.26): schema files, v3 export, v2 → v3 normalizer, validator
+  checks, samples and open questions.
 - [TEAM-COLLABORATION-PLAN.md](TEAM-COLLABORATION-PLAN.md) — roadmap,
   proposals, structured opinions, decision register and GitHub workflow for
   the supervisor/student/colleague team.

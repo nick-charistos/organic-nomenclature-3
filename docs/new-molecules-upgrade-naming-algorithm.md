@@ -1,6 +1,6 @@
 # New molecules → upgrading the naming algorithm
 
-> **Current tree:** v59.25 (`mulermoc-nom-59.html`, `?v=59.25`). This plan covers
+> **Current tree:** v59.29 (`mulermoc-nom-59.html`, `?v=59.29`). This plan covers
 > the authoring→engine feedback loop introduced in v59.23 and the order in which
 > the remaining naming-scope gaps should be closed.
 
@@ -96,6 +96,7 @@ engine learns the case, so it **is** stored.
 "naming": {
   "status": "unsupported",
   "rule": "school-pre2013",
+  "engine": "v59.29",
   "reason": "C-C triple bond off main chain",
   "callSite": "mulermoc-nom-core-59.js:3841",
   "frame": "at fGuessName (…/mulermoc-nom-core-59.js?v=59.23:3841:15)",
@@ -111,7 +112,7 @@ engine learns the case, so it **is** stored.
 |---|---|---|
 | `element` | `element`, `atoms[]` | element outside C,H,N,O,F,Cl,Br,I (1-based atom numbers) |
 | `group` | `group` | detected functional group the slots cannot express |
-| `group-off-chain` | `group`, `element`, `atoms[]` | namable hetero group with atoms off the main chain (halogen/nitro/alcohol-O/ketone-O/… ) |
+| `group-off-chain` | `group`, `element`, `atoms[]` (host carbons), `heteroAtoms[]` | namable hetero group whose attaching carbon is off the main chain (halogen/nitro/alcohol-O/ketone-O/…) |
 | `group-principal` | `group` | functional group not in the principal-group table |
 | `group-substituent` | `group` | group not in the prefix/substituent table |
 | `multi-fg` | `groups[]` | more than one functional group (layout gap) |
@@ -138,6 +139,7 @@ guard line numbers. `frame` keeps the full stack line (with the asset version).
 | Piece | Location |
 |---|---|
 | Decline trace (`fNamingCallSite`, `fNamingFeatureAudit`, `fNamingDeclineSnapshot`, `fDeclineNaming`) | `js/mulermoc-nom-core-59.js` (~2333) |
+| Engine version stamp (`MULER_CORE_VERSION`, `fMulerCoreVersion`) | `js/mulermoc-nom-core-59.js` (top) |
 | Decline → `{ok, unsupported, decline}` | `fMolDraftSandboxAnalyse` (`molview-59` ~8150) |
 | Provisional label + preview block + shared diagnostic lines | `fMolDraftUnsupportedName`, `fMolDraftUnsupportedHTML`, `fMolDraftUnsupportedLines` |
 | Submit/Accept handling + unsupported 3D bypass | `fMolDraftSubmit` / `fMolDraftAccept` |
@@ -222,10 +224,17 @@ Each step is accepted when:
   `tools/muler-harness/data/` and import only for engine work? The record
   format is the same either way.
 
-## 11. Verification (v59.23)
+## 11. Verification
 
-`node --check` on all `js/*-59.js`, `git diff --check`, a headless check of the
-decline trace (reason / call site / features / snapshot populate), the JSON
-export shape and the unsupported-record 3D bypass. `probe-final` and
+v59.23: `node --check` on all `js/*-59.js`, `git diff --check`, a headless check
+of the decline trace (reason / call site / features / snapshot populate), the
+JSON export shape and the unsupported-record 3D bypass. `probe-final` and
 `probe-scenario-quiz` are green; the owner verifies the live flows
 (Submit/Accept/export/select of an unsupported structure).
+
+v59.26 (audit semantics): headless `fNamingFeatureAudit` cases —
+on-chain halogen emits no `group-off-chain`, branch halogen/ketone-O/nitro
+emits it with the host carbon (and `heteroAtoms`), nitro+multi-bond emits
+`nitro-multibond`, and `group-principal` follows P-41 seniority rather than
+object insertion order. `naming.rule`/`naming.engine` appear in the stored
+block. `node --check`, `git diff --check`.
