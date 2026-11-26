@@ -758,6 +758,26 @@ function fIsSubstitutedStemEN(s) {
   }
   catch (e) { return false; }
 }
+// Compound substituent group (P-29.1.2, v59.25): a parent substituent group
+// carrying its own substituent(s). Derived multipliers (bis/tris/tetrakis,
+// P-29.1.1) multiply compound prefixes; simple groups keep di/tri/tetra.
+//   simple:   methyl, ethyl, propan-2-yl, butan-2-yl (internal locant only)
+//   compound: 2-methylpropyl, 2-methylpropan-2-yl, chloromethyl,
+//             dimethylamino (name already carries a basic multiplier)
+// A leading locant is the systematic signature of a substituted parent;
+// hetero-decorated stems are compound without one. The "already multiplied"
+// trigger (P-16.3) is narrowed to amino/imino groups so a directly multiplied
+// simple prefix (dichloro, dimethyl) is never reclassified.
+function fIsCompoundSubstEN(s) {
+  try {
+    var _t = String(s == null ? "" : s).toLowerCase().replace(/[()]/g, "").replace(/^[-\s]+/, "");
+    if (!_t) return false;
+    if (/^\d/.test(_t)) return true;
+    if (fIsSubstitutedStemEN(_t)) return true;
+    if (/^(di|tri|tetra|penta|hexa|hepta|octa)[a-z]+(amino|imino)$/.test(_t)) return true;
+    return false;
+  } catch (e) { return false; }
+}
 function fBisPrefixEN(p) {
   var map = { di: "bis", tri: "tris", tetra: "tetrakis", penta: "pentakis", hexa: "hexakis", hepta: "heptakis", octa: "octakis" };
   return Object.prototype.hasOwnProperty.call(map, p) ? map[p] : p;
@@ -771,6 +791,20 @@ function fSystematicSubstSlot(slot, text) {
     if (slot !== 1 && slot !== 3 && slot !== 10) return text;
     var t = String(text == null ? "" : text);
     if (!t) return t;
+    // Multiplied hyphenated retained form (di-tert-butyl, tri-sec-butyl): the
+    // hyphen shield below cannot keep the multiplier attached to the retained
+    // stem, so resolve it whole first. Compound groups take the derived prefix
+    // (P-29.1.2): bis(2-methylpropan-2-yl); simple ones keep di(butan-2-yl).
+    var _mh = /^(di|tri|tetra|penta|hexa|hepta|octa)-(sec|tert)-([a-z]+)$/i.exec(t);
+    if (_mh) {
+      var _mf = _mh[1].toLowerCase();
+      var _ret = (_mh[2] + "-" + _mh[3]).toLowerCase();
+      if (Object.prototype.hasOwnProperty.call(EN_SYST_SUBST, _ret)) {
+        var _mS = EN_SYST_SUBST[_ret];
+        return (fIsCompoundSubstEN(_mS) ? fBisPrefixEN(_mf) : _mf) + "(" + _mS + ")";
+      }
+      return t;
+    }
     // Shield hyphenated retained forms (sec-/tert-, v54.37): the split below
     // would otherwise tear "sec-butyl" into ["sec","butyl"] before the
     // whole-word EN_SYST_SUBST lookup ever sees it (the map entry existed
@@ -812,19 +846,23 @@ function fSystematicSubstSlot(slot, text) {
       var w = _restore(parts[k]);
       if (!w || /^\d[\d,]*$/.test(w)) { out.push(w); continue; }
       // Parenthesized multiplied form from the Greek parens rule, e.g.
-      // "di(2-chloroethyl)" (transliterated δι(2-χλωροαιθυλο)).
+      // "di(2-chloroethyl)" (transliterated δι(2-χλωροαιθυλο)). Compound
+      // groups take the derived prefix (P-29.1.2): di(2-methylpropyl) ->
+      // bis(2-methylpropyl); simple ones keep di(propan-2-yl).
       var mp = /^(di|tri|tetra|penta|hexa|hepta|octa)\((.+)\)$/.exec(w);
-      if (mp && fIsSubstitutedStemEN(mp[2])) { out.push(fBisPrefixEN(mp[1]) + "(" + mp[2] + ")"); continue; }
+      if (mp && fIsCompoundSubstEN(mp[2])) { out.push(fBisPrefixEN(mp[1]) + "(" + mp[2] + ")"); continue; }
       var m2 = /^(di|tri|tetra)([a-z].*)$/.exec(w);
       if (m2 && Object.prototype.hasOwnProperty.call(EN_SYST_SUBST, m2[2])) {
         var s2 = EN_SYST_SUBST[m2[2]];
-        out.push(/\d/.test(s2) ? m2[1] + "(" + s2 + ")" : m2[1] + s2);
+        // Compound systematic names take bis/tris (P-29.1.2): diisobutyl ->
+        // bis(2-methylpropyl); diisopropyl stays di(propan-2-yl).
+        out.push(/\d/.test(s2) ? (fIsCompoundSubstEN(s2) ? fBisPrefixEN(m2[1]) : m2[1]) + "(" + s2 + ")" : m2[1] + s2);
       } else if (Object.prototype.hasOwnProperty.call(EN_SYST_SUBST, w)) {
         out.push(EN_SYST_SUBST[w]);
       } else {
         // Substituted-stem upgrade: "dichloromethyl" -> "bis(chloromethyl)".
         var m3 = /^(di|tri|tetra|penta|hexa|hepta|octa)([a-z].*)$/.exec(w);
-        if (m3 && fIsSubstitutedStemEN(m3[2])) out.push(fBisPrefixEN(m3[1]) + "(" + m3[2] + ")");
+        if (m3 && fIsCompoundSubstEN(m3[2])) out.push(fBisPrefixEN(m3[1]) + "(" + m3[2] + ")");
         else out.push(w);
       }
     }
@@ -843,7 +881,10 @@ function fENSubstSortKey(nm) {
     var s = String(nm == null ? "" : nm).toLowerCase();
     s = s.replace(/[()]/g, "");
     s = s.replace(/^[\d,\s\-]+/, "");
-    if ((typeof fIsSubstitutedStemEN === "function") && fIsSubstitutedStemEN(s)) return s;
+    // P-14.5.2: compound substituents sort under the full name including the
+    // derived multiplier (bis(2-methylpropyl) under b). Simple groups ignore
+    // the basic multiplier even across parens, so di(propan-2-yl) sorts under p.
+    if ((typeof fIsCompoundSubstEN === "function") && fIsCompoundSubstEN(s)) return s;
     return s.replace(/^(di|tri|tetra)(?=[a-z])/, "");
   } catch (e) { return ""; }
 }

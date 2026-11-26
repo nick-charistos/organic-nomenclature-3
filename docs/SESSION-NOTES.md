@@ -1,12 +1,15 @@
 # Session notes — 2026-11-25 (resume point for next session, other machine)
 
 > **Resume pointer (cross-machine):** 2026-11-26 — **v59 is LIVE**
-> (`index.html` → `mulermoc-nom-59.html`, `?v=59.24`): 2D data upgrade,
-> branch-triple linearity (v59.22, committed `9ecd22c`) and engine test
-> molecules with decline diagnostics (v59.23, committed `460a5a2`); v59.24 adds
-> common-ether systematic group labels (uncommitted). Next: **v59.25 schema v3
-> freeze**, then the quiz multi-chain verification; see the 2026-11-26 entries
-> below.
+> (`index.html` → `mulermoc-nom-59.html`, `?v=59.25`): 2D data upgrade,
+> branch-triple linearity (v59.22, committed `9ecd22c`), engine test molecules
+> with decline diagnostics (v59.23, committed `460a5a2`), common-ether
+> systematic group labels (v59.24, committed `4443e2f`) and the English
+> di-/bis- prefix rule (v59.25, uncommitted). Next: **v59.26 schema v3 freeze**,
+> then the quiz multi-chain verification; see the 2026-11-26 entries below.
+> **Schema freeze plan (resume from home):** `docs/SCHEMA-V3-PLAN.md` — record
+> shape, schema.json/samples, v3 export, v2 → v3 normalizer, validator checks,
+> open questions.
 > **154 molecules** (141 + 6 branched alkanes + 7 Anastasia student molecules, v59.17); every stored form uses one
 > frame (heavy 1.17, H 0.78). **Design rule: expanded = condensed + H** — the
 > expanded form is derived from the condensed molfile and keeps its heavy atom
@@ -134,10 +137,11 @@
 > No code change (v59.11 bumps the asset refs).
 > Docs: current index `docs/README.md`; historical material in `docs/archive/`
 > (pre-v54 notes split to `docs/archive/SESSION-NOTES-pre-v54.md`).
-> Committed: v59.01 (ff2058c) + v59.02 (7e18c65) + v59.03 + v59.04 + v59.05 + v59.06 + v59.07 + v59.08 + v59.09 + v59.10 + v59.11 + v59.12 + v59.13 + v59.14 + v59.15 + v59.16 + v59.17 + v59.18 + v59.19 + v59.20 + v59.21 + v59.22 (9ecd22c) + v59.23 (460a5a2).
-> **Working tree (uncommitted, 2026-11-26):** v59.24 (common ether systematic
-> group labels + per-arm parent chains). Asset refs are `?v=59.24`. Owner
-> verifies; commit pending. Next batch: schema v3 freeze (v59.25).
+> Committed: v59.01 (ff2058c) + v59.02 (7e18c65) + v59.03 + v59.04 + v59.05 + v59.06 + v59.07 + v59.08 + v59.09 + v59.10 + v59.11 + v59.12 + v59.13 + v59.14 + v59.15 + v59.16 + v59.17 + v59.18 + v59.19 + v59.20 + v59.21 + v59.22 (9ecd22c) + v59.23 (460a5a2) + v59.24 (4443e2f).
+> **Working tree (uncommitted, 2026-11-26):** v59.25 (English di-/bis-
+> multiplying prefixes per P-29.1; Greek kept on δι/τρι/τετρα by owner
+> decision). Asset refs are `?v=59.25`. Owner verifies; commit pending. Next
+> batch: schema v3 freeze (v59.26).
 >
 > **Previous pointer (v58.50):** 2026-11-21 — **v58 is LIVE**
 > (`index.html` → `mulermoc-nom-58.html`, `?v=58.50`, review follow-ups +
@@ -1042,3 +1046,9 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * Behaviour: `etherNamingMode` = frame (IUPAC substitutive vs common R–O–R' + αιθέρας), `substNamingMode` = label style. Common + sys renders `προπαν-2-υλο μεθυλαιθέρας` / `propan-2-yl methyl ether`; tert-butyl gives `2-μεθυλοπροπαν-2-υλο` / `2-methylpropan-2-yl`. Symmetric retained groups take parens (`δι(προπαν-2-υλο)`); straight-chain arms keep the school name, mirroring the existing substitute-slot convention. EN uses `di(...)` rather than `bis(...)` to match the app's existing P-16.3.4(a) analogue (didactic simplification; note for a future IUPAC pass).
 * Box order and ids (`comp10/11/12`) deliberately stay positional (school order): re-sorting by the systematic label would remap quiz targets and stale captures. The toggle renders when `hasSysVariant`; iupac-mode behaviour is untouched.
 * Verified: `node --check` molview/name-en; `git diff --check`; headless check across isopropyl_methyl (GR/EN → `προπαν-2-υλο`/`propan-2-yl`, attach 2, parent chain [4,2,5]), tert_butyl_isopropyl (both arms mapped), diethyl_ether and ethyl_methyl_ether (no toggle, unchanged boxes); `probe-branch-quiz` and `probe-final` green. Owner verifies the live look.
+
+## 2026-11-26 - English di-/bis- multiplying prefixes (?v=59.25, owner request)
+* Owner supplied P-29.1.1–P-29.1.3: basic `di/tri/tetra` multiply **simple** substituent groups; derived `bis/tris/tetrakis` multiply **compound** substituent groups (a parent substituent carrying its own substituents) and avoid ambiguity when a basic multiplier is already in the name. Consequences: `di(propan-2-yl)` and `di(butan-2-yl)` stay (simple, internal locant), `diisopropyl`/`di-tert-butyl` stay (retained names are simple), while `2-methylpropyl`/`2-methylpropan-2-yl`/`chloromethyl`/`dimethylamino` take `bis`. The same molecule therefore has different multipliers per label style: `di-tert-butyl ether` vs `bis(2-methylpropan-2-yl) ether`.
+* New `fIsCompoundSubstEN()` (name-en) is the single classifier: leading locant, hetero-decorated stem, or a basic multiplier inside an amino/imino group. Applied in `fSystematicSubstSlot` (whole-word, parenthesized `di(...)`, and a new whole-string branch for hyphenated `di-tert-butyl`/`tri-sec-butyl`, which previously produced `di-2-methylpropan-2-yl` with no parens), the common-ether symmetric multiplier (`fGetEtherCommonParts` sets `labelSysEN` = `bis`/`di`), and `fENSubstSortKey` (P-14.5.1/2: simple groups ignore the multiplier, so `di(propan-2-yl)` sorts under p; compound groups keep `bis` and sort under b).
+* Greek deliberately unchanged: `fGRSystOneStem`/`fSystematicGRSubstSlot` still render `δι/τρι/τετρα` + parens for both classes (owner decision, 2026-11-26). Greek boxes and joined names are byte-identical to v59.24; only `engineEN_sys` changes.
+* Verified: `node --check` name-en/molview; classifier/`fSystematicSubstSlot`/`fENSubstSortKey` checks (diisopropyl, di-sec-butyl, di-tert-butyl, diisobutyl, `di(propan-2-yl)`, `di(2-methylpropyl)`, `di(2-methylpropan-2-yl)`, dichloromethyl, dimethyl, diethyl); end-to-end `fPopulateEngineENFromGreek` on the same slots; `probe-branch-quiz` and `probe-final` green. No stored-data migration (`engineEN_sys` is rebuilt at load). `?v=59.25`.

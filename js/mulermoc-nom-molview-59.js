@@ -17415,11 +17415,15 @@ function fGetEtherCommonParts() {
     const both = parentChain.concat(alkoxyChain.filter(function (a) { return parentChain.indexOf(a) < 0; }));
     const both3D = parentChain3D.concat(alkoxyChain3D.filter(function (a) { return parentChain3D.indexOf(a) < 0; }));
     const _sys = _sA.sys, _sysEN = _sA.sysEN;
+    // v59.25: the EN multiplier follows P-29.1.2 — compound systematic arms
+    // (2-methylpropyl, 2-methylpropan-2-yl) take bis, simple ones keep di
+    // (propan-2-yl, butan-2-yl). Greek keeps δι/τρι/τετρα (owner decision).
+    const _multSysEN = (typeof fIsCompoundSubstEN === "function" && _sysEN && fIsCompoundSubstEN(_sysEN)) ? "bis" : "di";
     return {
       symmetric: true,
       hasSysVariant: !!_sA.retained,
       parts: [
-        { label: nameMultiPrefix[1] || "δι", labelSys: null, labelSysEN: null, chain: both, chain3D: both3D, kind: "alkyl", numberChain: parentChain, numberChain3D: parentChain3D, parentChain: parentChain.slice(), attachLocant: null, retained: false },
+        { label: nameMultiPrefix[1] || "δι", labelSys: null, labelSysEN: _multSysEN, chain: both, chain3D: both3D, kind: "alkyl", numberChain: parentChain, numberChain3D: parentChain3D, parentChain: parentChain.slice(), attachLocant: null, retained: false },
         { label: _sA.stem, labelSys: (_sys && /\d/.test(_sys)) ? "(" + _sys + ")" : _sys, labelSysEN: (_sysEN && /\d/.test(_sysEN)) ? "(" + _sysEN + ")" : _sysEN, chain: both, chain3D: both3D, kind: "alkyl", numberChain: parentChain, numberChain3D: parentChain3D, parentChain: parentChain.slice(), attachLocant: _sA.attachLocant, retained: !!_sA.retained },
         { label: "αιθέρας", labelSys: null, labelSysEN: null, chain: "ether", chain3D: "ether", kind: "ether", numberChain: null, numberChain3D: null, parentChain: null, attachLocant: null, retained: false },
       ],

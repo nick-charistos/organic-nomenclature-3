@@ -1,17 +1,18 @@
 # MolWave molecule-data roadmap
 
-Status: planning — development mode is v59.24
+Status: planning — development mode is v59.25
 
 Progress: v59.23 exports engine-test molecules as JSON (`schemaVersion: 2`,
 flat legacy record + stamp — a **stopgap**) and stores the `unsupported` naming
 diagnostic record. v59.24 ships the common-ether systematic labels and per-arm
-parent chains, which was the last record-shape change. The record **shape** is
-frozen at v3 (2026-11-26, below); schema files, the v3 export, the normalizer,
-the per-file dev loader and the generated release bundle are not built yet.
+parent chains (the last record-shape change); v59.25 applies the English P-29.1
+di-/bis- prefix rule. The record **shape** is frozen at v3 (2026-11-26, below);
+schema files, the v3 export, the normalizer, the per-file dev loader and the
+generated release bundle are not built yet.
 
-Batch order (owner, 2026-11-26): **v59.24 ether naming (done) → v59.25 schema
-freeze → quiz multi-chain verification → post-2013 algorithm → corpus/release
-generator.**
+Batch order (owner, 2026-11-26): **v59.24 ether naming (done) → v59.25 di/bis
+prefixes (done) → v59.26 schema freeze → quiz multi-chain verification →
+post-2013 algorithm → corpus/release generator.**
 
 Target: closed, stable corpus release (~1000 molecules, v60)
 
@@ -154,7 +155,7 @@ components, classification and SMILES are engine output.
   "naming":     { "status": "unsupported", "rule": "school-pre2013", "reason": "…" },
 
   "derived": {
-    "engine": "v59.24",
+    "engine": "v59.25",
     "chains": {
       "school-pre2013": {
         "condensed": [ { "atoms": [1,2,3], "len": 3, "fg": null, "fgCover": 0,
@@ -257,9 +258,9 @@ Decided (owner, 2026-11-26):
   A new era adds a `chainSets` key and `variants` entries. Prove the shape with
   one synthetic record whose `iupac-2013` chain differs from school, before the
   algorithm exists.
-- **Batch order:** v59.24 ether naming → v59.25 schema freeze → quiz
-  multi-chain → post-2013 → corpus + release generator. Ether work is the only
-  remaining shape-changing change.
+- **Batch order:** v59.24 ether naming → v59.25 di/bis prefixes → v59.26 schema
+  freeze → quiz multi-chain → post-2013 → corpus + release generator. Ether work
+  is the only remaining shape-changing change.
 
 ## Menu index (release)
 
@@ -314,7 +315,28 @@ plus `hasSysVariant`; `fGRSysLabel()` and `fEtherSysLabelEN()` reuse
 `GR_SYST_SUBST` / `EN_SYST_SUBST`. Box order and ids stay positional. The stored
 `ethers` block above mirrors that descriptor.
 
+### M0b — English di-/bis- multiplying prefixes (v59.25) — DONE
+
+- [x] `fIsCompoundSubstEN()` classifier (leading locant, hetero stem, embedded
+      basic multiplier in amino/imino names).
+- [x] `fSystematicSubstSlot`: `bis/tris/tetrakis` for compound groups, `di` for
+      simple ones; whole-word, parenthesized and hyphenated (`di-tert-butyl`)
+      forms.
+- [x] Common-ether symmetric multiplier follows the same class (school
+      `di-tert-butyl` vs systematic `bis(2-methylpropan-2-yl)`).
+- [x] `fENSubstSortKey`: simple groups ignore the multiplier (P-14.5.1),
+      compound groups sort under `bis` (P-14.5.2).
+- [x] Greek kept on `δι/τρι/τετρα` + parens (owner decision; source check
+      pending if it is ever changed).
+
+Acceptance met: `probe-branch-quiz` + `probe-final` green; slot/sort/classifier
+checks and an end-to-end `fPopulateEngineENFromGreek` run pass; Greek output is
+byte-identical to v59.24.
+
 ### M1 — Freeze schema and contract (v3)
+
+Plan: `docs/SCHEMA-V3-PLAN.md` (files, normalizer mapping, validator checks,
+open questions).
 
 - [x] Decide authoritative vs derived fields (table above, 2026-11-26).
 - [ ] Write `molecules/schema.json` + human-readable schema notes for v3.
@@ -484,9 +506,11 @@ Drupal build; no runtime corpus network dependency.
 
 1. v59.24 ether naming (M0) — **done**; the record's ether block now mirrors the
    implemented per-arm descriptor.
-2. v59.25 schema freeze (M1/M2) — `molecules/schema.json`, v3 export, the
+2. v59.25 English di/bis prefixes (M0b) — **done**; Greek stays on
+   δι/τρι/τετρα pending a source check.
+3. v59.26 schema freeze (M1/M2) — `molecules/schema.json`, v3 export, the
    v2 → v3 normalizer, validator skeleton, synthetic rule-era record.
-3. Quiz multi-chain (M2b) — verification only (pool matching already shipped),
+4. Quiz multi-chain (M2b) — verification only (pool matching already shipped),
    then the post-2013 algorithm as population.
-4. Build the shared validator and the dev per-file loader.
-5. Only then start the 154-molecule migration and the release generator.
+5. Build the shared validator and the dev per-file loader.
+6. Only then start the 154-molecule migration and the release generator.

@@ -8,9 +8,9 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 Forked from v58.50, rebased on v58.51 (`mulermoc-nom-59.html` + `js/*-59.js` + `css/*-59.css` +
 `jsme-nick-nomeclature-moc2-data_59.js` + `spt/init-3-59.spt` +
-`zz-test-core59.html`, `?v=59.24`; `ui-icons.js`, `js/vendor/`, `jsme/` and
+`zz-test-core59.html`, `?v=59.25`; `ui-icons.js`, `js/vendor/`, `jsme/` and
 `mols/` stay shared). Chemistry/naming results are v58's and the scenario data
-shape is inherited from v58, but v59.02–v59.24 add UI, data, quiz-step-authoring
+shape is inherited from v58, but v59.02–v59.25 add UI, data, quiz-step-authoring
 and authoring/engine-scope changes (see below); the v59.00 work is data geometry
 and the MOL pipeline.
 
@@ -93,7 +93,7 @@ and the MOL pipeline.
   prompt while picking (`pending3D` cancelled). The v58 CSS comes along:
   `--veryLightOrchid`, orchid `.quizTodo` / `.quizTodo.selected` /
   `.scQuizTag.selected` / `.is-start` and the shared `.scQuizPrompt` +
-  `.scQuizStartPrompt` skin. Asset refs moved to `?v=59.01` (now `?v=59.24`).
+  `.scQuizStartPrompt` skin. Asset refs moved to `?v=59.01` (now `?v=59.25`).
 - **Rule grouping bullet removed (v59.02).** The `.groupingMode` selector now
   offers Όλα τα μόρια / Χημικές Τάξεις / Ομόλογες Σειρές only. The `rule` mode
   itself is kept intact: `moleculeGroupingMode === "rule"`, the `ruleExamples`
@@ -385,6 +385,28 @@ eyeballs #139/#140/#154.
   tert_butyl_isopropyl, diethyl, ethyl_methyl — boxes, parent chains, attach
   locants, toggle visibility), `probe-branch-quiz` and `probe-final` green;
   `?v=59.24`. Owner verifies the live look.
+- **English di-/bis- multiplying prefixes (v59.25).** P-29.1: `di/tri/tetra`
+  multiply **simple** substituents and `bis/tris/tetrakis` multiply **compound**
+  ones. New `fIsCompoundSubstEN()` classifies a systematic group as compound
+  when its name starts with a locant (`2-methylpropyl`, `2-methylpropan-2-yl`),
+  carries a hetero substituent (`chloromethyl`) or already contains a basic
+  multiplier (`dimethylamino`); simple groups keep `di` (`propan-2-yl`,
+  `butan-2-yl`, and the retained `isopropyl`/`sec-butyl`/`tert-butyl`).
+  Applied in `fSystematicSubstSlot` (whole-word, parenthesized and hyphenated
+  forms), the common-ether symmetric multiplier (school `di-tert-butyl ether`
+  vs systematic `bis(2-methylpropan-2-yl) ether`) and `fENSubstSortKey`
+  (P-14.5.1/2: simple groups ignore the multiplier, `di(propan-2-yl)` under
+  **p**; compound groups sort under `bis`, under **b**). Fixes the pre-existing
+  `di-2-methylpropan-2-yl` output for hyphenated retained names. Greek
+  deliberately keeps `δι/τρι/τετρα` + parens for both classes (owner decision),
+  so Greek boxes and joined names are byte-identical to v59.24. Verified:
+  `node --check`, slot/sort/classifier checks (diisopropyl, di-sec-butyl,
+  di-tert-butyl, diisobutyl, both parenthesized forms, dichloromethyl,
+  dimethyl, diethyl), end-to-end `fPopulateEngineENFromGreek`,
+  `probe-branch-quiz` and `probe-final` green; `?v=59.25`.
+  Schema-freeze batch planned in `docs/SCHEMA-V3-PLAN.md` (v59.26: schema.json +
+  samples, v3 export, v2 → v3 normalizer, validator skeleton; no runtime naming
+  change).
 
   to v59.10 across `README`, `AGENTS`, `PROJECT-PLAN`/`PROJECT-PLAN-GR`,
   `LAYERS-PLAN`, `didactic-scenario-plan` and the harness README; the EN
