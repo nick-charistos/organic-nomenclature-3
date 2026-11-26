@@ -21,10 +21,12 @@ v59.23 separates the two concerns:
 
 The accepted record is the test fixture: draw → Submit → Accept → save/export.
 `Export JSON` is the canonical handoff (`format: "mulermoc-molecule"`,
-`schemaVersion: 2`); the legacy `MULERMOC_*.js` save still works with the
-current script loader. Either way the molecule sits in the menu with its
-formula, and its record says exactly which guard rejected it and which
-atoms/groups triggered it.
+`schemaVersion: 2` — a **provisional** flat payload; the frozen corpus record is
+**v3**, see `docs/MOLECULE-DATA-ROADMAP.md`: all four mol blocks, `provenance`,
+`oracle`, `naming.rule` and a regenerable engine-stamped `derived` block); the
+legacy `MULERMOC_*.js` save still works with the current script loader. Either
+way the molecule sits in the menu with its formula, and its record says exactly
+which guard rejected it and which atoms/groups triggered it.
 
 ## 2. What used to block (the 18 decline guards)
 
@@ -77,13 +79,23 @@ On the unsupported path:
 ## 4. Record schema (additive)
 
 Absent `naming` = a normally named molecule, so every existing record and file
-is unaffected.
+is unaffected. `rule` is optional and defaults to `school-pre2013`; it exists so
+a future second rule era can record its own decline without a schema change.
+Per-variant diagnostics are deferred until that era exists — today `naming`
+stays molecule-level (owner, 2026-11-26).
+
+Chain/name/component/classification data are **engine output** and belong in the
+regenerable `derived` block of the v3 record, not in the stored record body
+(`docs/MOLECULE-DATA-ROADMAP.md`). The decline trace below is different: it is an
+observation about a specific engine version and cannot be recomputed once the
+engine learns the case, so it **is** stored.
 
 ```json
 "grName": "",
 "slots": [],
 "naming": {
   "status": "unsupported",
+  "rule": "school-pre2013",
   "reason": "C-C triple bond off main chain",
   "callSite": "mulermoc-nom-core-59.js:3841",
   "frame": "at fGuessName (…/mulermoc-nom-core-59.js?v=59.23:3841:15)",
