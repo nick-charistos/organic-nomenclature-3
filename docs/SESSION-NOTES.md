@@ -1,11 +1,12 @@
 # Session notes — 2026-11-25 (resume point for next session, other machine)
 
 > **Resume pointer (cross-machine):** 2026-11-26 — **v59 is LIVE**
-> (`index.html` → `mulermoc-nom-59.html`, `?v=59.23`): 2D data upgrade,
+> (`index.html` → `mulermoc-nom-59.html`, `?v=59.24`): 2D data upgrade,
 > branch-triple linearity (v59.22, committed `9ecd22c`) and engine test
-> molecules with decline diagnostics (v59.23, committed `460a5a2`). Next
-> batches: **v59.24 ether naming**, then **v59.25 schema v3 freeze**, then the
-> quiz multi-chain upgrade; see the 2026-11-26 record-v3 entry below.
+> molecules with decline diagnostics (v59.23, committed `460a5a2`); v59.24 adds
+> common-ether systematic group labels (uncommitted). Next: **v59.25 schema v3
+> freeze**, then the quiz multi-chain verification; see the 2026-11-26 entries
+> below.
 > **154 molecules** (141 + 6 branched alkanes + 7 Anastasia student molecules, v59.17); every stored form uses one
 > frame (heavy 1.17, H 0.78). **Design rule: expanded = condensed + H** — the
 > expanded form is derived from the condensed molfile and keeps its heavy atom
@@ -133,10 +134,10 @@
 > No code change (v59.11 bumps the asset refs).
 > Docs: current index `docs/README.md`; historical material in `docs/archive/`
 > (pre-v54 notes split to `docs/archive/SESSION-NOTES-pre-v54.md`).
-> Committed: v59.01 (ff2058c) + v59.02 (7e18c65) + v59.03 + v59.04 + v59.05 + v59.06 + v59.07 + v59.08 + v59.09 + v59.10 + v59.11 + v59.12 + v59.13 + v59.14 + v59.15 + v59.16 + v59.17 + v59.18 + v59.19 + v59.20 + v59.21 + v59.22 (9ecd22c). v58.51 stays runnable and frozen.
-> **Working tree (uncommitted, 2026-11-26):** v59.23 (engine test molecules +
-> decline diagnostics + plan doc `docs/new-molecules-upgrade-naming-algorithm.md`).
-> Asset refs are `?v=59.23` on the live page. Owner verifies; commit pending.
+> Committed: v59.01 (ff2058c) + v59.02 (7e18c65) + v59.03 + v59.04 + v59.05 + v59.06 + v59.07 + v59.08 + v59.09 + v59.10 + v59.11 + v59.12 + v59.13 + v59.14 + v59.15 + v59.16 + v59.17 + v59.18 + v59.19 + v59.20 + v59.21 + v59.22 (9ecd22c) + v59.23 (460a5a2).
+> **Working tree (uncommitted, 2026-11-26):** v59.24 (common ether systematic
+> group labels + per-arm parent chains). Asset refs are `?v=59.24`. Owner
+> verifies; commit pending. Next batch: schema v3 freeze (v59.25).
 >
 > **Previous pointer (v58.50):** 2026-11-21 — **v58 is LIVE**
 > (`index.html` → `mulermoc-nom-58.html`, `?v=58.50`, review follow-ups +
@@ -1034,3 +1035,10 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * **Measured sizes** (154 molecules): 3 x 2D molfiles 0.42 MB, 3D SDF on disk 0.36 MB (155 files) -> 0.78 MB with all four forms inline, ~5.1 MB raw / ~1.3 MB gzip at 1000. Built-in `nameExamples` store no structures (`MOL2D` text + `file3D` path), which is why the current built-in JSON export is nearly empty.
 * **Batch order (owner):** v59.24 ether naming -> v59.25 schema freeze (schema.json, v3 export, v2->v3 normalizer, validator skeleton) -> quiz multi-chain -> post-2013 -> corpus + release generator. Ether work is the only remaining shape-changing change, which is why it precedes the freeze.
 * Docs updated: `docs/MOLECULE-DATA-ROADMAP.md` (v3 record section, M0 ether batch, M1/M2 rewritten, M2b quiz multi-chain, sizes, risks, next actions), `docs/README.md`, `AGENTS.md`, `docs/new-molecules-upgrade-naming-algorithm.md` (v2 export marked provisional). No code changed; no probes run.
+
+## 2026-11-26 - common ether systematic group labels (?v=59.24, owner request)
+* Owner: common ether naming must support the same Common/Systematic substituent variants as IUPAC ethers, and each branch must be treated as a parent chain. The old code built one common-only label (`fAlkylGroupName(..., "substituent")`), returned the whole fragment as the branch chain and force-hid the toggle in common mode.
+* `fGetEtherCommonParts()` now returns, per arm: `label` (school stem, unchanged euphony), `labelSys` (GR systematic), `labelSysEN` (EN systematic), `parentChain` (the arm numbering order), `attachLocant` (O attachment on that chain) and `retained`. `hasSysVariant` is true only when an arm uses a retained name, so straight-chain ethers keep the old panel (no toggle). New helpers: `fGRSysLabel()` (molview, reads `GR_SYST_SUBST`) and `fEtherSysLabelEN()` (name-en, transliterate then `EN_SYST_SUBST`).
+* Behaviour: `etherNamingMode` = frame (IUPAC substitutive vs common R–O–R' + αιθέρας), `substNamingMode` = label style. Common + sys renders `προπαν-2-υλο μεθυλαιθέρας` / `propan-2-yl methyl ether`; tert-butyl gives `2-μεθυλοπροπαν-2-υλο` / `2-methylpropan-2-yl`. Symmetric retained groups take parens (`δι(προπαν-2-υλο)`); straight-chain arms keep the school name, mirroring the existing substitute-slot convention. EN uses `di(...)` rather than `bis(...)` to match the app's existing P-16.3.4(a) analogue (didactic simplification; note for a future IUPAC pass).
+* Box order and ids (`comp10/11/12`) deliberately stay positional (school order): re-sorting by the systematic label would remap quiz targets and stale captures. The toggle renders when `hasSysVariant`; iupac-mode behaviour is untouched.
+* Verified: `node --check` molview/name-en; `git diff --check`; headless check across isopropyl_methyl (GR/EN → `προπαν-2-υλο`/`propan-2-yl`, attach 2, parent chain [4,2,5]), tert_butyl_isopropyl (both arms mapped), diethyl_ether and ethyl_methyl_ether (no toggle, unchanged boxes); `probe-branch-quiz` and `probe-final` green. Owner verifies the live look.

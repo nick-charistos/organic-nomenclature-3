@@ -14257,7 +14257,15 @@ function fShowNameAnalysis() {
   var _isENLang = false;
   try { _isENLang = (typeof fMulerLang === "function" && fMulerLang() === "en"); } catch (eL0) { _isENLang = false; }
   var _showSubst = !!(_isENLang && _substEntry && _substEntry.engineEN_sys && _substEntry.engineEN_sys !== _substEntry.engineEN);
-  if (_showSubst && _isEtherNaming) { try { if (typeof etherNamingMode !== "undefined" && etherNamingMode === "common") _showSubst = false; } catch (eC0) {} }
+  // v59.24: the common ether frame carries its own systematic group labels
+  // (isopropyl -> propan-2-yl), so the toggle must show even when the
+  // substitutive EN name has no systematic variant.
+  if (!_showSubst && _isENLang && _isEtherNaming && etherNamingMode === "common") {
+    try {
+      var _cpEN = (typeof fGetEtherCommonParts === "function") ? fGetEtherCommonParts() : null;
+      _showSubst = !!(_cpEN && _cpEN.hasSysVariant);
+    } catch (eC0) { _showSubst = false; }
+  }
   var _substToggle = "";
   if (_showSubst) {
     var _scCls = (typeof substNamingMode !== "undefined" && substNamingMode === "sys") ? "unselectedRadio" : "selectedRadio";
@@ -14277,7 +14285,13 @@ function fShowNameAnalysis() {
       _showSubstGR = !!_grSysSlots;
     }
   } catch (eGS) { _grSysSlots = null; _showSubstGR = false; }
-  if (_showSubstGR && _isEtherNaming) { try { if (typeof etherNamingMode !== "undefined" && etherNamingMode === "common") _showSubstGR = false; } catch (eC1) {} }
+  if (!_showSubstGR && !_isENLang && _isEtherNaming && etherNamingMode === "common") {
+    // v59.24: common ether group labels have a systematic form too.
+    try {
+      var _cpGR = (typeof fGetEtherCommonParts === "function") ? fGetEtherCommonParts() : null;
+      _showSubstGR = !!(_cpGR && _cpGR.hasSysVariant);
+    } catch (eC1) { _showSubstGR = false; }
+  }
   var _grSubstToggle = "";
   if (_showSubstGR) {
     var _gscCls = (typeof substNamingMode !== "undefined" && substNamingMode === "sys") ? "unselectedRadio" : "selectedRadio";
@@ -14355,10 +14369,28 @@ function fShowNameAnalysis() {
   var _renderedENBoxes = false;
   try { _enBoxes = (_isEN && typeof fNameENBoxes === "function") ? fNameENBoxes() : null; } catch (eEN) { _enBoxes = null; }
   if (_commonParts && _commonParts.parts) {
-    var _labels = _commonParts.parts.map(function (p) { return p.label; });
+    // v59.24: the common frame has two label styles. Frame selection stays on
+    // etherNamingMode; the Κοινή|Συστηματική toggle selects the group labels,
+    // so common ethers now honour substNamingMode like every other name.
+    var _etherSysStyle = false;
+    try {
+      _etherSysStyle = (typeof substNamingMode !== "undefined" && substNamingMode === "sys" && !!_commonParts.hasSysVariant);
+    } catch (eES) { _etherSysStyle = false; }
+    var _labels = _commonParts.parts.map(function (p) {
+      if (_etherSysStyle) {
+        if (_isEN && p.labelSysEN) return p.labelSysEN;
+        if (!_isEN && p.labelSys) return p.labelSys;
+      }
+      return p.label;
+    });
     if (_isEN && typeof fMulerENCommonLabel === "function") {
       var _enLabels = [];
-      for (var _li = 0; _li < _labels.length; _li++) { _enLabels.push(fMulerENCommonLabel(_labels[_li])); }
+      for (var _li = 0; _li < _labels.length; _li++) {
+        var _lc = String(_labels[_li] == null ? "" : _labels[_li]);
+        // Only labels still in Greek need transliteration; systematic EN labels
+        // (propan-2-yl) and the multiplier/suffix boxes are already Latin.
+        _enLabels.push(/[\u0370-\u03ff\u1f00-\u1fff]/.test(_lc) ? fMulerENCommonLabel(_lc) : _lc);
+      }
       if (_enLabels.indexOf(null) < 0) { _labels = _enLabels; _renderedENBoxes = true; }
     }
     for (let ci = 0; ci < _labels.length; ci++) {
@@ -17324,20 +17356,53 @@ function fGetEtherGroupFragment3D() {
   return frag.length > 1 ? frag : null;
 }
 
-// COMMON ether name parts: [{label, chain, chain3D, kind}] + suffix "αιθέρας".
+// COMMON ether name parts (v59.24): [{label, labelSys, labelSysEN, chain,
+// chain3D, kind, parentChain, attachLocant, retained}] + suffix "αιθέρας".
 // kind: "alkyl" (chain only, no O) or "ether" (C-O-C, no numbering).
 // chain/chain3D: 1-based atom lists for highlight + numbering.
+// Both arms are treated as parent chains: `parentChain` is the arm's numbering
+// order and `attachLocant` is the O attachment on it (isopropyl -> προπαν-2-υλο
+// with attach 2; tert-butyl -> 2-μεθυλοπροπαν-2-υλο with attach 2). `label`
+// stays the school stem so the render-time euphony is unchanged; `labelSys` /
+// `labelSysEN` are the systematic alternatives and exist only for retained-name
+// arms, which is what `hasSysVariant` reports to the Κοινή|Συστηματική toggle.
+function fGRSysLabel(commonFull) {
+  try {
+    var s = String(commonFull == null ? "" : commonFull);
+    if (s && Object.prototype.hasOwnProperty.call(GR_SYST_SUBST, s)) return GR_SYST_SUBST[s];
+  } catch (e) {}
+  return null;
+}
+
 function fGetEtherCommonParts() {
   if (!selectedMol || !nameExamples[selectedMol]) return null;
   if (nameExamples[selectedMol].classification?.chemicalClass !== "ethers") return null;
   const parentLen = etherInfo ? etherInfo.parentLen : (Array.isArray(mainChainAtomsList) ? mainChainAtomsList.length : 0);
   const alkLen = (typeof etherInfo !== "undefined" && etherInfo && etherInfo.alkoxyLen) || 1;
   const _eI = (typeof etherInfo !== "undefined" && etherInfo) ? etherInfo : null;
-  const stemFor = function (n, attachC, fragment) {
+  // One arm: school stem, the two systematic labels and the systematic attach
+  // locant (retained shapes from the shared table, straight chains at 1).
+  const armOf = function (n, attachC, fragment) {
     const iso = (typeof fAlkylGroupName !== "undefined") ? fAlkylGroupName(n, attachC, "substituent", fragment) : null;
-    const full = iso || ((typeof alkylSubstituentNames !== "undefined" && alkylSubstituentNames[n]) || (nameMainCompList1[n - 1] || ""));
-    return String(full).replace(/ο$/, "");
+    const full = String(iso || ((typeof alkylSubstituentNames !== "undefined" && alkylSubstituentNames[n]) || (nameMainCompList1[n - 1] || "")));
+    var att = 1;
+    try {
+      if (iso && typeof ALKYL_SYS_NUMBERING !== "undefined" &&
+          Object.prototype.hasOwnProperty.call(ALKYL_SYS_NUMBERING, full)) {
+        att = ALKYL_SYS_NUMBERING[full].attach;
+      }
+    } catch (eAtt) { att = 1; }
+    return {
+      stem: full.replace(/ο$/, ""),
+      full: full,
+      retained: !!iso,
+      attachLocant: att,
+      sys: (typeof fGRSysLabel === "function") ? fGRSysLabel(full) : null,
+      sysEN: (typeof fEtherSysLabelEN === "function") ? fEtherSysLabelEN(full) : null,
+    };
   };
+  const _sP = armOf(parentLen, _eI && _eI.parentAttachC, _eI && _eI.parentFrag);
+  const _sA = armOf(alkLen, _eI && _eI.alkoxyAttachC, _eI && _eI.alkoxyFrag);
   const parentChain = _eI ? _eI.parentFrag.map(c=>c+1) : (mainChainAtomsList || []).slice();
   const alkoxyChain = fGetEtherAlkoxyChain() || [];
   const o3 = functionalGroupObj3D && functionalGroupObj3D.ether && functionalGroupObj3D.ether.O[0];
@@ -17347,20 +17412,20 @@ function fGetEtherCommonParts() {
   const alkoxyChain3D = fGetEtherAlkoxyChain3D() || [];
   const symmetric = (typeof etherInfo !== "undefined" && etherInfo) ? !!etherInfo.symmetric : parentLen === alkLen;
   if (symmetric) {
-    const alkyl = stemFor(alkLen, _eI && _eI.alkoxyAttachC, _eI && _eI.alkoxyFrag);
     const both = parentChain.concat(alkoxyChain.filter(function (a) { return parentChain.indexOf(a) < 0; }));
     const both3D = parentChain3D.concat(alkoxyChain3D.filter(function (a) { return parentChain3D.indexOf(a) < 0; }));
+    const _sys = _sA.sys, _sysEN = _sA.sysEN;
     return {
       symmetric: true,
+      hasSysVariant: !!_sA.retained,
       parts: [
-        { label: nameMultiPrefix[1] || "δι", chain: both, chain3D: both3D, kind: "alkyl", numberChain: parentChain, numberChain3D: parentChain3D },
-        { label: alkyl, chain: both, chain3D: both3D, kind: "alkyl", numberChain: parentChain, numberChain3D: parentChain3D },
-        { label: "αιθέρας", chain: "ether", chain3D: "ether", kind: "ether", numberChain: null, numberChain3D: null },
+        { label: nameMultiPrefix[1] || "δι", labelSys: null, labelSysEN: null, chain: both, chain3D: both3D, kind: "alkyl", numberChain: parentChain, numberChain3D: parentChain3D, parentChain: parentChain.slice(), attachLocant: null, retained: false },
+        { label: _sA.stem, labelSys: (_sys && /\d/.test(_sys)) ? "(" + _sys + ")" : _sys, labelSysEN: (_sysEN && /\d/.test(_sysEN)) ? "(" + _sysEN + ")" : _sysEN, chain: both, chain3D: both3D, kind: "alkyl", numberChain: parentChain, numberChain3D: parentChain3D, parentChain: parentChain.slice(), attachLocant: _sA.attachLocant, retained: !!_sA.retained },
+        { label: "αιθέρας", labelSys: null, labelSysEN: null, chain: "ether", chain3D: "ether", kind: "ether", numberChain: null, numberChain3D: null, parentChain: null, attachLocant: null, retained: false },
       ],
     };
   }
-  const sP = stemFor(parentLen, _eI && _eI.parentAttachC, _eI && _eI.parentFrag), sA = stemFor(alkLen, _eI && _eI.alkoxyAttachC, _eI && _eI.alkoxyFrag);
-  const mk = function (label, isParent) {
+  const mk = function (arm, isParent) {
     // Alkoxy numbering (v54.39): systematic internal order instead of the
     // raw fragment order; the parent chain keeps main-chain numbering.
     var _numA = alkoxyChain, _numA3 = alkoxyChain3D;
@@ -17378,21 +17443,29 @@ function fGetEtherCommonParts() {
         if (_ord3 && _ord3.length) _numA3 = _ord3;
       } catch (eAN3) {}
     }
+    var _pc = isParent ? mainChainAtomsList.slice() : _numA.slice();
+    var _attC = isParent ? (_eI && _eI.parentAttachC) : (_eI && _eI.alkoxyAttachC);
+    var _attLoc = (_attC != null && _pc.indexOf(_attC + 1) >= 0) ? _pc.indexOf(_attC + 1) + 1 : arm.attachLocant;
     return {
-      label: label,
+      label: arm.stem,
+      labelSys: arm.sys,
+      labelSysEN: arm.sysEN,
       chain: isParent ? parentChain : alkoxyChain,
       chain3D: isParent ? parentChain3D : alkoxyChain3D,
       kind: "alkyl",
       numberChain: isParent ? mainChainAtomsList.slice() : _numA,
       numberChain3D: isParent ? mainChainAtoms3D.slice() : _numA3,
+      parentChain: _pc,
+      attachLocant: _attLoc,
+      retained: !!arm.retained,
     };
   };
-  const pair = [mk(sP, true), mk(sA, false)].sort(function (a, b) {
+  const pair = [mk(_sP, true), mk(_sA, false)].sort(function (a, b) {
     return fEtherNameSortKey(a.label) < fEtherNameSortKey(b.label) ? -1 : fEtherNameSortKey(a.label) > fEtherNameSortKey(b.label) ? 1 : 0;
   });
   fEtherCommonLabels(pair.map(p=>p.label)).forEach((label,i)=>{pair[i].label=label;});
-  pair.push({ label: "αιθέρας", chain: "ether", chain3D: "ether", kind: "ether", numberChain: null, numberChain3D: null });
-  return { symmetric: false, parts: pair };
+  pair.push({ label: "αιθέρας", labelSys: null, labelSysEN: null, chain: "ether", chain3D: "ether", kind: "ether", numberChain: null, numberChain3D: null, parentChain: null, attachLocant: null, retained: false });
+  return { symmetric: false, hasSysVariant: !!(_sP.retained || _sA.retained), parts: pair };
 }
 
 // ── Ester helpers ─────────────────────────────────────────────────────────

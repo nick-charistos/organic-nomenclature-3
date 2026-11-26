@@ -8,7 +8,7 @@ changelog.
 
 Greek-first static web app for teaching organic nomenclature (JSME + JSmol +
 vanilla JavaScript; no build step). The live entry point is `index.html` →
-`mulermoc-nom-59.html`. Current live version: **v59.23** (2026-11-26).
+`mulermoc-nom-59.html`. Current live version: **v59.24** (2026-11-26).
 Older versions v42–v58 remain runnable at the repo root but are **frozen**.
 
 ## Working mode (owner preference, 2026-11-22)
@@ -177,6 +177,18 @@ Update docs in the same commit as the change:
   and unexpected throws still block; the
   update path deletes `naming` once the engine names the case. Workflow and guard order:
   `docs/new-molecules-upgrade-naming-algorithm.md`.
+- Common ether naming has two orthogonal modes (v59.24): `etherNamingMode`
+  picks the frame (`iupac` substitutive vs `common` R–O–R' + αιθέρας) and
+  `substNamingMode` picks the group-label style (`school` vs `sys`). Both ether
+  arms are parent chains — `fGetEtherCommonParts()` returns
+  `parentChain`/`attachLocant` plus `label`/`labelSys`/`labelSysEN` — and the
+  systematic labels reuse `GR_SYST_SUBST` / `EN_SYST_SUBST` (straight-chain arms
+  keep the school name, like the substitute slots). Multiplied symmetric groups
+  take parens: `δι(προπαν-2-υλο)` / `di(propan-2-yl)`. Keep the box order and
+  ids (`comp10/11/12`) positional — quiz targets and scenario captures depend on
+  them; never re-sort by the systematic label. The toggle shows only when
+  `hasSysVariant` (an arm uses a retained name), so straight-chain ethers are
+  unchanged.
 - Record data are split by origin: geometry, provenance, oracle inputs and
   decline diagnostics are stored; chains, names, components, classification and
   SMILES are engine output and live only in the regenerable `derived` block

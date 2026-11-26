@@ -1,16 +1,17 @@
 # MolWave molecule-data roadmap
 
-Status: planning — development mode is v59.23 (committed `460a5a2`)
+Status: planning — development mode is v59.24
 
 Progress: v59.23 exports engine-test molecules as JSON (`schemaVersion: 2`,
 flat legacy record + stamp — a **stopgap**) and stores the `unsupported` naming
-diagnostic record. The record **shape** is now frozen at v3 (2026-11-26, below);
-schema files, the v3 export, the normalizer, the per-file dev loader and the
-generated release bundle are not built yet.
+diagnostic record. v59.24 ships the common-ether systematic labels and per-arm
+parent chains, which was the last record-shape change. The record **shape** is
+frozen at v3 (2026-11-26, below); schema files, the v3 export, the normalizer,
+the per-file dev loader and the generated release bundle are not built yet.
 
-Batch order (owner, 2026-11-26): **v59.24 ether naming → v59.25 schema freeze →
-quiz multi-chain → post-2013 algorithm → corpus/release generator.** Ether work
-is the only remaining shape-changing change; post-2013 is population only.
+Batch order (owner, 2026-11-26): **v59.24 ether naming (done) → v59.25 schema
+freeze → quiz multi-chain verification → post-2013 algorithm → corpus/release
+generator.**
 
 Target: closed, stable corpus release (~1000 molecules, v60)
 
@@ -132,8 +133,18 @@ components, classification and SMILES are engine output.
   },
 
   "ethers": {
-    "common":       { "groups": [ { "atoms": {}, "parentChain": {}, "attachLocant": {},
-                                    "substituents": [], "labels": {} } ] },
+    "common": {
+      "symmetric": false,
+      "groups": [
+        { "role": "parent",
+          "atoms":        { "condensed": [], "expanded": [], "skeletal": [], "threeD": [] },
+          "parentChain":  { "condensed": [], "expanded": [], "skeletal": [], "threeD": [] },
+          "attachLocant": { "condensed": 2, "expanded": 2, "skeletal": 2, "threeD": 2 },
+          "substituents": [],
+          "labels": { "gr": { "common": "ισοπροπυλο", "systematic": "προπαν-2-υλο" },
+                      "en": { "common": "isopropyl",   "systematic": "propan-2-yl" } } }
+      ]
+    },
     "substitutive": { "parent": { "rule": "school-pre2013", "chain": 0 },
                       "alkoxy": { "parentChain": {}, "attachLocant": {} } }
   },
@@ -165,8 +176,8 @@ Record rules:
 
 - **Optional blocks appear only where applicable**: `ethers` only for ethers,
   `naming` only for engine declines, `derived.names` only for the supported
-  variants. The exact `ethers` keys are finalized by the v59.24 ether batch; the
-  two-level split (frame → branch descriptor) is fixed.
+  variants. The `ethers` keys follow the v59.24 implementation (frame → arm
+  descriptor → per-representation atoms/chains/locants + both label styles).
 
 - **Atom indices are 1-based molfile atom numbers, carbons only.** The runtime
   mixes 0-based fragments with 1-based main chains; the JSON fixes one
@@ -174,9 +185,11 @@ Record rules:
 - **Rule eras are string ids** (`school-pre2013`, `iupac-2013`), never booleans,
   so a new rule is a new key, not a schema change. Post-2013 can select a
   different parent for the same molecule; the shape already allows it.
-- **Ethers decompose differently per style**: common = two alkyl arms (each with
-  its own parent chain, attach locant and substituents); substitutive = parent
-  chain + alkoxy substituent. Store per style; one shared group array is wrong.
+- **Ethers decompose differently per style**: common = two alkyl arms, each with
+  its own parent chain, attach locant, substituents and both label styles
+  (`labels.gr.common/systematic`, `labels.en.common/systematic`, emitted by
+  `fGetEtherCommonParts()` in v59.24); substitutive = parent chain + alkoxy
+  substituent. Store per style; one shared group array is wrong.
 - **`derived` is machine-written, engine-stamped and never read at runtime.**
   The validator regenerates it and requires a zero diff; the build fails if the
   data's `derived.engine` predates the core naming version. Option A (block in
@@ -281,19 +294,25 @@ Menu requirements:
 
 ## Milestones
 
-### M0 — Ether naming (v59.24, before the schema freeze)
+### M0 — Ether naming (v59.24, before the schema freeze) — DONE
 
-- [ ] Shared structural alkyl descriptor (parent chain, attach locant,
+- [x] Shared structural alkyl descriptor (parent chain, attach locant,
       substituents) in `core`.
-- [ ] Common ether: a parent chain for **both** arms.
-- [ ] Common frame with both label styles: `ισοπροπυλο μεθυλαιθέρας` /
+- [x] Common ether: a parent chain for **both** arms.
+- [x] Common frame with both label styles: `ισοπροπυλο μεθυλαιθέρας` /
       `προπαν-2-υλο μεθυλαιθέρας`.
-- [ ] Un-hide the Κοινή/Συστηματική toggle in common ether mode.
-- [ ] EN path uses the systematic label map, not transliteration.
-- [ ] Symmetric multiplier/parenthesis rule (`δι(προπαν-2-υλο)`).
+- [x] Un-hide the Κοινή/Συστηματική toggle in common ether mode.
+- [x] EN path uses the systematic label map, not transliteration.
+- [x] Symmetric multiplier/parenthesis rule (`δι(προπαν-2-υλο)`).
 
-Acceptance: `probe-branch-quiz` + `probe-final` green; the ether list reads
+Acceptance met: `probe-branch-quiz` + `probe-final` green; the ether list reads
 correctly in GR and EN for common, systematic and substitutive frames.
+
+Implementation: `fGetEtherCommonParts()` (molview) returns
+`parentChain`/`attachLocant`/`label`/`labelSys`/`labelSysEN`/`retained` per arm
+plus `hasSysVariant`; `fGRSysLabel()` and `fEtherSysLabelEN()` reuse
+`GR_SYST_SUBST` / `EN_SYST_SUBST`. Box order and ids stay positional. The stored
+`ethers` block above mirrors that descriptor.
 
 ### M1 — Freeze schema and contract (v3)
 
@@ -463,8 +482,8 @@ Drupal build; no runtime corpus network dependency.
 
 ## Immediate next actions
 
-1. v59.24 ether naming (M0) — the last shape-changing work; the record's ether
-   block depends on it.
+1. v59.24 ether naming (M0) — **done**; the record's ether block now mirrors the
+   implemented per-arm descriptor.
 2. v59.25 schema freeze (M1/M2) — `molecules/schema.json`, v3 export, the
    v2 → v3 normalizer, validator skeleton, synthetic rule-era record.
 3. Quiz multi-chain (M2b) — verification only (pool matching already shipped),

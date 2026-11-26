@@ -1,7 +1,7 @@
 # muler-harness (headless verification)
 
 Playwright + installed Chrome probes for the MuLERMoC live working tree
-(currently v59.23 — the suite targets `mulermoc-nom-59.html`; v58 and older
+(currently v59.24 — the suite targets `mulermoc-nom-59.html`; v58 and older
 pages stay in the repo but are frozen, so the probes follow the live build).
 Run from the repo root. Requires node + Playwright (`npm i playwright-core`
 once, anywhere on NODE_PATH or in this dir) and a Chrome binary.
@@ -65,7 +65,7 @@ rerun only the probe for that layer. See `AGENTS.md` → Verification.
   `allowSelect` gating (hide entry when off, uncheck-while-active exits),
   Present block (toggle no-op + CSS hides the entry). Hard-fail.
 - `probe-compact-main.js` — main-chain versus free compacted-label semantics: COOH/HCOOH/CN resolve to the anchor carbon under a main-chain target, NO2 stays a fragment, free selection stays a fragment; checks C-only paint, hover box, badge, exact reward, the free-mode backplate edge, clear/marker restore and methanal (no highlight geometry).
-- `probe-scenario-quiz.js` — v59.04 scenario quiz contract (live `?v=59.23`):
+- `probe-scenario-quiz.js` — v59.04 scenario quiz contract (live `?v=59.24`):
   capture stores the task + its required component set + labels, `Update` keeps
   an authored task and `startMode`, switching the drawer master checkbox off
   clears it; the drawer Start select + `.is-start` marker work, Present stays idle with

@@ -8,9 +8,9 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 Forked from v58.50, rebased on v58.51 (`mulermoc-nom-59.html` + `js/*-59.js` + `css/*-59.css` +
 `jsme-nick-nomeclature-moc2-data_59.js` + `spt/init-3-59.spt` +
-`zz-test-core59.html`, `?v=59.23`; `ui-icons.js`, `js/vendor/`, `jsme/` and
+`zz-test-core59.html`, `?v=59.24`; `ui-icons.js`, `js/vendor/`, `jsme/` and
 `mols/` stay shared). Chemistry/naming results are v58's and the scenario data
-shape is inherited from v58, but v59.02–v59.23 add UI, data, quiz-step-authoring
+shape is inherited from v58, but v59.02–v59.24 add UI, data, quiz-step-authoring
 and authoring/engine-scope changes (see below); the v59.00 work is data geometry
 and the MOL pipeline.
 
@@ -93,7 +93,7 @@ and the MOL pipeline.
   prompt while picking (`pending3D` cancelled). The v58 CSS comes along:
   `--veryLightOrchid`, orchid `.quizTodo` / `.quizTodo.selected` /
   `.scQuizTag.selected` / `.is-start` and the shared `.scQuizPrompt` +
-  `.scQuizStartPrompt` skin. Asset refs moved to `?v=59.01` (now `?v=59.23`).
+  `.scQuizStartPrompt` skin. Asset refs moved to `?v=59.01` (now `?v=59.24`).
 - **Rule grouping bullet removed (v59.02).** The `.groupingMode` selector now
   offers Όλα τα μόρια / Χημικές Τάξεις / Ομόλογες Σειρές only. The `rule` mode
   itself is kept intact: `moleculeGroupingMode === "rule"`, the `ruleExamples`
@@ -364,7 +364,28 @@ eyeballs #139/#140/#154.
   throw, so those reach the decline guard). `probe-final` and
   `probe-scenario-quiz` green; `?v=59.23`; owner verifies the live
   Submit/Accept/save/export/select flow.
-- **Docs resync (2026-11-23, docs-only).** Current-tree references were synced
+- **Common ethers: systematic group labels (v59.24).** The common ether frame
+  now honours the Κοινή|Συστηματική (GR) / Traditional|Systematic (EN) toggle
+  instead of hiding it: the frame stays `R-O-R'` + αιθέρας, and only the group
+  labels switch, e.g. `ισοπροπυλο μεθυλαιθέρας` → `προπαν-2-υλο μεθυλαιθέρας`
+  (EN `isopropyl methyl ether` → `propan-2-yl methyl ether`). Each ether arm is
+  now a parent chain in its own right: `fGetEtherCommonParts()` returns the
+  arm's numbering chain, the O attachment locant and both labels
+  (`label/labelSys/labelSysEN`), reusing `GR_SYST_SUBST` / `EN_SYST_SUBST`
+  (isopropyl → propan-2-yl, sec-butyl → butan-2-yl, tert-butyl →
+  2-methylpropan-2-yl, isobutyl → 2-methylpropyl). Straight-chain arms keep the
+  school name, matching the existing substituent-slot convention. Multiplied
+  symmetric groups take parens (`δι(προπαν-2-υλο)` / `di(propan-2-yl)`), the
+  digit-bearing P-16.3.4(a) analogue already used for substituents. The toggle
+  appears only when an arm actually uses a retained name (`hasSysVariant`), so
+  diethyl/dimethyl/ethyl methyl ethers are unchanged; box order and ids
+  (`comp10/11/12`) stay positional, so quiz targets, highlights and scenario
+  captures are unaffected. `fEtherSysLabelEN()` added in `name-en-59`.
+  Verified: `node --check`, headless label check (GR+EN: isopropyl_methyl,
+  tert_butyl_isopropyl, diethyl, ethyl_methyl — boxes, parent chains, attach
+  locants, toggle visibility), `probe-branch-quiz` and `probe-final` green;
+  `?v=59.24`. Owner verifies the live look.
+
   to v59.10 across `README`, `AGENTS`, `PROJECT-PLAN`/`PROJECT-PLAN-GR`,
   `LAYERS-PLAN`, `didactic-scenario-plan` and the harness README; the EN
   teacher-guide encoding is repaired; the harness README records the v59.04

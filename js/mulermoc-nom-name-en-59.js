@@ -730,6 +730,21 @@ var EN_SYST_SUBST = {
   "sec-butoxy": "butan-2-yloxy"
 };
 
+// v59.24: common-ether arm label in systematic form. Transliterate the Greek
+// common label, then apply the retained->systematic map (isopropyl ->
+// propan-2-yl). Unmapped straight-chain arms keep their school name (same
+// convention as the substitute slots). Returns null when transliteration
+// cannot produce clean Latin text, so the toggle falls back to the common
+// label instead of showing a half-Greek box.
+function fEtherSysLabelEN(label) {
+  try {
+    var t = (typeof fMulerENCommonLabel === "function") ? fMulerENCommonLabel(label) : null;
+    if (!t) return null;
+    if (Object.prototype.hasOwnProperty.call(EN_SYST_SUBST, t)) return EN_SYST_SUBST[t];
+    return t;
+  } catch (e) { return null; }
+}
+
 // Substituted-stem test for the systematic bis/tris upgrade (P-16.3.4(a)):
 // a multiplied substituent whose stem is a hetero-substituted ALKYL group
 // (halo/nitro decorated branches, v54.23: chloromethyl, 2-chloroethyl, ...)
