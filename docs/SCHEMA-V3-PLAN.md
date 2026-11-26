@@ -1,9 +1,10 @@
 # Schema v3 freeze — implementation plan (v59.29)
 
 Status: **decisions locked; audit semantics fixed** (2026-11-26). Current tree:
-v59.29. Scope: the molecule record shape, the v3 JSON export, the v2 → v3
-normalizer and the validator skeleton. Runtime naming does not change in this
-batch.
+v59.29 (committed `de11ad4`). Scope: the molecule record shape, the v3 JSON
+export, the v2 → v3 normalizer and the validator skeleton. Runtime naming does
+not change in this batch. **Next session starts at §5 M1** (`molecules/schema.json`
++ samples), then §6 M2.
 
 Related: `docs/MOLECULE-DATA-ROADMAP.md` (record section, M1/M2/M2b),
 `docs/new-molecules-upgrade-naming-algorithm.md` (test-molecule workflow).
