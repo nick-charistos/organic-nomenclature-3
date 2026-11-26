@@ -3635,7 +3635,7 @@ function fZigzagMol(text, chain) {
           bd = norm2(-bd.y * r2, bd.x * r2) || bd;
         }
         usedC++;
-        queue.push({ node: br, fx: c0, dx: bd.x, dy: bd.y, rot: 0, tz: 1 });
+        queue.push({ node: br, fx: c0, dx: bd.x, dy: bd.y, rot: 0, tz: 1, pt: (bo(c0, br) === 3) });
       }
     }
     while (queue.length) {
@@ -3649,7 +3649,9 @@ function fZigzagMol(text, chain) {
         var cand = adj[it.node][w];
         if (visited[cand]) continue;
         var nd, ntz = it.tz;
-        if (kids === 0 && bo(it.node, cand) === 3) { nd = { x: it.dx, y: it.dy }; }
+        // A triple bond, and the bond right after it, continue straight so
+        // both sp carbons keep 180° (v59.22; it.pt = incoming bond was triple).
+        if (kids === 0 && (bo(it.node, cand) === 3 || it.pt)) { nd = { x: it.dx, y: it.dy }; }
         else if (kids === 0) {
           // Zigzag continuation (v59.18): turn ±60° off the incoming direction
           // instead of going straight. The first extra branch historically
@@ -3672,7 +3674,7 @@ function fZigzagMol(text, chain) {
           nd = norm2(-it.dy * rr, it.dx * rr) || { x: -it.dx, y: -it.dy };
         }
         kids++;
-        queue.push({ node: cand, fx: it.node, dx: nd.x, dy: nd.y, tz: ntz });
+        queue.push({ node: cand, fx: it.node, dx: nd.x, dy: nd.y, tz: ntz, pt: (bo(it.node, cand) === 3) });
       }
     }
     var atoms = [], newIdx = {}, bondMap = {};
