@@ -1,6 +1,6 @@
 # Docs index
 
-Current tree is **v59** (`mulermoc-nom-59.html`, `?v=59.21`). This page separates
+Current tree is **v59** (`mulermoc-nom-59.html`, `?v=59.23`). This page separates
 current guidance from historical records.
 
 ## Current / source of truth
@@ -28,6 +28,9 @@ current guidance from historical records.
 - [NAMING-FLOWCHART.md](NAMING-FLOWCHART.md),
   [NAMING-FLOWCHART-DETAILED.md](NAMING-FLOWCHART-DETAILED.md) — current naming
   algorithm walkthroughs.
+- [new-molecules-upgrade-naming-algorithm.md](new-molecules-upgrade-naming-algorithm.md)
+  — engine test molecules: the v59.23 accept-and-diagnose contract, the
+  `naming` record schema, the test-corpus workflow and the guard upgrade order.
 - [CHEM-LIBRARIES.md](CHEM-LIBRARIES.md) — chemistry/cheminformatics library
   survey.
 - [TEACHER-GUIDE-EN.md](TEACHER-GUIDE-EN.md) — English-mode teacher guide.

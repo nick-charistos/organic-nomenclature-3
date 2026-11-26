@@ -105,6 +105,29 @@ var MULER_STRINGS = {
   submitEmpty: { gr: "Άδειο σχέδιο — σχεδίασε κάτι πρώτα.", en: "Empty drawing — draw something first." },
   submitRing: { gr: "Οι δακτύλιοι είναι εκτός σκοπού — μόνο άκυκλες δομές.", en: "Rings are out of scope — acyclic structures only." },
   submitEngineFail: { gr: "Η μηχανή απέτυχε — έλεγξε το σχέδιο.", en: "Engine failed — check the drawing." },
+  // v59.23: engine test molecules (structure outside the namer's scope).
+  namingUnsupportedName: { gr: "Μη υποστηριζόμενη δομή", en: "Unsupported structure" },
+  namingUnsupportedTitle: { gr: "Εκτός κάλυψης μηχανής", en: "Outside engine scope" },
+  namingUnsupportedNote: { gr: "Το μόριο αποθηκεύεται ως δοκιμαστική περίπτωση, με διαγνωστικά για την επέκταση του αλγορίθμου.", en: "Stored as a test case, with diagnostics for extending the algorithm." },
+  namingUnsupportedReason: { gr: "Αιτία", en: "Reason" },
+  namingUnsupportedWhere: { gr: "Σημείο ελέγχου", en: "Guard" },
+  namingUnsupportedSelected: { gr: "Μόριο δοκιμής — δεν έχει καταγραφεί ελληνική ονομασία.", en: "Test molecule — no Greek name was recorded." },
+  namingUnsupportedNoPredict: { gr: "Χωρίς πρόβλεψη μηχανής — δεν συγκρίνεται.", en: "No engine prediction — nothing to compare." },
+  namingUnsupportedStored: { gr: "Διαγνωστικά που αποθηκεύτηκαν", en: "Stored diagnostics" },
+  submitUnsupported: { gr: "Η μηχανή δεν καλύπτει ακόμη αυτή τη δομή — θα αποθηκευτεί ως μόριο δοκιμής.", en: "The engine does not cover this structure yet — it will be stored as a test molecule." },
+  submitUnsupportedStatus: { gr: "Εκτός κάλυψης μηχανής — μόριο δοκιμής", en: "Outside engine scope — test molecule" },
+  acceptUnsupported: { gr: "Αποθηκεύτηκε ως μόριο δοκιμής — η μηχανή δεν το ονομάζει ακόμη.", en: "Stored as a test molecule — the engine cannot name it yet." },
+  namingDiagElement: { gr: "Στοιχείο εκτός", en: "Unsupported element" },
+  namingDiagGroup: { gr: "Ομάδα εκτός", en: "Unsupported group" },
+  namingDiagBond: { gr: "Δεσμός εκτός κύριας αλυσίδας", en: "Bond off the main chain" },
+  namingDiagGroupOffChain: { gr: "Ομάδα εκτός κύριας αλυσίδας", en: "Group off the main chain" },
+  namingDiagPrincipal: { gr: "Μη υποστηριζόμενη κύρια ομάδα", en: "Unsupported principal group" },
+  namingDiagSubstituent: { gr: "Μη υποστηριζόμενη ομάδα υποκαταστάτη", en: "Unsupported substituent group" },
+  namingDiagMultiFg: { gr: "Πολλαπλές λειτουργικές ομάδες", en: "Multiple functional groups" },
+  namingDiagHalogen: { gr: "Μη υποστηριζόμενο αλογόνο", en: "Unsupported halogen" },
+  namingDiagNitroBond: { gr: "Νιτροομάδα με πολλαπλό δεσμό C-C", en: "Nitro with a C-C multiple bond" },
+  namingDiagChain: { gr: "Κύρια αλυσίδα", en: "Main chain" },
+  namingDiagBranches: { gr: "διακλαδώσεις", en: "branch carbons" },
   submitRunning: { gr: "Υποβολή…", en: "Submitting…" },
   submitFetching: { gr: "Αναζήτηση PubChem…", en: "Looking up PubChem…" },
   submitNoRecord: { gr: "Χωρίς εγγραφή PubChem — μόνο μηχανή.", en: "No PubChem record — engine only." },
@@ -132,6 +155,8 @@ var MULER_STRINGS = {
   acceptSaved: { gr: "Το αρχείο κατέβηκε — βάλτο δίπλα στα δεδομένα.", en: "File downloaded — place it next to the data file." },
   acceptKept: { gr: "Αποδεκτή στη συνεδρία — πάτα «Αποθήκευση νέων μορίων».", en: "Accepted into this session — press “Save new molecules”." },
   saveNewMols: { gr: "Αποθήκευση νέων μορίων", en: "Save new molecules" },
+  exportJson: { gr: "Εξαγωγή JSON", en: "Export JSON" },
+  exportJsonDone: { gr: "μόρια εξήχθησαν ως JSON.", en: "molecules exported as JSON." },
   pickCustomToSave: { gr: "Επίλεξε ένα προσαρμοσμένο μόριο.", en: "Pick a custom molecule." },
   customSaveAllNone: { gr: "Τίποτα νέο για αποθήκευση — σχεδίασε και Αποδέξου ένα μόριο.", en: "Nothing new to save — draw and Accept a molecule first." },
   customSaveAllDone: { gr: "αρχεία κατέβηκαν — βάλτα δίπλα στα δεδομένα.", en: "files downloaded — place them next to the data file." },
@@ -575,6 +600,7 @@ function fMulerPaintStaticChrome() {
   setTip("#selectAtomsBtn", fMulerT("selectAtoms"));
   setTip("#newMolBtn", fMulerT("newMol"));
   setTip("#saveMolBtn", fMulerT("saveNewMols"));
+  setTip("#exportJsonBtn", fMulerT("exportJson"));
   setTip("#viewerSettingsBtn", fMulerT("settings"));
   setTip("#nameSettingsBtn", fMulerT("namingSettings"));
   setTip("#readNameBtn", fMulerT("readName"));

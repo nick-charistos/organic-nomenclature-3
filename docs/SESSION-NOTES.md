@@ -1,7 +1,9 @@
 # Session notes — 2026-11-25 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** 2026-11-25 — **v59 is LIVE**
-> (`index.html` → `mulermoc-nom-59.html`, `?v=59.21`): 2D data upgrade.
+> **Resume pointer (cross-machine):** 2026-11-26 — **v59 is LIVE**
+> (`index.html` → `mulermoc-nom-59.html`, `?v=59.23`): 2D data upgrade,
+> branch-triple linearity (v59.22, committed `9ecd22c`) and engine test
+> molecules with decline diagnostics (v59.23, uncommitted).
 > **154 molecules** (141 + 6 branched alkanes + 7 Anastasia student molecules, v59.17); every stored form uses one
 > frame (heavy 1.17, H 0.78). **Design rule: expanded = condensed + H** — the
 > expanded form is derived from the condensed molfile and keeps its heavy atom
@@ -129,7 +131,10 @@
 > No code change (v59.11 bumps the asset refs).
 > Docs: current index `docs/README.md`; historical material in `docs/archive/`
 > (pre-v54 notes split to `docs/archive/SESSION-NOTES-pre-v54.md`).
-> Committed: v59.01 (ff2058c) + v59.02 (7e18c65) + v59.03 + v59.04 + v59.05 + v59.06 + v59.07 + v59.08 + v59.09 + v59.10 + v59.11 + v59.12 + v59.13 + v59.14 + v59.15 + v59.16 + v59.17 + v59.18 + v59.19 + v59.20 + v59.21. v58.51 stays runnable and frozen.
+> Committed: v59.01 (ff2058c) + v59.02 (7e18c65) + v59.03 + v59.04 + v59.05 + v59.06 + v59.07 + v59.08 + v59.09 + v59.10 + v59.11 + v59.12 + v59.13 + v59.14 + v59.15 + v59.16 + v59.17 + v59.18 + v59.19 + v59.20 + v59.21 + v59.22 (9ecd22c). v58.51 stays runnable and frozen.
+> **Working tree (uncommitted, 2026-11-26):** v59.23 (engine test molecules +
+> decline diagnostics + plan doc `docs/new-molecules-upgrade-naming-algorithm.md`).
+> Asset refs are `?v=59.23` on the live page. Owner verifies; commit pending.
 >
 > **Previous pointer (v58.50):** 2026-11-21 — **v58 is LIVE**
 > (`index.html` → `mulermoc-nom-58.html`, `?v=58.50`, review follow-ups +
@@ -1006,3 +1011,12 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * Fix: new `fMulerEchoZoomWrap(cmds)` - reads the live zoom, defines at `zoom 100` with scaling on, restores the camera in the same script (one repaint, no flash) - used by `fShowNumber3D` (numbering, animated + sync paths) and `fMulerSelectSeq3D` (pick numbers). Labels keep their existing zoom-100 patch; PNG-export caption untouched. v59.20's dance removed.
 * Verified in the live applet: helper emits `zoom 100; set fontscaling TRUE; ...; zoom 30;`, the camera is left at the author's zoom, all numbering echoes carry the neutral 0.0311 factor, and screenshots at zoom 30/50/150 show the digits tracking the labels. `node --check`, `git diff --check` clean. Owner confirms correct. No probes per working mode.
 * Also noted for later: `font echo <size> <face> <style> <factor>` accepts an explicit bake factor (verified it sticks), so the zoom dance could be replaced by an explicit neutral factor if the neutral value is measured per applet size.
+
+## 2026-11-26 - branch triple bonds stay linear (?v=59.22, owner ruling: triples never bend)
+* `fZigzagMol` forced only the bond entering a branch triple bond straight; the bond leaving it took the +-60 degree zigzag turn, so the alkyne bent at the far sp carbon (measured 180 / 120 degrees on `chain-CH2-C#C-CH3`). The chain walk already had `oPrev === 3 || prevTriple`; the branch queue now carries `pt` (incoming bond was triple) and the first-child rule is `kids === 0 && (bo(it.node, cand) === 3 || it.pt)`, so both sp carbons keep 180 degrees in a branch too and the sp3 neighbours keep their 120 degree kink.
+* Verified: `node --check`, `git diff --check`; synthetic branch alkyne 180/180 (was 180/120), branch nitrile 180 (unchanged), chain alkyne 180/180 (unchanged); the six `fZigzagMol`-built alkane skeletals regenerate byte-identically and the 8 stored triple-bearing molecules already measure 180/180 in both forms. No probes per working mode; owner verifies a branched-alkyne draft.
+
+## 2026-11-26 - engine test molecules + decline diagnostics (?v=59.23, owner request)
+* Owner: the 18 fail-closed naming guards block the very molecules needed to extend the engine, so accept them as test cases and store where/why the code failed in the custom record. `fDeclineNaming()` now attaches `mulerDecline` (reason, call site parsed from the stack and normalized to `file:line`, full frame, timestamp, feature audit covering all 18 decline classes, compact state snapshot); `fMolDraftSandboxAnalyse` maps it to `{ ok: true, unsupported: true, decline }` (rings, unparseable drawings and unexpected throws still block); Submit/Accept run the test-molecule path: warning toast + status line, preview block with reason/guard/offending atoms or groups instead of name rows, no GR->EN transliteration, no oracle auto-verdicts, `grName: ""`, and an additive `naming` block in the record (`status/reason/callSite/frame/at/features[{code:element|group|group-off-chain|group-principal|group-substituent|multi-fg|halogen-type|nitro-multibond|bond-off-chain,...}]/snapshot{mainChain,branchCarbons,multiBondsCC,...}`). Test molecules bypass the 3D gate; normal molecules keep it. Name panel shows a note with a `<details>` diagnostics view for such entries; generated `MULERMOC_*_data.js` headers mark `Naming: UNSUPPORTED`. JSON export is available alongside the legacy JS save (`format: "mulermoc-molecule"`, `schemaVersion: 2`); new GR/EN keys cover the diagnostics and JSON export; CSS for the two blocks.
+* Plan/feedback loop documented in `docs/new-molecules-upgrade-naming-algorithm.md` (schema reference, corpus workflow, suggested guard order: principal groups -> off-chain groups -> off-chain C=C/C#C -> multi-FG layout -> elements; open: menu test-molecule badge, corpus location).
+* Verified: `node --check` all `js/*-59.js`, `git diff --check`, headless decline-trace check (reason/callSite/features/snapshot), JSON export shape, 3D-gate bypass, `fDetectMolType` no-throw on S/P/amine graphs; `probe-final` and `probe-scenario-quiz` green. Owner verifies the live Submit/Accept/export/select flow. Uncommitted.

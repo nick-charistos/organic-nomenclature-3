@@ -1,7 +1,13 @@
 # MolWave molecule-data roadmap
 
-Status: planning — development mode is v59.21
-Target: closed, stable corpus release (~1000 molecules, v60)  
+Status: planning — development mode is v59.23
+
+Progress: v59.23 exports engine-test molecules as JSON and stores the
+`unsupported` naming diagnostic record; the per-file dev loader and generated
+release bundle are not built yet.
+
+Target: closed, stable corpus release (~1000 molecules, v60)
+
 Scope: stored molecules + menu/index pipeline. No new-molecule UI in the closed release.
 
 ## Goal

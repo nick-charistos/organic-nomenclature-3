@@ -585,7 +585,7 @@ function fClassifyAllMolecules() {
 // gear into #viewerSettingsBtnDiv.
 // Uses existing `svgSettings` constant and the fToggleViewerSettings() handler.
 function fInitViewerSettingsBtn() {
-  const markup = `<button id='selectAtomsBtn' class='settingsBtn hide' onclick='fToggleAtomSelect()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("selectAtoms") : "Επιλογή ατόμων/δεσμών") + `'>${svgSelectAtoms}</button><button id='editMolBtn' class='settingsBtn hide' onclick='fEditMolDraft()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("editMol") : "Επεξεργασία μορίου") + `'>${svgEditMol}</button><button id='newMolBtn' class='settingsBtn hide' onclick='fNewMolDraft()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("newMol") : "Νέο μόριο") + `'>${svgNewMol}</button><button id='saveMolBtn' class='settingsBtn hide btnInactive' onclick='fMolDraftSaveAllCustom()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("saveNewMols") : "Save new molecules") + `'>${svgSaveMol}</button><button id='viewerSettingsBtn' class='settingsBtn' onclick='fToggleViewerSettings()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("settings") : "Ρυθμίσεις") + `'>${svgSettings}</button>`;
+  const markup = `<button id='selectAtomsBtn' class='settingsBtn hide' onclick='fToggleAtomSelect()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("selectAtoms") : "Επιλογή ατόμων/δεσμών") + `'>${svgSelectAtoms}</button><button id='editMolBtn' class='settingsBtn hide' onclick='fEditMolDraft()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("editMol") : "Επεξεργασία μορίου") + `'>${svgEditMol}</button><button id='newMolBtn' class='settingsBtn hide' onclick='fNewMolDraft()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("newMol") : "Νέο μόριο") + `'>${svgNewMol}</button><button id='saveMolBtn' class='settingsBtn hide btnInactive' onclick='fMolDraftSaveAllCustom()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("saveNewMols") : "Save new molecules") + `'>${svgSaveMol}</button><button id='exportJsonBtn' class='settingsBtn hide btnInactive' onclick='fMolDraftExportJsonAll()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("exportJson") : "Export JSON") + `'>${(window.MuLERIcons && window.MuLERIcons.downloadList) || svgSaveMol}</button><button id='viewerSettingsBtn' class='settingsBtn' onclick='fToggleViewerSettings()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("settings") : "Ρυθμίσεις") + `'>${svgSettings}</button>`;
   const visMarkup = `<button id='view2DBtn' class='settingsBtn visBtn active' onclick='fToggleViewer2D()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("show2D") : "Εμφάνιση 2D") + `'>2D</button><button id='view3DBtn' class='settingsBtn visBtn active' onclick='fToggleViewer3D()' data-tooltip='` + ((typeof fMulerT === "function") ? fMulerT("show3D") : "Εμφάνιση 3D") + `'>3D</button>`;
   function insert() {
     try {
@@ -927,6 +927,81 @@ function fMolDraftT(key, fallback) {
     }
   } catch (eT) {}
   return fallback;
+}
+
+// Provisional Greek label for a molecule the naming engine cannot handle yet
+// (v59.23). Never translated to EN: it is a marker, not a name.
+function fMolDraftUnsupportedName() {
+  return fMolDraftT("namingUnsupportedName", "Μη υποστηριζόμενη δομή");
+}
+
+// One diagnostic line per structural finding (already HTML-escaped). Shared by
+// the draft preview and the name-panel note, so a stored test molecule stays
+// self-explaining after reload.
+function fMolDraftUnsupportedLines(decl, max) {
+  var esc = fMolDraftEsc;
+  var t = function (k, f) { return esc(fMolDraftT(k, f)); };
+  var feats = (decl && Array.isArray(decl.features)) ? decl.features : [];
+  var lines = [];
+  var lim = (typeof max === "number" && max > 0) ? max : 8;
+  for (var i = 0; i < feats.length && lines.length < lim; i++) {
+    var f = feats[i] || {};
+    try {
+      if (f.code === "element") {
+        lines.push(t("namingDiagElement", "Unsupported element") + " " + esc(String(f.element || "")) + " (" + esc(String((f.atoms || []).join(","))) + ")");
+      } else if (f.code === "group") {
+        lines.push(t("namingDiagGroup", "Unsupported group") + " " + esc(String(f.group || "")));
+      } else if (f.code === "bond-off-chain") {
+        var ord = (f.order === 3) ? "C≡C" : "C=C";
+        lines.push(t("namingDiagBond", "Bond off the main chain") + " " + ord + " " + esc(String((f.atoms || []).join("-"))));
+      } else if (f.code === "group-off-chain") {
+        lines.push(t("namingDiagGroupOffChain", "Group off the main chain") + " " + esc(String(f.group || "")) + " (" + esc(String((f.atoms || []).join(","))) + ")");
+      } else if (f.code === "group-principal") {
+        lines.push(t("namingDiagPrincipal", "Unsupported principal group") + " " + esc(String(f.group || "")));
+      } else if (f.code === "group-substituent") {
+        lines.push(t("namingDiagSubstituent", "Unsupported substituent group") + " " + esc(String(f.group || "")));
+      } else if (f.code === "multi-fg") {
+        lines.push(t("namingDiagMultiFg", "Multiple functional groups") + " " + esc(String((f.groups || []).join(", "))));
+      } else if (f.code === "halogen-type") {
+        lines.push(t("namingDiagHalogen", "Unsupported halogen") + " " + esc(String(f.element || "")) + " (" + esc(String((f.atoms || []).join(","))) + ")");
+      } else if (f.code === "nitro-multibond") {
+        lines.push(t("namingDiagNitroBond", "Nitro with a C-C multiple bond") + " (" + esc(String((f.nitroAtoms || []).join(","))) + ")");
+      }
+    } catch (eF) {}
+  }
+  try {
+    var sn = (decl && decl.snapshot) ? decl.snapshot : null;
+    if (sn && sn.mainChainLength != null && lines.length < lim) {
+      lines.push(t("namingDiagChain", "Main chain") + ": " + sn.mainChainLength + " C · " +
+        t("namingDiagBranches", "branch carbons") + ": " + (Array.isArray(sn.branchCarbons) ? sn.branchCarbons.length : 0));
+    }
+  } catch (eS) {}
+  return lines;
+}
+
+// Diagnostics block for the draft preview: what the engine refused, where the
+// guard sits, and the structural feature behind it. Stored verbatim in the
+// accepted record, so keep it readable and compact.
+function fMolDraftUnsupportedHTML(decl) {
+  var esc = fMolDraftEsc;
+  var t = function (k, f) { return esc(fMolDraftT(k, f)); };
+  var html = "<div class='draftUnsupported'>";
+  html += "<div class='draftUnsupportedTitle'>" + t("namingUnsupportedTitle", "Outside engine scope") + "</div>";
+  html += "<div class='draftUnsupportedNote'>" + t("namingUnsupportedNote", "Stored as a test case with diagnostics, for extending the algorithm.") + "</div>";
+  try {
+    var reason = (decl && decl.reason) ? String(decl.reason) : "";
+    var site = (decl && decl.callSite) ? String(decl.callSite) : "";
+    if (reason) html += "<div class='draftUnsupportedRow'><span class='draftUnsupportedKey'>" + t("namingUnsupportedReason", "Reason") + ":</span> " + esc(reason) + "</div>";
+    if (site) html += "<div class='draftUnsupportedRow'><span class='draftUnsupportedKey'>" + t("namingUnsupportedWhere", "Guard") + ":</span> " + esc(site) + "</div>";
+  } catch (eR) {}
+  var lines = fMolDraftUnsupportedLines(decl, 8);
+  if (lines.length) {
+    html += "<ul class='draftUnsupportedList'>";
+    for (var j = 0; j < lines.length; j++) html += "<li>" + lines[j] + "</li>";
+    html += "</ul>";
+  }
+  html += "</div>";
+  return html;
 }
 
 function fMolDraftToast(msg) {
@@ -1281,9 +1356,11 @@ function fMolDraftSyncEntryButtons() {
     var eb = document.getElementById("editMolBtn");
     var nb = document.getElementById("newMolBtn");
     var sb = document.getElementById("saveMolBtn");
+    var jb = document.getElementById("exportJsonBtn");
     if (eb) { if (on) eb.classList.remove("hide"); else eb.classList.add("hide"); }
     if (nb) { if (on) nb.classList.remove("hide"); else nb.classList.add("hide"); }
     if (sb) { if (on) sb.classList.remove("hide"); else sb.classList.add("hide"); }
+    if (jb) { if (on) jb.classList.remove("hide"); else jb.classList.add("hide"); }
   } catch (eS) {}
   try { if (typeof fMulerSelectSyncEntry === "function") fMulerSelectSyncEntry(); } catch (eSel) {}
 }
@@ -7064,24 +7141,30 @@ function fMolDraftRenderPreview() {
     var vGR = d.verdictGR || "unconfirmed", vEN = d.verdictEN || "unconfirmed";
     var clsGR = vGR === "correct" ? " draftV-correct" : (vGR === "wrong" ? " draftV-wrong" : "");
     var clsEN = vEN === "correct" ? " draftV-correct" : (vEN === "wrong" ? " draftV-wrong" : "");
-    var html = "<div class='draftPreview'><div class='draftPreviewTitle'>" + fMolDraftEsc(fMolDraftT("draftPreviewTitle", "Πρόβλεψη Ονομασίας")) + "</div>" +
-      "<div class='draftVRow'>" + fMolDraftVerdictCtrl("gr", vGR, false) + "<div class='draftEngine" + clsGR + "'>" + fMulerItalicSecTert(fMolDraftEsc((d.engineName_sys ? fMolDraftT("commonName", "Κοινή") + ": " : "") + d.engineName)) + "</div></div>";
-    // Systematic Greek row (v54.31) when it differs — shares the GR verdict
-    // state (manual-only, like EN). Common stays first.
-    if (d.engineName_sys) html += "<div class='draftVRow'>" + fMolDraftVerdictCtrl("gr", vGR, false) + "<div class='draftEngine" + clsGR + "'>" + fMulerItalicSecTert(fMolDraftEsc(fMolDraftT("systematicName", "Συστηματική") + ": " + d.engineName_sys)) + "</div></div>";
-    // EN prediction rows: school (Traditional) always; Systematic variant row
-    // (v54.24) when it differs — e.g. 4,4-bis(chloromethyl)heptane vs school
-    // 4,4-dichloromethylheptane. One shared EN verdict state per draft
-    // (both copies repaint on set); Traditional stays first.
-    if (d.engineEN) {
-      var _scW = "Traditional", _syW = "Systematic";
-      try {
-        _scW = fMolDraftT("substTraditional", "Traditional");
-        _syW = fMolDraftT("substSystematic", "Systematic");
-      } catch (eSW) {}
-      var _enLbl = d.engineEN_sys ? _scW + ": " : "";
-      html += "<div class='draftVRow'>" + fMolDraftVerdictCtrl("en", vEN, !!d.enAutoValidated) + "<div class='draftEngineEN" + clsEN + "'>" + fMulerItalicSecTert(fMolDraftEsc(_enLbl + d.engineEN)) + "</div></div>";
-      if (d.engineEN_sys) html += "<div class='draftVRow'>" + fMolDraftVerdictCtrl("en", vEN, !!d.enAutoValidated) + "<div class='draftEngineEN" + clsEN + "'>" + fMulerItalicSecTert(fMolDraftEsc(_syW + ": " + d.engineEN_sys)) + "</div></div>";
+    var _unsup = (d.namingSupport && d.namingSupport.status === "unsupported") ? d.namingSupport : null;
+    var html = "<div class='draftPreview'><div class='draftPreviewTitle'>" + fMolDraftEsc(fMolDraftT("draftPreviewTitle", "Πρόβλεψη Ονομασίας")) + "</div>";
+    if (_unsup) {
+      // No prediction exists: show the decline trace instead of name rows.
+      html += fMolDraftUnsupportedHTML(_unsup);
+    } else {
+      html += "<div class='draftVRow'>" + fMolDraftVerdictCtrl("gr", vGR, false) + "<div class='draftEngine" + clsGR + "'>" + fMulerItalicSecTert(fMolDraftEsc((d.engineName_sys ? fMolDraftT("commonName", "Κοινή") + ": " : "") + d.engineName)) + "</div></div>";
+      // Systematic Greek row (v54.31) when it differs — shares the GR verdict
+      // state (manual-only, like EN). Common stays first.
+      if (d.engineName_sys) html += "<div class='draftVRow'>" + fMolDraftVerdictCtrl("gr", vGR, false) + "<div class='draftEngine" + clsGR + "'>" + fMulerItalicSecTert(fMolDraftEsc(fMolDraftT("systematicName", "Συστηματική") + ": " + d.engineName_sys)) + "</div></div>";
+      // EN prediction rows: school (Traditional) always; Systematic variant row
+      // (v54.24) when it differs — e.g. 4,4-bis(chloromethyl)heptane vs school
+      // 4,4-dichloromethylheptane. One shared EN verdict state per draft
+      // (both copies repaint on set); Traditional stays first.
+      if (d.engineEN) {
+        var _scW = "Traditional", _syW = "Systematic";
+        try {
+          _scW = fMolDraftT("substTraditional", "Traditional");
+          _syW = fMolDraftT("substSystematic", "Systematic");
+        } catch (eSW) {}
+        var _enLbl = d.engineEN_sys ? _scW + ": " : "";
+        html += "<div class='draftVRow'>" + fMolDraftVerdictCtrl("en", vEN, !!d.enAutoValidated) + "<div class='draftEngineEN" + clsEN + "'>" + fMulerItalicSecTert(fMolDraftEsc(_enLbl + d.engineEN)) + "</div></div>";
+        if (d.engineEN_sys) html += "<div class='draftVRow'>" + fMolDraftVerdictCtrl("en", vEN, !!d.enAutoValidated) + "<div class='draftEngineEN" + clsEN + "'>" + fMulerItalicSecTert(fMolDraftEsc(_syW + ": " + d.engineEN_sys)) + "</div></div>";
+      }
     }
     if (typeof d.pubchem === "undefined") {
       html += "<div class='draftOracleRow'>" + fMolDraftEsc(fMolDraftT("submitFetching", "Looking up PubChem…")) + "</div>";
@@ -7096,9 +7179,12 @@ function fMolDraftRenderPreview() {
         // non-interactive, unlike the Correct/Wrong verdict controls).
         var _pcG = "?", _pcT = "";
         try {
+          if (_unsup) { _pcG = "·"; _pcT = fMolDraftT("namingUnsupportedNoPredict", "No engine prediction — nothing to compare"); }
+          else {
           var _pcM = (typeof fMolDraftPCMatch === "function") ? (fMolDraftPCMatch(d.engineEN, hit) || (d.engineEN_sys && fMolDraftPCMatch(d.engineEN_sys, hit))) : false;
           if (_pcM) { _pcG = "✓"; _pcT = fMolDraftT("draftPCMatchTip", "PubChem agrees with the predicted name"); }
           else { _pcG = "✕"; _pcT = fMolDraftT("draftPCMismatchTip", "Predicted name differs from PubChem — pending human review"); }
+          }
         } catch (ePCM) {}
         html += "<div class='draftOracleRow'><span class='draftOCMark' title='" + fMolDraftEsc(_pcT) + "'>" + _pcG + "</span><span class='draftOCSource'>" + fMolDraftEsc(fMolDraftT("draftIUPACRow", "IUPAC (PubChem)")) + ": </span><span class='draftOCName'>" + fMolDraftEsc(iupac) + "</span></div>";
       }
@@ -7114,6 +7200,8 @@ function fMolDraftRenderPreview() {
           // the predicted EN. Never touches verdictEN/nameCheck (Phase 2 rule).
           var _ocG = "?", _ocT = "";
           try {
+            if (_unsup) { _ocG = "·"; _ocT = fMolDraftT("namingUnsupportedNoPredict", "No engine prediction — nothing to compare"); }
+            else {
             var _ocV = (typeof fMatchENvsOC === "function") ? fMatchENvsOC(d.engineEN, _ocD.name) : "missing";
             // Systematic variant may match where school does not (v54.24).
             try {
@@ -7123,6 +7211,7 @@ function fMolDraftRenderPreview() {
             if (_ocV === "match") { _ocG = "✓"; _ocT = fMolDraftT("ocMatchTip", "OpenClatura agrees with the engine name"); }
             else if (_ocV === "mismatch") { _ocG = "✕"; _ocT = fMolDraftT("ocMismatchTip", "Engine name differs from OpenClatura — pending human review"); }
             else { _ocG = "?"; _ocT = fMolDraftT("ocMissingTip", "No OpenClatura answer"); }
+            }
           } catch (eOCV) {}
           html += "<div class='draftOracleRow'><span class='draftOCMark' title='" + fMolDraftEsc(_ocT) + "'>" + _ocG + "</span><span class='draftOCSource'>" + fMolDraftEsc(fMolDraftT("draftOpenclatura", "IUPAC (OpenClatura)")) + ": </span><span class='draftOCName'>" + fMolDraftEsc(_ocD.name) + ((_ocD.opsin && _ocD.opsin !== "matched") ? fMolDraftEsc(" (OPSIN: " + _ocD.opsin + ")") : "") + "</span></div>";
         } else if (_ocD === undefined && d.submitted) {
@@ -8176,7 +8265,19 @@ function fMolDraftSandboxAnalyse(molText) {
   } catch (eR) {}
   try {
     if (typeof fGuessName === "function") fGuessName();
-  } catch (eGn) { return { ok: false, ring: false }; }
+  } catch (eGn) {
+    // v59.23: a NOM-DECLINE is a scope gap, not a broken drawing. Keep the
+    // structure storable as an engine test case and hand the full trace to
+    // the caller; naming globals are cleared so no stale name/components from
+    // the previous run leak into the preview or the accepted record.
+    var _dcl = (eGn && eGn.mulerDecline) ? eGn.mulerDecline : null;
+    if (_dcl) {
+      try { nameComponentsList = []; } catch (eNc) {}
+      try { currentMolName = ""; } catch (eNm) {}
+      return { ok: true, ring: false, unsupported: true, decline: _dcl };
+    }
+    return { ok: false, ring: false };
+  }
   return { ok: true, ring: false };
 }
 
@@ -8238,12 +8339,32 @@ async function fMolDraftSubmit() {
     return;
   }
   var engineName = "";
-  try { engineName = (typeof currentMolName !== "undefined") ? String(currentMolName || "") : ""; } catch (eN) {}
-  if (!engineName) {
-    fMolDraftRestoreChainMode();
-    window.MulerDraft.submitting = false;
-    fMolDraftToast(fMolDraftT("submitEngineFail", "Engine failed — check the drawing."));
-    return;
+  // v59.23: the engine's fail-closed scope guards (18 of them, [NOM-DECLINE])
+  // no longer block authoring. A clearly acyclic, parseable structure the
+  // namer cannot handle yet is accepted as an engine TEST MOLECULE: it gets a
+  // provisional label, the decline trace is stored in its record, and the UI
+  // says so. Real failures (unparseable drawing, ring) still block above.
+  var _unsupported = !!_sb.unsupported;
+  var _decline = _sb.decline || null;
+  window.MulerDraft.namingSupport = _unsupported ? {
+    status: "unsupported",
+    reason: (_decline && _decline.reason) || null,
+    callSite: (_decline && _decline.callSite) || null,
+    frame: (_decline && _decline.frame) || null,
+    at: (_decline && _decline.at) || null,
+    features: (_decline && _decline.features) || [],
+    snapshot: (_decline && _decline.snapshot) || null
+  } : null;
+  if (_unsupported) {
+    engineName = fMolDraftUnsupportedName();
+  } else {
+    try { engineName = (typeof currentMolName !== "undefined") ? String(currentMolName || "") : ""; } catch (eN) {}
+    if (!engineName) {
+      fMolDraftRestoreChainMode();
+      window.MulerDraft.submitting = false;
+      fMolDraftToast(fMolDraftT("submitEngineFail", "Engine failed — check the drawing."));
+      return;
+    }
   }
   try {
     if (typeof fUpdateSVG === "function") fUpdateSVG();
@@ -8260,7 +8381,9 @@ async function fMolDraftSubmit() {
   // (selectedMol is the untouched template). Oracle fallback for the
   // non-transliterable case lands below, once the PubChem hit resolves.
   var _en = null;
-  try { if (typeof fPopulateEngineENFromGreek === "function") _en = fPopulateEngineENFromGreek("__draft__"); } catch (eEN) { _en = null; }
+  if (!_unsupported) {
+    try { if (typeof fPopulateEngineENFromGreek === "function") _en = fPopulateEngineENFromGreek("__draft__"); } catch (eEN) { _en = null; }
+  }
   window.MulerDraft.engineEN = (typeof _en === "string" && _en) ? _en : null;
   window.MulerDraft.engineDelegated = false;
   // Systematic variant (v54.24): same-slot transform with the "sys" maps
@@ -8268,21 +8391,25 @@ async function fMolDraftSubmit() {
   // included in oracle matching when it differs from school. Same "__draft__"
   // store-back guard applies (return value only, nothing persisted).
   var _enSys = null;
-  try { if (typeof fPopulateEngineENFromGreek === "function") _enSys = fPopulateEngineENFromGreek("__draft__", "sys"); } catch (eENS) { _enSys = null; }
+  if (!_unsupported) {
+    try { if (typeof fPopulateEngineENFromGreek === "function") _enSys = fPopulateEngineENFromGreek("__draft__", "sys"); } catch (eENS) { _enSys = null; }
+  }
   window.MulerDraft.engineEN_sys = (typeof _enSys === "string" && _enSys && _enSys !== window.MulerDraft.engineEN) ? _enSys : null;
   // Systematic Greek variant (v54.31): same render-time slot transform as the
   // panel toggle, joined with the euphony mirror. No oracle role (GR is
   // manual-only); shown as a second GR row when it differs from common.
   var _grSys = null;
-  try {
-    if (typeof fGreekSysSlots === "function" && typeof fJoinGreekSysName === "function") {
-      var _gs = fGreekSysSlots();
-      if (_gs) {
-        var _gj = fJoinGreekSysName(_gs);
-        if (typeof _gj === "string" && _gj && _gj !== engineName) _grSys = _gj;
+  if (!_unsupported) {
+    try {
+      if (typeof fGreekSysSlots === "function" && typeof fJoinGreekSysName === "function") {
+        var _gs = fGreekSysSlots();
+        if (_gs) {
+          var _gj = fJoinGreekSysName(_gs);
+          if (typeof _gj === "string" && _gj && _gj !== engineName) _grSys = _gj;
+        }
       }
-    }
-  } catch (eGRS) { _grSys = null; }
+    } catch (eGRS) { _grSys = null; }
+  }
   window.MulerDraft.engineName_sys = _grSys;
   // Name verdicts (tri-state per language): every Submit resets — new
   // drawing, new prediction, old verdict void. EN auto-check re-applies
@@ -8304,6 +8431,10 @@ async function fMolDraftSubmit() {
   window.MulerDraft.openclatura = undefined;
   window.MulerDraft.openclaturaErr = false;
   fMolDraftRenderPreview();
+  if (_unsupported) {
+    var _why = (_decline && _decline.reason) ? String(_decline.reason) : "";
+    fMolDraftToast(fMolDraftT("submitUnsupported", "The engine does not cover this structure yet — it will be stored as a test molecule.") + (_why ? " (" + _why + ")" : ""));
+  }
   try {
     var st2 = document.getElementById("molDraftStatus");
     if (st2) {
@@ -8316,7 +8447,9 @@ async function fMolDraftSubmit() {
             : fMolDraftT("draftForkHint", "different molecule, will fork as new");
         }
       } catch (eIh) { _idHint = ""; }
-      st2.textContent = fMolDraftT("draftPreview", "Preview") + ": " + engineName + (_idHint ? " — " + _idHint : "");
+      st2.textContent = _unsupported
+        ? fMolDraftT("submitUnsupportedStatus", "Outside engine scope — test molecule") + (_why ? ": " + _why : "")
+        : fMolDraftT("draftPreview", "Preview") + ": " + engineName + (_idHint ? " — " + _idHint : "");
     }
   } catch (eSt2) {}
   // 3. PubChem oracle (async, molecule-guarded like the info panel refresh).
@@ -8336,7 +8469,10 @@ async function fMolDraftSubmit() {
   // esters/complex ethers): same systematicEN the stored path delegates to.
   try {
     var _dd = window.MulerDraft;
-    if (_dd && (!_dd.engineEN || /[Α-ω]/.test(_dd.engineEN))) {
+    // Unsupported (v59.23): there is no engine prediction, so neither the
+    // Greek→EN delegation nor the oracle auto-verdict may run — the record
+    // would claim a validated name the engine never produced.
+    if (!_unsupported && _dd && (!_dd.engineEN || /[Α-ω]/.test(_dd.engineEN))) {
       var _sys = (hit && (hit.systematic || hit.iupacEN)) || null;
       if (_sys) { _dd.engineEN = _sys; _dd.engineDelegated = true; }
     }
@@ -8346,7 +8482,7 @@ async function fMolDraftSubmit() {
     // 4,4-bis(chloromethyl)heptane vs school 4,4-dichloromethylheptane);
     // source recorded for the eval-data header. A match auto-checks the EN
     // box as correct.
-    if (_dd && _dd.engineEN && !_dd.touchedEN && typeof fMolDraftPCMatch === "function") {
+    if (!_unsupported && _dd && _dd.engineEN && !_dd.touchedEN && typeof fMolDraftPCMatch === "function") {
       if (fMolDraftPCMatch(_dd.engineEN, hit)) {
         _dd.verdictEN = "correct";
         _dd.enAutoValidated = true;
@@ -8458,7 +8594,9 @@ async function fMolDraftSubmit() {
             : fMolDraftT("draftForkHint", "different molecule, will fork as new");
         }
       } catch (eIhR) { _idHintR = ""; }
-      _stR.textContent = fMolDraftT("draftPreview", "Preview") + ": " + engineName + (_idHintR ? " — " + _idHintR : "");
+      _stR.textContent = _unsupported
+        ? fMolDraftT("submitUnsupportedStatus", "Outside engine scope — test molecule") + (_why ? ": " + _why : "")
+        : fMolDraftT("draftPreview", "Preview") + ": " + engineName + (_idHintR ? " — " + _idHintR : "");
     }
   } catch (eStR) {}
   window.MulerDraft.submitting = false;
@@ -8663,6 +8801,11 @@ function fMolDraftDownloadSingle(rec) {  // One molecule per file (Accept auto-s
       "   Molecule: " + _cs(rec.key) + (rec.grName ? " (" + _cs(rec.grName) + ")" : "") + "\n" +
       "   Status: " + _cs(rec.status || "draft") + " | " + new Date().toISOString().slice(0, 10) + "\n" +
       "   3D: " + _cs(rec.sdf3DSource || "none") + "\n" +
+      ((rec.naming && rec.naming.status === "unsupported")
+        ? "   Naming: UNSUPPORTED by the engine — " + _cs(rec.naming.reason || "declined") +
+          (rec.naming.callSite ? " (" + _cs(rec.naming.callSite) + ")" : "") + "\n" +
+          "           Stored as an engine test case; see the \"naming\" block in the record.\n"
+        : "") +
       (rec.author ? "   Submitted by: " + _cs(String(rec.author).replace(/\r?\n/g, " ")) + "\n" : "") +
       (rec.proposedName ? "   Proposed name: " + _cs(String(rec.proposedName).replace(/\r?\n/g, " ")) + "\n" : "") +
       (rec.authorNote ? "   Comments: " + _cs(String(rec.authorNote)).replace(/\r?\n/g, "\n             ") + "\n" : "") +
@@ -8678,6 +8821,65 @@ function fMolDraftDownloadSingle(rec) {  // One molecule per file (Accept auto-s
     try { /* console.warn("[draft] custom file download failed", eD); */ } catch (eL) {}
   }
   return false;
+}
+
+// JSON export (v59.23): canonical handoff format for the next data phase.
+// One molecule = one JSON object; multiple molecules = a JSON bundle.
+// The legacy .js bundle above stays available for the current script loader.
+function fMolDraftJsonRecord(rec) {
+  var copy = {};
+  try { copy = JSON.parse(JSON.stringify(rec || {})); } catch (e) { copy = {}; }
+  if (!copy || typeof copy !== "object") copy = {};
+  copy.format = "mulermoc-molecule";
+  copy.schemaVersion = 2;
+  return copy;
+}
+
+function fMolDraftDownloadJson(recs) {
+  try {
+    var list = Array.isArray(recs) ? recs.filter(function (r) { return r && r.key; }) : [];
+    if (!list.length) return false;
+    var payload = null;
+    var filename = "";
+    if (list.length === 1) {
+      payload = fMolDraftJsonRecord(list[0]);
+      filename = String(list[0].key).replace(/[^A-Za-z0-9_.-]+/g, "_") + ".json";
+    } else {
+      payload = { format: "mulermoc-molecule-bundle", schemaVersion: 2, molecules: {} };
+      for (var i = 0; i < list.length; i++) payload.molecules[list[i].key] = fMolDraftJsonRecord(list[i]);
+      var date = "";
+      try { date = new Date().toISOString().slice(0, 10).replace(/-/g, ""); } catch (eD) { date = "nodate"; }
+      filename = "MULERMOC_custom_" + date + "_" + list.length + "mols.json";
+    }
+    if (typeof fScenarioSaveBlobDownload === "function") {
+      return !!fScenarioSaveBlobDownload(filename, new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }));
+    }
+  } catch (eJ) {
+    try { /* console.warn("[draft] JSON export failed", eJ); */ } catch (eL) {}
+  }
+  return false;
+}
+
+function fMolDraftExportJsonAll() {
+  if (fMolDraftPresenting()) return;
+  var keys = [];
+  try { keys = fMolDraftNewCustomKeys(); } catch (eK) { keys = []; }
+  if (!keys.length) {
+    fMolDraftToast(fMolDraftT("customSaveAllNone", "Nothing new to save — draw and Accept a molecule first."));
+    return;
+  }
+  var recs = [];
+  for (var i = 0; i < keys.length; i++) {
+    var rec = null;
+    try { rec = window.nameExamplesCustom[keys[i]] || null; } catch (eR) { rec = null; }
+    if (rec) recs.push(rec);
+  }
+  if (recs.length && fMolDraftDownloadJson(recs)) {
+    fMolDraftToast(recs.length + " " + fMolDraftT("exportJsonDone", "molecules exported as JSON."));
+  } else {
+    try { /* console.warn("[draft] JSON export failed for " + keys.length + " molecules"); */ } catch (eW) {}
+    fMolDraftToast(fMolDraftT("customSaveAllFail", "Save failed — see console."));
+  }
 }
 
 // Bundle download (v54.26): one file holding every given custom molecule as
@@ -8706,6 +8908,7 @@ function fMolDraftDownloadBundle(recs) {
       one[list[i].key] = list[i];
       var _nc = list[i].nameCheck || { gr: "unconfirmed", en: "unconfirmed" };
       body += "\n/* " + _cs(list[i].key) + (list[i].grName ? " (" + _cs(list[i].grName) + ")" : "") +
+        ((list[i].naming && list[i].naming.status === "unsupported") ? " | NAMING UNSUPPORTED: " + _cs(list[i].naming.reason || "declined") : "") +
         " | Names: GR " + _cs(_nc.gr) + ", EN " + _cs(_nc.en) + " */\n" +
         "window.nameExamplesCustom = Object.assign(window.nameExamplesCustom || {}, " +
         JSON.stringify(one, null, 2) + ");\n";
@@ -8758,6 +8961,11 @@ function fMolDraftSyncSaveBtn() {
       if (hasNewT) tbtn.classList.remove("btnInactive");
       else tbtn.classList.add("btnInactive");
     }
+    var jbtn = document.getElementById("exportJsonBtn");
+    if (jbtn) {
+      if (hasNewT) jbtn.classList.remove("btnInactive");
+      else jbtn.classList.add("btnInactive");
+    }
   } catch (eS) {}
 }
 
@@ -8795,7 +9003,10 @@ async function fMolDraftAccept() {
     fMolDraftToast(fMolDraftT("acceptWaitFetch", "Still looking up PubChem — wait a moment."));
     return;
   }
-  if (!d.sdf3D) {
+  // Engine test molecules (v59.23) may have no PubChem/local 3D model;
+  // naming work does not need it. Keep the gate for normal molecules.
+  var _unsup3D = !!(d.namingSupport && d.namingSupport.status === "unsupported");
+  if (!d.sdf3D && !_unsup3D) {
     fMolDraftToast(fMolDraftT("acceptNeeds3D", "Acceptance requires a 3D model — wait for the 3D fetch to finish."));
     return;
   }
@@ -8846,6 +9057,9 @@ async function fMolDraftAccept() {
   d.accepting = true;
   try { fMolDraftSyncBar(); } catch (eSyA) {}
   var hit = d.pubchem || null;
+  // Unsupported engine test case (v59.23): no Greek name exists, so the record
+  // keeps grName empty and stores the decline trace instead.
+  var _unsupA = (d.namingSupport && d.namingSupport.status === "unsupported") ? d.namingSupport : null;
   var key = fMolDraftMakeKey(normSmi, hit);
   if (isUpdate) key = d.sourceMol;
   var slotsCopy = null;
@@ -9196,7 +9410,11 @@ async function fMolDraftAccept() {
     formula: formula,
     smiles: d.smiles,
     classification: cls,
-    grName: d.engineName,
+    // Unsupported (v59.23): the engine produced no Greek name, so grName stays
+    // empty (Greek is the truth — a placeholder is not a name). The decline
+    // trace in `naming` is the record's reason for being: test data for
+    // extending the algorithm.
+    grName: _unsupA ? "" : d.engineName,
     engineEN: d.engineEN || null,
     engineDelegated: !!d.engineDelegated,
     nameCheck: _vc,
@@ -9218,6 +9436,7 @@ async function fMolDraftAccept() {
     status: "draft",
     history: [{ t: Date.now(), action: "accepted", mode: d.mode, source: d.sourceMol || null, sdf3DSource: d.sdf3DSource || null, verdict: { gr: _vc.gr, en: _vc.en }, author: String(d.author || "").trim(), proposedName: String(d.proposedName || "").trim() }]
   };
+  if (_unsupA) { try { rec.naming = JSON.parse(JSON.stringify(_unsupA)); } catch (eNm) {} }
   rec.structure2D_Condensed = molC;
   rec.structure2D_Expanded = molE;
   rec.structure2D_Skeletal = molS;
@@ -9240,11 +9459,15 @@ async function fMolDraftAccept() {
     prev.formula = formula;
     prev.smiles = d.smiles;
     prev.classification = cls;
-    prev.grName = d.engineName;
+    prev.grName = _unsupA ? "" : d.engineName;
     prev.engineEN = d.engineEN || null;
     prev.engineDelegated = !!d.engineDelegated;
     prev.nameCheck = _vc;
     prev.slots = slotsCopy;
+    try {
+      if (_unsupA) prev.naming = JSON.parse(JSON.stringify(_unsupA));
+      else delete prev.naming;
+    } catch (eNmu) {}
     prev.systematicEN = rec.systematicEN;
     prev.iupacPubchem = rec.iupacPubchem;
     prev.titlePubchem = rec.titlePubchem;
@@ -9311,7 +9534,11 @@ async function fMolDraftAccept() {
   } catch (eMs) {}
   // Outcome toast: unconfirmed names are saved, not blocked — but said aloud.
   try {
-    if (_vc.gr === "correct" && _vc.en === "correct") fMolDraftToast(fMolDraftT("acceptKept", "Accepted into this session — save it from Settings."));
+    if (_unsupA) {
+      var _whyA = _unsupA.reason ? String(_unsupA.reason) : "";
+      fMolDraftToast(fMolDraftT("acceptUnsupported", "Stored as a test molecule — the engine cannot name it yet.") + (_whyA ? " (" + _whyA + ")" : ""));
+    }
+    else if (_vc.gr === "correct" && _vc.en === "correct") fMolDraftToast(fMolDraftT("acceptKept", "Accepted into this session — save it from Settings."));
     else fMolDraftToast(fMolDraftT("draftSavedUnconfirmed", "Accepted — with unconfirmed names."));
   } catch (eTk) { try { fMolDraftToast(fMolDraftT("acceptKept", "Accepted into this session — save it from Settings.")); } catch (eT2) {} }
 }
@@ -14087,6 +14314,37 @@ function fShowNameAnalysis() {
   if (!selectedMol) {
     nameCompContainer +=
       `<div class='nameEmptyHint'>` + ((typeof fMulerT === "function") ? fMulerT("noMolHint") : "Επιλέξτε μόριο για ανάλυση ονόματος") + `</div>`;
+  }
+
+  // Engine test molecule (v59.23): the record carries a decline trace instead
+  // of a Greek name. Say so in place of the (empty) component boxes; the full
+  // trace stays in the JSON record and the authoring preview.
+  var _unsupSel = null;
+  try {
+    _unsupSel = (selectedMol && nameExamples[selectedMol] && nameExamples[selectedMol].naming &&
+      nameExamples[selectedMol].naming.status === "unsupported") ? nameExamples[selectedMol].naming : null;
+  } catch (eUsel) { _unsupSel = null; }
+  if (_unsupSel && compCount === 0) {
+    var _uTxt = (typeof fMulerT === "function") ? fMulerT("namingUnsupportedSelected") : "Η μηχανή δεν ονομάζει ακόμη αυτή τη δομή — μόριο δοκιμής.";
+    var _uWhy = _unsupSel.reason ? String(_unsupSel.reason) : "";
+    var _uSite = _unsupSel.callSite ? String(_unsupSel.callSite) : "";
+    var _uLines = (typeof fMolDraftUnsupportedLines === "function") ? fMolDraftUnsupportedLines(_unsupSel, 8) : [];
+    var _uDet = "";
+    if (_uWhy || _uSite || _uLines.length) {
+      _uDet = `<details class='nameUnsupportedDetails'><summary>` +
+        ((typeof fMulerT === "function") ? fMulerT("namingUnsupportedStored") : "Διαγνωστικά") + `</summary>`;
+      if (_uWhy) _uDet += `<div class='nameUnsupportedWhy'>` + fMolDraftEsc(_uWhy) + `</div>`;
+      if (_uSite) _uDet += `<div class='nameUnsupportedWhy'>` + fMolDraftEsc(_uSite) + `</div>`;
+      if (_uLines.length) {
+        _uDet += `<ul class='nameUnsupportedList'>`;
+        for (var _ul = 0; _ul < _uLines.length; _ul++) _uDet += `<li>` + _uLines[_ul] + `</li>`;
+        _uDet += `</ul>`;
+      }
+      _uDet += `</details>`;
+    }
+    nameCompContainer += `<div class='nameUnsupportedNote'><div class='nameUnsupportedHead'>` +
+      ((typeof fMulerT === "function") ? fMulerT("namingUnsupportedTitle") : "Εκτός κάλυψης μηχανής") +
+      `</div><div class='nameUnsupportedBody'>` + fMolDraftEsc(_uTxt) + `</div>` + _uDet + `</div>`;
   }
 
   // COMMON ether naming: render alkyl boxes + αιθέρας instead of IUPAC slots.

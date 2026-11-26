@@ -8,7 +8,7 @@ changelog.
 
 Greek-first static web app for teaching organic nomenclature (JSME + JSmol +
 vanilla JavaScript; no build step). The live entry point is `index.html` →
-`mulermoc-nom-59.html`. Current live version: **v59.21** (2026-11-25).
+`mulermoc-nom-59.html`. Current live version: **v59.23** (2026-11-26).
 Older versions v42–v58 remain runnable at the repo root but are **frozen**.
 
 ## Working mode (owner preference, 2026-11-22)
@@ -35,6 +35,8 @@ reports.
 - `docs/CHANGELOG.md` (`[v59]`) — versioned change record.
 - `docs/SESSION-NOTES.md` — cross-machine resume pointer and dated entries.
 - `docs/didactic-scenario-plan.md` — LEARN/scenario layer.
+- `docs/new-molecules-upgrade-naming-algorithm.md` — engine test molecules
+  (accept a declined structure, `naming` diagnostics, guard upgrade order).
 - `docs/REVIEW-V58.md`, `docs/REVIEW-SCENARIO-QUIZ-58.md` — accepted decisions.
 - `tools/muler-harness/README.md` — probes, server, environment overrides.
 
@@ -160,6 +162,18 @@ Update docs in the same commit as the change:
 
 ## Invariants and pitfalls
 
+- Naming declines never block authoring (v59.23): `fDeclineNaming` attaches
+  `mulerDecline`, and an acyclic, parseable structure the engine cannot name is
+  accepted as an engine **test molecule**. Do not invent a Greek name for it —
+  the record keeps `grName: ""` plus a `naming{status:"unsupported",…}` block
+  (reason, call site, features, snapshot). The feature audit covers all 18
+  decline classes (element, group, group-off-chain, group-principal,
+  group-substituent, multi-fg, halogen-type, nitro-multibond, bond-off-chain).
+  Test molecules bypass the 3D gate and export as JSON (`format:
+  "mulermoc-molecule"`, `schemaVersion: 2`); the legacy `MULERMOC_*.js` save
+  remains. Rings, unparseable drawings and unexpected throws still block; the
+  update path deletes `naming` once the engine names the case. Workflow and guard order:
+  `docs/new-molecules-upgrade-naming-algorithm.md`.
 - CSS comments must be `/* ... */`. `//` is invalid and silently drops the
   following rule (this already happened to `body.scPinned #creditsUs`).
 - Generated draft files (`fMolDraftDownload*`) must pass user text through

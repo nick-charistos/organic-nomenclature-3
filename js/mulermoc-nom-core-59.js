@@ -2330,8 +2330,181 @@ function fMainChainLocant(atomNo1b) {
         return p >= 0 ? p + 1 : null
     } catch (eL) { return null }
 }
+// ── Naming-scope diagnostics (v59.23) ─────────────────────────────────────
+// The engine is fail-closed: a structure it cannot name yet throws
+// [NOM-DECLINE]. Authoring still needs those molecules — they are the test
+// corpus for extending the engine — so every decline carries a
+// machine-readable trace (guard, source line, structural features) that the
+// draft layer can persist into the accepted record. Nothing here changes
+// naming output; fDeclineNaming still throws.
+function fNamingCallSite(skip) {
+    try {
+        var st = String(new Error().stack || "").split(/\r?\n/)
+        var frames = []
+        for (var i = 1; i < st.length; i++) {
+            var m = /([^\s()]+:\d+:\d+)\)?$/.exec(st[i])
+            if (m) frames.push(m[1])
+        }
+        var k = (typeof skip === "number") ? skip : 2
+        var f = frames[k] || frames[frames.length - 1] || ""
+        var short = /([^\\\/:?]+):(\d+):\d+$/.exec(f)
+        return { site: short ? (short[1] + ":" + short[2]) : (f || null), frame: f || null }
+    } catch (e) { return null }
+}
+
+// Structural findings behind a decline: every check here is conservative
+// (no heuristics that could disagree with the engine) so the stored trace is
+// a reliable to-do list for extending the namer.
+function fNamingFeatureAudit(reason) {
+    var out = []
+    var _reason = String(reason || "")
+    var add = function (f) { try { out.push(f) } catch (e) {} }
+    // Elements outside the namable set (C,H,N,O,F,Cl,Br,I) with atom numbers.
+    try {
+        var bad = {}
+        for (var i = 0; i < atomsCount; i++) {
+            var el = String(allAtomsTypeList[i] || "")
+            if (!el || gNamableElements.indexOf(el) >= 0) continue
+            if (!bad[el]) bad[el] = []
+            bad[el].push(i + 1)
+        }
+        for (var k in bad) {
+            if (Object.prototype.hasOwnProperty.call(bad, k)) add({ code: "element", element: k, atoms: bad[k] })
+        }
+    } catch (e1) {}
+    // Functional groups the name slots cannot express.
+    try {
+        var gs = Array.isArray(functionalGroupsList) ? functionalGroupsList : []
+        for (var gi = 0; gi < gs.length; gi++) {
+            var g = gs[gi]
+            if (gNamableSingleGroups.indexOf(g) < 0 && gNamablePrefixGroups.indexOf(g) < 0) add({ code: "group", group: g })
+        }
+    } catch (e2) {}
+    // C–C multiple bonds with an atom off the main chain: no locant slot.
+    try {
+        var chain = Array.isArray(mainChainAtomsList) ? mainChainAtomsList : []
+        var scan = function (idxList, order) {
+            for (var q = 0; q < idxList.length; q++) {
+                var b = bondList[idxList[q] - 1]
+                if (!b) continue
+                var a1 = b[0], a2 = b[1]
+                var in1 = chain.indexOf(a1) >= 0, in2 = chain.indexOf(a2) >= 0
+                if (!in1 || !in2) add({ code: "bond-off-chain", order: order, bond: idxList[q], atoms: [a1, a2], onChain: [in1, in2] })
+            }
+        }
+        scan((multiBondsObj && multiBondsObj.CCd) || [], 2)
+        scan((multiBondsObj && multiBondsObj.CCt) || [], 3)
+    } catch (e3) {}
+    // Hetero groups with at least one atom off the main chain. This covers the
+    // halogen/nitro/alcohol-O/ketone-O and multi-FG locant declines where the
+    // group itself is namable but the branch position is not.
+    try {
+        var _chain = Array.isArray(mainChainAtomsList) ? mainChainAtomsList : []
+        var _fg = functionalGroupObj || {}
+        for (var _g in _fg) {
+            if (!Object.prototype.hasOwnProperty.call(_fg, _g) || _g === "hydrocarbon") continue
+            var _byEl = _fg[_g] || {}
+            for (var _el in _byEl) {
+                if (!Object.prototype.hasOwnProperty.call(_byEl, _el)) continue
+                var _arr = Array.isArray(_byEl[_el]) ? _byEl[_el] : []
+                var _off = []
+                for (var _ai = 0; _ai < _arr.length; _ai++) {
+                    var _atom = _arr[_ai]
+                    if (_chain.indexOf(_atom + 1) < 0) _off.push(_atom + 1)
+                }
+                if (_off.length) {
+                    add({ code: "group-off-chain", group: _g, element: _el, atoms: _off })
+                }
+            }
+        }
+    } catch (e4) {}
+    // Principal-group and multi-FG layout gaps.
+    try {
+        var _gs2 = (Array.isArray(functionalGroupsList) ? functionalGroupsList : []).filter(function (g) { return g !== "hydrocarbon" })
+        if (_gs2.length > 1) add({ code: "multi-fg", groups: _gs2.slice() })
+        if (_reason.indexOf("unsupported principal group") === 0 && _gs2.length) {
+            add({ code: "group-principal", group: _gs2[0] })
+        }
+        if (_reason.indexOf("unsupported substituent group") === 0) {
+            for (var _sg = 0; _sg < _gs2.length; _sg++) {
+                if (gNamablePrefixGroups.indexOf(_gs2[_sg]) < 0) {
+                    add({ code: "group-substituent", group: _gs2[_sg] })
+                }
+            }
+        }
+    } catch (e5) {}
+    // Halogen elements outside the F/Cl/Br/I naming path.
+    try {
+        var _hg = (functionalGroupObj && functionalGroupObj.halogen) || {}
+        for (var _hx in _hg) {
+            if (!Object.prototype.hasOwnProperty.call(_hg, _hx)) continue
+            if (["F", "Cl", "Br", "I"].indexOf(_hx) >= 0) continue
+            var _ha = Array.isArray(_hg[_hx]) ? _hg[_hx].map(function (a) { return a + 1 }) : []
+            add({ code: "halogen-type", element: _hx, atoms: _ha })
+        }
+    } catch (e6) {}
+    // Decorated nitro combined with a C-C multiple bond.
+    try {
+        var _no2 = (functionalGroupObj && functionalGroupObj.nitro) || null
+        var _ccd = (multiBondsObj && multiBondsObj.CCd) || []
+        var _cct = (multiBondsObj && multiBondsObj.CCt) || []
+        if (_no2 && (_ccd.length || _cct.length)) {
+            var _no2Atoms = []
+            for (var _nk in _no2) {
+                if (!Object.prototype.hasOwnProperty.call(_no2, _nk)) continue
+                var _na = Array.isArray(_no2[_nk]) ? _no2[_nk] : []
+                for (var _ni = 0; _ni < _na.length; _ni++) _no2Atoms.push(_na[_ni] + 1)
+            }
+            add({ code: "nitro-multibond", nitroAtoms: _no2Atoms, doubleBonds: _ccd.slice(), tripleBonds: _cct.slice() })
+        }
+    } catch (e7) {}
+    return out
+}
+
+// Compact engine state at the moment of the decline (features above say what,
+// this says where in the graph). Small on purpose: it is stored per molecule.
+function fNamingDeclineSnapshot() {
+    var s = {}
+    try { s.atoms = atomsCount } catch (e0) {}
+    try { s.bonds = bondsCount } catch (e1) {}
+    try { s.elements = Object.assign({}, atomTypeObj) } catch (e2) {}
+    try { s.groups = (Array.isArray(functionalGroupsList) ? functionalGroupsList.slice() : []) } catch (e3) {}
+    try { s.mainChain = (Array.isArray(mainChainAtomsList) ? mainChainAtomsList.slice() : null) } catch (e4) {}
+    try { s.mainChainLength = (Array.isArray(mainChainAtomsList) ? mainChainAtomsList.length : null) } catch (e5) {}
+    try {
+        var chain = Array.isArray(mainChainAtomsList) ? mainChainAtomsList : []
+        var br = []
+        for (var i = 0; i < atomsCount; i++) {
+            if (allAtomsTypeList[i] !== "C") continue
+            if (chain.indexOf(i + 1) >= 0) continue
+            br.push(i + 1)
+        }
+        s.branchCarbons = br
+    } catch (e6) {}
+    try { s.multiBondsCC = { double: ((multiBondsObj && multiBondsObj.CCd) || []).slice(), triple: ((multiBondsObj && multiBondsObj.CCt) || []).slice() } } catch (e7) {}
+    try { s.mainChainMode = (typeof mainChainMode !== "undefined") ? mainChainMode : null } catch (e8) {}
+    try { s.molType = (typeof molType !== "undefined") ? molType : null } catch (e9) {}
+    return s
+}
+
 function fDeclineNaming(reason) {
-    throw new Error("[NOM-DECLINE] " + (reason || "unsupported structure"))
+    var _r = String(reason || "unsupported structure")
+    var _e = null
+    try {
+        _e = new Error("[NOM-DECLINE] " + _r)
+        var _cs = fNamingCallSite(2)
+        _e.mulerDecline = {
+            reason: _r,
+            callSite: (_cs && _cs.site) || null,
+            frame: (_cs && _cs.frame) || null,
+            at: new Date().toISOString(),
+            features: fNamingFeatureAudit(_r),
+            snapshot: fNamingDeclineSnapshot()
+        }
+    } catch (eMk) {
+        _e = new Error("[NOM-DECLINE] " + _r)
+    }
+    throw _e
 }
 
 // ── Decorated (hetero-substituted alkyl) branches, v1 (v54.23) ─────────────

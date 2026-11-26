@@ -370,6 +370,71 @@ footer span.molwaveLogoSub {
 	padding-left: 5px;
 	margin-left: -5px;
 }
+/* Draft preview: engine test molecule (v59.23) — the namer declined this
+   structure, so the panel shows the decline trace instead of name rows. */
+.draftUnsupported {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 6px 8px;
+  border-left: 3px solid var(--redAlert);
+  background: var(--veryLightEarth);
+  border-radius: 3px;
+}
+.draftUnsupportedTitle {
+  font-weight: 700;
+  color: var(--redAlert);
+}
+.draftUnsupportedNote {
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+.draftUnsupportedRow {
+  font-size: 0.85rem;
+}
+.draftUnsupportedKey {
+  font-weight: 600;
+}
+.draftUnsupportedList {
+  margin: 2px 0 0 0;
+  padding-left: 18px;
+  font-size: 0.82rem;
+  opacity: 0.85;
+}
+
+/* Name panel note for an accepted test molecule (v59.23). */
+.nameUnsupportedNote {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  margin: 4px 0;
+  border-left: 3px solid var(--redAlert);
+  background: var(--veryLightEarth);
+  border-radius: 3px;
+  font-size: 0.9rem;
+}
+.nameUnsupportedHead {
+  font-weight: 700;
+  color: var(--redAlert);
+}
+.nameUnsupportedWhy {
+  font-size: 0.82rem;
+  opacity: 0.7;
+}
+.nameUnsupportedDetails {
+  font-size: 0.82rem;
+  opacity: 0.8;
+}
+.nameUnsupportedDetails > summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.nameUnsupportedList {
+  margin: 2px 0 0 0;
+  padding-left: 18px;
+}
+
 /* Tri-state name verdict: [✓|?|✕] control left of each predicted name. */
 .draftVRow {
   display: flex;

@@ -8,10 +8,11 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 Forked from v58.50, rebased on v58.51 (`mulermoc-nom-59.html` + `js/*-59.js` + `css/*-59.css` +
 `jsme-nick-nomeclature-moc2-data_59.js` + `spt/init-3-59.spt` +
-`zz-test-core59.html`, `?v=59.21`; `ui-icons.js`, `js/vendor/`, `jsme/` and
+`zz-test-core59.html`, `?v=59.23`; `ui-icons.js`, `js/vendor/`, `jsme/` and
 `mols/` stay shared). Chemistry/naming results are v58's and the scenario data
-shape is inherited from v58, but v59.02–v59.21 add UI, data and quiz-step-authoring
-changes (see below); the v59.00 work is data geometry and the MOL pipeline.
+shape is inherited from v58, but v59.02–v59.23 add UI, data, quiz-step-authoring
+and authoring/engine-scope changes (see below); the v59.00 work is data geometry
+and the MOL pipeline.
 
 - **154 molecules.** The six branched alkanes the sibling project ships as
   `nameExamplesCustom` are now native entries: `methyl_2_butane`,
@@ -92,7 +93,7 @@ changes (see below); the v59.00 work is data geometry and the MOL pipeline.
   prompt while picking (`pending3D` cancelled). The v58 CSS comes along:
   `--veryLightOrchid`, orchid `.quizTodo` / `.quizTodo.selected` /
   `.scQuizTag.selected` / `.is-start` and the shared `.scQuizPrompt` +
-  `.scQuizStartPrompt` skin. Asset refs moved to `?v=59.01` (now `?v=59.21`).
+  `.scQuizStartPrompt` skin. Asset refs moved to `?v=59.01` (now `?v=59.23`).
 - **Rule grouping bullet removed (v59.02).** The `.groupingMode` selector now
   offers Όλα τα μόρια / Χημικές Τάξεις / Ομόλογες Σειρές only. The `rule` mode
   itself is kept intact: `moleculeGroupingMode === "rule"`, the `ruleExamples`
@@ -256,23 +257,23 @@ changes (see below); the v59.00 work is data geometry and the MOL pipeline.
   Verified: `node --check`; `probe-final` and `probe-scenario-quiz` green; EN
   aria label, split lane z-order and draft restore checks; no page errors.
 - **7 Anastasia molecules (v59.17).** Student draft bundle
-(`mols/new-mols-molwave/MULERMOC_custom_20251125_7mols_data.js`, author Α.Θ.)
-converted to built-in shape: `methyl_3_hexane`, `ethyl_4_heptane`,
-`methyl_2_propane` (fills the C4 branched gap — isobutane), the advanced
-C14 `isopropyl_5_trimethyl_2_3_7_octane`, `ethyl_2_butene_1` (positional
-isomer of stored `methyl_3_butene_1`, not a duplicate), `methyl_2_butene_1`,
-and the school-rule enyne `propyl_3_hexen_1_yn_4` (hex-with-both-bonds
-parent; the OpenClatura hept-yne PIN reading stays an alias, never displayed
-truth — Greek has no PIN). Each record: school-rule main chains in numbering
-order, condensed linearized to the 1.17 frame, expanded derived (heavy
-order/coords preserved, H valence-complete at 0.78), skeletal from
-`fZigzagMol`, SDFs filed under `mols/nomeclature-moc2/`, 3D chains mapped by
-heavy-graph isomorphism. No formula/name dupes against the 147 by
-normalized-SMILES + CID check. Menu picks them up automatically
-(carbon-count order, last in band); flat-list positions 69/98/116/127/139/
-140/154. Verified: generation-time audit 7/7 clean (bonds ±3%, H counts,
-order identity, SDF match), `node --check`, VM load 154/154 registries with
-0 orphans; `?v=59.17`. Owner verifies live.
+  (`mols/new-mols-molwave/MULERMOC_custom_20251125_7mols_data.js`, author Α.Θ.)
+  converted to built-in shape: `methyl_3_hexane`, `ethyl_4_heptane`,
+  `methyl_2_propane` (fills the C4 branched gap — isobutane), the advanced
+  C14 `isopropyl_5_trimethyl_2_3_7_octane`, `ethyl_2_butene_1` (positional
+  isomer of stored `methyl_3_butene_1`, not a duplicate), `methyl_2_butene_1`,
+  and the school-rule enyne `propyl_3_hexen_1_yn_4` (hex-with-both-bonds
+  parent; the OpenClatura hept-yne PIN reading stays an alias, never displayed
+  truth — Greek has no PIN). Each record: school-rule main chains in numbering
+  order, condensed linearized to the 1.17 frame, expanded derived (heavy
+  order/coords preserved, H valence-complete at 0.78), skeletal from
+  `fZigzagMol`, SDFs filed under `mols/nomeclature-moc2/`, 3D chains mapped by
+  heavy-graph isomorphism. No formula/name dupes against the 147 by
+  normalized-SMILES + CID check. Menu picks them up automatically
+  (carbon-count order, last in band); flat-list positions 69/98/116/127/139/
+  140/154. Verified: generation-time audit 7/7 clean (bonds ±3%, H counts,
+  order identity, SDF match), `node --check`, VM load 154/154 registries with
+  0 orphans; `?v=59.17`. Owner verifies live.
 - **Skeletal zigzag branches (v59.18).** `fZigzagMol` laid branch
 continuations straight, so multi-bond branches (ethyl/propyl/isopropyl legs)
 rendered as single lines in skeletal — with implicit carbons the intermediate
@@ -288,40 +289,81 @@ calls the same function live). Verified: `node --check`, regenerated-audit
 clean (bonds ±3%, closest non-bonded approach 0.86 Å), `?v=59.18`. Owner
 eyeballs #139/#140/#154.
 - **Sticky 3D highlight freshness (v59.19).** With a selected component,
-switching molecules painted the *previous* molecule's atom indices onto the
-new 3D model: the sticky repaint runs synchronously while the 3D analysis
-refreshes async (fetch → parse → calc), and nothing repainted once fresh
-(the 2D path was immune — synchronous analysis — and had already gotten the
-analogous ghost-preselected fix). New `__muler3DAnalysisMol` key (reset in
-`fInitProps`, set after every successful parse): the seven classic 3D
-painters bail while stale, and a fetch-completion flush
-(`fMulerSticky3DFlush`) repaints from fresh globals — skipped in Present
-(the scenario layer owns the paint via `fScenarioOn3DParsed`) and when
-nothing is selected. Verified: `node --check`, `git diff --check`;
-`?v=59.19`. Owner verifies live (sticky chain A→B, rapid A→B→A).
+  switching molecules painted the *previous* molecule's atom indices onto the
+  new 3D model: the sticky repaint runs synchronously while the 3D analysis
+  refreshes async (fetch → parse → calc), and nothing repainted once fresh
+  (the 2D path was immune — synchronous analysis — and had already gotten the
+  analogous ghost-preselected fix). New `__muler3DAnalysisMol` key (reset in
+  `fInitProps`, set after every successful parse): the seven classic 3D
+  painters bail while stale, and a fetch-completion flush
+  (`fMulerSticky3DFlush`) repaints from fresh globals — skipped in Present
+  (the scenario layer owns the paint via `fScenarioOn3DParsed`) and when
+  nothing is selected. Verified: `node --check`, `git diff --check`;
+  `?v=59.19`. Owner verifies live (sticky chain A→B, rapid A→B→A).
 - **Echo fontscaling dance (v59.20).** 3D numbering echoes (and pick-sequence
-echoes) baked the live zoom into their base size — tiny numbers after a
-large-zoom definition — while atom labels were fixed in v59.14 by building
-them at zoom 100. Per the JSmol doc, echo scripts now wrap the definition:
-`set fontscaling OFF` first (absolute size), `ON` after (scale from that
-base), so numbers track zoom like the labels. Labels keep their zoom-100
-patch (OFF/ON moves nothing on that path: labels set no size on toggle).
-Verified: `node --check`, `git diff --check`; `?v=59.20`. Owner verifies
-live (numbering size across zooms, moveto steps, PNG caption unchanged).
-*Superseded by v59.21 — an echo defined while scaling is OFF never rescales
-again, so the numbers froze at a fixed size.*
+  echoes) baked the live zoom into their base size — tiny numbers after a
+  large-zoom definition — while atom labels were fixed in v59.14 by building
+  them at zoom 100. Per the JSmol doc, echo scripts now wrap the definition:
+  `set fontscaling OFF` first (absolute size), `ON` after (scale from that
+  base), so numbers track zoom like the labels. Labels keep their zoom-100
+  patch (OFF/ON moves nothing on that path: labels set no size on toggle).
+  Verified: `node --check`, `git diff --check`; `?v=59.20`. Owner verifies
+  live (numbering size across zooms, moveto steps, PNG caption unchanged).
+  *Superseded by v59.21 — an echo defined while scaling is OFF never rescales
+  again, so the numbers froze at a fixed size.*
 - **Echo zoom bake (v59.21).** Echoes now get the labels' treatment instead
-of the OFF/ON dance: `fMulerEchoZoomWrap()` reads the live zoom, defines the
-echoes at `zoom 100` with scaling on, and restores the camera in the same
-script (one repaint, no flash, present framing intact). Applied to
-`fShowNumber3D` (numbering, animated + sync paths) and `fMulerSelectSeq3D`
-(pick-sequence numbers). Measured in the live applet before/after: an echo
-defined at zoom 100 keeps scaling with the view (box 28 px → 61 px between
-zoom 100 and 150), one defined with scaling off stays 28 px at every zoom;
-after the change the numbering echoes carry the neutral zoom-100 bake factor
-while the applet remains at the author's zoom. Verified: `node --check`,
-`git diff --check`; `?v=59.21`; live screenshots at zoom 30/50/150 show the
-numbers tracking the labels. Owner confirms correct.
+  of the OFF/ON dance: `fMulerEchoZoomWrap()` reads the live zoom, defines the
+  echoes at `zoom 100` with scaling on, and restores the camera in the same
+  script (one repaint, no flash, present framing intact). Applied to
+  `fShowNumber3D` (numbering, animated + sync paths) and `fMulerSelectSeq3D`
+  (pick-sequence numbers). Measured in the live applet before/after: an echo
+  defined at zoom 100 keeps scaling with the view (box 28 px → 61 px between
+  zoom 100 and 150), one defined with scaling off stays 28 px at every zoom;
+  after the change the numbering echoes carry the neutral zoom-100 bake factor
+  while the applet remains at the author's zoom. Verified: `node --check`,
+  `git diff --check`; `?v=59.21`; live screenshots at zoom 30/50/150 show the
+  numbers tracking the labels. Owner confirms correct.
+- **Branch triple bonds stay linear (v59.22).** `fZigzagMol` forced only the
+  bond *entering* a branch triple bond straight, so the bond *leaving* it took
+  the ±60° zigzag turn and bent the alkyne at the far sp carbon (measured
+  180° / 120° on a branch `–CH₂–C≡C–CH₃`). Queue items now carry `pt`
+  (incoming bond was triple) and the first-child rule is
+  `kids === 0 && (bo(...) === 3 || it.pt)`, matching the chain walk's
+  `oPrev === 3 || prevTriple`: both sp carbons keep 180° in the chain and in a
+  branch, while the sp³ neighbours keep their 120° kink. Asserted (synthetic
+  branch alkyne, branch nitrile, chain alkyne) and the six `fZigzagMol`-built
+  alkane skeletals regenerate byte-identically; the 148 JSME-derived stored
+  skeletals are untouched (their 8 triple-bearing molecules already measured
+  180°/180°). Verified: `node --check`, `git diff --check`; `?v=59.22`. Owner-side
+  visual check of a branched-alkyne draft.
+- **Engine test molecules + decline diagnostics (v59.23).** The engine's 18
+  fail-closed scope guards no longer block authoring. `fDeclineNaming()` now
+  attaches `mulerDecline` (reason, source call site from the stack, full frame,
+  timestamp, a feature audit covering every decline class and an engine-state
+  snapshot); `fMolDraftSandboxAnalyse` maps that to
+  `{ ok: true, unsupported: true, decline }` (rings and unparseable drawings
+  still block), and Submit accepts the structure as an **engine test molecule**:
+  warning toast + status line, a preview block with reason / guard / offending
+  atoms or groups instead of name rows, no Greek→EN transliteration and no
+  oracle auto-verdicts, Accept stores `grName: ""` plus a `naming` block
+  (`status/reason/callSite/frame/at/features/snapshot`) in the custom record,
+  and the name panel shows a note with a `<details>` diagnostics view when the
+  molecule is selected. The 3D gate is bypassed for unsupported test molecules
+  (naming work does not need a 3D model); normal molecules keep it. Record
+  schema is additive: absent `naming` = normally named, and the update path
+  deletes it once the engine learns the case. Generated `MULERMOC_*_data.js`
+  headers say `Naming: UNSUPPORTED — <reason>`. Tests can now be handed off as
+  JSON: a new title-bar action exports the new custom records as one JSON
+  object/bundle (`format: "mulermoc-molecule"`, `schemaVersion: 2`); the legacy
+  JS save remains for the current script loader. New GR/EN strings cover the
+  diagnostics and JSON export.
+  Plan/feedback loop: `docs/new-molecules-upgrade-naming-algorithm.md`.
+  Verified: `node --check` all `js/*-59.js`, `git diff --check`, headless
+  decline-trace check (reason/callSite/features/snapshot), JSON export shape,
+  3D-gate bypass, and `fDetectMolType` checked against S/P/amine graphs (no
+  throw, so those reach the decline guard). `probe-final` and
+  `probe-scenario-quiz` green; `?v=59.23`; owner verifies the live
+  Submit/Accept/save/export/select flow.
 - **Docs resync (2026-11-23, docs-only).** Current-tree references were synced
   to v59.10 across `README`, `AGENTS`, `PROJECT-PLAN`/`PROJECT-PLAN-GR`,
   `LAYERS-PLAN`, `didactic-scenario-plan` and the harness README; the EN
