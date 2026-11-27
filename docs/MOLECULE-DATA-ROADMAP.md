@@ -1,6 +1,6 @@
 # MolWave molecule-data roadmap
 
-Status: planning — development mode is v59.29 (tree clean at `de11ad4`)
+Status: planning — development mode is v59.32 (`?v=59.32`; committed 2026-11-27)
 
 Progress: v59.23 exports engine-test molecules as JSON (`schemaVersion: 2`,
 flat legacy record + stamp — a **stopgap**) and stores the `unsupported` naming
@@ -11,7 +11,8 @@ di-/bis- prefix rule; v59.26 fixes the decline-audit semantics, stamps
 `docs/SCHEMA-V3-PLAN.md`; v59.27 fixes the English C9 stem and makes the EN
 builder fail closed on any untransliterable fragment; v59.28 elides the Greek
 C9 stem's final alpha before a vowel (`εννεάνιο`); v59.29 adds the ε+ι
-diaeresis (`εννεϊνόλη`, `εννεΐνιο`). The record **shape** is
+diaeresis (`εννεϊνόλη`, `εννεΐνιο`); v59.30 keeps the locant tasks required
+after the main chain is solved (chain→locants stay open). The record **shape** is
 frozen at v3 (2026-11-26, below); schema files, the v3 export, the normalizer,
 the per-file dev loader and the generated release bundle are not built yet.
 
@@ -189,13 +190,13 @@ components, classification and SMILES are engine output.
   },
 
   "naming": {
-    "status": "unsupported", "rule": "school-pre2013", "engine": "v59.29",
+    "status": "unsupported", "rule": "school-pre2013", "engine": "v59.31",
     "reason": "…", "callSite": "…", "frame": "…", "at": "…",
     "features": [ … ], "snapshot": { … }
   },
 
   "derived": {
-    "engine": "v59.29",
+    "engine": "v59.31",
     "molecularFormula": "C5H12O",
     "chains": {
       "school-pre2013": {
@@ -353,7 +354,7 @@ molecule record.
 ```json
 {
   "key": "ethyl_isopropyl_ether",
-  "engine": "v59.29",
+  "engine": "v59.31",
   "formula": "CH3CH2OCH(CH3)2",
   "molecularFormula": "C5H12O",
   "carbonCount": 5,

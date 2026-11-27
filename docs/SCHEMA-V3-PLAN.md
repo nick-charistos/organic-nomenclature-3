@@ -1,7 +1,8 @@
-# Schema v3 freeze — implementation plan (v59.29)
+# Schema v3 freeze — implementation plan (v59.32)
 
 Status: **decisions locked; audit semantics fixed** (2026-11-26). Current tree:
-v59.29 (committed `de11ad4`). Scope: the molecule record shape, the v3 JSON
+v59.32 (`?v=59.32`, committed 2026-11-27). Scope: the
+molecule record shape, the v3 JSON
 export, the v2 → v3 normalizer and the validator skeleton. Runtime naming does
 not change in this batch. **Next session starts at §5 M1** (`molecules/schema.json`
 + samples), then §6 M2.
@@ -165,7 +166,7 @@ release generator ships the current engine's output; the validator compares it t
   "naming": {
     "status": "unsupported",
     "rule": "school-pre2013",
-    "engine": "v59.29",
+    "engine": "v59.31",
     "reason": "C-C triple bond off main chain",
     "callSite": "mulermoc-nom-core-59.js:3841",
     "frame": "…",
@@ -175,7 +176,7 @@ release generator ships the current engine's output; the validator compares it t
   },
 
   "derived": {
-    "engine": "v59.29",
+    "engine": "v59.31",
     "molecularFormula": "C5H12O",
     "chains": {
       "school-pre2013": {
@@ -256,7 +257,7 @@ Normalizer mapping (explicit — no silent drops):
 | — | `derived.molecularFormula` (Hill, computed) |
 
 Bundle shape becomes
-`{ "format": "mulermoc-molecule-bundle", "schemaVersion": 3, "engine": "v59.29",
+`{ "format": "mulermoc-molecule-bundle", "schemaVersion": 3, "engine": "v59.31",
    "generatedAt": "…", "count": N, "molecules": {…} }`.
 
 Validator checks (minimum):
@@ -293,7 +294,7 @@ node probe-branch-quiz.js
 ```
 
 Export/normalizer changes are data-only; if runtime naming is untouched, the
-probe set is unchanged from v59.29. Do not run probes for the schema JSON/docs
+probe set is unchanged from v59.31. Do not run probes for the schema JSON/docs
 alone.
 
 ## 8. Out of scope (next batches)

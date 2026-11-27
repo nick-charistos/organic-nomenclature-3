@@ -8,7 +8,7 @@ changelog.
 
 Greek-first static web app for teaching organic nomenclature (JSME + JSmol +
 vanilla JavaScript; no build step). The live entry point is `index.html` →
-`mulermoc-nom-59.html`. Current live version: **v59.29** (2026-11-26).
+`mulermoc-nom-59.html`. Current live version: **v59.32** (2026-11-27).
 Older versions v42–v58 remain runnable at the repo root but are **frozen**.
 
 ## Working mode (owner preference, 2026-11-22)
@@ -301,8 +301,40 @@ Update docs in the same commit as the change:
 - Locants/positions depend on the main chain: while `compCarbonsCount` is a
   required (unsolved) task, number locants, bond positions, and group locants
   must be required too (drawer `chain-locked`; runtime union in
-  `fScenarioQuizRequiredModes`). Free locants are legal only when the chain is
-  free. Do not weaken this without asking.
+  `fScenarioQuizRequiredModes`). When the chain is solved **or set solved**,
+  `fMulerQuizSyncChainLocants()` (v59.30) auto-solves every capable locant:
+  they turn white (`.freeComp`) and stay interactive instead of remaining quiz
+  tasks. `fMulerChainSolved()` also honours the run-state solved map, so a
+  set-solved chain never redirects a locant click back to the chain. Free
+  locants are legal only when the chain is free. Do not weaken this without
+  asking.
+- Locant selection UX (v59.31): selecting a locant number shows the chain
+  numbering only — no atom/bond paint, in authoring too (guards in
+  `fHighlightFG`/`fHighlightFG3D`/`fHighlightMultiBonds(3D)`/
+  `fPaintBranchHighlightAtoms`). Selecting a name component shows the
+  numbering and a green companion outline on its locant box: free authoring
+  always, selection/quiz only when the component and its locant are
+  solved/open. The numbering uses the locant emphasis colours (dark
+  `#193F8F` on the companion locant, light `#9ac1ed` elsewhere, 3D echo too;
+  v59.32 records the companion in `window.__mulerLocantCompanionMode`).
+  Companion mapping (v59.32): `compSecondSub1/2` → `compNumber1/2`,
+  `compBranchSub1` → `compNumber2` (the split second-substituent slot),
+  `compBranchSub2+` → `compBranchLocN`, `compBondType` → `compBondPos`,
+  `compBondType2` → `compEndNumber`. `compSuffix` is resolved per molecule by
+  `fSuffixCompanionMode()`: split locants (`comp9loc`) → `compSuffixLocants`;
+  a suffix whose own text carries the locant (“-2-όλη”, fused branched db+tb
+  alcohol/ketone) → the `compSuffix` sentinel (numbering/emphasis, no outline);
+  otherwise the first number box holding the senior FG's locants
+  (`fPrincipalFGChainLocants`, seniority-ordered, alcohol/ketone/amine only).
+  Acids/esters/aldehydes/cyanides/nitro have no suffix locant. The numbering
+  overlay is replayed by `fMulerNumberAid()` on every SVG rebuild while a
+  companion is live (selection mode repaints after the reward), and
+  `fExplainNameComp`'s selection-mode guard clears the companion (plus the
+  numbering when mode is `none`) before returning. A
+  component whose locant box is absent for the molecule clears the previous
+  numbering. Solving a component shows numbering only when the
+  chain/locants are open; deselecting clears the companion and numbers.
+  Locant clicks never get a companion. Do not weaken without asking.
 - Menu quizzes are deferred tasks (`quiz.mol:""`): `quiz.types` selects which
   component types every picked molecule must solve. Any step carrying a menu
   is a menu quiz even when it also has a selected molecule; its editor uses

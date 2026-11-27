@@ -1,6 +1,6 @@
 # Docs index
 
-Current tree is **v59** (`mulermoc-nom-59.html`, `?v=59.29`). This page separates
+Current tree is **v59** (`mulermoc-nom-59.html`, `?v=59.32`). This page separates
 current guidance from historical records.
 
 ## Current / source of truth

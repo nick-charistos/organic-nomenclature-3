@@ -1,17 +1,27 @@
-# Session notes — 2026-11-26 (resume point for next session, other machine)
+# Session notes — 2026-11-27 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** 2026-11-26 — **v59.29 is committed**
-> (`de11ad4`, tree clean; `index.html` → `mulermoc-nom-59.html`, `?v=59.29`).
-> Shipped in this batch: v59.26 decline-audit semantics + frozen v3 decisions +
-> `MULER_CORE_VERSION`; v59.27 English C9 stem + mixed-script guard; v59.28
-> Greek C9 elision; v59.29 Greek ε+ι diaeresis. **Next: schema v3 freeze** —
-> `molecules/schema.json` + samples (incl. the synthetic `iupac-2013` record),
-> v3 export, v2→v3 normalizer, Node structural validator; then quiz multi-chain
-> verification. Plan: `docs/SCHEMA-V3-PLAN.md`.
+> **Resume pointer (cross-machine):** 2026-11-27 — **v59.32 committed**
+> (tree clean; `?v=59.32`). New in this batch: **v59.30** solving
+> the main chain auto-solves the locants
+> (`fMulerQuizSyncChainLocants`; white, interactive); **v59.31** locant
+> selection UX — a locant click shows numbers only (no atom/bond paint, also
+> in authoring), a name component with a locant adds the numbering + a green
+> companion outline on the locant box (free authoring always; selection/Present
+> only when the component and its locant are solved/open), and solving a
+> component shows numbering only when the chain/locants are open; **v59.32**
+> fixes the companion mapping for split branches and second multiple-bond
+> labels (`compBranchSub1` → `compNumber2`, `compBondType2` → `compEndNumber`),
+> colours the numbering with the locant emphasis (dark `#193F8F` for the
+> companion locant, light `#9ac1ed` for the rest), keeps it across selection
+> repaints, clears it on deselect under an armed viewer, and links the FG
+> suffix to its per-molecule locant (`fSuffixCompanionMode`).
+> **Next: schema v3 freeze** — `molecules/schema.json` + samples (incl. the
+> synthetic `iupac-2013` record), v3 export, v2→v3 normalizer, Node structural
+> validator; then quiz multi-chain verification. Plan:
+> `docs/SCHEMA-V3-PLAN.md`.
 > **Open for the owner:** confirm the C9 alkene form (`εννεένιο` vs
 > `εννεαένιο`); C9+ branch naming gaps (`EN_SUB_GR` has no nonyl,
-> `fDescribeCarbonBranches` caps branches at C8). See the 2026-11-26 entries
-> below.
+> `fDescribeCarbonBranches` caps branches at C8). See the dated entries below.
 > **Schema freeze plan (resume from home):** `docs/SCHEMA-V3-PLAN.md` — record
 > shape, schema.json/samples, v3 export, v2 → v3 normalizer, validator checks,
 > open questions.
@@ -142,10 +152,17 @@
 > No code change (v59.11 bumps the asset refs).
 > Docs: current index `docs/README.md`; historical material in `docs/archive/`
 > (pre-v54 notes split to `docs/archive/SESSION-NOTES-pre-v54.md`).
-> Committed: v59.01 (ff2058c) + v59.02 (7e18c65) + v59.03 + v59.04 + v59.05 + v59.06 + v59.07 + v59.08 + v59.09 + v59.10 + v59.11 + v59.12 + v59.13 + v59.14 + v59.15 + v59.16 + v59.17 + v59.18 + v59.19 + v59.20 + v59.21 + v59.22 (9ecd22c) + v59.23 (460a5a2) + v59.24 (4443e2f) + v59.25 (013726c) + v59.29 (de11ad4; includes v59.26–29).
-> **Tree clean at `de11ad4`.** No uncommitted code; the doc-only handoff note
-> for tomorrow may sit uncommitted on top. Next session starts with the schema
-> v3 files, not with the corpus.
+> Committed: v59.01 (ff2058c) + v59.02 (7e18c65) + v59.03 + v59.04 + v59.05 + v59.06 + v59.07 + v59.08 + v59.09 + v59.10 + v59.11 + v59.12 + v59.13 + v59.14 + v59.15 + v59.16 + v59.17 + v59.18 + v59.19 + v59.20 + v59.21 + v59.22 (9ecd22c) + v59.23 (460a5a2) + v59.24 (4443e2f) + v59.25 (013726c) + v59.29 (de11ad4; includes v59.26–29) + docs handoff (e2f4777) + v59.30–32.
+> **Committed in v59.32**: v59.30 chain-solve auto-solves the locants
+> (`fMulerQuizSyncChainLocants`; `fMulerChainSolved` honours the run-state
+> solved map) + v59.31 locant selection UX (numbers only on a locant click;
+> a name component with a locant adds numbering + a green companion outline,
+> free authoring always, selection/Present only when both are solved/open)
+> + v59.32 companion mapping fixes (`compBranchSub1` → `compNumber2`,
+> `compBondType2` → `compEndNumber`), locant-emphasis colours on the rendered
+> numbering, numbering that survives selection repaints and clears on
+> deselect, and per-molecule FG suffix locants (`fSuffixCompanionMode`).
+> Next session starts with the schema v3 files, not with the corpus.
 >
 > **Previous pointer (v58.50):** 2026-11-21 — **v58 is LIVE**
 > (`index.html` → `mulermoc-nom-58.html`, `?v=58.50`, review follow-ups +
@@ -1083,3 +1100,28 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * Next session: **schema v3 freeze** — `molecules/schema.json` + human notes, the hand-written `ethyl_isopropyl_ether` sample, the synthetic `iupac-2013` sample, the v3 export (`fMolRecordV3`), the v2→v3 normalizer with the explicit field map, and the Node structural validator (`tools/muler-harness/validate-molecule.js`). The Playwright `derived` audit follows. Then quiz multi-chain verification.
 * Owner decisions still open: C9 alkene form (`εννεένιο` vs `εννεαένιο`); none blocks the schema freeze. Known gaps for a later chemistry batch: `EN_SUB_GR` has no nonyl entry, `fDescribeCarbonBranches` caps branches at C8, and the C9 diaeresis rule is scoped to `εννεα` only.
 * Verification record for the batch: `node --check` all `js/*-59.js`, `git diff --check`, headless naming-engine run (nonane/nonene/nonyne/nonadiene/decane/tridecane/alkynol/substituted C9), EN C9 test; no probes per working mode; owner live-verified. Docs-only handoff edits after the commit are uncommitted by design.
+
+## 2026-11-27 - chain solve auto-solves the locants (?v=59.30, owner request)
+* Owner: when the main chain is solved (or set solved), the locants must also become solved — white and interactive. New `fMulerQuizSyncChainLocants()` walks `#nameAnalysis .nameCompBox`, keeps the capable locant modes (digit-led boxes + `compNumber1/2`, `compBondPos`, `compEndNumber`, `compSuffixLocants`, `compBranchLoc2`, `comp3loc*`) and marks them solved in the run-state map for the current molecule/step scope. It runs from `fMulerQuizMarkSolved("compCarbonsCount")` and at the top of `fMulerQuizPaintSolved()`, so a chain that is set solved (restored entry) syncs too.
+* Result: after the chain solve the locants lose `.quizTodo`, gain `.freeComp` (white, classic click → highlight/explain, interactive) and leave the todo, so the step can complete on the chain. `fScenarioQuizRequiredModes` keeps the v58.33 rule (locants required while the chain is unsolved); `fMulerChainSolved()` also honours `fMulerQuizIsSolved("compCarbonsCount")` so a set-solved chain no longer redirects a locant click. Selection mode and Present; authoring stays settings-only.
+* Verified: `probe-scenario-quiz` green; `node --check` all `js/*-59.js`, `git diff --check`. The probe uses ethane (no locant boxes), so the owner's live check is the acceptance: 2-methylpropane, chain+locants, solve the chain → locants white/solved and interactive. Committed in v59.32.
+
+## 2026-11-27 - locant selection UX (?v=59.31, owner request)
+* Owner rules: (1) clicking a locant number shows the chain numbering only, no atom/bond highlight; (2) clicking a solved (white) name component that carries a locant also shows the numbering and highlights the locant box (green companion outline) **if that locant is open**, keeping the component's classic atom/bond highlight; (3) solving a name component in selection/quiz shows numbering only when the chain/locants are open; authoring keeps the locant-only rule.
+* Implementation: `fIsLocantMode()` guards `fHighlightFG`, `fHighlightFG3D`, `fHighlightMultiBonds`, `fHighlightMultiBonds3D` and `fPaintBranchHighlightAtoms` (numbering-only locant selection, authoring included). `fLocantModeForComponent()` maps the name boxes to their locant modes (`compSecondSub1/2→compNumber1/2`, `compBondType/2→compBondPos`, `compSuffix→compSuffixLocants`, branch piece→branch locant). `fMulerQuizApplyLocantCompanion()` runs after the `fExplainNameComp` switch: when the clicked component is solved and its locant is solved/open it sets `numberingFlag`, renders the numbering and adds `.locantCompanion` to the locant box; it clears on every new selection, skips locant clicks and the quiet explain scrape. CSS: green outline on `.nameCompBox.locantCompanion`.
+* Result: locant click → numbers only; solved “μεθυλο” with open “2-” → numbers + atoms/bonds + outlined “2-”; solving a component with the chain unsolved → no numbering. **Free authoring** (selection tool off): selecting any name component with a locant shows the numbering + companion outline with no solved gate; deselecting clears both. `?v=59.31`.
+* Verified: `probe-scenario-quiz` green (`{failures:[],warnings:[]}`, no page errors); `node --check` all `js/*-59.js`, `git diff --check`. The probe uses ethane (no locant boxes), so the owner's live check on 2-methylpropane is the acceptance. Committed in v59.32.
+
+## 2026-11-27 - locant companion mapping + numbering colours (?v=59.32, owner report)
+* Owner report on `CC/C(C(=O)O)=C(C#CC(C)(C)C(=O)O)/C(C)C` (2-αιθυλο-3-ισοπροπυλο-6,6-διμεθυλο-2-επτεν-4-ινοδιικό οξύ): clicking “-ιν-” outlined the “-2-” double-bond locant, “ισοπροπυλο” outlined nothing, and the numbering stayed plain light blue.
+* Fix 1 (`fLocantModeForComponent`): `compBranchSub1` (the first piece of the split second-substituent slot) → `compNumber2`; `compBondType2` (second multiple-bond label, the “ιν” of an en-yn) → `compEndNumber`. `compBondType` keeps `compBondPos`.
+* Fix 2 (numbering emphasis): `window.__mulerLocantCompanionMode` records the companion locant; `fLocantEmphasisIndices()` falls back to the companion box when the selected mode is not itself a locant, so the numbering uses the locant colours (dark `#193F8F` on the companion locant, light `#9ac1ed` on the rest, 3D echo included). The pre-switch hook in `fExplainNameComp` clears the companion, and `fMulerQuizClearNumberingDisplay()` removes rendered numbers when a companion is not allowed.
+* Fix 3: a component whose locant box is absent for the molecule (e.g. “διοικό οξύ” with no suffix locant box) now clears the previous selection's numbers instead of leaving them on screen.
+* Verified headlessly on the molecule above (served `?v=59.32`): “-ιν-” → `comp7` “-4-” + 4 dark, “ισοπροπυλο” → `comp2` “-3-” + 3, “διμεθυλο” → `comp3loc` “-6,6-” + 6, “-εν-” → `comp4` “-2-” + 2, “αιθυλο” → `comp0` “2-” + 2, “διοικό οξύ” → numbers cleared, locant click “2-” → numbers only (no companion), deselect → numbers gone. `probe-final` and `probe-scenario-quiz` green, `node --check` all `js/*-59.js`, `git diff --check`. Committed in v59.32.
+
+## 2026-11-27 - companion survives selection mode + FG suffix locant (?v=59.32 follow-up)
+* Owner report: (a) solving a name component in selection/quiz shows the numbering in 3D only; (b) deselecting a solved component in selection/quiz leaves the companion outline; (c) the functional-group suffix (last name component) does not link with its locant.
+* (a) The reward path renders the numbering in `fExplainNameComp`, then the selection caller repaints the SVG and wipes the text overlays (JSmol echoes survive). `fMulerNumberAid()` (the tail of `fUpdateSVG`) now replays the companion numbering when `window.__mulerLocantCompanionMode` is set — same path that keeps the locant/bond number aid alive — so the 2D numbers persist across repaints.
+* (b) `fExplainNameComp`'s selection-mode guard returned before the companion hook on a deselect (`mode "none"`, not solved). The guard now clears the companion before returning and, for `none`, also clears the rendered numbering; `fMulerQuizClearNumberingDisplay()` repaints the task-driven number aid afterwards when it is still eligible.
+* (c) `fLocantModeForComponent("compSuffix")` no longer assumes `compSuffixLocants`. New `fSuffixCompanionMode()`: split locants box (`comp9loc`) wins; a suffix whose own text starts with a locant (“-2-όλη”, fused branched db+tb alcohol/ketone) returns the `compSuffix` sentinel (numbering + emphasis from its own digits, no outline); otherwise `fPrincipalFGChainLocants()` computes the senior FG's chain locants (seniority list, so a prefix amine never qualifies) and the first number box carrying them is the companion (`compBondPos` / `compEndNumber` / `compNumber1`). Acids, esters, aldehydes, cyanides and nitro have no suffix locant → no companion.
+* Verified headlessly: 2-βουτανόλη → `comp4` “-2-” + 2; 2-πεντανόνη → “-2-” + 2; 2-μεθυλο-1,2-προπανοδιόλη → “-1,2-” + 1,2; the enynol → `comp9loc` “-2-” + 2; 3-αμινοβουτανικό οξύ and προπανοδιικό οξύ → no companion, numbers cleared; selection mode with the suffix solved → 2D numbers + companion, deselect → both gone; reward order (explain → paint → repaint → `fUpdateSVG`) keeps the numbers. `probe-final` and `probe-scenario-quiz` green, `node --check`, `git diff --check`. Committed in v59.32.

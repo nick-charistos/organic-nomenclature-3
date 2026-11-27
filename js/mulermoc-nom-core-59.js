@@ -92,10 +92,10 @@ const gNamablePrincipalGroups = ["carboxylicAcid", "cyanide", "aldehyde", "keton
 const gNamablePrefixGroups = ["carboxylicAcid", "cyanide", "aldehyde", "ketone", "alcohol", "amine", "nitro", "halogen"]
 let molTaxonomy = ""
 
-// Engine version stamp (v59.29). Written into decline diagnostics and the v3
+// Engine version stamp (v59.32). Written into decline diagnostics and the v3
 // record's `derived`/`naming` stamps so an audit knows which naming rules
 // produced the data. Keep in sync with the `?v=` refs in mulermoc-nom-59.html.
-var MULER_CORE_VERSION = "v59.29"
+var MULER_CORE_VERSION = "v59.32"
 function fMulerCoreVersion() { return MULER_CORE_VERSION }
 
 function fGetMoleculeClassification() {

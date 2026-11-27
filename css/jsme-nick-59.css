@@ -2346,6 +2346,15 @@ body.viewerSplitDrag * {
   /* box-shadow: 1px 1px 3px 0px rgba(0,0,0,0.5); */
 }
 
+/* v59.31: companion outline on the locant box of a selected solved name
+   component. The clicked name box keeps the classic atom/bond paint; the
+   locant box is outlined rather than filled so the pair stays readable. */
+.nameCompBox.locantCompanion {
+  outline: 4px solid var(--vibrantGreen);
+  outline-offset: -4px;
+  z-index: 200;
+}
+
 
 
 .nameCompBox.quizTodo.selected {

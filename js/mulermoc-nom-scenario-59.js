@@ -2476,7 +2476,9 @@ function fScenarioQuizRequiredModes(step) {
   if (!base) return null;
   // v58.33 chain rule: while the main chain is a required (unsolved) task,
   // number locants are required too — a free locant without the chain is
-  // meaningless. Enforced per current molecule so legacy files comply.
+  // meaningless. When the chain is solved (or set solved), the runtime
+  // auto-solves the locants instead (v59.30, fMulerQuizSyncChainLocants).
+  // Enforced per current molecule so legacy files comply.
   try {
     if (base.indexOf("compCarbonsCount") >= 0) {
       var _chainTask = true;

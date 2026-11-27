@@ -4283,7 +4283,15 @@ function fMulerChainSolved() {
     var m = (typeof selectedMol !== "undefined" && selectedMol) ? String(selectedMol) : "";
     if (!m) return false;
     var map = window.__mulerChainSolved;
-    return !!(map && map[m] === true);
+    if (map && map[m] === true) return true;
+    // v59.30: a chain that is "set solved" (run-state map for this scope,
+    // restored/pre-solved entry paths) also opens the locant tasks. Without
+    // this, a locant click still redirects to an already-solved chain and the
+    // locant can never be armed.
+    try {
+      if (typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved("compCarbonsCount")) return true;
+    } catch (eQ) {}
+    return false;
   } catch (e) { return false; }
 }
 
@@ -5093,6 +5101,256 @@ function fMulerQuizMarkSolved(mode, scope) {
     if (!window.__mulerQuizSolved) window.__mulerQuizSolved = {};
     if (!window.__mulerQuizSolved[k]) window.__mulerQuizSolved[k] = {};
     window.__mulerQuizSolved[k][mode] = true;
+    // v59.30: solving the chain solves its dependent locants (white,
+    // interactive) instead of leaving/forcing them as tasks.
+    try {
+      if (String(mode) === "compCarbonsCount" && typeof fMulerQuizSyncChainLocants === "function") {
+        fMulerQuizSyncChainLocants(scope);
+      }
+    } catch (eL) {}
+  } catch (e) {}
+}
+
+// v59.30: when the main chain is solved (or set solved), every capable locant
+// component becomes solved too — the chain fixes the numbering, so the locant
+// boxes turn white and stay interactive (classic click) rather than remaining
+// quiz tasks. Run-scoped exactly like the solved map. Never called for the
+// chain itself, so it cannot recurse through fMulerQuizMarkSolved.
+function fMulerQuizSyncChainLocants(scope) {
+  try {
+    if (typeof fMulerChainSolved !== "function" || !fMulerChainSolved()) return;
+    if (typeof fMulerQuizMarkSolved !== "function") return;
+    var boxes = [];
+    try { boxes = Array.prototype.slice.call(document.querySelectorAll("#nameAnalysis .nameCompBox")); } catch (eB) { return; }
+    for (var i = 0; i < boxes.length; i++) {
+      try {
+        var b = boxes[i];
+        if (!b || !b.classList) continue;
+        if (b.classList.contains("comp-hidden") || b.classList.contains("comp-gone")) continue;
+        var id = b.getAttribute ? b.getAttribute("id") : null;
+        if (!id) continue;
+        var mode = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId(id) : "none";
+        if (!mode || mode === "none" || mode === "compCarbonsCount") continue;
+        var isLoc = false;
+        try { isLoc = (typeof fMulerQuizBoxShowsLocant === "function") ? fMulerQuizBoxShowsLocant(id, null) : false; } catch (eW) { isLoc = false; }
+        if (!isLoc) {
+          try {
+            isLoc = (typeof fScenarioQuizStaticLocant === "function")
+              ? fScenarioQuizStaticLocant(mode)
+              : (["compNumber1", "compNumber2", "compBondPos", "compEndNumber", "compSuffixLocants", "compBranchLoc2"].indexOf(mode) >= 0 || /^comp3loc\d*$/.test(mode));
+          } catch (eS) { isLoc = false; }
+        }
+        if (!isLoc) continue;
+        var capable = false;
+        try {
+          var tgt = (typeof fMulerQuizResolveTarget === "function") ? fMulerQuizResolveTarget(mode) : [];
+          capable = !!(tgt && tgt.length);
+        } catch (eT) { capable = false; }
+        if (!capable) continue;
+        fMulerQuizMarkSolved(mode, scope);
+      } catch (eBox) {}
+    }
+  } catch (e) {}
+}
+
+// v59.31: a name component that carries a locant box (substituent name ↔ its
+// position, bond type ↔ bond position, FG suffix ↔ its locants, branch piece ↔
+// its branch locant). Common ether/ester labels have no locant and return null.
+function fLocantModeForComponent(mode) {
+  var m = String(mode || "");
+  if (m === "compSecondSub1") return "compNumber1";
+  if (m === "compSecondSub2") return "compNumber2";
+  // Split second-slot branch pieces: the FIRST piece's locant is the slot's
+  // own locant (compNumber2); later pieces get the comp3loc/comp3loc2 boxes.
+  if (m === "compBranchSub1") return "compNumber2";
+  if (m === "compBondType") return "compBondPos";
+  if (m === "compBondType2") return "compEndNumber";
+  // v59.32: the functional-group suffix locant has no fixed slot (see
+  // fSuffixCompanionMode). "compSuffix" is the sentinel for a suffix whose
+  // locant is fused into its own text ("-2-όλη"): numbering only, no outline.
+  if (m === "compSuffix") return (typeof fSuffixCompanionMode === "function") ? fSuffixCompanionMode() : "compSuffixLocants";
+  var bp = /^compBranchSub(\d+)$/.exec(m);
+  if (bp) return "compBranchLoc" + bp[1];
+  return null;
+}
+
+// v59.32: principal-FG chain locants (alcohol/ketone/amine only — acids, esters,
+// aldehydes, cyanides and nitro have no suffix locant). Mirrors the engine's
+// placement: the chain carbon carrying the FG heteroatom.
+function fPrincipalFGChainLocants() {
+  try {
+    var fgList = (typeof functionalGroupsList !== "undefined" && Array.isArray(functionalGroupsList)) ? functionalGroupsList : [];
+    if (!fgList.length) return null;
+    // Seniority, not list order: the suffix group is the senior FG, so a
+    // secondary amine/ketone prefix never masquerades as the suffix
+    // (e.g. 3-αμινοβουτανικό οξύ — the acid is principal, the amine locant is
+    // a substituent box and must not link).
+    var _order = ["carboxylicAcid", "ester", "cyanide", "aldehyde", "ketone", "alcohol", "amine", "nitro", "halogen", "ether"];
+    var fg = "", best = 999;
+    for (var q = 0; q < fgList.length; q++) {
+      var _oi = _order.indexOf(String(fgList[q]));
+      if (_oi >= 0 && _oi < best) { best = _oi; fg = String(fgList[q]); }
+    }
+    if (fg !== "alcohol" && fg !== "ketone" && fg !== "amine") return null;
+    var group = (typeof functionalGroupObj !== "undefined" && functionalGroupObj) ? functionalGroupObj[fg] : null;
+    if (!group) return null;
+    var atoms = group.O || group.N || null;
+    if (!atoms || !atoms.length) return null;
+    var out = [];
+    for (var i = 0; i < atoms.length; i++) {
+      var nb = (typeof atomConnectivityList !== "undefined" && Array.isArray(atomConnectivityList)) ? atomConnectivityList[atoms[i]] : null;
+      if (!nb || !nb.length) return null;
+      var loc = (typeof fMainChainLocant === "function") ? fMainChainLocant(nb[0] + 1) : null;
+      if (loc == null) return null;
+      if (out.indexOf(loc) < 0) out.push(loc);
+    }
+    out.sort(function (a, b) { return a - b; });
+    return out.length ? out : null;
+  } catch (e) { return null; }
+}
+
+// v59.32: resolve the functional-group suffix companion per molecule:
+//   (1) a split-off locants box (`comp9loc` / compSuffixLocants) wins;
+//   (2) a suffix whose own text starts with a locant ("-2-όλη", fused only for
+//       branched db+tb alcohols/ketones) → sentinel "compSuffix" (numbering,
+//       emphasis, no outline);
+//   (3) otherwise match the principal FG's chain locants against the rendered
+//       number boxes (the engine puts the FG locant in compBondPos /
+//       compEndNumber / compNumber1 depending on the molecule).
+function fSuffixCompanionMode() {
+  try {
+    if (typeof fSplitSuffixLocantsActive === "function" && fSplitSuffixLocantsActive()) return "compSuffixLocants";
+  } catch (eS) {}
+  var locs = fPrincipalFGChainLocants();
+  if (!locs || !locs.length) return null;
+  var boxes = [];
+  try { boxes = Array.prototype.slice.call(document.querySelectorAll("#nameAnalysis .nameCompBox")); } catch (eB) { return null; }
+  var suffixBox = null, partial = null;
+  for (var i = 0; i < boxes.length; i++) {
+    var b = boxes[i];
+    if (!b || !b.classList) continue;
+    if (b.classList.contains("comp-hidden") || b.classList.contains("comp-gone")) continue;
+    var id = b.getAttribute ? b.getAttribute("id") : null;
+    if (!id) continue;
+    var m = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId(id) : "none";
+    if (!m || m === "none") continue;
+    var txt = "";
+    try { txt = (b.textContent || "").trim(); } catch (eT) { txt = ""; }
+    if (m === "compSuffix") {
+      // Fused suffix locants: "-2-όλη" / "-2,7-διόνη".
+      if (/^-?\d[\d,]*-\S/.test(txt) || /^-?\d[\d,]*-\s*$/.test(txt)) suffixBox = m;
+      continue;
+    }
+    var found = txt.match(/\d+/g);
+    if (!found || !found.length) continue;
+    var nums = [];
+    for (var k = 0; k < found.length; k++) {
+      var v = parseInt(found[k], 10);
+      if (v >= 1 && nums.indexOf(v) < 0) nums.push(v);
+    }
+    if (!nums.length) continue;
+    var all = true, exact = (nums.length === locs.length);
+    for (var n = 0; n < locs.length; n++) if (nums.indexOf(locs[n]) < 0) { all = false; break; }
+    if (!all) continue;
+    if (exact) return m;
+    if (!partial) partial = m;
+  }
+  if (partial) return partial;
+  if (suffixBox) return "compSuffix";
+  return null;
+}
+
+// v59.31: remove the rendered chain numbering (2D text overlays + 3D echoes)
+// when a companion is not allowed (e.g. a solved component whose locant is
+// still closed), so stale numbers never survive a selection change.
+function fMulerQuizClearNumberingDisplay() {
+  try {
+    var els = document.querySelectorAll('#jsmeNomeclatureSVG text[id^="number"]');
+    for (var i = 0; i < els.length; i++) { try { els[i].remove(); } catch (eR) {} }
+  } catch (e) {}
+  try { if (typeof removeEcho3D === "function") removeEcho3D(); } catch (e3) {}
+  try { numberingFlag = false; } catch (eN) {}
+  // v59.32: the task-driven number aid (locant/bond/branch quiz) is not the
+  // companion's to remove — repaint it when it is still eligible.
+  try { if (typeof fMulerNumberAid === "function") fMulerNumberAid(); } catch (eAid) {}
+}
+
+function fMulerQuizClearLocantCompanion() {
+  try {
+    if (typeof window !== "undefined") window.__mulerLocantCompanionMode = null;
+  } catch (eG) {}
+  try {
+    var els = document.querySelectorAll("#nameAnalysis .nameCompBox.locantCompanion");
+    for (var i = 0; i < els.length; i++) {
+      try { els[i].classList.remove("locantCompanion"); } catch (e) {}
+    }
+  } catch (e) {}
+}
+
+// v59.31: selecting a name component with a locant shows the chain numbering
+// and outlines its locant box. Free authoring always does this; selection mode
+// and Present require the component and its locant to be solved/open. The
+// click's own atom/bond highlight stays classic. Locant clicks never get a
+// companion (they are the numbering-only selection).
+function fMulerQuizApplyLocantCompanion() {
+  try {
+    if (typeof window !== "undefined" && window.__mulerExplainQuiet) return;
+    fMulerQuizClearLocantCompanion();
+    var mode = (typeof nameAnalysisMode !== "undefined") ? String(nameAnalysisMode || "none") : "none";
+    if (!mode || mode === "none") {
+      // Deselect: drop the companion numbering too (the SVG was already
+      // rebuilt while the companion was still set).
+      try { if (typeof fMulerQuizClearNumberingDisplay === "function") fMulerQuizClearNumberingDisplay(); } catch (eCN0) {}
+      return;
+    }
+    if (typeof fIsLocantMode === "function" && fIsLocantMode(mode)) return;
+    var lm = (typeof fLocantModeForComponent === "function") ? fLocantModeForComponent(mode) : null;
+    if (!lm) return;
+    // v59.31: free authoring (selection tool off, not Present) shows the
+    // companion locant and the numbering unconditionally; selection mode and
+    // Present require the component and its locant to be solved/open.
+    var _sel = false, _present = false;
+    try { _sel = !!(typeof fMulerSelectActive === "function" && fMulerSelectActive()); } catch (eA) {}
+    try { _present = !!(typeof fMulerSelectPresenting === "function" && fMulerSelectPresenting()); } catch (eP) {}
+    if (_sel || _present) {
+      var compSolved = false, locOpen = false;
+      try { compSolved = !!(typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved(mode)); } catch (eS) {}
+      try {
+        // v59.32: a fused suffix ("-2-όλη") carries its locant in its own
+        // text — the numbering gate is the chain, not a separate locant box.
+        locOpen = (lm === "compSuffix")
+          ? !!(typeof fMulerChainSolved === "function" && fMulerChainSolved())
+          : !!(typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved(lm));
+      } catch (eL) {}
+      if (!compSolved || !locOpen) {
+        try { if (typeof fMulerQuizClearNumberingDisplay === "function") fMulerQuizClearNumberingDisplay(); } catch (eC) {}
+        return;
+      }
+    }
+    // Fused suffix locant: numbering + emphasis from the suffix's own digits,
+    // no separate box to outline.
+    if (lm === "compSuffix") {
+      try { if (typeof window !== "undefined") window.__mulerLocantCompanionMode = lm; } catch (eG0) {}
+      try { numberingFlag = true; } catch (eN0) {}
+      try { if (typeof fShowAnalysisNumbering === "function") fShowAnalysisNumbering(0); } catch (eNum0) {}
+      return;
+    }
+    // Resolve the companion box first: a component whose locant box is absent
+    // for THIS molecule (e.g. an acid suffix with no suffix locant) must not
+    // leave the previous selection's numbers on screen.
+    var bid = null, el = null;
+    try {
+      bid = (typeof fMulerQuizBoxIdForMode === "function") ? fMulerQuizBoxIdForMode(lm) : null;
+      el = bid ? document.getElementById(bid) : null;
+    } catch (eB) { el = null; }
+    if (!el) {
+      try { if (typeof fMulerQuizClearNumberingDisplay === "function") fMulerQuizClearNumberingDisplay(); } catch (eC) {}
+      return;
+    }
+    try { if (typeof window !== "undefined") window.__mulerLocantCompanionMode = lm; } catch (eG) {}
+    try { numberingFlag = true; } catch (eN) {}
+    try { if (typeof fShowAnalysisNumbering === "function") fShowAnalysisNumbering(0); } catch (eNum) {}
+    try { if (el.classList) el.classList.add("locantCompanion"); } catch (eB2) {}
   } catch (e) {}
 }
 // Quiz todo set (v58 multi-comp): required + capable + unsolved + visible
@@ -5169,6 +5427,9 @@ function fMulerQuizPaintFilter() {
 // v58.11: Present quiz steps tint only their stored quiz.modes.
 function fMulerQuizPaintSolved() {
   try {
+    // v59.30: a chain that is already solved / set solved (restored entry,
+    // run-state map) solves its locants before the tint is computed.
+    try { if (typeof fMulerQuizSyncChainLocants === "function") fMulerQuizSyncChainLocants(); } catch (eSL) {}
     var armed = false;
     try { armed = (typeof fMulerSelectActive === "function" && fMulerSelectActive()); } catch (eA) { armed = false; }
     var req = (typeof fMulerQuizPaintFilter === "function") ? fMulerQuizPaintFilter() : null;
@@ -12785,6 +13046,18 @@ function fUpdateSVG() {
 // repaint-driven lifecycle.
 function fMulerNumberAid() {
   try {
+    // v59.32: a live locant companion owns the numbering — replay it on every
+    // SVG rebuild. Selection mode repaints the SVG after the reward paints,
+    // which used to wipe the 2D numbers while the JSmol echoes survived.
+    var _cm = (typeof window !== "undefined") ? window.__mulerLocantCompanionMode : null;
+    if (_cm) {
+      if (typeof molSvg === "undefined" || !molSvg) return;
+      try { numberingFlag = true; } catch (eNc) { return; }
+      try { if (typeof fShowAnalysisNumbering === "function") fShowAnalysisNumbering(0); } catch (eNumc) {}
+      return;
+    }
+  } catch (eC0) {}
+  try {
     if (typeof fMulerSelectPurpose !== "function") return;
     var _ap = fMulerSelectPurpose();
     if (_ap !== "loc" && _ap !== "bond" && _ap !== "branch") return;
@@ -15503,9 +15776,28 @@ function fExplainNameComp() {
       try { _boxMode = (typeof nameAnalysisMode !== "undefined") ? nameAnalysisMode : "none"; } catch (eBM) { _boxMode = "none"; }
       var _boxSolved = false;
       try { _boxSolved = !!(_boxMode && _boxMode !== "none" && typeof fMulerQuizIsSolved === "function" && fMulerQuizIsSolved(_boxMode)); } catch (eBS) { _boxSolved = false; }
-      if (!_boxSolved) return;
+      if (!_boxSolved) {
+        // v59.32: deselecting (or viewing an unsolved comp) under an armed
+        // viewer must still drop the previous companion outline, and a plain
+        // deselect must drop its numbering too — this guard returns before
+        // the companion hook below ever runs.
+        try { if (typeof fMulerQuizClearLocantCompanion === "function") fMulerQuizClearLocantCompanion(); } catch (eCD) {}
+        if (_boxMode === "none") {
+          try { if (typeof fMulerQuizClearNumberingDisplay === "function") fMulerQuizClearNumberingDisplay(); } catch (eCN) {}
+        }
+        return;
+      }
     }
   } catch (eSelOwn) {}
+  // v59.32: clear the previous locant companion before the switch renders.
+  // Locant/chain numbering runs inside the switch and must not inherit a
+  // stale companion emphasis. Skipped in the quiet overview scrape so the
+  // live highlight is not stripped.
+  try {
+    if (!(typeof window !== "undefined" && window.__mulerExplainQuiet) && typeof fMulerQuizClearLocantCompanion === "function") {
+      fMulerQuizClearLocantCompanion();
+    }
+  } catch (eLC0) {}
   let myText, myClass, nStyle, countSubs, myCountText, myFG0, myFG1, myHTML;
   switch (nameAnalysisMode) {
     case "none":
@@ -16553,6 +16845,11 @@ function fShowRule(theRule) {
     }
   }
 
+  // v59.31: name component with a locant → numbering + companion outline
+  // (free authoring always; selection/quiz requires the component and its
+  // locant to be solved/open). Deselect clears it.
+  try { if (typeof fMulerQuizApplyLocantCompanion === "function") fMulerQuizApplyLocantCompanion(); } catch (eLc) {}
+
   if ((theRule === "compNumber1" || theRule === "compSecondSub1" ||
        theRule === "compNumber2" || theRule === "compSecondSub2" ||
        /^compBranch(Sub|Loc)\d+$/.test(theRule || "")) &&
@@ -17196,6 +17493,8 @@ function fGetHydrocarbonBranchHighlight3D(slot) {
 function fPaintBranchHighlightAtoms(slot, mode) {
   try {
     var useMode = (typeof mode === "string" && mode) ? mode : ((typeof nameAnalysisMode !== "undefined") ? nameAnalysisMode : "");
+    // v59.31: locant selections are numbering-only.
+    if (typeof fIsLocantMode === "function" && fIsLocantMode(useMode)) return false;
     var gm = null;
     try { gm = (typeof fGetHydrocarbonBranchHighlight === "function") ? fGetHydrocarbonBranchHighlight(slot, useMode) : null; } catch (eG) { gm = null; }
     var atoms = (gm && gm.atoms) || [];
@@ -18013,6 +18312,9 @@ function fColorFragmentBonds3D(fragAtoms, includeH) {
 function fHighlightFG(FGno) {
   // Overview-table builds (v55.x) scrape explanations with paints off.
   if (typeof window !== "undefined" && window.__mulerExplainQuiet) return;
+  // v59.31: a locant selection shows the chain numbers only — never paint the
+  // corresponding atoms/bonds.
+  if (typeof fIsLocantMode === "function" && fIsLocantMode(nameAnalysisMode)) return;
   // Algorithmic: reads functionalGroupObj computed by fDetectMolType.
   // No static nameExamples.functionalGroup* data used.
   if (nameAnalysisMode == "none") {
@@ -18443,6 +18745,8 @@ function fHighlightFG(FGno) {
 function fHighlightFG3D(FGno) {
   // Overview-table builds (v55.x) scrape explanations with paints off.
   if (typeof window !== "undefined" && window.__mulerExplainQuiet) return;
+  // v59.31: locant selections are numbering-only.
+  if (typeof fIsLocantMode === "function" && fIsLocantMode(nameAnalysisMode)) return;
   // Stale-3D guard (v59.19): never paint previous-molecule indices — the
   // fetch-completion flush repaints once the analysis is fresh.
   if (!fMuler3DAnalysisFresh()) return;
@@ -18818,16 +19122,40 @@ let numberingAtomOverride3D = null;
 // Override-chain and whole-chain modes return null (all blue, as today).
 // Parse failures also return null, so the safe default is today's rendering.
 let numberingEmphasis = null;
+// v59.31: pure number-locant modes — selecting one shows the chain numbering
+// only (no atom/bond highlight). Name components still paint classically.
+function fIsLocantMode(mode) {
+  try {
+    var m = String((typeof mode === "undefined" || mode === null) ? nameAnalysisMode : mode);
+    return m === "compNumber1" || m === "compNumber2" || m === "compBondPos" ||
+      m === "compEndNumber" || m === "compSuffixLocants" ||
+      /^compBranchLoc\d*$/.test(m) || /^comp3loc\d*$/.test(m);
+  } catch (e) { return false; }
+}
 function fLocantEmphasisIndices() {
   try {
-    var mode = (typeof nameAnalysisMode !== "undefined") ? nameAnalysisMode : "none";
-    var ok = mode === "compBondPos" || mode === "compEndNumber" ||
-      mode === "compSuffixLocants" || mode === "compNumber1" || mode === "compNumber2" ||
-      /^compBranchLoc\d+$/.test(mode);
-    if (!ok) return null;
+    var mode = (typeof nameAnalysisMode !== "undefined") ? String(nameAnalysisMode || "none") : "none";
+    var ok = (typeof fIsLocantMode === "function") ? fIsLocantMode(mode) : false;
     var box = null;
-    try { box = document.querySelector("#nameAnalysis .nameCompBox.selected"); } catch (eB) { box = null; }
-    if (!box) return null;
+    if (ok) {
+      try { box = document.querySelector("#nameAnalysis .nameCompBox.selected"); } catch (eB) { box = null; }
+    } else {
+      // v59.32: a selected name component with an open locant companion uses
+      // the companion locant box for the numbering emphasis (same dark/light
+      // blue as a locant click). A fused suffix ("-2-όλη") has no separate
+      // box — its own digits carry the emphasis.
+      var cm = (typeof window !== "undefined") ? window.__mulerLocantCompanionMode : null;
+      if (cm === "compSuffix") {
+        ok = true;
+        var sbid = (typeof fMulerQuizBoxIdForMode === "function") ? fMulerQuizBoxIdForMode("compSuffix") : null;
+        try { box = sbid ? document.getElementById(sbid) : null; } catch (eSC) { box = null; }
+      } else if (cm && typeof fIsLocantMode === "function" && fIsLocantMode(cm)) {
+        ok = true;
+        var cbid = (typeof fMulerQuizBoxIdForMode === "function") ? fMulerQuizBoxIdForMode(cm) : null;
+        try { box = cbid ? document.getElementById(cbid) : null; } catch (eC) { box = null; }
+      }
+    }
+    if (!ok || !box) return null;
     var text = "";
     try { text = box.textContent || ""; } catch (eT) { text = ""; }
     var found = text.match(/\d+/g);
@@ -19182,6 +19510,8 @@ function fShowNumberingBonds() {
 function fHighlightMultiBonds(bondCompPos) {
   // Overview-table builds (v55.x) scrape explanations with paints off.
   if (typeof window !== "undefined" && window.__mulerExplainQuiet) return;
+  // v59.31: locant selections are numbering-only.
+  if (typeof fIsLocantMode === "function" && fIsLocantMode(nameAnalysisMode)) return;
   let bondType, bondID;
   if (nameAnalysisMode == "none") {
     return;
@@ -19254,6 +19584,8 @@ function fHighlightMultiBonds(bondCompPos) {
 function fHighlightMultiBonds3D(bondCompPos) {
   // Overview-table builds (v55.x) scrape explanations with paints off.
   if (typeof window !== "undefined" && window.__mulerExplainQuiet) return;
+  // v59.31: locant selections are numbering-only.
+  if (typeof fIsLocantMode === "function" && fIsLocantMode(nameAnalysisMode)) return;
   // Stale-3D guard (v59.19): never paint previous-molecule indices — the
   // fetch-completion flush repaints once the analysis is fresh.
   if (!fMuler3DAnalysisFresh()) return;

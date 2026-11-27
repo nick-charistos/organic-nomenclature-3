@@ -1,6 +1,6 @@
 # New molecules → upgrading the naming algorithm
 
-> **Current tree:** v59.29 (`mulermoc-nom-59.html`, `?v=59.29`). This plan covers
+> **Current tree:** v59.32 (`mulermoc-nom-59.html`, `?v=59.32`). This plan covers
 > the authoring→engine feedback loop introduced in v59.23 and the order in which
 > the remaining naming-scope gaps should be closed.
 
@@ -96,7 +96,7 @@ engine learns the case, so it **is** stored.
 "naming": {
   "status": "unsupported",
   "rule": "school-pre2013",
-  "engine": "v59.29",
+  "engine": "v59.31",
   "reason": "C-C triple bond off main chain",
   "callSite": "mulermoc-nom-core-59.js:3841",
   "frame": "at fGuessName (…/mulermoc-nom-core-59.js?v=59.23:3841:15)",
