@@ -446,7 +446,7 @@ var MULER_STRINGS = {
   untitledDoc: { gr: "χωρίς τίτλο", en: "untitled" },
   stepCopy: { gr: "(αντίγραφο)", en: "(copy)" },
   imgUnavailable: { gr: "Εικόνα μη διαθέσιμη", en: "Image unavailable" },
-  creditTeam: { gr: "Γιάννης Σκένδρος &bullet; Αναστασία Θεοφανίδου &bullet; Βασίλης Κουταλάς &bullet;", en: "Yannis Skendros &bullet; Anastasia Theofanidou &bullet; Vasilis Koutalas &bullet;" },
+  creditTeam: { gr: "Γιάννης Σκένδρος &bullet; Αναστασία Θεοφανίδου &bullet; Βασίλης Κουταλάς &bullet; Μιχάλης Σιγάλας &bullet; ", en: "Yannis Skendros &bullet; Anastasia Theofanidou &bullet; Vasilis Koutalas &bullet; Michael Sigalas &bullet; " },
   creditOwner: { gr: "Νικόλας Χαριστός", en: "Nickolas Charistos" },
   creditProgram: { gr: "Μοριακός Σχεδιασμός και Μοντελοποίηση &bullet; Χημική Εκπαίδευση", en: "Molecular Design and Modelling &bullet; Chemistry Education" },
   creditDept: { gr: "Τμήμα Χημείας", en: "Department of Chemistry" },
