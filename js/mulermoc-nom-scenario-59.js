@@ -2281,6 +2281,44 @@ function fScenarioQuizComponentList(step, storedOnly) {
   return out;
 }
 
+// v59.33: the main chain and its locants are one aligned block (chain drives).
+// Locants are never independently required: a stored locant-only set pulls the
+// chain in, and a required chain pulls every capable locant in. Mutates the
+// list in place and keeps component (name) order. Returns true when changed.
+// `onlyEscalate` (drawer render): repair a locant-only set by adding the chain
+// without materializing locants into a chain-only set — the tags already
+// mirror the chain, and the runtime union derives them at Present.
+function fScenarioQuizAlignChainLocants(list, comps, onlyEscalate) {
+  try {
+    if (Object.prototype.toString.call(list) !== "[object Array]" || Object.prototype.toString.call(comps) !== "[object Array]") return false;
+    var changed = false;
+    var hasChain = list.indexOf("compCarbonsCount") >= 0;
+    var escalated = false;
+    var anyLocant = false;
+    for (var i = 0; i < comps.length; i++) {
+      if (comps[i] && comps[i].locant && list.indexOf(comps[i].mode) >= 0) { anyLocant = true; break; }
+    }
+    if (!hasChain && anyLocant) { list.push("compCarbonsCount"); hasChain = true; changed = true; escalated = true; }
+    if (hasChain && (onlyEscalate !== true || escalated)) {
+      for (var j = 0; j < comps.length; j++) {
+        var c = comps[j];
+        if (c && c.locant && c.capable && list.indexOf(c.mode) < 0) { list.push(c.mode); changed = true; }
+      }
+    }
+    if (changed) {
+      var order = [];
+      for (var k = 0; k < comps.length; k++) order.push(comps[k].mode);
+      list.sort(function (a, b) {
+        var ia = order.indexOf(a), ib = order.indexOf(b);
+        if (ia < 0) ia = 999;
+        if (ib < 0) ib = 999;
+        return ia - ib;
+      });
+    }
+    return changed;
+  } catch (e) { return false; }
+}
+
 // Capable number-locant modes on the displayed molecule (v58.33): box text
 // starts with a digit and the target resolves. Used by the chain rule:
 // locants can be free only when compCarbonsCount is free/not required.
@@ -2474,6 +2512,19 @@ function fScenarioQuizRequiredModes(step) {
     if (Object.prototype.toString.call(q.modes) === "[object Array]" && q.modes.length) base = q.modes.slice();
   } catch (e) { return null; }
   if (!base) return null;
+  // v59.33: the chain and its locants are one aligned block (chain drives).
+  // A stored locant-only set (legacy/import) pulls the chain in so Present
+  // matches the drawer; the union below then adds the remaining capable
+  // locants. Locant-only quizzes no longer exist for molecule steps.
+  try {
+    if (base.indexOf("compCarbonsCount") < 0) {
+      var _locOnly = false;
+      for (var _lo = 0; _lo < base.length; _lo++) {
+        if (typeof fScenarioQuizStaticLocant === "function" && fScenarioQuizStaticLocant(base[_lo])) { _locOnly = true; break; }
+      }
+      if (_locOnly) base.push("compCarbonsCount");
+    }
+  } catch (eAlignRun) {}
   // v58.33 chain rule: while the main chain is a required (unsolved) task,
   // number locants are required too — a free locant without the chain is
   // meaningless. When the chain is solved (or set solved), the runtime
@@ -7494,6 +7545,7 @@ function fScenarioRenderOne(scen) {
           try {
             _sameMolTag = !stepObj.selectedMol || (typeof selectedMol !== "undefined" && selectedMol && String(stepObj.selectedMol) === String(selectedMol));
           } catch (eSm3) { _sameMolTag = true; }
+          var comps = (typeof fScenarioQuizComponentList === "function") ? fScenarioQuizComponentList(stepObj, !_sameMolTag) : [];
           // v58.46: keep the stored labels in sync with the real name boxes
           // (or the per-molecule cache) so stored/orphan tags never fall back
           // to generic type names ("main chain", "bond type").
@@ -7501,6 +7553,16 @@ function fScenarioRenderOne(scen) {
             var _reqPre = (Object.prototype.toString.call(stepObj.quiz.modes) === "[object Array]" && stepObj.quiz.modes.length)
               ? stepObj.quiz.modes.slice()
               : ((stepObj.quiz.mode && stepObj.quiz.mode !== "none") ? [String(stepObj.quiz.mode)] : []);
+            // v59.33: chain + locants are one aligned block (chain drives).
+            // Repair a legacy/imported set before painting or writing labels:
+            // locants without the chain pull the chain in; a required chain
+            // pulls every capable locant in.
+            var _alignedNow = (typeof fScenarioQuizAlignChainLocants === "function") ? fScenarioQuizAlignChainLocants(_reqPre, comps, true) : false;
+            if (_alignedNow && _reqPre.length) {
+              stepObj.quiz.modes = _reqPre.slice();
+              if (_reqPre.indexOf(String(stepObj.quiz.mode)) < 0) stepObj.quiz.mode = _reqPre[0];
+              fScenarioSyncLegacy();
+            }
             if (_reqPre.length) {
               var _labelsNow = fScenarioQuizModeLabelsFor(_reqPre, stepObj);
               if (_labelsNow.length === _reqPre.length) {
@@ -7509,7 +7571,6 @@ function fScenarioRenderOne(scen) {
               }
             }
           } catch (eLblNow) {}
-          var comps = (typeof fScenarioQuizComponentList === "function") ? fScenarioQuizComponentList(stepObj, !_sameMolTag) : [];
           var req = (Object.prototype.toString.call(stepObj.quiz.modes) === "[object Array]" && stepObj.quiz.modes.length)
             ? stepObj.quiz.modes.slice()
             : ((stepObj.quiz.mode && stepObj.quiz.mode !== "none") ? [String(stepObj.quiz.mode)] : []);
@@ -7547,15 +7608,19 @@ function fScenarioRenderOne(scen) {
           list.style.display = open ? "" : "none";
           var _tagState = function (tag, comp) {
             try {
-              var _locLocked = !!(comp.locant && _chainRequired());
-              var _reqNow = (req.indexOf(comp.mode) >= 0) || _locLocked;
+              // v59.33: the main chain and its locants are one aligned block
+              // (chain drives). A locant tag mirrors the chain — it is never
+              // an independent toggle, so it can be free only with the chain.
+              var _locMirror = !!comp.locant;
+              var _reqNow = _locMirror ? _chainRequired() : (req.indexOf(comp.mode) >= 0);
               var sel = _reqNow;
               // v58.39: an already-required hidden/atom-less comp stays
-              // removable; only adding an incapable comp is blocked.
-              var _removable = !comp.capable && _reqNow;
+              // removable; only adding an incapable comp is blocked. Locants
+              // follow the chain block, so they are never "removable" alone.
+              var _removable = !_locMirror && !comp.capable && _reqNow;
               try { tag.classList.toggle("selected", sel); } catch (eC1) {}
               try { tag.classList.toggle("free", !sel); } catch (eC2) {}
-              try { tag.classList.toggle("chain-locked", _locLocked); } catch (eC3) {}
+              try { tag.classList.toggle("chain-locked", _locMirror && _chainRequired()); } catch (eC3) {}
               try { tag.classList.toggle("removable", _removable); } catch (eC4) {}
               try { tag.disabled = !comp.capable && !_reqNow; } catch (eC5) {}
               tag.setAttribute("aria-pressed", sel ? "true" : "false");
@@ -7565,8 +7630,8 @@ function fScenarioRenderOne(scen) {
                 ? ((typeof fMulerT === "function") ? fMulerT("quizTagHiddenTip") : "Hidden component — cannot be quizzed")
                 : !comp.capable
                   ? ((typeof fMulerT === "function") ? fMulerT("quizTagIncapableTip") : "No atoms to quiz on this molecule")
-                  : _locLocked
-                    ? ((typeof fMulerT === "function") ? fMulerT("quizLocantNeedsChain") : "Needs the main chain in the quiz")
+                  : _locMirror
+                    ? ((typeof fMulerT === "function") ? fMulerT("quizLocantFollowsChain") : "The locant follows the main chain")
                     : sel
                       ? ((typeof fMulerT === "function") ? fMulerT("quizTagRequiredTip") : "Will be asked in the quiz")
                       : ((typeof fMulerT === "function") ? fMulerT("quizTagFreeTip") : "Will be shown solved");
@@ -7589,33 +7654,50 @@ function fScenarioRenderOne(scen) {
           };
           var _toggleMode = function (mode) {
             try {
-              // Number locants need the main chain in the quiz (v58.33).
               var _compDef = null;
               for (var cdi = 0; cdi < comps.length; cdi++) { if (comps[cdi].mode === mode) { _compDef = comps[cdi]; break; } }
-              if (_compDef && _compDef.locant && _chainRequired()) {
-                if (typeof fScenarioToast === "function") fScenarioToast(((typeof fMulerT === "function") ? fMulerT("quizLocantNeedsChain") : "Needs the main chain in the quiz"));
+              // v59.33: locant tags are mirrors of the chain block, never
+              // independent toggles — any click just explains the dependency.
+              if (_compDef && _compDef.locant) {
+                if (typeof fScenarioToast === "function") fScenarioToast(((typeof fMulerT === "function") ? fMulerT("quizLocantFollowsChain") : "The locant follows the main chain"));
                 return;
               }
               // v59.04: settings-only editor. Every capable tag toggles,
               // regardless of what the author has solved in free mode.
               var cur = (Object.prototype.toString.call(stepObj.quiz.modes) === "[object Array]") ? stepObj.quiz.modes.slice() : req.slice();
-              var at = cur.indexOf(mode);
-              if (at >= 0) {
-                if (cur.length <= 1) {
-                  if (typeof fScenarioToast === "function") fScenarioToast(((typeof fMulerT === "function") ? fMulerT("quizLastRequired") : "Keep at least one component in the quiz."));
-                  return;
-                }
-                cur.splice(at, 1);
-              } else cur.push(mode);
-              // Chain still required: persist its locants with it.
-              try {
-                var _chainAfter = cur.indexOf("compCarbonsCount") >= 0;
-                if (_chainAfter) {
-                  for (var lpi = 0; lpi < comps.length; lpi++) {
-                    if (comps[lpi].locant && comps[lpi].capable && cur.indexOf(comps[lpi].mode) < 0) cur.push(comps[lpi].mode);
+              if (mode === "compCarbonsCount") {
+                // v59.33: the chain drives the aligned block — turning it off
+                // frees every locant, turning it on requires every capable one.
+                if (_chainRequired()) {
+                  var _drop = { compCarbonsCount: true };
+                  for (var _di = 0; _di < comps.length; _di++) {
+                    if (comps[_di] && comps[_di].locant) _drop[String(comps[_di].mode)] = true;
                   }
+                  var _keep = [];
+                  for (var _ki = 0; _ki < cur.length; _ki++) {
+                    if (!_drop[String(cur[_ki])]) _keep.push(cur[_ki]);
+                  }
+                  if (!_keep.length) {
+                    if (typeof fScenarioToast === "function") fScenarioToast(((typeof fMulerT === "function") ? fMulerT("quizLastRequired") : "Keep at least one component in the quiz."));
+                    return;
+                  }
+                  cur = _keep;
+                } else {
+                  if (cur.indexOf("compCarbonsCount") < 0) cur.push("compCarbonsCount");
+                  if (typeof fScenarioQuizAlignChainLocants === "function") fScenarioQuizAlignChainLocants(cur, comps);
                 }
-              } catch (eCy) {}
+              } else {
+                var at = cur.indexOf(mode);
+                if (at >= 0) {
+                  if (cur.length <= 1) {
+                    if (typeof fScenarioToast === "function") fScenarioToast(((typeof fMulerT === "function") ? fMulerT("quizLastRequired") : "Keep at least one component in the quiz."));
+                    return;
+                  }
+                  cur.splice(at, 1);
+                } else cur.push(mode);
+                // Safety net: a required chain keeps its locants aligned.
+                if (typeof fScenarioQuizAlignChainLocants === "function") fScenarioQuizAlignChainLocants(cur, comps);
+              }
               // Keep the component list's name order.
               var order = [];
               for (var oi = 0; oi < comps.length; oi++) order.push(comps[oi].mode);

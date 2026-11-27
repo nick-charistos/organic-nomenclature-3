@@ -229,6 +229,7 @@ var MULER_STRINGS = {
   quizTagFreeTip: { gr: "Θα εμφανιστεί λυμένο", en: "Will be shown solved" },
   quizTagSolvedTip: { gr: "Λυμένο — θα εμφανιστεί λυμένο", en: "Solved — will be shown solved" },
   quizLocantNeedsChain: { gr: "Η θέση απαιτεί την κύρια αλυσίδα στο κουίζ", en: "Needs the main chain in the quiz" },
+  quizLocantFollowsChain: { gr: "Η θέση ακολουθεί την κύρια αλυσίδα", en: "The locant follows the main chain" },
   quizTagIncapableTip: { gr: "Δεν έχει άτομα για κουίζ σε αυτό το μόριο", en: "No atoms to quiz on this molecule" },
   quizTagHiddenTip: { gr: "Κρυμμένο συνθετικό — δεν μπορεί να μπει στο κουίζ", en: "Hidden component — cannot be quizzed" },
   quizTagRemoveTip: { gr: "κλικ για αφαίρεση", en: "click to remove" },

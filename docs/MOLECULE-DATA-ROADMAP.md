@@ -1,6 +1,6 @@
 # MolWave molecule-data roadmap
 
-Status: planning — development mode is v59.32 (`?v=59.32`; committed 2026-11-27)
+Status: planning — development mode is v59.35 (`?v=59.35`; committed 2026-11-27)
 
 Progress: v59.23 exports engine-test molecules as JSON (`schemaVersion: 2`,
 flat legacy record + stamp — a **stopgap**) and stores the `unsupported` naming

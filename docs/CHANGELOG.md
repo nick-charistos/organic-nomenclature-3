@@ -8,9 +8,9 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 Forked from v58.50, rebased on v58.51 (`mulermoc-nom-59.html` + `js/*-59.js` + `css/*-59.css` +
 `jsme-nick-nomeclature-moc2-data_59.js` + `spt/init-3-59.spt` +
-`zz-test-core59.html`, `?v=59.32`; `ui-icons.js`, `js/vendor/`, `jsme/` and
+`zz-test-core59.html`, `?v=59.35`; `ui-icons.js`, `js/vendor/`, `jsme/` and
 `mols/` stay shared). Chemistry/naming results are v58's and the scenario data
-shape is inherited from v58, but v59.02–v59.32 add UI, data, quiz-step-authoring
+shape is inherited from v58, but v59.02–v59.35 add UI, data, quiz-step-authoring
 and authoring/engine-scope changes (see below); the v59.00 work is data geometry
 and the MOL pipeline.
 
@@ -93,7 +93,7 @@ and the MOL pipeline.
   prompt while picking (`pending3D` cancelled). The v58 CSS comes along:
   `--veryLightOrchid`, orchid `.quizTodo` / `.quizTodo.selected` /
   `.scQuizTag.selected` / `.is-start` and the shared `.scQuizPrompt` +
-  `.scQuizStartPrompt` skin. Asset refs moved to `?v=59.01` (now `?v=59.32`).
+  `.scQuizStartPrompt` skin. Asset refs moved to `?v=59.01` (now `?v=59.35`).
 - **Rule grouping bullet removed (v59.02).** The `.groupingMode` selector now
   offers Όλα τα μόρια / Χημικές Τάξεις / Ομόλογες Σειρές only. The `rule` mode
   itself is kept intact: `moleculeGroupingMode === "rule"`, the `ruleExamples`
@@ -548,6 +548,52 @@ eyeballs #139/#140/#154.
   selection-mode solve/deselect and reward-repaint order (numbers present
   before and after the repaint). `probe-final` and `probe-scenario-quiz`
   green, `node --check`, `git diff --check`. `?v=59.32`.
+- **Aligned chain/locant quiz block (v59.33, owner request).** In the drawer’s
+  component list (`scQuizReqList`) the main chain and its locants are now one
+  block driven by the chain: requiring the chain requires every capable locant,
+  deselecting it frees them all (white, `chain-locked` cleared). Locant tags are
+  mirrors — clicking one only shows “Η θέση ακολουθεί την κύρια αλυσίδα / The
+  locant follows the main chain” and never changes the set. A stored
+  locant-only set is repaired by pulling the chain in (drawer render and the
+  runtime resolver), so molecule steps no longer carry locant-only quizzes;
+  the “keep at least one component” guard still protects a block that is the
+  only required set. `fScenarioQuizAlignChainLocants()` is the single
+  normalizer, `probe-scenario-quiz` gained a chain-toggle/locant-mirror/legacy
+  repair section (pentanone_2) and stays green; `node --check`,
+  `git diff --check`. `?v=59.33`.
+- **Bond-type companion only on unsaturations (v59.34, owner report).** In
+  `CC(C)C(=O)C(C)C` (2,4-διμεθυλο-3-πεντανόνη) clicking “-αν-” outlined “-3-”,
+  which is the ketone’s locant. `compBondPos`/`compEndNumber` are shared slots:
+  for “en”/“yn” they hold the C=C/C≡C position, in a saturated molecule they
+  hold the principal FG locant. `fLocantModeForComponent` now links
+  `compBondType` to `compBondPos` only when the molecule has a C=C or C≡C
+  (`multiBondsObj.CCd`/`CCt`), and `compBondType2` to `compEndNumber` only on an
+  en-yn; the saturated connector returns `null`, so no companion and no
+  numbering (the FG suffix keeps its locant through `fSuffixCompanionMode`).
+  Verified headlessly: 2,4-διμεθυλο-3-πεντανόνη (“-αν-” → none, “one” → “-3-”,
+  “διμεθυλο” → “2,4-”, locant click “3-” → numbers only), 2-πεντανόνη and
+  2-βουτανόλη (“-αν-” → none), 2-πεντεν-1-όλη (“en” → “-2-”, “ol” → “-1-”),
+  4-πεντιν-2-όνη (“yn” → “-4-”, “one” → “-2-”). `probe-final` and
+  `probe-scenario-quiz` green, `node --check`, `git diff --check`. `?v=59.34`.
+- **Bond locant resolved from the rendered name (v59.35, owner report).** In the
+  Greek layout of `C#CCC(C)=O` (4-πεντιν-2-όνη) the triple-bond locant is
+  rendered in `compNumber1` (“4-” = comp0) and `compBondPos` does not exist,
+  while the English layout puts it in `compBondPos` — so the fixed
+  `compBondType → compBondPos` mapping left “-ιν-” unlinked in Greek.
+  New `fBondLocantCompanion(mode)` resolves the companion by chemistry: the
+  relevant bond set (DB for the first label, TB for the second — only on an
+  en-yn), its chain locants via `bondList` + `fMainChainLocant`, then the
+  rendered number box whose digits match, preferring `compBondPos` >
+  `compEndNumber` > `compNumber1` > `compNumber2` > branch locants. The
+  saturated gate stays (no C=C/C≡C → `null`); a label whose locant the name
+  omits (position 1 on a short chain, e.g. προπένιο) has no box and gets no
+  companion. Verified headlessly in GR and EN: 4-πεντιν-2-όνη “ιν” → “4-” (GR
+  comp0 / EN comp4), 3-πεντεν-1-ίνιο (first label → “3-”, second → “-1-”),
+  2-μεθυλο-2-προπενικό οξύ “εν” → the bond “-2-” (not the substituent “2-”),
+  2-πεντανόνη/2,4-διμεθυλο-3-πεντανόνη “-αν-” → none, προπενικό οξύ → none.
+  Corpus sweep of the resolver on the working tree: 51 C=C / 31 C≡C / 20 en-yn
+  molecules all match a rendered locant box. `probe-final` and
+  `probe-scenario-quiz` green, `node --check`, `git diff --check`. `?v=59.35`.
 - **Docs resync (2026-11-23, docs-only).** Current-tree references were synced
   to v59.10 across `README`, `AGENTS`, `PROJECT-PLAN`/`PROJECT-PLAN-GR`,
   `LAYERS-PLAN`, `didactic-scenario-plan` and the harness README; the EN

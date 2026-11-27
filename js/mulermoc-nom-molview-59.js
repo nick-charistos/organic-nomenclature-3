@@ -5153,6 +5153,69 @@ function fMulerQuizSyncChainLocants(scope) {
   } catch (e) {}
 }
 
+// v59.35: resolve a bond-type companion from the multiple-bond locants instead
+// of a fixed slot. The engine puts the first unsaturation locant in
+// compNumber1 (unbranched) or compBondPos (branched) and the second in
+// compEndNumber, and the Greek/English layouts differ — so match the rendered
+// number box whose digits are the bond's chain locants. A saturated connector
+// ("-αν-") has no locant at all (v59.34), and a label whose locant is omitted
+// from the name (position 1 on a short chain) has no box to outline.
+function fBondLocantCompanion(mode) {
+  try {
+    var isSecond = (String(mode) === "compBondType2");
+    var db = 0, tb = 0;
+    try { db = (typeof multiBondsObj !== "undefined" && multiBondsObj && multiBondsObj.CCd) ? multiBondsObj.CCd.length : 0; } catch (eDb) { db = 0; }
+    try { tb = (typeof multiBondsObj !== "undefined" && multiBondsObj && multiBondsObj.CCt) ? multiBondsObj.CCt.length : 0; } catch (eTb) { tb = 0; }
+    if (!isSecond && !db && !tb) return null;
+    if (isSecond && !(db && tb)) return null;
+    var bonds = isSecond ? multiBondsObj.CCt : (db ? multiBondsObj.CCd : multiBondsObj.CCt);
+    if (!Array.isArray(bonds) || !bonds.length) return null;
+    var locs = [];
+    for (var i = 0; i < bonds.length; i++) {
+      var b = (typeof bondList !== "undefined" && Array.isArray(bondList)) ? bondList[bonds[i] - 1] : null;
+      if (!b) return null;
+      var l1 = (typeof fMainChainLocant === "function") ? fMainChainLocant(b[0]) : null;
+      var l2 = (typeof fMainChainLocant === "function") ? fMainChainLocant(b[1]) : null;
+      if (l1 == null || l2 == null) return null;
+      var v = Math.min(l1, l2);
+      if (locs.indexOf(v) < 0) locs.push(v);
+    }
+    if (!locs.length) return null;
+    locs.sort(function (x, y) { return x - y; });
+    var prefer = ["compBondPos", "compEndNumber", "compNumber1", "compNumber2", "compSuffixLocants"];
+    var boxes = [];
+    try { boxes = Array.prototype.slice.call(document.querySelectorAll("#nameAnalysis .nameCompBox")); } catch (eB) { return null; }
+    var best = null;
+    for (var j = 0; j < boxes.length; j++) {
+      var el = boxes[j];
+      if (!el || !el.classList) continue;
+      if (el.classList.contains("comp-hidden") || el.classList.contains("comp-gone")) continue;
+      var id = el.getAttribute ? el.getAttribute("id") : null;
+      if (!id) continue;
+      var m = (typeof fNameAnalysisModeForBoxId === "function") ? fNameAnalysisModeForBoxId(id) : "none";
+      if (!m || m === "none" || m === "compSuffix" || m === "compSuffixLocants") continue;
+      var txt = "";
+      try { txt = (el.textContent || "").replace(/^[-\s]+/, "").replace(/[-\s]+$/, ""); } catch (eT) { txt = ""; }
+      var found = txt.match(/\d+/g);
+      if (!found) continue;
+      var nums = [];
+      for (var k = 0; k < found.length; k++) {
+        var n = parseInt(found[k], 10);
+        if (n >= 1 && nums.indexOf(n) < 0) nums.push(n);
+      }
+      if (nums.length !== locs.length) continue;
+      nums.sort(function (x, y) { return x - y; });
+      var eq = true;
+      for (var q = 0; q < locs.length; q++) if (nums[q] !== locs[q]) { eq = false; break; }
+      if (!eq) continue;
+      var rank = prefer.indexOf(m);
+      if (rank < 0) rank = 99;
+      if (!best || rank < best.rank) best = { mode: m, rank: rank };
+    }
+    return best ? best.mode : null;
+  } catch (e) { return null; }
+}
+
 // v59.31: a name component that carries a locant box (substituent name ↔ its
 // position, bond type ↔ bond position, FG suffix ↔ its locants, branch piece ↔
 // its branch locant). Common ether/ester labels have no locant and return null.
@@ -5163,8 +5226,12 @@ function fLocantModeForComponent(mode) {
   // Split second-slot branch pieces: the FIRST piece's locant is the slot's
   // own locant (compNumber2); later pieces get the comp3loc/comp3loc2 boxes.
   if (m === "compBranchSub1") return "compNumber2";
-  if (m === "compBondType") return "compBondPos";
-  if (m === "compBondType2") return "compEndNumber";
+  // v59.34/59.35: a bond-type label only denotes an unsaturation position, and
+  // that position has no fixed slot — fBondLocantCompanion matches the rendered
+  // number box by the bond's chain locants. Saturated "-αν-" → null.
+  if (m === "compBondType" || m === "compBondType2") {
+    return (typeof fBondLocantCompanion === "function") ? fBondLocantCompanion(m) : null;
+  }
   // v59.32: the functional-group suffix locant has no fixed slot (see
   // fSuffixCompanionMode). "compSuffix" is the sentinel for a suffix whose
   // locant is fused into its own text ("-2-όλη"): numbering only, no outline.

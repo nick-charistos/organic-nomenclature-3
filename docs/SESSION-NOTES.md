@@ -1,7 +1,17 @@
 # Session notes — 2026-11-27 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** 2026-11-27 — **v59.32 committed**
-> (tree clean; `?v=59.32`). New in this batch: **v59.30** solving
+> **Resume pointer (cross-machine):** 2026-11-27 — **v59.35 committed**
+> (`?v=59.35`; tree clean). New in this batch:
+> **v59.33** aligns the drawer's main-chain and locant quiz tags into one
+> chain-driven block (`fScenarioQuizAlignChainLocants`) — the chain tag requires
+> every capable locant, deselecting it frees them all, and locant tags are
+> mirrors that never toggle on their own; stored locant-only sets are repaired
+> upward in the drawer render and at runtime. **v59.34** stops a saturated
+> bond-type label (“-αν-”) from linking to a locant. **v59.35** resolves a
+> bond-type companion from the rendered name by the bond's chain locants
+> (`fBondLocantCompanion`), so “-ιν-” links to “4-” in both the Greek
+> (`compNumber1`) and English (`compBondPos`) layouts.
+> Earlier in the same working history: **v59.30** solving
 > the main chain auto-solves the locants
 > (`fMulerQuizSyncChainLocants`; white, interactive); **v59.31** locant
 > selection UX — a locant click shows numbers only (no atom/bond paint, also
@@ -152,16 +162,17 @@
 > No code change (v59.11 bumps the asset refs).
 > Docs: current index `docs/README.md`; historical material in `docs/archive/`
 > (pre-v54 notes split to `docs/archive/SESSION-NOTES-pre-v54.md`).
-> Committed: v59.01 (ff2058c) + v59.02 (7e18c65) + v59.03 + v59.04 + v59.05 + v59.06 + v59.07 + v59.08 + v59.09 + v59.10 + v59.11 + v59.12 + v59.13 + v59.14 + v59.15 + v59.16 + v59.17 + v59.18 + v59.19 + v59.20 + v59.21 + v59.22 (9ecd22c) + v59.23 (460a5a2) + v59.24 (4443e2f) + v59.25 (013726c) + v59.29 (de11ad4; includes v59.26–29) + docs handoff (e2f4777) + v59.30–32.
-> **Committed in v59.32**: v59.30 chain-solve auto-solves the locants
-> (`fMulerQuizSyncChainLocants`; `fMulerChainSolved` honours the run-state
-> solved map) + v59.31 locant selection UX (numbers only on a locant click;
-> a name component with a locant adds numbering + a green companion outline,
-> free authoring always, selection/Present only when both are solved/open)
-> + v59.32 companion mapping fixes (`compBranchSub1` → `compNumber2`,
-> `compBondType2` → `compEndNumber`), locant-emphasis colours on the rendered
-> numbering, numbering that survives selection repaints and clears on
-> deselect, and per-molecule FG suffix locants (`fSuffixCompanionMode`).
+> Committed: v59.01 (ff2058c) + v59.02 (7e18c65) + v59.03 + v59.04 + v59.05 + v59.06 + v59.07 + v59.08 + v59.09 + v59.10 + v59.11 + v59.12 + v59.13 + v59.14 + v59.15 + v59.16 + v59.17 + v59.18 + v59.19 + v59.20 + v59.21 + v59.22 (9ecd22c) + v59.23 (460a5a2) + v59.24 (4443e2f) + v59.25 (013726c) + v59.29 (de11ad4; includes v59.26–29) + docs handoff (e2f4777) + v59.30–32 (36c4b42) + v59.33–35.
+> **Committed in v59.35:** the drawer’s chain and locant
+> quiz tags are one chain-driven block (`fScenarioQuizAlignChainLocants`): the
+> chain tag requires every capable locant, deselecting it frees them all, and
+> locant tags are mirrors (a click only toasts “The locant follows the main
+> chain”). Stored locant-only sets are repaired upward (drawer render +
+> `fScenarioQuizRequiredModes`), so molecule steps have no locant-only
+> quizzes. New lang key `quizLocantFollowsChain`. v59.34 makes the bond-type
+> companion unsaturation-only (“-αν-” never links); v59.35 resolves the
+> companion from the rendered locant box by the bond’s chain locants
+> (`fBondLocantCompanion`), covering both the Greek and English slot layouts.
 > Next session starts with the schema v3 files, not with the corpus.
 >
 > **Previous pointer (v58.50):** 2026-11-21 — **v58 is LIVE**
@@ -1125,3 +1136,20 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * (b) `fExplainNameComp`'s selection-mode guard returned before the companion hook on a deselect (`mode "none"`, not solved). The guard now clears the companion before returning and, for `none`, also clears the rendered numbering; `fMulerQuizClearNumberingDisplay()` repaints the task-driven number aid afterwards when it is still eligible.
 * (c) `fLocantModeForComponent("compSuffix")` no longer assumes `compSuffixLocants`. New `fSuffixCompanionMode()`: split locants box (`comp9loc`) wins; a suffix whose own text starts with a locant (“-2-όλη”, fused branched db+tb alcohol/ketone) returns the `compSuffix` sentinel (numbering + emphasis from its own digits, no outline); otherwise `fPrincipalFGChainLocants()` computes the senior FG's chain locants (seniority list, so a prefix amine never qualifies) and the first number box carrying them is the companion (`compBondPos` / `compEndNumber` / `compNumber1`). Acids, esters, aldehydes, cyanides and nitro have no suffix locant → no companion.
 * Verified headlessly: 2-βουτανόλη → `comp4` “-2-” + 2; 2-πεντανόνη → “-2-” + 2; 2-μεθυλο-1,2-προπανοδιόλη → “-1,2-” + 1,2; the enynol → `comp9loc` “-2-” + 2; 3-αμινοβουτανικό οξύ and προπανοδιικό οξύ → no companion, numbers cleared; selection mode with the suffix solved → 2D numbers + companion, deselect → both gone; reward order (explain → paint → repaint → `fUpdateSVG`) keeps the numbers. `probe-final` and `probe-scenario-quiz` green, `node --check`, `git diff --check`. Committed in v59.32.
+
+## 2026-11-27 - aligned chain/locant quiz tags (?v=59.33, owner request)
+* Owner rule: in the drawer component list (`scQuizReqList`) the main chain and all locants must share the same state — deselecting the chain frees every locant too; they are one aligned block driven by the chain.
+* Implementation: new `fScenarioQuizAlignChainLocants(list, comps, onlyEscalate)` is the single normalizer. `_toggleMode` treats the chain tag as the block switch — off removes `compCarbonsCount` plus every locant mode (capable or orphan) in one step; on adds the chain and every capable locant. Locant tags are mirrors: `_tagState` paints `selected = chainRequired`, and a click only toasts the new `quizLocantFollowsChain` string, never editing `quiz.modes`. The drawer render repairs a stored locant-only set by pulling the chain in (`onlyEscalate`, keeping chain-only sets untouched so the v58.33 runtime union still derives locants), and `fScenarioQuizRequiredModes` escalates locant-only sets at runtime so Present matches the drawer. The “keep at least one component” guard still blocks freeing a block that is the only required set.
+* Verified: probe-scenario-quiz gained a section 14b on `pentanone_2` (chain toggle frees the locant, locant click is a no-op, re-enabling restores both, legacy locant-only set repaired) and the full suite is green (`{failures:[],warnings:[]}`, no page errors); headless drawer walk confirmed the same plus `startMode` cleanup when the block is freed (`quiz.mode` falls back to the remaining component). `node --check` all touched scripts, `git diff --check`. `?v=59.33`. Committed in v59.35.
+
+## 2026-11-27 - bond-type companion only on unsaturations (?v=59.34, owner report)
+* Owner report on `CC(C)C(=O)C(C)C` (2,4-διμεθυλο-3-πεντανόνη): clicking “-αν-” linked to “-3-”, but the saturated connector must never link to a locant.
+* Cause: `fLocantModeForComponent` mapped `compBondType` → `compBondPos` and `compBondType2` → `compEndNumber` unconditionally. Those slots are shared: for “en”/“yn” they hold the multiple-bond position, in a saturated molecule they hold the principal FG locant.
+* Fix: the mapping is now chemistry-gated — `compBondType` → `compBondPos` only when `multiBondsObj.CCd` or `CCt` has an entry; `compBondType2` → `compEndNumber` only on an en-yn (both unsaturations); otherwise `null` (no companion, numbering cleared by the existing hook). FG suffixes keep their locant via `fSuffixCompanionMode`.
+* Verified headlessly (`?v=59.34`): 2,4-διμεθυλο-3-πεντανόνη — “-αν-” → no companion/numbers, “one” → `comp4` “-3-” + 3, “διμεθυλο” → `comp0` “2,4-”, locant click “3-” → numbers only; 2-πεντανόνη and 2-βουτανόλη — “-αν-” → none, suffix keeps “-2-”; 2-πεντεν-1-όλη — “en” → “-2-”, “ol” → “-1-”; 4-πεντιν-2-όνη — “yn” → “-4-”, “one” → “-2-”. `probe-final` and `probe-scenario-quiz` green, `node --check`, `git diff --check`. Committed in v59.35.
+
+## 2026-11-27 - bond locant from the rendered name (?v=59.35, owner report)
+* Owner report on `C#CCC(C)=O`: “-ιν-” is not linked to “4-”.
+* Cause: the Greek layout renders the triple-bond locant in `compNumber1` (“4-” = comp0) with no `compBondPos`, while the English layout uses `compBondPos` — the fixed `compBondType → compBondPos` slot can’t serve both. (The earlier v59.34 gate only decided *whether* to link, not *which* box.)
+* Fix: new `fBondLocantCompanion(mode)` (molview-59) resolves the companion by chemistry: gate on C=C/C≡C (saturated “-αν-” → null), take the relevant bond set (DB for the first label, TB for the second — only on an en-yn), compute its chain locants via `bondList` + `fMainChainLocant`, then match the rendered number box by its digits, preferring `compBondPos` > `compEndNumber` > `compNumber1` > `compNumber2` > branch locants. `fLocantModeForComponent` delegates both bond-type labels to it.
+* Verified headlessly in GR and EN: 4-πεντιν-2-όνη “ιν” → “4-” (GR comp0 / EN comp4) + emphasis 4, “όνη” → “-2-”, locant click → numbers only; 3-πεντεν-1-ίνιο first label → “3-”, second → “-1-”; 2-μεθυλο-2-προπενικό οξύ → bond “-2-” (not the substituent “2-”); 2-πεντανόνη / 2,4-διμεθυλο-3-πεντανόνη “-αν-” → none; προπενικό οξύ (locant omitted) → none. Corpus sweep on the working tree: 51 C=C, 31 C≡C, 20 en-yn molecules all resolve to a rendered locant box. `probe-final` and `probe-scenario-quiz` green, `node --check`, `git diff --check`. `?v=59.35`. Committed in v59.35.

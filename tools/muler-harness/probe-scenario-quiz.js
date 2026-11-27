@@ -985,6 +985,60 @@ const clickBtn = async (p, id) => {
   await p.evaluate(() => { try { fScenarioExitPresent(); } catch (e) {} });
   await p.waitForTimeout(600);
 
+  // --- 14b. aligned block (v59.33): the chain drives every locant tag ---
+  await openMol(p, "pentanone_2");
+  const alignId = await makeScenario(p, "probeq-align", [{
+    selectedMol: "pentanone_2",
+    quiz: { kind: "nameComp", mode: "compCarbonsCount", mol: "pentanone_2", modes: ["compCarbonsCount", "compBondPos", "compSuffix"], modeLabels: ["main chain", "locant", "functional group"] },
+    requireSolution: true,
+    showExtra: { nameClick: true, naming: true },
+  }]);
+  check(typeof alignId === "string" && alignId.indexOf("err:") !== 0, "align scenario creation failed: " + alignId);
+  const clickTag = (id, mode) => p.evaluate(([sid, m]) => {
+    try {
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + sid + '"] .srow');
+      const t = row ? row.querySelector('[data-sc-role="quiz-mode-' + m + '"]') : null;
+      if (!t) return "missing";
+      t.click();
+      return true;
+    } catch (e) { return "err"; }
+  }, [id, mode]);
+  const tagState = (id, mode) => p.evaluate(([sid, m]) => {
+    try {
+      const row = document.querySelector('.scenarioPanel[data-scenario-id="' + sid + '"] .srow');
+      const t = row ? row.querySelector('[data-sc-role="quiz-mode-' + m + '"]') : null;
+      const q = fScenarioGet(sid).steps[0].quiz;
+      return { modes: (q.modes || []).slice(), cls: t ? t.className : null, aria: t ? t.getAttribute("aria-pressed") : null };
+    } catch (e) { return "err"; }
+  }, [id, mode]);
+  check(await clickTag(alignId, "compCarbonsCount") === true, "chain tag click failed");
+  await p.waitForTimeout(500);
+  const alignOff = await tagState(alignId, "compBondPos");
+  check(alignOff && Array.isArray(alignOff.modes) && alignOff.modes.indexOf("compCarbonsCount") < 0 && alignOff.modes.indexOf("compBondPos") < 0 &&
+    /free/.test(alignOff.cls || "") && !/chain-locked/.test(alignOff.cls || "") && alignOff.aria === "false",
+    "deselecting the chain must free every locant too, got " + JSON.stringify(alignOff));
+  check(await clickTag(alignId, "compBondPos") === true, "locant tag click failed");
+  await p.waitForTimeout(400);
+  const alignNoop = await tagState(alignId, "compBondPos");
+  check(alignNoop && Array.isArray(alignNoop.modes) && alignNoop.modes.indexOf("compBondPos") < 0 && alignNoop.modes.indexOf("compCarbonsCount") < 0,
+    "a locant tag must never toggle on its own, got " + JSON.stringify(alignNoop));
+  check(await clickTag(alignId, "compCarbonsCount") === true, "chain tag re-click failed");
+  await p.waitForTimeout(500);
+  const alignOn = await tagState(alignId, "compBondPos");
+  check(alignOn && Array.isArray(alignOn.modes) && alignOn.modes.indexOf("compCarbonsCount") >= 0 && alignOn.modes.indexOf("compBondPos") >= 0 &&
+    /selected/.test(alignOn.cls || "") && /chain-locked/.test(alignOn.cls || "") && alignOn.aria === "true",
+    "requiring the chain must require every locant too, got " + JSON.stringify(alignOn));
+  // Legacy locant-only set: the drawer repairs it by pulling the chain in.
+  const legacyAlignId = await makeScenario(p, "probeq-alignlegacy", [{
+    selectedMol: "pentanone_2",
+    quiz: { kind: "nameComp", mode: "compBondPos", mol: "pentanone_2", modes: ["compBondPos"], modeLabels: ["locant"] },
+    requireSolution: true,
+    showExtra: { nameClick: true, naming: true },
+  }]);
+  const legacyAlign = await tagState(legacyAlignId, "compCarbonsCount");
+  check(legacyAlign && Array.isArray(legacyAlign.modes) && legacyAlign.modes.indexOf("compCarbonsCount") >= 0 && legacyAlign.modes.indexOf("compBondPos") >= 0,
+    "legacy locant-only set must be repaired to chain+locants, got " + JSON.stringify(legacyAlign));
+
   // --- 15. quiz master checkbox after Go (v58.36): no stale molecule guard ---
   await openMol(p, "ethane");
   const goId = await makeScenario(p, "probeq-goquiz", [

@@ -1,6 +1,6 @@
 # New molecules → upgrading the naming algorithm
 
-> **Current tree:** v59.32 (`mulermoc-nom-59.html`, `?v=59.32`). This plan covers
+> **Current tree:** v59.35 (`mulermoc-nom-59.html`, `?v=59.35`). This plan covers
 > the authoring→engine feedback loop introduced in v59.23 and the order in which
 > the remaining naming-scope gaps should be closed.
 

@@ -1,7 +1,7 @@
-# Schema v3 freeze — implementation plan (v59.32)
+# Schema v3 freeze — implementation plan (v59.35)
 
 Status: **decisions locked; audit semantics fixed** (2026-11-26). Current tree:
-v59.32 (`?v=59.32`, committed 2026-11-27). Scope: the
+v59.35 (`?v=59.35`, committed 2026-11-27). Scope: the
 molecule record shape, the v3 JSON
 export, the v2 → v3 normalizer and the validator skeleton. Runtime naming does
 not change in this batch. **Next session starts at §5 M1** (`molecules/schema.json`

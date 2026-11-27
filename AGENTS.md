@@ -8,7 +8,7 @@ changelog.
 
 Greek-first static web app for teaching organic nomenclature (JSME + JSmol +
 vanilla JavaScript; no build step). The live entry point is `index.html` →
-`mulermoc-nom-59.html`. Current live version: **v59.32** (2026-11-27).
+`mulermoc-nom-59.html`. Current live version: **v59.35** (2026-11-27).
 Older versions v42–v58 remain runnable at the repo root but are **frozen**.
 
 ## Working mode (owner preference, 2026-11-22)
@@ -226,13 +226,16 @@ Update docs in the same commit as the change:
   usable on quiz steps as a teacher aid; hiding/removing a required comp
   removes it from the quiz todo set. Do not add a gate without asking.
 - Quiz component editor (v58.31, polished v58.32–34, v58.39; settings-only
-  v59.04): one master checkbox (`data-sc-role="quiz-enabled"`) owns quiz
+  v59.04; aligned chain block v59.33): one master checkbox
+  (`data-sc-role="quiz-enabled"`) owns quiz
   existence (no Enable/Remove buttons). Tags are binary — selected = required
   (`quiz.modes`), unselected capable = free (derived `capable − required` at
-  apply, never stored). **Every capable tag toggles**, regardless of what the
+  apply, never stored). **Every capable tag toggles** — except locant tags,
+  which mirror the main-chain block (v59.33, below) — regardless of what the
   author has solved in free mode; the live solve state never affects the tag
-  display, the capture or Present. A required tag that becomes hidden/atom-less
-  stays removable. The list starts collapsed (`_scQuizReqOpen`), and tag clicks
+  display, the capture or Present. A required non-locant tag that becomes
+  hidden/atom-less stays removable. The list starts collapsed
+  (`_scQuizReqOpen`), and tag clicks
   update in place (never rebuild the step list). The gate label “Απαίτηση
   λύσης κουίζ για συνέχεια” is separate from the component-set header
   (“Συνθετικά κουίζ”). `Update` keeps the drawer-authored set/types; a solved
@@ -298,16 +301,22 @@ Update docs in the same commit as the change:
   A comp solved/freed in one step must never satisfy another step; revisiting
   the same step keeps its own progress. Authoring capture uses the row scope
   with a molecule-only fallback for Go-less captures.
-- Locants/positions depend on the main chain: while `compCarbonsCount` is a
-  required (unsolved) task, number locants, bond positions, and group locants
-  must be required too (drawer `chain-locked`; runtime union in
-  `fScenarioQuizRequiredModes`). When the chain is solved **or set solved**,
-  `fMulerQuizSyncChainLocants()` (v59.30) auto-solves every capable locant:
-  they turn white (`.freeComp`) and stay interactive instead of remaining quiz
-  tasks. `fMulerChainSolved()` also honours the run-state solved map, so a
-  set-solved chain never redirects a locant click back to the chain. Free
-  locants are legal only when the chain is free. Do not weaken this without
-  asking.
+- Locants/positions depend on the main chain (aligned block, v59.33): in the
+  drawer the chain and its locants are one block driven by the chain —
+  requiring `compCarbonsCount` requires every capable locant, deselecting it
+  frees them all (drawer `chain-locked` cleared, white tags). Locant tags are
+  mirrors: clicking one only toasts “Η θέση ακολουθεί την κύρια αλυσίδα / The
+  locant follows the main chain” and never edits the set.
+  `fScenarioQuizAlignChainLocants()` is the single normalizer; a stored
+  locant-only set is repaired upward by pulling the chain in (drawer render and
+  `fScenarioQuizRequiredModes`), so molecule steps have no locant-only
+  quizzes. The “keep at least one component” guard still blocks freeing a
+  block that is the only required set. When the chain is solved **or set
+  solved**, `fMulerQuizSyncChainLocants()` (v59.30) auto-solves every capable
+  locant: they turn white (`.freeComp`) and stay interactive instead of
+  remaining quiz tasks. `fMulerChainSolved()` also honours the run-state solved
+  map, so a set-solved chain never redirects a locant click back to the chain.
+  Do not weaken this without asking.
 - Locant selection UX (v59.31): selecting a locant number shows the chain
   numbering only — no atom/bond paint, in authoring too (guards in
   `fHighlightFG`/`fHighlightFG3D`/`fHighlightMultiBonds(3D)`/
@@ -317,10 +326,20 @@ Update docs in the same commit as the change:
   solved/open. The numbering uses the locant emphasis colours (dark
   `#193F8F` on the companion locant, light `#9ac1ed` elsewhere, 3D echo too;
   v59.32 records the companion in `window.__mulerLocantCompanionMode`).
-  Companion mapping (v59.32): `compSecondSub1/2` → `compNumber1/2`,
+  Companion mapping (v59.32; bond types v59.34–35):
+  `compSecondSub1/2` → `compNumber1/2`,
   `compBranchSub1` → `compNumber2` (the split second-substituent slot),
-  `compBranchSub2+` → `compBranchLocN`, `compBondType` → `compBondPos`,
-  `compBondType2` → `compEndNumber`. `compSuffix` is resolved per molecule by
+  `compBranchSub2+` → `compBranchLocN`.
+  Bond-type labels are resolved by chemistry, not by a fixed slot (v59.35,
+  `fBondLocantCompanion`): no C=C/C≡C → `null` (a saturated “-αν-” never
+  links); otherwise the label's bond set (DB for the first label, TB for the
+  second — only on an en-yn) is converted to chain locants and matched against
+  the rendered number box, preferring `compBondPos` > `compEndNumber` >
+  `compNumber1` > `compNumber2` > branch locants. This covers the Greek layout
+  (bond locant in `compNumber1`) and the English one (`compBondPos`); a label
+  whose locant the name omits has no box and gets no companion. `compSuffix` is
+  resolved per
+  molecule by
   `fSuffixCompanionMode()`: split locants (`comp9loc`) → `compSuffixLocants`;
   a suffix whose own text carries the locant (“-2-όλη”, fused branched db+tb
   alcohol/ketone) → the `compSuffix` sentinel (numbering/emphasis, no outline);
