@@ -2,7 +2,7 @@
 
 Source of truth for the four layers of the twofold+1 vision (see `README.md`):
 1. a useful community tool, 2. ongoing research publications, 3. (+1) platform for isomerism/reactions and beyond.
-Baseline: **v59 live** (`index.html` → v59 — 154 molecules, scenario quiz steps with student mode + stored required set, 3D atom/bond picking via JSmol `pickCallback`, 2D atom/bond quizzes, tiered draft 3D with Accept on any tier, plus the unified inline/modal rich note editor with WYSIWYG + HTML source and staged Apply/Cancel, safe rich HTML notes, rule-table components, compact icon toolbar, and a Snap-free native `MuSVG` 2D overlay; default scenario `Αλκάνια-Αιθάνιο-τεστ`). The v54 molecule drafts, v53 full English layer, v51 rich notes, v50 per-step presentation text position (top/left/right sticky rail) + persistent naming shell, and the v49 MSc-student import are retained; v58/v57/v56/v55/v54/v53/v52/v51/v50/v49/v48/v47/v46/v45/v44 runnable at root, v43 frozen at tag `v43`. The `MuSVG.parse()` OOM/XML crash was fixed on 2026-10-25; two pre-existing skeletal JSmol failures remain.
+Baseline: **v59 live** (`index.html` → v59 — 154 molecules, scenario quiz steps with student mode + stored required set, 3D atom/bond picking via JSmol `pickCallback`, 2D atom/bond quizzes, tiered draft 3D with Accept on any tier, plus the unified inline/modal rich note editor with WYSIWYG + HTML source and staged Apply/Cancel, safe rich HTML notes, rule-table components, compact icon toolbar, and a Snap-free native `MuSVG` 2D overlay; default scenario `Το_όνομα_της_κύριας_ανθρακικής_αλυσίδας`). The v54 molecule drafts, v53 full English layer, v51 rich notes, v50 per-step presentation text position (top/left/right sticky rail) + persistent naming shell, and the v49 MSc-student import are retained; v58/v57/v56/v55/v54/v53/v52/v51/v50/v49/v48/v47/v46/v45/v44 runnable at root, v43 frozen at tag `v43`. The `MuSVG.parse()` OOM/XML crash was fixed on 2026-10-25; two pre-existing skeletal JSmol failures remain.
 Hosting: **embedded static** — the chemistry app stays dependency-free static; Drupal owns scenarios, exercises/quizzes, users/sessions, logging, exports.
 
 ---
@@ -24,7 +24,7 @@ Scenario schema and log events carry an optional `lang` field (`gr` default; imp
 
 ## 2. LEARN v1.1 — stored library (first)
 
-* 3–5 scenarios (alkanes → alcohols → ethers → esters) under `scenarios/*.json` (3 active so far: `Αλκάνια-Αιθάνιο-τεστ` 7 steps — the default, plus `Αλκένια-Αιθένιο` 7 steps and `Αλκένια-Ονοματολογία_και_διακλαδώσεις` 22 steps; legacy `Αλκάνια-Αιθάνιο` remains on disk for explicit deep links).
+* 3–5 scenarios (alkanes → alcohols → ethers → esters) under `scenarios/*.json` (1 active now: `Το_όνομα_της_κύριας_ανθρακικής_αλυσίδας` 9 steps — the default preload; the older alkane/alkene scenarios were removed).
 * Two-level `note` convention: EPAL-simple first / Lyceum-full extension (P3 authors; P5 compares).
 * Curated `moveto` per step (captured with rotate off).
 * Authoring flow: Save → Export → Present → Exit (Exit = full restore).

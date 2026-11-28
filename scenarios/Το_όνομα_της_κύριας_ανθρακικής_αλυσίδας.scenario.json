@@ -1,0 +1,902 @@
+{
+  "scenarioVersion": 1,
+  "app": "mulermoc-nom-44",
+  "scenario": "Το όνομα της κύριας ανθρακικής αλυσίδας",
+  "title": "Το όνομα της κύριας ανθρακικής αλυσίδας",
+  "author": "Α.Θ.",
+  "created": "2026-11-10T09:04:43.019Z",
+  "steps": [
+    {
+      "n": 1,
+      "lang": "gr",
+      "title": "Το όνομα της κύριας ανθρακικής αλυσίδας",
+      "note": "<div class=\"note-align-center note-fs-22\"><br></div><div class=\"note-align-center note-fs-22\">Ποιο είναι το όνομα της κύριας ανθρακικής αλυσίδας χωρίς διακλαδώσεις;</div><div class=\"note-align-center note-fs-22\"><b><br></b></div><div class=\"note-align-center note-fs-22\"><br></div><div class=\"note-align-center note-fs-22\"><b><br></b></div><div class=\"note-align-center note-fs-22\"><b><br></b></div><div class=\"note-align-center note-fs-18\">Το <b>όνομα</b>&nbsp;που αναφέρεται στην κύρια ανθρακική αλυσίδα προκύπτει από τον συνδυασμό <b>τριών συνθετικών</b>.</div><div class=\"note-align-center note-fs-18\"><br></div><div class=\"note-align-center note-fs-18\"><br></div><div class=\"note-align-center note-fs-18\"><br></div><div class=\"note-align-center note-fs-18\"><br></div><div class=\"note-align-right note-fs-14\"><i>Πάμε να συμπληρώσουμε τα κουτάκια...</i></div>",
+      "noteFormat": "html",
+      "mode2D": "condensed",
+      "mainChainMode": "algorithmic",
+      "chainIdx": 0,
+      "etherNamingMode": "iupac",
+      "substNamingMode": "school",
+      "nameAnalysisMode": "none",
+      "selectedRule": 0,
+      "style2D": {
+        "atomColors": true,
+        "colorMode": "atom",
+        "zigzag": false,
+        "zoom": 2
+      },
+      "styleName": {
+        "box": true,
+        "cross": true,
+        "etherNaming": "iupac",
+        "panelOpen": true,
+        "hidden": [
+          "comp6",
+          "comp9",
+          "comp5"
+        ],
+        "gone": []
+      },
+      "styleHighlight": {
+        "bondAtoms": false,
+        "numberingAtoms": true,
+        "numberingBonds": true
+      },
+      "styleText": {
+        "fontSizePx": null,
+        "textWidthPx": null,
+        "columns": null,
+        "position": null
+      },
+      "audio": {
+        "narrate": false
+      },
+      "menuSubset": [],
+      "menuGroups": [
+        "molecules"
+      ],
+      "view3D": {
+        "style": "ballnstick",
+        "spin": false,
+        "showH": true,
+        "atomSymbols": true,
+        "moveto": null
+      },
+      "show": {
+        "menu": false,
+        "viewerButtons": false,
+        "viewerSettings": false,
+        "viewers": {
+          "2D": false,
+          "3D": false
+        },
+        "viewerMaxHeight": "full",
+        "viewerBothHeight": "full",
+        "controls": {
+          "2D": false,
+          "3D": false
+        },
+        "save": {
+          "2D": false,
+          "3D": false
+        },
+        "naming": true,
+        "nameSettings": false,
+        "nameEye": false,
+        "nameExpanded": false,
+        "audio": false,
+        "rule": false,
+        "text": true,
+        "nameClick": false
+      },
+      "selectedMol": "methane"
+    },
+    {
+      "n": 2,
+      "lang": "gr",
+      "title": "1ο Συνθετικό ",
+      "note": "<div class=\"note-align-center note-fs-18\">Το <b>πρώτο</b> συνθετικό (πρώτο κουτάκι) υποδεικνύει τον <b>αριθμό ατόμων άνθρακα </b>της κύριας ανθρακικής αλυσίδας.</div><div class=\"note-align-center note-fs-18\"><br></div><div class=\"note-fs-14\"><i>Επιλογές διάδρασης:</i></div><ul><li class=\"note-fs-14\">Επίλεξε το πρώτο συνθετικό και παρατήρησε την επισήμανση του αριθμού ατόμων C της αλυσίδας στην δισδιάστατη και τρισδιάστατη μορφή του μορίου.</li><li class=\"note-fs-14\">Επίλεξε το σύμβολο \"+\"&nbsp; που αναδύει τον κανόνα και παρατήρησε πως μεταβάλλεται το πρώτο συνθετικό ανάλογα με τον αριθμό ατόμων C.</li><li class=\"note-fs-14\">Από το μενού μπορείς να περιηγηθείς στα υπόλοιπα παραδείγματα.</li><li class=\"note-fs-14\">Υπάρχει η δυνατότητα εναλλαγής μεταξύ συνεπτυγμένου και ανεπτυγμένου συντακτικού τύπου.</li></ul>",
+      "noteFormat": "html",
+      "mode2D": "condensed",
+      "mainChainMode": "algorithmic",
+      "chainIdx": 0,
+      "etherNamingMode": "iupac",
+      "substNamingMode": "school",
+      "nameAnalysisMode": "none",
+      "selectedRule": 0,
+      "style2D": {
+        "atomColors": true,
+        "colorMode": "atom",
+        "zigzag": false,
+        "zoom": 2
+      },
+      "styleName": {
+        "box": true,
+        "cross": true,
+        "etherNaming": "iupac",
+        "panelOpen": true,
+        "hidden": [
+          "comp6",
+          "comp9"
+        ],
+        "gone": []
+      },
+      "styleHighlight": {
+        "bondAtoms": false,
+        "numberingAtoms": true,
+        "numberingBonds": true
+      },
+      "styleText": {
+        "fontSizePx": null,
+        "textWidthPx": null,
+        "columns": null,
+        "position": null
+      },
+      "audio": {
+        "narrate": false
+      },
+      "menuSubset": [
+        "methane",
+        "ethane",
+        "propane",
+        "butane",
+        "pentane"
+      ],
+      "menuGroups": [
+        "molecules"
+      ],
+      "view3D": {
+        "style": "ballnstick",
+        "spin": true,
+        "showH": true,
+        "atomSymbols": true,
+        "moveto": "moveto 0.0 { -500 158 851 120.9} 50.0 0.0 0.0 {0.000020000000000020002 0.0000199999999999978 0} 2.290012662678742 {0 0 0} 0 0 0 3.0 0.0 0.0;"
+      },
+      "show": {
+        "menu": true,
+        "viewerButtons": false,
+        "viewerSettings": false,
+        "viewers": {
+          "2D": true,
+          "3D": true
+        },
+        "viewerMaxHeight": "full",
+        "viewerBothHeight": "full",
+        "controls": {
+          "2D": true,
+          "3D": true
+        },
+        "save": {
+          "2D": false,
+          "3D": false
+        },
+        "naming": true,
+        "nameSettings": false,
+        "nameEye": false,
+        "nameExpanded": false,
+        "audio": false,
+        "rule": false,
+        "text": true,
+        "nameClick": true
+      },
+      "selectedMol": "methane"
+    },
+    {
+      "n": 3,
+      "lang": "gr",
+      "title": "2ο Συνθετικό",
+      "note": "<div class=\"note-align-center note-fs-18\">Το <b>δεύτερο</b> συνθετικό (δεύτερο κουτάκι) υποδεικνύει το <b>είδος δεσμών</b> μεταξύ&nbsp;<b>&nbsp;ατόμων άνθρακα.</b></div><div class=\"note-align-center note-fs-18\"><br></div><div class=\"note-fs-14\"><i>Επιλογές διάδρασης:</i></div><ul><li class=\"note-fs-14\">Επίλεξε το δεύτερο συνθετικό και παρατήρησε την επισήμανση των δεσμών μεταξύ ατόμων C&nbsp; στην δισδιάστατη και τρισδιάστατη μορφή του μορίου.</li><li class=\"note-fs-14\">Επίλεξε το σύμβολο \"+\"&nbsp; που αναδύει τον κανόνα και παρατήρησε πως μεταβάλλεται το δεύτερο συνθετικό ανάλογα με το είδος δεσμού μεταξύ ατόμων C.</li><li class=\"note-fs-14\">Από το μενού μπορείς να περιηγηθείς στα υπόλοιπα παραδείγματα.</li><li class=\"note-fs-14\">Υπάρχει η δυνατότητα εναλλαγής μεταξύ συνεπτυγμένου ανεπτυγμένου συντακτικού τύπου και σκελετικού.</li></ul>",
+      "noteFormat": "html",
+      "mode2D": "condensed",
+      "mainChainMode": "algorithmic",
+      "chainIdx": 0,
+      "etherNamingMode": "iupac",
+      "substNamingMode": "school",
+      "nameAnalysisMode": "none",
+      "selectedRule": null,
+      "style2D": {
+        "atomColors": true,
+        "colorMode": "atom",
+        "zigzag": false,
+        "zoom": 2
+      },
+      "styleName": {
+        "box": true,
+        "cross": true,
+        "etherNaming": "iupac",
+        "panelOpen": false,
+        "hidden": [
+          "comp9",
+          "comp5",
+          "comp0"
+        ],
+        "gone": []
+      },
+      "styleHighlight": {
+        "bondAtoms": false,
+        "numberingAtoms": true,
+        "numberingBonds": true
+      },
+      "styleText": {
+        "fontSizePx": null,
+        "textWidthPx": null,
+        "columns": null,
+        "position": null
+      },
+      "audio": {
+        "narrate": false
+      },
+      "menuSubset": [
+        "butane",
+        "ethene",
+        "propyne",
+        "propadiene",
+        "ethanal",
+        "ethanenitrile",
+        "butene_2",
+        "propanenitrile",
+        "propene",
+        "propionicacid",
+        "butene_1"
+      ],
+      "menuGroups": [
+        "molecules"
+      ],
+      "view3D": {
+        "style": "ballnstick",
+        "spin": true,
+        "showH": true,
+        "atomSymbols": true,
+        "moveto": "moveto 0.0 { -71 -997 22 146.09} 50.0 0.0 0.0 {0 -0.000028571428571449215 -0.0012142857142857075} 3.986991881610577 {0 0 0} 0 0 0 3.0 0.0 0.0;"
+      },
+      "show": {
+        "menu": true,
+        "viewerButtons": false,
+        "viewerSettings": false,
+        "viewers": {
+          "2D": true,
+          "3D": true
+        },
+        "viewerMaxHeight": "full",
+        "viewerBothHeight": "full",
+        "controls": {
+          "2D": true,
+          "3D": true
+        },
+        "save": {
+          "2D": false,
+          "3D": false
+        },
+        "naming": true,
+        "nameSettings": false,
+        "nameEye": false,
+        "nameExpanded": false,
+        "audio": false,
+        "rule": false,
+        "text": true,
+        "nameClick": true
+      },
+      "selectedMol": "butane"
+    },
+    {
+      "n": 4,
+      "lang": "gr",
+      "title": "3ο Συνθετικό ",
+      "note": "<div class=\"note-align-center note-fs-18\">Το <b>τρίτο</b> συνθετικό (τρίτο κουτάκι) δηλώνει την <b>χημική τάξη </b>που ανήκει<b>.</b></div><div class=\"note-align-center note-fs-18\"><br></div><div class=\"note-fs-14\"><i>Επιλογές διάδρασης:</i></div><ul><li class=\"note-fs-14\">Επίλεξε το τρίτο συνθετικό και παρατήρησε την επισήμανση της χαρακτηριστικής ομάδας στην δισδιάστατη και τρισδιάστατη μορφή του μορίου.</li><li class=\"note-fs-14\">Επίλεξε το σύμβολο \"+\"&nbsp; που αναδύει τον κανόνα και παρατήρησε πως μεταβάλλεται το τρίτο συνθετικό ανάλογα με την χημική τάξη.</li><li class=\"note-fs-14\">Από το μενού μπορείς να περιηγηθείς στα υπόλοιπα παραδείγματα.</li><li class=\"note-fs-14\">Υπάρχει η δυνατότητα εναλλαγής μεταξύ συνεπτυγμένου ανεπτυγμένου συντακτικού τύπου&nbsp;\nκαι σκελετικού.</li></ul>",
+      "noteFormat": "html",
+      "selectedMol": "propane",
+      "mode2D": "condensed",
+      "mainChainMode": "algorithmic",
+      "chainIdx": 0,
+      "etherNamingMode": "iupac",
+      "substNamingMode": "school",
+      "nameAnalysisMode": "none",
+      "selectedRule": 0,
+      "style2D": {
+        "atomColors": true,
+        "colorMode": "atom",
+        "zigzag": false,
+        "zoom": 2
+      },
+      "styleName": {
+        "box": true,
+        "cross": true,
+        "etherNaming": "iupac",
+        "panelOpen": true,
+        "hidden": [
+          "comp5",
+          "comp0",
+          "comp6"
+        ],
+        "gone": []
+      },
+      "styleHighlight": {
+        "bondAtoms": false,
+        "numberingAtoms": true,
+        "numberingBonds": true
+      },
+      "styleText": {
+        "fontSizePx": null,
+        "textWidthPx": null,
+        "columns": null,
+        "position": null
+      },
+      "audio": {
+        "narrate": false
+      },
+      "view3D": {
+        "style": "ballnstick",
+        "spin": true,
+        "showH": true,
+        "atomSymbols": true,
+        "moveto": "moveto 0.0 { 358 0 -934 180.0} 50.0 0.0 0.0 {4.0371746350005693e-17 0.050663636363636376 1.0092936587501423e-17} 3.384924315405361 {0 0 0} 0 0 0 3.0 0.0 0.0;"
+      },
+      "menuSubset": [
+        "propane",
+        "propene",
+        "propionicacid",
+        "propanal",
+        "propanenitrile",
+        "butanal",
+        "butanenitrile",
+        "butanoic_acid",
+        "butanone",
+        "ethanol"
+      ],
+      "menuGroups": [
+        "molecules"
+      ],
+      "show": {
+        "menu": true,
+        "viewerButtons": false,
+        "viewerSettings": false,
+        "viewers": {
+          "2D": true,
+          "3D": true
+        },
+        "viewerMaxHeight": "full",
+        "viewerBothHeight": "full",
+        "controls": {
+          "2D": true,
+          "3D": true
+        },
+        "save": {
+          "2D": false,
+          "3D": false
+        },
+        "naming": true,
+        "nameSettings": false,
+        "nameClick": true,
+        "nameEye": false,
+        "nameExpanded": false,
+        "audio": false,
+        "rule": false,
+        "text": true
+      }
+    },
+    {
+      "n": 5,
+      "lang": "gr",
+      "title": "Ανακάλυψε το όνομα...",
+      "note": "<div class=\"note-fs-18\">Παρατήρησε τον συντακτικό τύπο της ένωσης. Επίλεξε ένα συνθετικό από την ονομασία της και λύσε το αντίστοιχο κουίζ ανακαλύπτοντας τι δηλώνει και πως συνδέεται με την δομή του σε 2D και 3D απεικόνιση.</div>",
+      "noteFormat": "html",
+      "mode2D": "condensed",
+      "mainChainMode": "algorithmic",
+      "chainIdx": 0,
+      "etherNamingMode": "iupac",
+      "substNamingMode": "school",
+      "nameAnalysisMode": "none",
+      "selectedRule": 2,
+      "style2D": {
+        "atomColors": true,
+        "colorMode": "atom",
+        "zigzag": false,
+        "zoom": 2
+      },
+      "styleName": {
+        "box": true,
+        "cross": true,
+        "etherNaming": "iupac",
+        "panelOpen": true,
+        "hidden": [
+          "comp0"
+        ],
+        "gone": []
+      },
+      "styleHighlight": {
+        "bondAtoms": false,
+        "numberingAtoms": true,
+        "numberingBonds": true
+      },
+      "styleText": {
+        "fontSizePx": null,
+        "textWidthPx": null,
+        "columns": null,
+        "position": null
+      },
+      "audio": {
+        "narrate": false
+      },
+      "menuSubset": [
+        "propyne",
+        "propanal",
+        "propanenitrile",
+        "propanone",
+        "butanal",
+        "butanenitrile",
+        "butanoic_acid",
+        "butanone",
+        "propionicacid"
+      ],
+      "menuGroups": [
+        "molecules"
+      ],
+      "view3D": {
+        "style": "ballnstick",
+        "spin": false,
+        "showH": true,
+        "atomSymbols": true,
+        "moveto": "moveto 0.0 { 0 0 -1000 166.43} 50.0 0.0 0.0 {0.5374909090909091 -0.18744545454545455 0.0006454545454545474} 4.189507676651848 {0 0 0} 0 0 0 3.0 0.0 0.0;"
+      },
+      "show": {
+        "menu": true,
+        "viewerButtons": false,
+        "viewerSettings": false,
+        "viewers": {
+          "2D": true,
+          "3D": true
+        },
+        "viewerMaxHeight": "full",
+        "viewerBothHeight": "full",
+        "controls": {
+          "2D": true,
+          "3D": true
+        },
+        "save": {
+          "2D": false,
+          "3D": false
+        },
+        "naming": true,
+        "nameSettings": false,
+        "nameEye": false,
+        "nameExpanded": false,
+        "audio": false,
+        "rule": false,
+        "text": true,
+        "nameClick": true
+      },
+      "selectedMol": "propionicacid",
+      "quiz": {
+        "kind": "nameComp",
+        "mode": "compCarbonsCount",
+        "mol": "",
+        "prompt": "",
+        "types": [
+          "mainChain",
+          "locant",
+          "bondType",
+          "bondPos",
+          "fg",
+          "groupLocants"
+        ]
+      },
+      "requireSolution": false
+    },
+    {
+      "n": 6,
+      "lang": "gr",
+      "title": "Επιλογή της κύριας ανθρακικής αλυσίδας ",
+      "note": "Η επιλογή της κύριας ανθρακικής αλυσίδας είναι ένα από τα πρώτα βήματα στην ονοματολογία των οργανικών ενώσεων και ακολουθούνται συγκεκριμένοι κανόνες για τον καθορισμό της.<div><br></div><div><ul><li><b>Μήκος Αλυσίδας. </b>Επιλέγουμε την <b>μακρύτερη συνεχόμενη</b> αλυσίδα <b>ατόμων άνθρακα</b>, η οποία θα καθορίσει το βασικό όνομα της ένωσης.</li></ul><div><br></div></div><div><div class=\"note-fs-14\"><i>Επιλογές διάδρασης:</i></div><ul><li class=\"note-fs-14\">Επίλεξε το πρώτο συνθετικό και παρατήρησε την επισήμανση στην αρίθμηση της κύριας ανθρακικής αλυσίδας στην δισδιάστατη και τρισδιάστατη μορφή του μορίου.</li><li class=\"note-fs-14\">Επίλεξε το σύμβολο \"+\"&nbsp; που αναδύει τον κανόνα για τα άτομα άνθρακα της κύριας ανθρακικής αλυσίδας.</li><li class=\"note-fs-14\">Από το μενού μπορείς να περιηγηθείς στα υπόλοιπα παραδείγματα.</li><li class=\"note-fs-14\">Υπάρχει η δυνατότητα εναλλαγής μεταξύ συνεπτυγμένου ανεπτυγμένου συντακτικού τύπου&nbsp; και σκελετικού.</li></ul></div>",
+      "noteFormat": "html",
+      "mode2D": "condensed",
+      "mainChainMode": "algorithmic",
+      "chainIdx": 0,
+      "etherNamingMode": "iupac",
+      "substNamingMode": "school",
+      "nameAnalysisMode": "none",
+      "selectedRule": 2,
+      "style2D": {
+        "atomColors": true,
+        "colorMode": "atom",
+        "zigzag": false,
+        "zoom": 2
+      },
+      "styleName": {
+        "box": true,
+        "cross": true,
+        "etherNaming": "iupac",
+        "panelOpen": true,
+        "hidden": [
+          "comp9",
+          "comp6",
+          "comp0",
+          "comp1",
+          "comp2",
+          "comp3"
+        ],
+        "gone": []
+      },
+      "styleHighlight": {
+        "bondAtoms": false,
+        "numberingAtoms": true,
+        "numberingBonds": true
+      },
+      "styleText": {
+        "fontSizePx": null,
+        "textWidthPx": null,
+        "columns": null,
+        "position": null
+      },
+      "audio": {
+        "narrate": false
+      },
+      "menuSubset": [
+        "propane",
+        "methyl_2_butane",
+        "dimethyl_2_2_propane",
+        "dimethyl_2_3_butane",
+        "methyl_2_pentane",
+        "ethyl_4_heptane",
+        "isopropyl_5_trimethyl_2_3_7_octane"
+      ],
+      "menuGroups": [
+        "molecules"
+      ],
+      "view3D": {
+        "style": "ballnstick",
+        "spin": false,
+        "showH": true,
+        "atomSymbols": true,
+        "moveto": "moveto 0.0 { 1000 0 0 180.0} 50.0 0.0 0.0 {4.0371746350005693e-17 0.050663636363636376 1.0092936587501423e-17} 3.384924315405361 {0 0 0} 0 0 0 3.0 0.0 0.0;"
+      },
+      "show": {
+        "menu": true,
+        "viewerButtons": false,
+        "viewerSettings": false,
+        "viewers": {
+          "2D": true,
+          "3D": true
+        },
+        "viewerMaxHeight": "full",
+        "viewerBothHeight": 610,
+        "controls": {
+          "2D": true,
+          "3D": true
+        },
+        "save": {
+          "2D": false,
+          "3D": false
+        },
+        "naming": true,
+        "nameSettings": true,
+        "nameEye": false,
+        "nameExpanded": false,
+        "audio": false,
+        "rule": false,
+        "text": true,
+        "nameClick": true
+      },
+      "selectedMol": "propane"
+    },
+    {
+      "n": 7,
+      "lang": "gr",
+      "title": "Επιλογή της κύριας ανθρακικής αλυσίδας ",
+      "note": "<div><ul><li><b>Χαρακτηριστικές ομάδες</b>. Αν υπάρχουν χαρακτηριστικές ομάδες στην ένωση, <b>πρέπει να περιελαμβάνονται</b> στην κύρια αλυσίδα.</li></ul></div><div><div class=\"note-fs-14\"><i><br>Επιλογές διάδρασης:</i></div><ul><li class=\"note-fs-14\">Επίλεξε το πρώτο συνθετικό και παρατήρησε την επισήμανση στην αρίθμηση της κύριας ανθρακικής αλυσίδας στην δισδιάστατη και τρισδιάστατη μορφή του μορίου.</li><li class=\"note-fs-14\">Επίλεξε το σύμβολο \"+\"&nbsp; που αναδύει τον κανόνα για τα άτομα άνθρακα της κύριας ανθρακικής αλυσίδας.</li><li class=\"note-fs-14\">Από το μενού μπορείς να περιηγηθείς στα υπόλοιπα παραδείγματα.</li><li class=\"note-fs-14\">Υπάρχει η δυνατότητα εναλλαγής μεταξύ συνεπτυγμένου ανεπτυγμένου συντακτικού τύπου&nbsp; και σκελετικού.</li></ul></div>",
+      "noteFormat": "html",
+      "mode2D": "condensed",
+      "mainChainMode": "algorithmic",
+      "chainIdx": 1,
+      "etherNamingMode": "iupac",
+      "substNamingMode": "school",
+      "nameAnalysisMode": "none",
+      "selectedRule": 2,
+      "style2D": {
+        "atomColors": true,
+        "colorMode": "atom",
+        "zigzag": false,
+        "zoom": 2
+      },
+      "styleName": {
+        "box": true,
+        "cross": true,
+        "etherNaming": "iupac",
+        "panelOpen": true,
+        "hidden": [
+          "comp9",
+          "comp6"
+        ],
+        "gone": [
+          "comp0",
+          "comp1",
+          "comp2",
+          "comp3",
+          "comp3loc",
+          "comp3b"
+        ]
+      },
+      "styleHighlight": {
+        "bondAtoms": false,
+        "numberingAtoms": true,
+        "numberingBonds": true
+      },
+      "styleText": {
+        "fontSizePx": null,
+        "textWidthPx": null,
+        "columns": null,
+        "position": null
+      },
+      "audio": {
+        "narrate": false
+      },
+      "menuSubset": [
+        "methyl_2_propanoic_acid",
+        "dimethyl_2_2_propanoic_acid",
+        "ethyl_2_methyl_3_pentanal",
+        "ethyl_2_methyl_3_pentanoic_acid",
+        "ethyl_4_isopropyl_3_methyl_2_hexanal",
+        "ethyl_3_isopropyl_2_dimethyl_4_5_hexanoic_acid"
+      ],
+      "menuGroups": [
+        "molecules"
+      ],
+      "view3D": {
+        "style": "ballnstick",
+        "spin": false,
+        "showH": true,
+        "atomSymbols": true,
+        "moveto": "moveto 0.0 { -961 -102 257 168.4} 50.0 0.0 0.0 {0.5431714285714286 -0.10007857142857136 0.025935714285714277} 4.335443185986795 {0 0 0} 0 0 0 3.0 0.0 0.0;"
+      },
+      "show": {
+        "menu": true,
+        "viewerButtons": false,
+        "viewerSettings": false,
+        "viewers": {
+          "2D": true,
+          "3D": true
+        },
+        "viewerMaxHeight": "full",
+        "viewerBothHeight": 650,
+        "controls": {
+          "2D": true,
+          "3D": true
+        },
+        "save": {
+          "2D": false,
+          "3D": false
+        },
+        "naming": true,
+        "nameSettings": false,
+        "nameEye": false,
+        "nameExpanded": false,
+        "audio": false,
+        "rule": false,
+        "text": true,
+        "nameClick": true
+      },
+      "selectedMol": "methyl_2_propanoic_acid"
+    },
+    {
+      "n": 8,
+      "lang": "gr",
+      "title": "Επιλογή της κύριας ανθρακικής αλυσίδας ",
+      "note": "<ul><li><div class=\"note-fs-18\"><b>Πολλαπλοί δεσμοί.&nbsp;</b><span>Αν υπάρχουν πολλαπλοί δεσμοί στην ένωση, </span><span><b>πρέπει να περιελαμβάνονται</b></span><span> στην κύρια αλυσίδα.</span></div></li></ul><div><br></div><div><div class=\"note-fs-14\"><i>Επιλογές διάδρασης:</i></div><ul><li class=\"note-fs-14\">Επίλεξε το πρώτο συνθετικό και παρατήρησε την επισήμανση στην αρίθμηση της κύριας ανθρακικής αλυσίδας στην δισδιάστατη και τρισδιάστατη μορφή του μορίου.</li><li class=\"note-fs-14\">Επίλεξε το σύμβολο \"+\"&nbsp; που αναδύει τον κανόνα για τα άτομα άνθρακα της κύριας ανθρακικής αλυσίδας.</li><li class=\"note-fs-14\">Από το μενού μπορείς να περιηγηθείς στα υπόλοιπα παραδείγματα.</li><li class=\"note-fs-14\">Υπάρχει η δυνατότητα εναλλαγής μεταξύ συνεπτυγμένου ανεπτυγμένου συντακτικού τύπου&nbsp; και σκελετικού.</li></ul></div>",
+      "noteFormat": "html",
+      "mode2D": "condensed",
+      "mainChainMode": "algorithmic",
+      "chainIdx": 0,
+      "etherNamingMode": "iupac",
+      "substNamingMode": "school",
+      "nameAnalysisMode": "none",
+      "selectedRule": 2,
+      "style2D": {
+        "atomColors": true,
+        "colorMode": "atom",
+        "zigzag": false,
+        "zoom": 2
+      },
+      "styleName": {
+        "box": true,
+        "cross": true,
+        "etherNaming": "iupac",
+        "panelOpen": true,
+        "hidden": [
+          "comp9",
+          "comp6",
+          "comp7",
+          "comp8"
+        ],
+        "gone": [
+          "comp0",
+          "comp1",
+          "comp4",
+          "comp2",
+          "comp3"
+        ]
+      },
+      "styleHighlight": {
+        "bondAtoms": false,
+        "numberingAtoms": true,
+        "numberingBonds": true
+      },
+      "styleText": {
+        "fontSizePx": null,
+        "textWidthPx": null,
+        "columns": null,
+        "position": null
+      },
+      "audio": {
+        "narrate": false
+      },
+      "menuSubset": [
+        "methyl_2_propenal",
+        "methyl_2_propenoic_acid",
+        "dimethyl_2_3_pentadiene_1_3",
+        "ethyl_3_dimethyl_4_5_hexadiene_1_4",
+        "ethyl_4_dimethyl_3_5_heptyne_1",
+        "ethyl_4_dimethyl_2_3_hepten_2_yne_5",
+        "methyl_2_propene",
+        "methyl_3_butene_1",
+        "methyl_3_butyne_1",
+        "methyl_2_buten_1_yne_3",
+        "methyl_3_pentyne_1",
+        "methyl_4_pentyne_2",
+        "methyl_3_pentadiene_1_3"
+      ],
+      "menuGroups": [
+        "molecules"
+      ],
+      "view3D": {
+        "style": "ballnstick",
+        "spin": false,
+        "showH": true,
+        "atomSymbols": true,
+        "moveto": "moveto 0.0 { 1000 0 0 180.0} 50.0 0.0 0.0 {-0.00004166666666672684 0.1434583333333333 -0.00007499999999999632} 3.5049519114500463 {0 0 0} 0 0 0 3.0 0.0 0.0;"
+      },
+      "show": {
+        "menu": true,
+        "viewerButtons": false,
+        "viewerSettings": false,
+        "viewers": {
+          "2D": true,
+          "3D": true
+        },
+        "viewerMaxHeight": "full",
+        "viewerBothHeight": 650,
+        "controls": {
+          "2D": true,
+          "3D": true
+        },
+        "save": {
+          "2D": false,
+          "3D": false
+        },
+        "naming": true,
+        "nameSettings": false,
+        "nameEye": false,
+        "nameExpanded": false,
+        "audio": false,
+        "rule": false,
+        "text": true,
+        "nameClick": true
+      },
+      "selectedMol": "methyl_2_propene"
+    },
+    {
+      "n": 9,
+      "lang": "gr",
+      "title": "Ανακάλυψε την κύρια ανθρακική αλυσίδα",
+      "note": "<div class=\"note-fs-18\">Παρατήρησε τον συντακτικό τύπο της ένωσης. Επίλεξε το πρώτο συνθετικό από την ονομασία της και ανακάλυψε την κύρια ανθρακική αλυσίδα στην δομή του σε 2D και 3D απεικόνιση.</div>",
+      "noteFormat": "html",
+      "mode2D": "condensed",
+      "mainChainMode": "algorithmic",
+      "chainIdx": 2,
+      "etherNamingMode": "iupac",
+      "substNamingMode": "school",
+      "nameAnalysisMode": "none",
+      "selectedRule": 2,
+      "style2D": {
+        "atomColors": true,
+        "colorMode": "atom",
+        "zigzag": false,
+        "zoom": 2
+      },
+      "styleName": {
+        "box": true,
+        "cross": false,
+        "etherNaming": "iupac",
+        "panelOpen": true,
+        "hidden": [
+          "comp7",
+          "comp8"
+        ],
+        "gone": [
+          "comp4",
+          "comp2",
+          "comp3",
+          "comp0",
+          "comp1"
+        ]
+      },
+      "styleHighlight": {
+        "bondAtoms": false,
+        "numberingAtoms": true,
+        "numberingBonds": true
+      },
+      "styleText": {
+        "fontSizePx": null,
+        "textWidthPx": null,
+        "columns": null,
+        "position": null
+      },
+      "audio": {
+        "narrate": false
+      },
+      "menuSubset": [
+        "methyl_2_propanoic_acid",
+        "dimethyl_2_2_propane",
+        "methyl_2_butene_1",
+        "methyl_2_pentane",
+        "dimethyl_2_3_butane",
+        "methyl_4_pentanol_2",
+        "dimethyl_2_2_butane",
+        "ethyl_2_butene_1",
+        "ethyl_3_pentane",
+        "isopropyl_5_trimethyl_2_3_7_octane"
+      ],
+      "menuGroups": [
+        "molecules"
+      ],
+      "view3D": {
+        "style": "ballnstick",
+        "spin": false,
+        "showH": true,
+        "atomSymbols": true,
+        "moveto": "moveto 0.0 { -721 -628 291 115.7} 50.0 0.0 0.0 {-0.000017647058823560937 -0.00000588235294124113 -0.000005882352941162761} 3.485407268954102 {0 0 0} 0 0 0 3.0 0.0 0.0;"
+      },
+      "show": {
+        "menu": true,
+        "viewerButtons": false,
+        "viewerSettings": false,
+        "viewers": {
+          "2D": true,
+          "3D": true
+        },
+        "viewerMaxHeight": "full",
+        "viewerBothHeight": 650,
+        "controls": {
+          "2D": true,
+          "3D": true
+        },
+        "save": {
+          "2D": false,
+          "3D": false
+        },
+        "naming": true,
+        "nameSettings": false,
+        "nameEye": false,
+        "nameExpanded": false,
+        "audio": false,
+        "rule": false,
+        "text": true,
+        "nameClick": true
+      },
+      "selectedMol": "dimethyl_2_2_propane",
+      "quiz": {
+        "kind": "nameComp",
+        "mode": "compCarbonsCount",
+        "mol": "",
+        "prompt": "",
+        "types": [
+          "mainChain",
+          "locant",
+          "bondType",
+          "bondPos",
+          "fg",
+          "groupLocants"
+        ]
+      },
+      "requireSolution": true
+    }
+  ]
+}

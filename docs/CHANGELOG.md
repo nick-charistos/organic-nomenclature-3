@@ -8,9 +8,9 @@ All notable changes to the Οργανική Ονοματολογία MuLERMoC.
 
 Forked from v58.50, rebased on v58.51 (`mulermoc-nom-59.html` + `js/*-59.js` + `css/*-59.css` +
 `jsme-nick-nomeclature-moc2-data_59.js` + `spt/init-3-59.spt` +
-`zz-test-core59.html`, `?v=59.35`; `ui-icons.js`, `js/vendor/`, `jsme/` and
+`zz-test-core59.html`, `?v=59.36`; `ui-icons.js`, `js/vendor/`, `jsme/` and
 `mols/` stay shared). Chemistry/naming results are v58's and the scenario data
-shape is inherited from v58, but v59.02–v59.35 add UI, data, quiz-step-authoring
+shape is inherited from v58, but v59.02–v59.36 add UI, data, quiz-step-authoring
 and authoring/engine-scope changes (see below); the v59.00 work is data geometry
 and the MOL pipeline.
 
@@ -93,7 +93,7 @@ and the MOL pipeline.
   prompt while picking (`pending3D` cancelled). The v58 CSS comes along:
   `--veryLightOrchid`, orchid `.quizTodo` / `.quizTodo.selected` /
   `.scQuizTag.selected` / `.is-start` and the shared `.scQuizPrompt` +
-  `.scQuizStartPrompt` skin. Asset refs moved to `?v=59.01` (now `?v=59.35`).
+  `.scQuizStartPrompt` skin. Asset refs moved to `?v=59.01` (now `?v=59.36`).
 - **Rule grouping bullet removed (v59.02).** The `.groupingMode` selector now
   offers Όλα τα μόρια / Χημικές Τάξεις / Ομόλογες Σειρές only. The `rule` mode
   itself is kept intact: `moleculeGroupingMode === "rule"`, the `ruleExamples`
@@ -594,6 +594,19 @@ eyeballs #139/#140/#154.
   Corpus sweep of the resolver on the working tree: 51 C=C / 31 C≡C / 20 en-yn
   molecules all match a rendered locant box. `probe-final` and
   `probe-scenario-quiz` green, `node --check`, `git diff --check`. `?v=59.35`.
+- **Default scenario swap (v59.36, owner request).** `scenarios/` now holds a
+  single stored scenario, `Το_όνομα_της_κύριας_ανθρακικής_αλυσίδας.scenario.json`
+  (9 steps: the naming-component walkthrough, the “Ανακάλυψε το όνομα…”
+  propionic-acid quiz, main-chain choice on propane/2-methylpropanoic
+  acid/2-methylpropene, and the “Ανακάλυψε την κύρια ανθρακική αλυσίδα”
+  2,2-dimethylpropane quiz), and it is the boot default:
+  `MuLERMoCScenario.defaultScenarioUrl` points at it, so S1 loads it and S2
+  stays the empty card. The previous `Αλκάνια-Αιθάνιο-τεστ.scenario.json` is
+  deleted (git history keeps it; `?scenario=` deep links to it now 404).
+  Verified headlessly on the served page: S1 title/author/9 steps from the
+  file, `fScenarioValidate` returns no warnings, S2 empty; `?present=1` enters
+  step 1 and `fScenarioPresentBegin(s1, 2)` shows “2ο Συνθετικό” on butane;
+  `node --check`, `git diff --check`. `?v=59.36`.
 - **Docs resync (2026-11-23, docs-only).** Current-tree references were synced
   to v59.10 across `README`, `AGENTS`, `PROJECT-PLAN`/`PROJECT-PLAN-GR`,
   `LAYERS-PLAN`, `didactic-scenario-plan` and the harness README; the EN

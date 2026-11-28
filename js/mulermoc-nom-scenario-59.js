@@ -27,7 +27,7 @@ var MuLERMoCScenario = {
   pinned: false, // authoring pin-dock: bar docked in-flow at the row's right end (live-only, never in step JSON)
   pinPref: true, // remembered authoring pin choice (default pinned; panel stays closed until opened; live-only, session-scoped, never in step JSON)
   maxEmptyScenarios: 3, // adjustable cap on step-less cards (scNew locks at cap)
-  defaultScenarioUrl: "scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json", // preloaded as S1 at boot (S2 stays empty); ?scenario= deep links skip this
+  defaultScenarioUrl: "scenarios/Το_όνομα_της_κύριας_ανθρακικής_αλυσίδας.scenario.json", // preloaded as S1 at boot (S2 stays empty); ?scenario= deep links skip this
 };
 
 // ── multi-scenario state manager ─────────────────────────────────────
@@ -8531,10 +8531,10 @@ function fScenarioBoot() {
           fScenarioToast("Could not load scenario (needs http(s); use Import on file://).");
         });
     } else {
-      // Default library preload: the empty boot card becomes S1 (stored Greek
-      // alkane scenario) and a second empty card is added as S2. Deep links
-      // (?scenario=) skip this. file:// fetch failure falls back silently to
-      // the single empty boot card (Import remains the offline path).
+      // Default library preload: the empty boot card becomes S1 (the stored
+      // “main carbon chain” scenario) and a second empty card is added as S2.
+      // Deep links (?scenario=) skip this. file:// fetch failure falls back
+      // silently to the single empty boot card (Import remains the offline path).
       fetch(MuLERMoCScenario.defaultScenarioUrl)
         .then(function (r) {
           if (!r.ok) throw new Error("HTTP " + r.status);

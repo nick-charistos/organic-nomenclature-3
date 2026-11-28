@@ -1,7 +1,10 @@
-# Session notes — 2026-11-27 (resume point for next session, other machine)
+# Session notes — 2026-11-28 (resume point for next session, other machine)
 
-> **Resume pointer (cross-machine):** 2026-11-27 — **v59.35 committed**
-> (`?v=59.35`; tree clean). New in this batch:
+> **Resume pointer (cross-machine):** 2026-11-28 — **v59.36 committed**
+> (`?v=59.36`; tree clean). New: the scenario
+> default is now `scenarios/Το_όνομα_της_κύριας_ανθρακικής_αλυσίδας.scenario.json`
+> (9 steps), the old `Αλκάνια-Αιθάνιο-τεστ` is deleted, and the docs no longer
+> list the long-gone alkene scenarios. Earlier this session:
 > **v59.33** aligns the drawer's main-chain and locant quiz tags into one
 > chain-driven block (`fScenarioQuizAlignChainLocants`) — the chain tag requires
 > every capable locant, deselecting it frees them all, and locant tags are
@@ -162,8 +165,11 @@
 > No code change (v59.11 bumps the asset refs).
 > Docs: current index `docs/README.md`; historical material in `docs/archive/`
 > (pre-v54 notes split to `docs/archive/SESSION-NOTES-pre-v54.md`).
-> Committed: v59.01 (ff2058c) + v59.02 (7e18c65) + v59.03 + v59.04 + v59.05 + v59.06 + v59.07 + v59.08 + v59.09 + v59.10 + v59.11 + v59.12 + v59.13 + v59.14 + v59.15 + v59.16 + v59.17 + v59.18 + v59.19 + v59.20 + v59.21 + v59.22 (9ecd22c) + v59.23 (460a5a2) + v59.24 (4443e2f) + v59.25 (013726c) + v59.29 (de11ad4; includes v59.26–29) + docs handoff (e2f4777) + v59.30–32 (36c4b42) + v59.33–35.
-> **Committed in v59.35:** the drawer’s chain and locant
+> Committed: v59.01 (ff2058c) + v59.02 (7e18c65) + v59.03 + v59.04 + v59.05 + v59.06 + v59.07 + v59.08 + v59.09 + v59.10 + v59.11 + v59.12 + v59.13 + v59.14 + v59.15 + v59.16 + v59.17 + v59.18 + v59.19 + v59.20 + v59.21 + v59.22 (9ecd22c) + v59.23 (460a5a2) + v59.24 (4443e2f) + v59.25 (013726c) + v59.29 (de11ad4; includes v59.26–29) + docs handoff (e2f4777) + v59.30–32 (36c4b42) + v59.33–35 (f5b301b) + credits (3822036) + v59.36.
+> **Committed in v59.36:** the default scenario is
+> `scenarios/Το_όνομα_της_κύριας_ανθρακικής_αλυσίδας.scenario.json` (9 steps) and
+> the old `Αλκάνια-Αιθάνιο-τεστ` is deleted; docs no longer list the removed
+> alkene scenarios. **Committed in v59.35:** the drawer’s chain and locant
 > quiz tags are one chain-driven block (`fScenarioQuizAlignChainLocants`): the
 > chain tag requires every capable locant, deselecting it frees them all, and
 > locant tags are mirrors (a click only toasts “The locant follows the main
@@ -1153,3 +1159,9 @@ All `scenario-55.js` + `lang-55.js`; naming engine untouched. `node --check` cle
 * Cause: the Greek layout renders the triple-bond locant in `compNumber1` (“4-” = comp0) with no `compBondPos`, while the English layout uses `compBondPos` — the fixed `compBondType → compBondPos` slot can’t serve both. (The earlier v59.34 gate only decided *whether* to link, not *which* box.)
 * Fix: new `fBondLocantCompanion(mode)` (molview-59) resolves the companion by chemistry: gate on C=C/C≡C (saturated “-αν-” → null), take the relevant bond set (DB for the first label, TB for the second — only on an en-yn), compute its chain locants via `bondList` + `fMainChainLocant`, then match the rendered number box by its digits, preferring `compBondPos` > `compEndNumber` > `compNumber1` > `compNumber2` > branch locants. `fLocantModeForComponent` delegates both bond-type labels to it.
 * Verified headlessly in GR and EN: 4-πεντιν-2-όνη “ιν” → “4-” (GR comp0 / EN comp4) + emphasis 4, “όνη” → “-2-”, locant click → numbers only; 3-πεντεν-1-ίνιο first label → “3-”, second → “-1-”; 2-μεθυλο-2-προπενικό οξύ → bond “-2-” (not the substituent “2-”); 2-πεντανόνη / 2,4-διμεθυλο-3-πεντανόνη “-αν-” → none; προπενικό οξύ (locant omitted) → none. Corpus sweep on the working tree: 51 C=C, 31 C≡C, 20 en-yn molecules all resolve to a rendered locant box. `probe-final` and `probe-scenario-quiz` green, `node --check`, `git diff --check`. `?v=59.35`. Committed in v59.35.
+
+## 2026-11-28 - default scenario swap (?v=59.36, owner request)
+* Owner added `scenarios/Το_όνομα_της_κύριας_ανθρακικής_αλυσίδας.scenario.json` (scenarioVersion 1, author Α.Θ., 9 steps: methane naming-component walkthrough, 1ο/2ο/3ο Συνθετικό, “Ανακάλυψε το όνομα…” on propionic acid, main-chain choice on propane / 2-methylpropanoic acid / 2-methylpropene, “Ανακάλυψε την κύρια ανθρακική αλυσίδα” on 2,2-dimethylpropane) and wants it as the boot default with the old one deleted.
+* Change: `MuLERMoCScenario.defaultScenarioUrl` now points at the new file; the boot comment is updated. The preload path is unchanged (S1 = the file, S2 remains the empty card, `?scenario=` deep links skip it). `git rm scenarios/Αλκάνια-Αιθάνιο-τεστ.scenario.json`; no code or probe referenced the old file.
+* Docs: README (default preload, stored-scenarios table/bullet, LEARN row, baseline), PROJECT-PLAN/-GR (default scenario + preload path), LAYERS-PLAN (baseline + active list), didactic plan (default preload paragraph), CHANGELOG v59.36 bullet; the stale alkene-scenario listings are corrected to the single stored scenario.
+* Verified on the served page: S1 title “Το όνομα της κύριας ανθρακικής αλυσίδας”, author Α.Θ., 9 steps, S2 empty, `fScenarioValidate` warnings `[]`; `?present=1` enters step 1 and `fScenarioPresentBegin(s1, 2)` shows “2ο Συνθετικό” on butane. `node --check` all `js/*-59.js`, `git diff --check`. `?v=59.36`. Committed in v59.36.
